@@ -4,7 +4,7 @@ export default {
   serverExternalPackages: ['@sparticuz/chromium', 'playwright-core'],
   // Template HTML, assets, fonts and the fit engine are read from disk at runtime.
   outputFileTracingIncludes: {
-    '/api/render': ['./templates/**/*', './fonts/**/*', './scripts/fit.js', './node_modules/@sparticuz/chromium/bin/**'],
+    '/api/render': ['./templates/**/*', './fonts/**/*', './scripts/fit.js', './node_modules/@sparticuz/chromium/bin/**', './node_modules/playwright-core/**'],
   },
   outputFileTracingExcludes: {
     '/api/render': ['./templates/*/reference/**', './templates/*/source/**'],

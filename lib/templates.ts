@@ -45,3 +45,31 @@ export async function loadRules(id: string, manifest: Manifest): Promise<Rules> 
   rules.optionals = manifest.optionals;
   return rules;
 }
+
+export type TemplateConfig = {
+  id: string;
+  title: string;
+  description: string;
+  useWhen?: string;
+  notWhen?: string;
+  guidance?: string[];
+  requiredImages?: string[];
+};
+
+export async function loadConfig(id: string): Promise<TemplateConfig> {
+  if (!SAFE_ID.test(id)) throw new Error(`Unknown template: ${id}`);
+  return JSON.parse(await fs.readFile(path.join(ROOT, 'templates', id, 'template.config.json'), 'utf8'));
+}
+
+export type LibraryAsset = {
+  id: string;
+  kind: string;
+  title: string;
+  description: string;
+  file: string;
+  fits?: string[];
+};
+
+export async function loadLibrary(): Promise<LibraryAsset[]> {
+  return JSON.parse(await fs.readFile(path.join(ROOT, 'library', 'library.json'), 'utf8'));
+}

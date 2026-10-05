@@ -1,7 +1,7 @@
 {
   "id": "ae-spotlight",
   "title": "AE Spotlight",
-  "description": "Person-led spotlight for an Account Executive: name, title, photo and optional location.",
+  "description": "Person-led ad that introduces one Account Executive (or any team member) to local dental practices by first name, with three benefits and a demo CTA.",
   "paperFileId": "01M4697421B4576AVJ6RKSRGE3",
   "formats": {
     "post": {
@@ -13,5 +13,16 @@
       "label": "Stories 1080×1920"
     }
   },
-  "paperPage": "Templates"
+  "paperPage": "Templates",
+  "useWhen": "A person is the message: an AE, a speaker or a team member introduced by first name, with a demo or meeting CTA.",
+  "notWhen": "The ad sells a product claim, or announces an event booth.",
+  "guidance": [
+    "ae-first-name: first name followed by a period (\"Sarah.\"). \"Meet\" is fixed and scales with the name.",
+    "ae-name and ae-title share the name plate: if the name needs two lines, keep the title to one line.",
+    "ae-location: city and state (\"Austin, TX\"); set uppercase by the design. Pass null to remove the pill when there is no city.",
+    "ae: the person's real photo as a cutout (transparent PNG), head and shoulders. Never generate or substitute another person's photo."
+  ],
+  "requiredImages": [
+    "ae"
+  ]
 }

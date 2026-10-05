@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Browser } from 'playwright-core';
-import { ROOT, loadManifest, loadRules } from './templates';
+import { ROOT, loadLibrary, loadManifest, loadRules } from './templates';
 
 // Template files are served to the page from disk under a fake origin, so relative URLs
 // (../../fonts/fonts.css, assets/*.png) resolve the same way they do locally.
@@ -77,7 +77,7 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
     await page.route(`${ORIGIN}/**`, async (route) => {
       const rel = decodeURIComponent(new URL(route.request().url()).pathname).replace(/^\/+/, '');
       const file = path.resolve(ROOT, rel);
-      const allowed = ['templates', 'fonts'].some((d) => file.startsWith(path.join(ROOT, d) + path.sep));
+      const allowed = ['templates', 'fonts', 'library'].some((d) => file.startsWith(path.join(ROOT, d) + path.sep));
       if (!allowed) return route.fulfill({ status: 404 });
       try {
         const body = await fs.readFile(file);
@@ -93,8 +93,7 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
 
     const values: Record<string, string | null> = {};
     for (const [k, v] of Object.entries(slots)) {
-      // Image values: an https URL, or a path inside the template (assets/...).
-      values[k] = manifest.slots[k].type === 'image' && v && !/^https:\/\//.test(v) ? `${ORIGIN}/templates/${template}/${v}` : v;
+      values[k] = manifest.slots[k].type === 'image' && v ? await resolveImage(template, v) : v;
     }
     const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits]));
     const report = (await page.evaluate(
@@ -124,4 +123,15 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
+}
+
+// Image slot values: `asset:<id>` from the approved library, an https URL, or a path inside the template.
+async function resolveImage(template: string, v: string): Promise<string> {
+  if (v.startsWith('asset:')) {
+    const asset = (await loadLibrary()).find((a) => a.id === v.slice(6));
+    if (!asset) throw new Error(`Unknown asset: ${v.slice(6)}. Use list_assets to see the approved ones.`);
+    return `${ORIGIN}/library/${asset.file}`;
+  }
+  if (/^https:\/\//.test(v)) return v;
+  return `${ORIGIN}/templates/${template}/${v}`;
 }

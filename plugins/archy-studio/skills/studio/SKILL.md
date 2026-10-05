@@ -15,7 +15,9 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 2. **Read its slots.** Call `get_template`. Note what is required, what can be removed, and the length limits.
 3. **Ask once for what is missing.** Ask for every fact the template shows that the request does not give, in one short message. Never invent names, titles, cities or numbers.
    - **Photos of people** are always that person's real photo: an approved one from `list_assets`, or a link the requester gives to a photo with the background removed (a PNG cutout). Never use another person's photo, never generate one. If there is none, say the piece needs it and stop there.
-   - A removable block (like the city pill) goes away when there is no value: pass `null`.
+   - Every slot needs a value from the requester. Never fill one with the template's example copy or a guess: the service refuses a render with missing copy.
+   - A removable block (like the city pill) goes away when the fact does not exist: pass `null`. When they simply did not mention it, ask; if they say there is none, remove it.
+   - Ask everything in one message, and say what the piece will look like without the optional parts, so they can answer in one go.
 4. **Write the copy in US English**, even when the conversation is in another language. Keep the requester's wording.
 5. **Render.** Call `render` with the template, the slots and the formats they asked for (all formats when they did not say).
    - If a format comes back **not rendered** because the copy does not fit, shorten the copy to the maximum the tool reports, keeping the meaning (`San Francisco Bay Area, CA` → `SF Bay Area, CA`), and render again. Tell them what you shortened. If shortening would change a fact (a name, a title), ask instead.

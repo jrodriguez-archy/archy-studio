@@ -121,6 +121,19 @@ const handler = createMcpHandler(
             content: [{ type: 'text', text: `Missing image for ${missing.join(', ')}. Use an approved photo from list_assets, or ask the requester for an https link to a cutout PNG of the person. Never use another person's photo.` }],
           };
         }
+        // Every text slot must be decided: an omitted slot would keep the template's sample copy
+        // (another person's name or title) and ship invented facts.
+        const removableSlots = new Set(Object.values(m.optionals).flatMap((o) => o.contains));
+        const undecided = Object.entries(m.slots)
+          .filter(([k, s]) => s.type === 'text')
+          .filter(([k]) => (removableSlots.has(k) ? !(k in slots) : !slots[k]))
+          .map(([k]) => `${k}${removableSlots.has(k) ? ' (or null to remove it)' : ''}`);
+        if (undecided.length) {
+          return {
+            isError: true,
+            content: [{ type: 'text', text: `Missing copy for: ${undecided.join(', ')}. Ask the requester for these facts in one message; never use the template's sample text or guess. A removable slot can be passed as null when the fact does not exist.` }],
+          };
+        }
         const wanted = formats?.length ? formats : Object.keys(m.formats);
         const origin = publicOrigin(ctx);
         const content: ({ type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string })[] = [];

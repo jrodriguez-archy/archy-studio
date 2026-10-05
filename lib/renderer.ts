@@ -125,7 +125,8 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
 
     const values: Record<string, string | null> = {};
     for (const [k, v] of Object.entries(slots)) {
-      values[k] = (manifest.slots[k].type === 'image' || manifest.slots[k].type === 'logo') && v ? await resolveImage(template, v) : v;
+      const type = manifest.slots[k].type;
+      values[k] = !v ? v : type === 'logo' ? await resolveLogo(template, v) : type === 'image' ? await resolveImage(template, v) : v;
     }
     const limitKey = variant ? `${format}--${variant}` : format;
     const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));
@@ -159,6 +160,23 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 }
 
 // Image slot values: `asset:<id>` from the approved library, an https URL, or a path inside the template.
+// Logos are inlined as data URLs so the page can use them as a CSS mask (no cross-origin limits).
+async function resolveLogo(template: string, v: string): Promise<string> {
+  const src = await resolveImage(template, v);
+  if (src.startsWith(ORIGIN)) {
+    const rel = decodeURIComponent(new URL(src).pathname).replace(/^\/+/, '');
+    const file = path.resolve(ROOT, rel);
+    const body = await fs.readFile(file);
+    return `data:${MIME[path.extname(file)] ?? 'image/png'};base64,${body.toString('base64')}`;
+  }
+  const res = await fetch(src, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' } });
+  if (!res.ok) throw new Error(`Could not load the logo at ${v} (${res.status})`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length > 5_000_000) throw new Error(`The logo at ${v} is larger than 5 MB`);
+  const type = res.headers.get('content-type')?.split(';')[0] || 'image/png';
+  return `data:${type};base64,${buf.toString('base64')}`;
+}
+
 async function resolveImage(template: string, v: string): Promise<string> {
   if (v.startsWith('asset:')) {
     const asset = (await loadLibrary()).find((a) => a.id === v.slice(6));

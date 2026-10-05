@@ -1,7 +1,7 @@
 // Runs inside the template page. Fills slots and fits text following the plugin's order:
 // rewrap first, then reduce the type a little, then (if it still does not fit) report so the copy is shortened.
 // Never lets content overflow silently.
-window.__fill = function fill({ format, formats, values, rules, limits }) {
+window.__fill = async function fill({ format, formats, values, rules, limits }) {
   const root = document.querySelector('body > [data-node]');
   const byName = (name) =>
     name instanceof Element ? name : name === '@artboard' ? root : root.querySelector(`[data-name^="${CSS.escape(name)}"]`);
@@ -29,7 +29,16 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
     const b = rectOf(block), w = rectOf(bounds);
     const cs = getComputedStyle(block);
     const anchoredRight = block.style.right !== '' && block.style.left === '';
+    // Floating elements (badges, mascots) that do not touch this text in the design must not touch it later.
+    const textRects = (() => { const rg = document.createRange(); rg.selectNodeContents(el); return [...rg.getClientRects()].filter((x) => x.width > 0); })();
+    const clear = r.auto ? [...root.querySelectorAll('[data-node]')].filter((x) => {
+      if (x === root || x.contains(el) || el.contains(x) || getComputedStyle(x).position !== 'absolute') return false;
+      const xr = x.getBoundingClientRect();
+      if (xr.width < 2 || xr.height < 2) return false;
+      return !textRects.some((t) => intersects(t, xr, 0));
+    }) : [];
     baseline.set(role, {
+      clear,
       // Absolutely placed blocks keep a mirrored margin; in-flow text just stays inside its container.
       inset: r.inset ?? (cs.position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left),
       anchoredRight,
@@ -65,9 +74,23 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
       if (type === 'image') { if (empty) { touched.add(n.parentElement); n.remove(); } else n.style.backgroundImage = `url("${value}")`; continue; }
       if (empty) { touched.add(n.parentElement); n.remove(); continue; }
       if (type === 'logo') {
+        // A partner mark is one colour on the piece: the colour of the template's own sample mark
+        // (white on blue, navy on a white card). It keeps its proportions at the design's height.
         const box = logoBox.get(n);
+        const shape = n.querySelector('path, rect, circle, polygon, ellipse');
+        const color = (shape && getComputedStyle(shape).fill.startsWith('rgb') && getComputedStyle(shape).fill) || getComputedStyle(n).color;
+        const img = new Image();
+        img.src = value;
+        await img.decode().catch(() => {});
+        const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 3;
+        let h = box.height, w = h * ratio;
+        if (w > box.width * 1.25) { w = box.width * 1.25; h = w / ratio; }
         n.style.width = 'auto';
-        n.innerHTML = `<img src="${value.replace(/"/g, '&quot;')}" alt="" style="display:block;height:${Math.round(box.height)}px;width:auto;max-width:${Math.round(box.width * 1.6)}px;object-fit:contain">`;
+        const mark = document.createElement('div');
+        mark.dataset.logoMark = '';
+        Object.assign(mark.style, { width: `${Math.round(w)}px`, height: `${Math.round(h)}px`, backgroundColor: color });
+        for (const prop of ['mask', '-webkit-mask']) mark.style.setProperty(prop, `url("${value}") center / contain no-repeat`);
+        n.replaceChildren(mark);
       } else n.textContent = value;
     }
     if (empty) report.slots[role] = { status: 'removed' };
@@ -114,6 +137,15 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
     if (base.anchoredRight) bump(w.left + base.inset - b.left, 'width');
     else bump(b.right - (w.right - base.inset), 'width');
     if (r.checkBottom !== false && base.position === 'absolute') bump(b.bottom - (w.bottom - base.inset), 'bottom');
+    if (base.clear?.length) {
+      const rg = document.createRange(); rg.selectNodeContents(el);
+      const tr = [...rg.getClientRects()].filter((x) => x.width > 0);
+      for (const x of base.clear) {
+        if (!x.isConnected) continue;
+        const xr = rectOf(x);
+        for (const t of tr) if (intersects(t, xr, 24)) bump(Math.min(t.right - xr.left, xr.right - t.left) + 24, `collides with ${x.dataset.name}`);
+      }
+    }
     for (const a of pick(r.avoid) ?? []) {
       const av = byName(a.node);
       if (!av) continue;

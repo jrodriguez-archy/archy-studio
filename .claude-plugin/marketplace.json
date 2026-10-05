@@ -1,0 +1,19 @@
+{
+  "name": "archy-studio",
+  "owner": {
+    "name": "Juan Rodriguez",
+    "email": "jrodriguez@archy.com"
+  },
+  "metadata": {
+    "description": "Archy Studio: finished Archy marketing pieces from approved templates, by just asking."
+  },
+  "plugins": [
+    {
+      "name": "archy-studio",
+      "displayName": "Archy - Studio",
+      "source": "./plugins/archy-studio",
+      "description": "Make finished Archy marketing pieces (PNG) from approved templates by just asking. No design tool needed.",
+      "version": "0.1.0"
+    }
+  ]
+}

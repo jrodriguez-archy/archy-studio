@@ -1,0 +1,13 @@
+{
+  "name": "archy-studio",
+  "displayName": "Archy - Studio",
+  "version": "0.1.0",
+  "description": "Make finished Archy marketing pieces (PNG) from approved templates by just asking. No design tool needed.",
+  "author": {
+    "name": "Juan Rodriguez",
+    "email": "jrodriguez@archy.com"
+  },
+  "keywords": ["archy", "marketing", "templates", "ads", "png"],
+  "repository": "https://github.com/jrodriguez-archy/archy-studio",
+  "mcpServers": "./mcp.json"
+}

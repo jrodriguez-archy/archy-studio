@@ -248,7 +248,7 @@
     },
     "45E-0": {
       "id": "45E-0",
-      "name": "Name Plate",
+      "name": "optional-ae-plate",
       "component": "Frame",
       "visible": true,
       "text": null,
@@ -566,6 +566,7 @@
       "lineHeight": "24px",
       "letterSpacing": "0.06em",
       "width": "max-content",
+      "textTransform": "uppercase",
       "whiteSpace": "pre-wrap",
       "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
       "fontWeight": 600,

@@ -22,8 +22,8 @@ await fs.mkdir(outDir, { recursive: true });
 
 const browser = await chromium.launch();
 
-async function open(format) {
-  const f = manifest.formats[format];
+async function open(format, variant = null) {
+  const f = variant ? manifest.variants[variant].formats[format] : manifest.formats[format];
   const page = await browser.newPage({ viewport: { width: f.width, height: f.height }, deviceScaleFactor: scale });
   await page.goto(pathToFileURL(path.join(dir, f.html)).href);
   // --css: what-if layout override for experiments (never used in production renders).
@@ -47,10 +47,15 @@ async function settle(page) {
 
 if (args.includes('--calibrate')) {
   const limits = {};
-  for (const format of formats) {
-    const page = await open(format);
-    const res = await page.evaluate((a) => window.__calibrate(a), { format, formats: Object.keys(manifest.formats), rules });
-    for (const [role, l] of Object.entries(res)) (limits[role] ??= {})[format] = l;
+  const jobs = formats.map((format) => ({ format, variant: null }));
+  for (const [variant, v] of Object.entries(manifest.variants ?? {})) for (const format of Object.keys(v.formats)) jobs.push({ format, variant });
+  for (const { format, variant } of jobs) {
+    const page = await open(format, variant);
+    const r = structuredClone(rules);
+    for (const [k, o] of Object.entries(r.variants?.[variant]?.slots ?? {})) r.slots[k] = { ...r.slots[k], ...o };
+    const res = await page.evaluate((a) => window.__calibrate(a), { format, formats: Object.keys(manifest.formats), rules: r });
+    const key = variant ? `${format}--${variant}` : format;
+    for (const [role, l] of Object.entries(res)) (limits[role] ??= {})[key] = l;
     await page.close();
   }
   for (const [role, perFormat] of Object.entries(limits)) manifest.slots[role].limits = perFormat;

@@ -1,5 +1,12 @@
 # Changelog
 
+## archy-studio 0.2.0 (2026-10-05)
+
+- Pieces adapt to the information available instead of refusing: missing copy is left out and the layout closes up, a block left empty (city pill, name plate) disappears, and a missing photo switches to the template's no-photo version.
+- `AE Spotlight` gets a no-photo version (Post and Stories): the name card becomes the centre of the blue panel. The first name is derived from the full name when not given. Only the name is truly required.
+- The `studio` skill asks once for missing facts, says what the piece will look like without them, then goes ahead.
+- The city pill is set uppercase by the design (it was typed in capitals before).
+
 ## archy-studio 0.1.1 (2026-10-05)
 
 - Missing facts: the service refuses a render when any copy slot is left out (it used to keep the template's sample copy); the `studio` skill asks for every missing fact in one message and removes optional blocks only when the fact does not exist.

@@ -87,7 +87,7 @@ function svgFromJsx(jsx, tokens, extraAttrs, computedStyle) {
 const urlOf = (bg) => bg?.match(/url\(([^)]+)\)/)?.[1];
 
 // ---------- 3. Build HTML ----------
-async function build(format, d) {
+async function build(key, label, d) {
   const tokens = Object.fromEntries([...d.tokensCss.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
   const slots = {};
   const optionals = {};
@@ -179,7 +179,7 @@ async function build(format, d) {
 <html>
 <head>
 <meta charset="utf-8">
-<title>${esc(config.title)} · ${esc(config.formats[format].label)}</title>
+<title>${esc(config.title)} · ${esc(label)}</title>
 <link rel="stylesheet" href="../../fonts/fonts.css">
 <style>
 ${d.tokensCss.trim()}
@@ -197,7 +197,7 @@ html, body { margin: 0; padding: 0; background: transparent; }
 ${body}</body>
 </html>
 `;
-  await fs.writeFile(path.join(dir, `${format}.html`), html);
+  await fs.writeFile(path.join(dir, `${key}.html`), html);
   return { width: parseInt(rootStyle.width), height: parseInt(rootStyle.height), slots, optionals };
 }
 
@@ -206,23 +206,31 @@ function pick(o, keys) {
 }
 
 // ---------- main ----------
-const manifest = { id: config.id, title: config.title, description: config.description, formats: {}, slots: {}, optionals: {} };
-for (const [format, { nodeId, label }] of Object.entries(config.formats)) {
-  const srcFile = path.join(dir, 'source', `${format}.json`);
+// Each format of the base template, plus each variant (e.g. "no-photo") as `<format>--<variant>`.
+const manifest = { id: config.id, title: config.title, description: config.description, formats: {}, variants: {}, slots: {}, optionals: {} };
+const jobs = Object.entries(config.formats).map(([format, f]) => ({ key: format, format, variant: null, ...f }));
+for (const [variant, v] of Object.entries(config.variants ?? {})) {
+  manifest.variants[variant] = { label: v.label, when: v.when, formats: {} };
+  for (const [format, f] of Object.entries(v.formats)) jobs.push({ key: `${format}--${variant}`, format, variant, ...f });
+}
+for (const { key, format, variant, nodeId, label } of jobs) {
+  const srcFile = path.join(dir, 'source', `${key}.json`);
   let d;
   if (offline) d = JSON.parse(await fs.readFile(srcFile, 'utf8'));
   else {
     d = await dump(nodeId);
     await fs.writeFile(srcFile, JSON.stringify(d, null, 2));
   }
-  const r = await build(format, d);
-  manifest.formats[format] = { label, width: r.width, height: r.height, html: `${format}.html` };
+  const r = await build(key, label, d);
+  const entry = { label, width: r.width, height: r.height, html: `${key}.html` };
+  if (variant) manifest.variants[variant].formats[format] = entry;
+  else manifest.formats[format] = entry;
   for (const [role, s] of Object.entries(r.slots)) {
     manifest.slots[role] ??= { type: s.type, default: s.default, perFormat: {} };
-    manifest.slots[role].perFormat[format] = s.style ?? { nodes: s.nodes };
+    manifest.slots[role].perFormat[key] = s.style ?? { nodes: s.nodes };
   }
   Object.assign(manifest.optionals, r.optionals);
-  console.log(`${format}: ${r.width}×${r.height}, slots: ${Object.keys(r.slots).join(', ')}`);
+  console.log(`${key}: ${r.width}×${r.height}, slots: ${Object.keys(r.slots).join(', ')}`);
 }
 await fs.writeFile(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 console.log('manifest.json written');

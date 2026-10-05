@@ -16,11 +16,16 @@ export type Manifest = {
   title: string;
   description: string;
   formats: Record<string, { label: string; width: number; height: number; html: string }>;
+  variants?: Record<string, { label: string; when?: { empty?: string[] }; formats: Record<string, { label: string; width: number; height: number; html: string }> }>;
   slots: Record<string, { type: 'text' | 'image'; default: string; limits?: Record<string, SlotLimits> }>;
   optionals: Record<string, { contains: string[] }>;
 };
 
-export type Rules = Record<string, unknown> & { slots: Record<string, unknown>; optionals?: Manifest['optionals'] };
+export type Rules = Record<string, unknown> & {
+  slots: Record<string, unknown>;
+  optionals?: Manifest['optionals'];
+  variants?: Record<string, { slots?: Record<string, object> }>;
+};
 
 const SAFE_ID = /^[a-z0-9-]+$/;
 
@@ -53,7 +58,9 @@ export type TemplateConfig = {
   useWhen?: string;
   notWhen?: string;
   guidance?: string[];
-  requiredImages?: string[];
+  required?: string[];
+  derive?: Record<string, { from: string; firstWord?: boolean; suffix?: string }>;
+  variants?: Record<string, { label: string; when?: { empty?: string[] } }>;
 };
 
 export async function loadConfig(id: string): Promise<TemplateConfig> {

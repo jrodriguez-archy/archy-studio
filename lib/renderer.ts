@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Browser } from 'playwright-core';
-import { ROOT, loadLibrary, loadManifest, loadRules } from './templates';
+import { ROOT, loadConfig, loadLibrary, loadManifest, loadRules } from './templates';
 
 // Template files are served to the page from disk under a fake origin, so relative URLs
 // (../../fonts/fonts.css, assets/*.png) resolve the same way they do locally.
@@ -40,7 +40,15 @@ export type RenderInput = {
   format: string;
   slots: Record<string, string | null>;
   scale?: number;
+  /** Previews only: slots not given keep the template's sample copy. */
+  fillDefaults?: boolean;
 };
+
+export class MissingRequired extends Error {
+  constructor(public slots: string[]) {
+    super(`Missing required: ${slots.join(', ')}`);
+  }
+}
 
 export type RenderReport = {
   format: string;
@@ -49,13 +57,37 @@ export type RenderReport = {
   errors: { slot?: string; node?: string; code: string; message?: string; maxLength?: number; reason?: string }[];
 };
 
-export async function render({ template, format, slots, scale = 1 }: RenderInput) {
+export async function render({ template, format, slots: given, scale = 1, fillDefaults = false }: RenderInput) {
   const manifest = await loadManifest(template);
-  const f = manifest.formats[format];
-  if (!f) throw new Error(`Template ${template} has no format "${format}". Formats: ${Object.keys(manifest.formats).join(', ')}`);
-  const unknown = Object.keys(slots).filter((k) => !manifest.slots[k]);
+  const config = await loadConfig(template);
+  if (!manifest.formats[format]) throw new Error(`Template ${template} has no format "${format}". Formats: ${Object.keys(manifest.formats).join(', ')}`);
+  const unknown = Object.keys(given).filter((k) => !manifest.slots[k]);
   if (unknown.length) throw new Error(`Unknown slots: ${unknown.join(', ')}. Slots: ${Object.keys(manifest.slots).join(', ')}`);
+
+  // Every slot gets a decision: the given value, the template's sample (previews only), or empty.
+  const slots: Record<string, string | null> = {};
+  for (const [k, s] of Object.entries(manifest.slots)) {
+    const v = given[k];
+    slots[k] = v != null && v !== '' ? v : k in given || !fillDefaults ? null : s.default;
+  }
+  for (const [k, d] of Object.entries(config.derive ?? {})) {
+    const src = slots[d.from];
+    if (!slots[k] && src) slots[k] = (d.firstWord ? src.trim().split(/\s+/)[0] : src) + (d.suffix ?? '');
+  }
+  const missingRequired = (config.required ?? []).filter((k) => !slots[k]);
+  if (missingRequired.length) throw new MissingRequired(missingRequired);
+
+  // Variant: the first one whose condition matches (e.g. no photo → "no-photo").
+  const variant = Object.entries(manifest.variants ?? {}).find(([, v]) => (v.when?.empty ?? []).every((k) => !slots[k]))?.[0] ?? null;
+  const emptyImage = Object.entries(manifest.slots).find(([k, s]) => s.type === 'image' && !slots[k])?.[0];
+  if (!variant && emptyImage) throw new MissingRequired([emptyImage]);
+  const f = variant ? manifest.variants![variant].formats[format] : manifest.formats[format];
+  if (!f) throw new Error(`Template ${template} variant ${variant} has no format "${format}"`);
+
   const rules = await loadRules(template, manifest);
+  if (variant && rules.variants?.[variant]?.slots) {
+    for (const [k, o] of Object.entries(rules.variants[variant].slots)) rules.slots[k] = { ...(rules.slots[k] as object), ...o };
+  }
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
 
   const t: Record<string, number> = {};
@@ -95,7 +127,8 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
     for (const [k, v] of Object.entries(slots)) {
       values[k] = manifest.slots[k].type === 'image' && v ? await resolveImage(template, v) : v;
     }
-    const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits]));
+    const limitKey = variant ? `${format}--${variant}` : format;
+    const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));
     const report = (await page.evaluate(
       // @ts-expect-error __fill is defined by fit.js inside the page
       (a) => window.__fill(a),
@@ -115,7 +148,7 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
     mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
     mark('screenshot');
-    return { png, report, width: f.width, height: f.height, timing: t };
+    return { png, report, variant, slots, width: f.width, height: f.height, timing: t };
   } finally {
     await context.close();
   }

@@ -1,5 +1,5 @@
 {
-  "_comment": "Authored by design (not generated). Layer names are matched by prefix. 'within' is the box a slot's block must stay inside, keeping the same margin it has in the design (mirror). Values can be per format. 'scaleGroup': every text in that layer scales together with the slot (headline reads as one unit).",
+  "_comment": "Authored by design (not generated). Layer names are matched by prefix. 'within' is the box a slot's block must stay inside, keeping the same margin it has in the design (mirror). Values can be per format. 'scaleGroup': every text in that layer scales together with the slot (headline reads as one unit). 'inset' sets the margin explicitly. 'variants.<name>.slots' overrides slot rules for that variant.",
   "slots": {
     "ae-first-name": {
       "within": "Content",
@@ -8,13 +8,13 @@
       "scaleGroup": "Hero"
     },
     "ae-name": {
-      "block": "Name Plate",
+      "block": "optional-ae-plate",
       "within": "Photo Panel",
       "maxLines": 2,
       "minScale": 0.85
     },
     "ae-title": {
-      "block": "Name Plate",
+      "block": "optional-ae-plate",
       "within": "Photo Panel",
       "maxLines": 2,
       "minScale": 0.85
@@ -50,5 +50,19 @@
         ]
       }
     }
-  ]
+  ],
+  "variants": {
+    "no-photo": {
+      "slots": {
+        "ae-name": {
+          "inset": 40,
+          "checkBottom": false
+        },
+        "ae-title": {
+          "inset": 40,
+          "checkBottom": false
+        }
+      }
+    }
+  }
 }

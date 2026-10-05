@@ -21,7 +21,7 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
     const anchoredRight = block.style.right !== '' && block.style.left === '';
     baseline.set(role, {
       // Absolutely placed blocks keep a mirrored margin; in-flow text just stays inside its container.
-      inset: cs.position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left,
+      inset: r.inset ?? (cs.position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left),
       anchoredRight,
       fontSize: parseFloat(getComputedStyle(el).fontSize),
       lineHeight: parseFloat(getComputedStyle(el).lineHeight),
@@ -30,21 +30,23 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
   }
 
   // ---- Fill values ----
+  // An empty text slot is removed and the layout closes up; an optional block left with no slot
+  // content (a pill with only its dot, a plate with no name or title) is removed whole.
   for (const [role, value] of Object.entries(values)) {
     const nodes = root.querySelectorAll(`[data-slot="${role}"]`);
-    if (!nodes.length) { report.errors.push({ slot: role, code: 'unknown_slot' }); continue; }
+    if (!nodes.length) continue; // slot not present in this variant
     const empty = value == null || value === '';
-    if (empty) {
-      const opt = Object.entries(rules.optionals ?? {}).find(([, o]) => o.contains.includes(role));
-      if (opt) {
-        root.querySelectorAll(`[data-optional="${opt[0]}"]`).forEach((n) => n.remove());
-        report.slots[role] = { status: 'removed', optional: opt[0] };
-      } else report.errors.push({ slot: role, code: 'required', message: `${role} is required` });
-      continue;
-    }
     for (const n of nodes) {
-      if (n.dataset.slotType === 'image') n.style.backgroundImage = `url("${value}")`;
+      if (n.dataset.slotType === 'image') { if (!empty) n.style.backgroundImage = `url("${value}")`; }
+      else if (empty) n.remove();
       else n.textContent = value;
+    }
+    if (empty && nodes[0].dataset.slotType === 'text') report.slots[role] = { status: 'removed' };
+  }
+  for (const opt of [...root.querySelectorAll('[data-optional]')].reverse()) {
+    if (!opt.querySelector('[data-slot]')) {
+      opt.remove();
+      report.removedBlocks = [...(report.removedBlocks ?? []), opt.dataset.optional];
     }
   }
 
@@ -200,10 +202,13 @@ window.__calibrate = function calibrate({ format, formats, rules }) {
     const b = block.getBoundingClientRect();
     const t = el.getBoundingClientRect();
     const anchoredRight = block.style.right !== '' && block.style.left === '';
-    const inset = getComputedStyle(block).position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left;
+    const inset = r.inset ?? (getComputedStyle(block).position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left);
     // Room the text itself can take = its width + free space up to the bounds.
+    // Absolutely placed blocks grow away from their anchor; in-flow blocks (centred or not) can take
+    // the whole bounds minus the margins.
+    const absolute = getComputedStyle(block).position === 'absolute';
     const free = anchoredRight ? b.left - (w.left + inset) : (w.right - inset) - b.right;
-    const room = t.width + free;
+    const room = absolute ? t.width + free : (w.width - 2 * inset) - (b.width - t.width);
     const avg = t.width / el.textContent.length;
     const fs = parseFloat(getComputedStyle(el).fontSize);
     out[role] = {

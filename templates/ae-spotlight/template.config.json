@@ -17,12 +17,39 @@
   "useWhen": "A person is the message: an AE, a speaker or a team member introduced by first name, with a demo or meeting CTA.",
   "notWhen": "The ad sells a product claim, or announces an event booth.",
   "guidance": [
-    "ae-first-name: first name followed by a period (\"Sarah.\"). \"Meet\" is fixed and scales with the name.",
-    "ae-name and ae-title share the name plate: if the name needs two lines, keep the title to one line.",
-    "ae-location: city and state (\"Austin, TX\"); set uppercase by the design. Pass null to remove the pill when there is no city.",
-    "ae: the person's real photo as a cutout (transparent PNG), head and shoulders. Never generate or substitute another person's photo."
+    "ae-first-name: first name followed by a period (\"Sarah.\"). \"Meet\" is fixed and scales with the name. If only the full name is given, the first name is derived from it.",
+    "ae-name and ae-title share the name plate. Leave either out when unknown; the plate closes up, and disappears when both are missing.",
+    "ae-location: city and state (\"Austin, TX\"), set uppercase by the design. Leave it out when unknown and the pill disappears.",
+    "ae: the person's real photo as a cutout (transparent PNG). Without a photo the no-photo version is used automatically (the name plate becomes the centre of the blue panel). Never use another person's photo or generate one."
   ],
-  "requiredImages": [
-    "ae"
-  ]
+  "variants": {
+    "no-photo": {
+      "label": "No photo",
+      "when": {
+        "empty": [
+          "ae"
+        ]
+      },
+      "formats": {
+        "post": {
+          "nodeId": "488-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "49O-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "required": [
+    "ae-first-name"
+  ],
+  "derive": {
+    "ae-first-name": {
+      "from": "ae-name",
+      "firstWord": true,
+      "suffix": "."
+    }
+  }
 }

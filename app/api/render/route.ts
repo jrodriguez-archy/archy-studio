@@ -18,7 +18,9 @@ export async function GET(req: Request) {
   if (!template || !format) return Response.json({ error: 'template and format are required' }, { status: 400 });
   const slots: Record<string, string | null> = {};
   for (const [k, v] of url.searchParams) if (k.startsWith('slot.')) slots[k.slice(5)] = v === '' ? null : v;
-  return respond({ template, format, slots, scale: Number(url.searchParams.get('scale') ?? 1) }, url);
+  // No slot params at all = a preview of the template with its sample copy.
+  const fillDefaults = Object.keys(slots).length === 0;
+  return respond({ template, format, slots, scale: Number(url.searchParams.get('scale') ?? 1), fillDefaults }, url);
 }
 
 async function respond(input: Parameters<typeof render>[0], url: URL) {

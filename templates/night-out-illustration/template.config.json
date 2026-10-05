@@ -1,0 +1,38 @@
+{
+  "id": "night-out-illustration",
+  "title": "Night Out Illustration",
+  "description": "Hosted social evening (dinner, drinks, golf) with a sign-up",
+  "useWhen": "Archy is the host, there is a date, time and place, and no venue photo (or a lighter, illustrated feel is wanted).",
+  "notWhen": "it is a booth at a trade show, or a talk with a named speaker (use `Speaker Invite`).",
+  "paperFileId": "01M1F9VXX1S3JJETTVWG2H2PCD",
+  "discover": {
+    "page": "Templates",
+    "family": "Night Out Illustration"
+  },
+  "required": [
+    "headline"
+  ],
+  "guidance": [
+    "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
+    "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
+    "Leave out any fact that does not exist (booth, venue, time): its label goes with it and the layout closes up."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "FYP-1",
+      "label": "Post 1080×1350"
+    },
+    "stories": {
+      "nodeId": "G1F-1",
+      "label": "Stories 1080×1920"
+    },
+    "og": {
+      "nodeId": "G3E-1",
+      "label": "OG 1200×630"
+    },
+    "square": {
+      "nodeId": "G5D-1",
+      "label": "Square 1080×1080"
+    }
+  }
+}

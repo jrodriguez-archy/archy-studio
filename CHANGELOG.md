@@ -1,5 +1,12 @@
 # Changelog
 
+## archy-studio 0.3.0 (2026-10-05)
+
+- 19 new templates from `Master - Events` (52 formats): booth invites (Icon List, Invite Photo, Invite Offer, Light Rulers, Photo Band), day-before reminders (Countdown Mascot, Masthead, Offer), Speaker Invite, Night Out (Illustration, Venue) and the eight Event Covers. Post, Square, Stories and OG, each within 0.5% of its Paper export (one OG at 0.7%, antialiasing only).
+- Missing facts adapt every template: the value goes with its label (`Booth` + `#1039`), separators left over are removed, and an image or logo without a link is left out.
+- Partner and offer logos by https link, set at the design's height.
+- Each copy slot reports its own exact maximum when it does not fit; one long slot no longer blocks the others.
+
 ## archy-studio 0.2.1 (2026-10-05)
 
 - `AE Spotlight` no-photo version withdrawn (a full-width design without a photo will come later): the template needs the person's photo again. Missing title, city or name card copy still adapt the layout.

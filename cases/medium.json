@@ -1,1 +1,9 @@
-{ "name": "medium", "slots": { "ae-first-name": "John.", "ae-name": "John Hickmott", "ae-title": "Sr. Account Executive", "ae-location": "FORNEY, TX" } }
+{
+ "name": "medium",
+ "slots": {
+  "ae-first-name": "John.",
+  "ae-name": "John Hickmott",
+  "ae-title": "Sr. Account Executive",
+  "ae-location": "FORNEY, TX"
+ }
+}

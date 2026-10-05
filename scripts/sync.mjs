@@ -10,6 +10,21 @@ const dir = path.resolve(process.argv[2] ?? '');
 const offline = process.argv.includes('--offline');
 const config = JSON.parse(await fs.readFile(path.join(dir, 'template.config.json'), 'utf8'));
 const fileId = config.paperFileId;
+// discover: find the artboards named `TPL · <family> · <Format> <W×H>` on a page, instead of listing ids.
+if (config.discover && !offline) {
+  const info = await callJSON('get_basic_info', { fileId });
+  const page = info.pages.find((p) => p.name === config.discover.page);
+  const pi = await callJSON('get_basic_info', { fileId, pageId: page.id });
+  config.formats = {};
+  for (const a of pi.artboards) {
+    const parts = a.name.split(' · ');
+    if (parts[0] !== 'TPL' || parts.slice(1, -1).join(' · ') !== config.discover.family) continue;
+    const label = parts.at(-1);
+    config.formats[label.split(' ')[0].toLowerCase()] = { nodeId: a.id, label };
+  }
+  if (!Object.keys(config.formats).length) throw new Error(`No artboards for ${config.discover.family}`);
+  await fs.writeFile(path.join(dir, 'template.config.json'), JSON.stringify(config, null, 2) + '\n');
+}
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
 
 // ---------- 1. Dump from Paper ----------
@@ -40,7 +55,10 @@ async function dump(rootId) {
 }
 
 // ---------- 2. Helpers ----------
-const PX_PROPS = new Set(['left', 'top', 'right', 'bottom', 'width', 'height']);
+// React semantics: a bare number means px, except for these unitless properties.
+const UNITLESS = new Set(['opacity', 'zIndex', 'fontWeight', 'lineHeight', 'flex', 'flexGrow', 'flexShrink', 'order',
+  'zoom', 'orphans', 'widows', 'columnCount', 'fillOpacity', 'strokeOpacity', 'stopOpacity', 'strokeMiterlimit',
+  'aspectRatio', 'animationIterationCount', 'gridRow', 'gridColumn', 'tabSize', 'lineClamp', 'scale']);
 const kebab = (s) => s.replace(/^(Webkit|Moz)/, (m) => `-${m.toLowerCase()}`).replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -55,7 +73,7 @@ function cssText(style, { root = false } = {}) {
   const out = [];
   for (let [k, v] of Object.entries(style)) {
     if (root && ['position', 'left', 'top'].includes(k)) continue;
-    if (typeof v === 'number' && PX_PROPS.has(k)) v = `${v}px`;
+    if (typeof v === 'number' && !UNITLESS.has(k)) v = `${v}px`;
     if (k === 'fontFamily') v = normalizeFontFamily(v);
     out.push(`${kebab(k)}: ${v}`);
   }
@@ -72,9 +90,12 @@ const SVG_CAMEL_OK = new Set(['viewBox', 'preserveAspectRatio', 'gradientUnits',
 function svgFromJsx(jsx, tokens, extraAttrs, computedStyle) {
   let s = jsx.trim().replace(/^\(\s*/, '').replace(/\s*\)\s*$/, '');
   let svgStyle = {};
-  s = s.replace(/style=\{\{(.*?)\}\}/s, (_, obj) => {
-    svgStyle = Function(`return ({${obj}})`)();
-    return '__STYLE__';
+  let first = true;
+  // The root <svg> style merges with the computed one; inner elements (a <g> with opacity) keep theirs.
+  s = s.replace(/style=\{\{(.*?)\}\}/gs, (_, obj) => {
+    const st = Function(`return ({${obj}})`)();
+    if (first) { first = false; svgStyle = st; return '__STYLE__'; }
+    return `style="${esc(cssText(st))}"`;
   });
   s = s.replace(/\s([a-z]+[A-Z][A-Za-z]*)=/g, (m, a) => (SVG_CAMEL_OK.has(a) ? m : ` ${kebab(a)}=`));
   s = s.replace(/="var\((--[\w-]+)\)"/g, (m, t) => (tokens[t] ? `="${tokens[t]}"` : m));
@@ -138,8 +159,13 @@ async function build(key, label, d) {
       attrs.push(`data-slot="${m[1]}"`, 'data-slot-type="text"');
       slots[m[1]] = { type: 'text', default: n.text, style: pick(st, ['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing']) };
     }
+    if ((m = n.name.match(/^slot-logo-([\w-]+)/))) {
+      const role = `logo-${m[1]}`;
+      attrs.push(`data-slot="${role}"`, 'data-slot-type="logo"');
+      slots[role] ??= { type: 'logo', default: null };
+    }
     if (u && imageSlotByUrl[u]) {
-      const role = imageSlotByUrl[u];
+      const role = `image-${imageSlotByUrl[u]}`;
       attrs.push(`data-slot="${role}"`, 'data-slot-type="image"');
       slots[role] ??= { type: 'image', default: assetMap[u], nodes: 0 };
       slots[role].nodes++;

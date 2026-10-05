@@ -18,7 +18,7 @@
   },
   "variants": {},
   "slots": {
-    "ae": {
+    "image-ae": {
       "type": "image",
       "default": "assets/01M3D77CMZYQ847ZDQD6TGEZPD.png",
       "perFormat": {

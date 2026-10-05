@@ -55,3 +55,11 @@ export async function call(name, args) {
 export async function callJSON(name, args) {
   return JSON.parse(await call(name, args));
 }
+
+// Explicit, narrow write access for template preparation scripts (layer renames only).
+export async function renameNodes(fileId, updates) {
+  await connect();
+  const result = await rpc('tools/call', { name: 'rename_nodes', arguments: { fileId, updates } });
+  if (result.isError) throw new Error(result.content?.map((c) => c.text).join('\n'));
+  return result;
+}

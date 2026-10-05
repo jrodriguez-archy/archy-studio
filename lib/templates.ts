@@ -17,7 +17,7 @@ export type Manifest = {
   description: string;
   formats: Record<string, { label: string; width: number; height: number; html: string }>;
   variants?: Record<string, { label: string; when?: { empty?: string[] }; formats: Record<string, { label: string; width: number; height: number; html: string }> }>;
-  slots: Record<string, { type: 'text' | 'image'; default: string; limits?: Record<string, SlotLimits> }>;
+  slots: Record<string, { type: 'text' | 'image' | 'logo'; default: string; limits?: Record<string, SlotLimits> }>;
   optionals: Record<string, { contains: string[] }>;
 };
 

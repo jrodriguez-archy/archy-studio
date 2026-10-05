@@ -1,0 +1,38 @@
+{
+  "id": "countdown-masthead",
+  "title": "Countdown Masthead",
+  "description": "Day-before reminder",
+  "useWhen": "the event is tomorrow and the name should lead.",
+  "notWhen": "it is an early invitation.",
+  "paperFileId": "01M1F9VXX1S3JJETTVWG2H2PCD",
+  "discover": {
+    "page": "Templates",
+    "family": "Countdown Masthead"
+  },
+  "required": [
+    "headline"
+  ],
+  "guidance": [
+    "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
+    "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
+    "Leave out any fact that does not exist (booth, venue, time): its label goes with it and the layout closes up."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "53S-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "HPO-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "554-0",
+      "label": "Stories 1080×1920"
+    },
+    "og": {
+      "nodeId": "56G-0",
+      "label": "OG 1200×630"
+    }
+  }
+}

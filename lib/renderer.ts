@@ -125,7 +125,7 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
 
     const values: Record<string, string | null> = {};
     for (const [k, v] of Object.entries(slots)) {
-      values[k] = manifest.slots[k].type === 'image' && v ? await resolveImage(template, v) : v;
+      values[k] = (manifest.slots[k].type === 'image' || manifest.slots[k].type === 'logo') && v ? await resolveImage(template, v) : v;
     }
     const limitKey = variant ? `${format}--${variant}` : format;
     const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));

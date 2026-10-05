@@ -1,0 +1,412 @@
+{
+  "id": "booth-invite-photo",
+  "title": "Booth Invite Photo",
+  "description": "Booth invite",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    },
+    "og": {
+      "label": "OG 1200×630",
+      "width": 1200,
+      "height": 630,
+      "html": "og.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-photo": {
+      "type": "image",
+      "default": "assets/06VCA3KWP7T3TKXMSCT45BY25D.png",
+      "perFormat": {
+        "post": {
+          "nodes": 1
+        },
+        "square": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 1
+        },
+        "og": {
+          "nodes": 1
+        }
+      }
+    },
+    "booth": {
+      "type": "text",
+      "default": "#1039",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "71px",
+          "fontWeight": 900,
+          "lineHeight": "72px",
+          "letterSpacing": "-0.01em"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "71px",
+          "fontWeight": 900,
+          "lineHeight": "72px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "71px",
+          "fontWeight": 900,
+          "lineHeight": "72px",
+          "letterSpacing": "-0.01em"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 900,
+          "lineHeight": "49px",
+          "letterSpacing": "-0.01em"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 71,
+            "min": 60
+          },
+          "roomPx": 225
+        },
+        "square": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 71,
+            "min": 60
+          },
+          "roomPx": 225
+        },
+        "stories": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 71,
+            "min": 60
+          },
+          "roomPx": 225
+        },
+        "og": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 152
+        }
+      }
+    },
+    "headline": {
+      "type": "text",
+      "default": "Meet Archy at\nHinman Dental Meeting",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": 700,
+          "lineHeight": "100px",
+          "letterSpacing": "-0.01em"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "78px",
+          "fontWeight": 700,
+          "lineHeight": "84px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": 700,
+          "lineHeight": "100px",
+          "letterSpacing": "-0.01em"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "64px",
+          "fontWeight": 700,
+          "lineHeight": "68px",
+          "letterSpacing": "-0.01em"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 17,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 21,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 78,
+            "min": 66
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 17,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 22,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 760
+        }
+      }
+    },
+    "city": {
+      "type": "text",
+      "default": "Atlanta, GA",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": 600,
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 37,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 37,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 37,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 870
+        }
+      }
+    },
+    "venue": {
+      "type": "text",
+      "default": "Georgia World Congress Center",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 870
+        }
+      }
+    },
+    "date": {
+      "type": "text",
+      "default": "March 12 – 14, 2026",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 400,
+          "lineHeight": "56px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 400,
+          "lineHeight": "56px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 400,
+          "lineHeight": "56px"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 37,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 37,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 37,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 870
+        }
+      }
+    },
+    "logo-partner": {
+      "type": "logo",
+      "default": null,
+      "perFormat": {
+        "post": {},
+        "square": {},
+        "stories": {},
+        "og": {}
+      }
+    }
+  },
+  "optionals": {
+    "booth": {
+      "contains": [
+        "booth"
+      ]
+    },
+    "location": {
+      "contains": [
+        "city"
+      ]
+    },
+    "date": {
+      "contains": [
+        "date"
+      ]
+    }
+  }
+}

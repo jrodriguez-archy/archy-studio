@@ -1,6 +1,6 @@
 ---
 name: studio
-description: Make a finished Archy marketing piece (PNG) from an approved template, just by asking, with the Archy Studio tools. Use when someone wants an Archy ad or social image ready to post, such as an AE or team member spotlight for Instagram or LinkedIn, in Post or Stories size, or asks what Archy Studio can make. Not for designing something new or editing a template (that is the designers' job in Paper).
+description: Make a finished Archy marketing piece (PNG) from an approved template, just by asking, with the Archy Studio tools. Use when someone wants an Archy ad or social image ready to post: an AE or team member spotlight, a trade show booth invite, a day-before reminder, a speaker or hosted-evening invite, or an event page cover, in Post, Square, Stories, OG or Cover size, or asks what Archy Studio can make. Not for designing something new or editing a template (that is the designers' job in Paper).
 ---
 
 # Archy Studio
@@ -19,6 +19,7 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
    - Only what `get_template` marks as `required` is truly needed (for `AE Spotlight`: the name and the photo, since it has no version without a photo yet). If that is missing, say so plainly and offer another template that does not need it, if there is one.
    - Never invent names, titles, cities or numbers, and never use the template's sample text to fill a gap.
    - **Photos of people** are always that person's real photo: an approved one from `list_assets`, or a link the requester gives to a photo with the background removed (a PNG cutout). Never use another person's photo, never generate one; without a real photo, go without.
+   - **Event pieces:** ask for the event name, city, dates and booth (or time and venue for a hosted evening). Partner and sponsor logos and city or venue photos come as https links from the requester; without one, the piece goes without it.
 4. **Write the copy in US English**, even when the conversation is in another language. Keep the requester's wording.
 5. **Render.** Call `render` with the template, the slots and the formats they asked for (all formats when they did not say).
    - If a format comes back **not rendered** because the copy does not fit, shorten the copy to the maximum the tool reports, keeping the meaning (`San Francisco Bay Area, CA` → `SF Bay Area, CA`), and render again. Tell them what you shortened. If shortening would change a fact (a name, a title), ask instead.

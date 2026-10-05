@@ -1,1 +1,9 @@
-{ "name": "long-fixed", "slots": { "ae-first-name": "Max.", "ae-name": "Maximiliano Fernández", "ae-title": "Sr. Enterprise AE", "ae-location": "SF BAY AREA, CA" } }
+{
+ "name": "long-fixed",
+ "slots": {
+  "ae-first-name": "Max.",
+  "ae-name": "Maximiliano Fern\u00e1ndez",
+  "ae-title": "Sr. Enterprise AE",
+  "ae-location": "SF BAY AREA, CA"
+ }
+}

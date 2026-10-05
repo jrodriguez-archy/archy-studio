@@ -1,1 +1,9 @@
-{ "name": "no-location", "slots": { "ae-first-name": "Sarah.", "ae-name": "Sarah Thompson", "ae-title": "Account Executive", "ae-location": null } }
+{
+ "name": "no-location",
+ "slots": {
+  "ae-first-name": "Sarah.",
+  "ae-name": "Sarah Thompson",
+  "ae-title": "Account Executive",
+  "ae-location": null
+ }
+}

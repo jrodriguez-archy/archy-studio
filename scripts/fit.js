@@ -4,9 +4,19 @@
 window.__fill = function fill({ format, formats, values, rules, limits }) {
   const root = document.querySelector('body > [data-node]');
   const byName = (name) =>
-    name === '@artboard' ? root : root.querySelector(`[data-name^="${CSS.escape(name)}"]`);
-  const pick = (v) => (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).every((k) => formats.includes(k)) ? v[format] : v);
+    name instanceof Element ? name : name === '@artboard' ? root : root.querySelector(`[data-name^="${CSS.escape(name)}"]`);
+  const pick = (v) => (v && typeof v === 'object' && !(v instanceof Element) && !Array.isArray(v) && Object.keys(v).every((k) => formats.includes(k)) ? v[format] : v);
   const report = { format, ok: true, slots: {}, errors: [] };
+
+  rules = withDefaults(root, rules);
+  const containerTop = new Map((rules.containers ?? []).filter((c) => c.mirror).map((c) => {
+    const el = byName(pick(c.node));
+    return [el, el ? el.getBoundingClientRect().top - root.getBoundingClientRect().top : 0];
+  }));
+  // Optional blocks that hold slots now (decorative optional-* blocks are never pruned).
+  const optionalWithSlots = new Set([...root.querySelectorAll('[data-optional]')].filter((o) => o.querySelector('[data-slot]')));
+  // Logo frames: remember their size so a new mark is set at the same height.
+  const logoBox = new Map([...root.querySelectorAll('[data-slot-type="logo"]')].map((n) => [n, n.getBoundingClientRect()]));
 
   // ---- Baseline geometry (before any change) so "mirror" insets reflect the design. ----
   const baseline = new Map();
@@ -29,24 +39,60 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
     });
   }
 
+  // Never stricter than the design itself: whatever already "overflows" in the original is tolerated.
+  for (const [role, r] of Object.entries(rules.slots)) {
+    const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`);
+    if (!el || !baseline.has(role)) continue;
+    baseline.get(role).tol = 0;
+    baseline.get(role).tol = overflow(role, r, el);
+  }
+  const sampleText = new Map([...root.querySelectorAll('[data-slot][data-slot-type="text"]')].map((n) => [n.dataset.slot, n.textContent]));
+  const containerTol = new Map();
+  for (const c of containersOk()) containerTol.set(`${c.node}|${c.reason ?? ''}`, c.overflowPx);
+
   // ---- Fill values ----
+  const touchedParents = [];
   // An empty text slot is removed and the layout closes up; an optional block left with no slot
   // content (a pill with only its dot, a plate with no name or title) is removed whole.
   for (const [role, value] of Object.entries(values)) {
     const nodes = root.querySelectorAll(`[data-slot="${role}"]`);
     if (!nodes.length) continue; // slot not present in this variant
     const empty = value == null || value === '';
+    const touched = new Set();
     for (const n of nodes) {
-      if (n.dataset.slotType === 'image') { if (!empty) n.style.backgroundImage = `url("${value}")`; }
-      else if (empty) n.remove();
-      else n.textContent = value;
+      const type = n.dataset.slotType;
+      // An image left empty is removed (photo band, portrait) and the ground closes the gap.
+      if (type === 'image') { if (empty) { touched.add(n.parentElement); n.remove(); } else n.style.backgroundImage = `url("${value}")`; continue; }
+      if (empty) { touched.add(n.parentElement); n.remove(); continue; }
+      if (type === 'logo') {
+        const box = logoBox.get(n);
+        n.style.width = 'auto';
+        n.innerHTML = `<img src="${value.replace(/"/g, '&quot;')}" alt="" style="display:block;height:${Math.round(box.height)}px;width:auto;max-width:${Math.round(box.width * 1.6)}px;object-fit:contain">`;
+      } else n.textContent = value;
     }
-    if (empty && nodes[0].dataset.slotType === 'text') report.slots[role] = { status: 'removed' };
+    if (empty) report.slots[role] = { status: 'removed' };
+    touchedParents.push(...touched);
   }
-  for (const opt of [...root.querySelectorAll('[data-optional]')].reverse()) {
-    if (!opt.querySelector('[data-slot]')) {
+  for (const opt of [...optionalWithSlots].reverse()) {
+    if (opt.isConnected && !opt.querySelector('[data-slot]')) {
+      touchedParents.push(opt.parentElement);
       opt.remove();
       report.removedBlocks = [...(report.removedBlocks ?? []), opt.dataset.optional];
+    }
+  }
+  // Separators (Ruler / Divider) left at the start, the end or doubled in a stack that lost items go too.
+  for (const parent of new Set(touchedParents)) {
+    if (!parent?.isConnected) continue;
+    const flow = () => [...parent.children].filter((c) => getComputedStyle(c).position !== 'absolute');
+    let changed = true;
+    while (changed) {
+      changed = false;
+      const kids = flow();
+      kids.forEach((k, i) => {
+        if (!/^(Ruler|Divider)/.test(k.dataset.name ?? '')) return;
+        const isSep = (x) => x && /^(Ruler|Divider)/.test(x.dataset.name ?? '');
+        if (i === 0 || i === kids.length - 1 || isSep(kids[i + 1])) { k.remove(); changed = true; }
+      });
     }
   }
 
@@ -74,22 +120,29 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
       const x = rectOf(av), gap = a.gap ?? 0;
       if (intersects(b, x, gap)) bump(x.right + gap - b.left, `collides with ${a.node}`);
     }
-    return Math.max(0, Math.ceil(over));
+    return Math.max(0, Math.ceil(over) - (base.tol ?? 0));
   }
   function intersects(b, x, gap = 0) {
     return b.left < x.right + gap && b.right > x.left - gap && b.top < x.bottom + gap && b.bottom > x.top - gap;
   }
   function containersOk() {
     const bad = [];
+    const push = (x) => { const t = containerTol?.get(`${x.node}|${x.reason ?? ''}`) ?? 0; if (x.overflowPx > t + 0.5) bad.push({ ...x, overflowPx: x.overflowPx - t }); };
     for (const c of rules.containers ?? []) {
       const el = byName(pick(c.node));
-      if (el && el.scrollHeight > el.clientHeight + 0.5) bad.push({ node: c.node, overflowPx: el.scrollHeight - el.clientHeight });
-      if (el && el.scrollWidth > el.clientWidth + 0.5) bad.push({ node: c.node, overflowPx: el.scrollWidth - el.clientWidth });
+      const name = typeof c.node === 'string' ? c.node : c.node?.dataset?.name;
+      if (el && el.scrollHeight > el.clientHeight + 0.5) push({ node: name, overflowPx: el.scrollHeight - el.clientHeight });
+      if (el && el.scrollWidth > el.clientWidth + 0.5) push({ node: name, overflowPx: el.scrollWidth - el.clientWidth });
+      // mirror: the block may grow, but keeps at least its top margin at the bottom of the artboard.
+      if (el && c.mirror) {
+        const r = rectOf(el), a = rectOf(root), margin = containerTop.get(el) ?? 0;
+        if (r.bottom > a.bottom - margin + 0.5) push({ node: name, overflowPx: Math.ceil(r.bottom - (a.bottom - margin)), reason: 'runs past the bottom margin' });
+      }
       for (const a of pick(c.avoid) ?? []) {
         const av = byName(a.node);
         if (!el || !av) continue;
         const b = rectOf(el), x = rectOf(av);
-        if (intersects(b, x, a.gap ?? 0)) bad.push({ node: c.node, overflowPx: Math.ceil(b.bottom + (a.gap ?? 0) - x.top), reason: `collides with ${a.node}` });
+        if (intersects(b, x, a.gap ?? 0)) push({ node: c.node, overflowPx: Math.ceil(b.bottom + (a.gap ?? 0) - x.top), reason: `collides with ${a.node}` });
       }
     }
     return bad;
@@ -109,7 +162,15 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
     const base = baseline.get(role);
     const maxLines = pick(r.maxLines) ?? 1;
     const minScale = pick(r.minScale) ?? 0.85;
-    const fits = () => overflow(role, r, el) === 0 && lines(el) <= maxLines && containersOk().length === 0;
+    // Containers: this slot may not make them worse than they are with its sample copy, so one long
+    // slot is reported once instead of blocking every slot after it.
+    const keyOf = (c) => `${c.node}|${c.reason ?? ''}`;
+    const current = el.textContent;
+    el.textContent = sampleText.get(role) ?? current;
+    const allowed = new Map(containersOk().map((c) => [keyOf(c), c.overflowPx]));
+    el.textContent = current;
+    const containersFine = () => containersOk().every((c) => c.overflowPx <= (allowed.get(keyOf(c)) ?? 0) + 0.5);
+    const fits = () => overflow(role, r, el) === 0 && lines(el) <= maxLines && containersFine();
     const state = { status: 'fit', scale: 1, wrapped: false };
 
     // scaleGroup: every text node in that layer scales with the slot, so a headline stays one unit
@@ -124,8 +185,16 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
         n.style.lineHeight = `${Math.round(lh * s)}px`;
       }
     };
-    const unwrap = () => { el.style.width = 'max-content'; el.style.whiteSpace = 'pre'; el.style.textWrap = ''; };
+    // A text designed as a fixed-width block wraps on its own: keep the design's line breaking
+    // and only scale it. Only one-line (max-content) texts are rewrapped here.
+    const authored = { width: el.style.width, whiteSpace: el.style.whiteSpace, textWrap: el.style.textWrap };
+    const isBlockText = !!authored.width && !/content/.test(authored.width);
+    const unwrap = () => {
+      if (isBlockText) Object.assign(el.style, authored);
+      else { el.style.width = 'max-content'; el.style.whiteSpace = 'pre'; el.style.textWrap = ''; }
+    };
     const rewrap = () => {
+      if (isBlockText) return false;
       // Narrow the text by exactly the overflow so the block lands on its bounds.
       unwrap();
       const over = overflow(role, r, el);
@@ -168,7 +237,7 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
       report.ok = false;
       report.errors.push({
         slot: role, code: 'overflow', reason, overflowPx: over, length: text.length, maxLength: lo,
-        message: lo > 0
+        message: lo > 0 || !r.block
           ? `"${text}" (${text.length} chars) does not fit even at ${Math.round(minScale * 100)}% size (${reason}). Keep it to ${lo} characters or fewer.`
           : `No room left for "${text}" in ${pick(r.block) ?? 'its box'} after the slots before it (${reason}). Shorten ${order.slice(0, order.indexOf(role)).filter((k) => pick(rules.slots[k].block) === pick(r.block)).join(', ') || 'the other copy'} so it fits on one line.`,
       });
@@ -191,6 +260,7 @@ window.__fill = function fill({ format, formats, values, rules, limits }) {
 // as the glyph-width sample (it reflects real casing and weight).
 window.__calibrate = function calibrate({ format, formats, rules }) {
   const root = document.querySelector('body > [data-node]');
+  rules = withDefaults(root, rules);
   const byName = (name) => (name === '@artboard' ? root : root.querySelector(`[data-name^="${CSS.escape(name)}"]`));
   const pick = (v) => (v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).every((k) => formats.includes(k)) ? v[format] : v);
   const out = {};
@@ -208,8 +278,15 @@ window.__calibrate = function calibrate({ format, formats, rules }) {
     // the whole bounds minus the margins.
     const absolute = getComputedStyle(block).position === 'absolute';
     const free = anchoredRight ? b.left - (w.left + inset) : (w.right - inset) - b.right;
-    const room = absolute ? t.width + free : (w.width - 2 * inset) - (b.width - t.width);
-    const avg = t.width / el.textContent.length;
+    // Measure the glyphs, not the box: a fixed-width block is wider than its text.
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const rects = [...range.getClientRects()].filter((r) => r.width > 0);
+    const textW = rects.reduce((a, r) => a + r.width, 0);
+    const lineW = Math.max(...rects.map((r) => r.width));
+    const isBlock = !!el.style.width && !/content/.test(el.style.width);
+    const room = Math.max(lineW, isBlock ? t.width : absolute ? t.width + free : (w.width - 2 * inset) - (b.width - t.width));
+    const avg = textW / el.textContent.replace(/\n/g, '').length;
     const fs = parseFloat(getComputedStyle(el).fontSize);
     out[role] = {
       maxCharsPerLine: Math.floor(room / avg),
@@ -220,3 +297,30 @@ window.__calibrate = function calibrate({ format, formats, rules }) {
   }
   return out;
 };
+
+// Default rules for slots the template's rules.json does not cover: stay inside the nearest
+// "Content" frame (else the artboard), keep the sample's line count, shrink at most to 85%;
+// the outer Content frame must not overflow nor run past its mirrored bottom margin.
+function withDefaults(root, rules) {
+  const lines = (el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    return new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top))).size;
+  };
+  rules = { ...rules, slots: { ...rules.slots } };
+  for (const el of root.querySelectorAll('[data-slot][data-slot-type="text"]')) {
+    const role = el.dataset.slot;
+    if (rules.slots[role]) continue;
+    // The box that really holds it: the nearest ancestor with a fixed width (a badge, a pill, a column),
+    // else the Content frame, else the artboard.
+    let box = el.parentElement;
+    while (box && box !== root && !/^\d+(\.\d+)?px$/.test(box.style.width)) box = box.parentElement;
+    const content = el.parentElement.closest('[data-name="Content"]');
+    rules.slots[role] = { within: box && box !== root ? box : content ?? '@artboard', maxLines: Math.max(1, lines(el)), minScale: 0.85, auto: true };
+  }
+  if (!rules.containers) {
+    const outer = [...root.children].find((c) => c.dataset.name === 'Content');
+    rules.containers = outer ? [{ node: outer, mirror: true }] : [];
+  }
+  return rules;
+}

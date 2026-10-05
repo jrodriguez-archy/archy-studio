@@ -1,0 +1,171 @@
+{
+  "id": "event-cover-booth-offer",
+  "title": "Event Cover · Booth Offer",
+  "description": "Thumbnail of the event page in the Webflow CMS (1200×900) (Booth Offer content block)",
+  "formats": {
+    "cover": {
+      "label": "Cover 1200×900",
+      "width": 1200,
+      "height": 900,
+      "html": "cover.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-venue": {
+      "type": "image",
+      "default": "assets/7E5CC2VGQFFG0RD8ZGGQD0FX5S.png",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
+        }
+      }
+    },
+    "kicker": {
+      "type": "text",
+      "default": "Event",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px",
+          "letterSpacing": "0.02em"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "logo-partner": {
+      "type": "logo",
+      "default": null,
+      "perFormat": {
+        "cover": {}
+      }
+    },
+    "headline-1": {
+      "type": "text",
+      "default": "Join Archy at",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "94px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "98px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 16,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 94,
+            "min": 80
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "headline-2": {
+      "type": "text",
+      "default": "2026 Midwinter Meeting",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "94px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "98px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 15,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 94,
+            "min": 80
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "booth": {
+      "type": "text",
+      "default": "Booth #1211",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "52px",
+          "letterSpacing": "0.02em"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "logo-offer": {
+      "type": "logo",
+      "default": null,
+      "perFormat": {
+        "cover": {}
+      }
+    },
+    "offer": {
+      "type": "text",
+      "default": "Win prizes +\nBulls tickets",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "34px",
+          "letterSpacing": "0.02em"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 71,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1200
+        }
+      }
+    }
+  },
+  "optionals": {
+    "booth": {
+      "contains": [
+        "booth"
+      ]
+    },
+    "offer": {
+      "contains": [
+        "offer"
+      ]
+    }
+  }
+}

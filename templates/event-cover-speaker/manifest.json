@@ -1,0 +1,191 @@
+{
+  "id": "event-cover-speaker",
+  "title": "Event Cover · Speaker",
+  "description": "Thumbnail of the event page in the Webflow CMS (1200×900) (Speaker content block)",
+  "formats": {
+    "cover": {
+      "label": "Cover 1200×900",
+      "width": 1200,
+      "height": 900,
+      "html": "cover.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-venue": {
+      "type": "image",
+      "default": "assets/28WCH8BF37GTCV0TWA9P28YBG1.png",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
+        }
+      }
+    },
+    "kicker": {
+      "type": "text",
+      "default": "Event",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px",
+          "letterSpacing": "0.02em"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "logo-partner": {
+      "type": "logo",
+      "default": null,
+      "perFormat": {
+        "cover": {}
+      }
+    },
+    "headline-1": {
+      "type": "text",
+      "default": "Lead with Purpose,",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "86px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 18,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "headline-2": {
+      "type": "text",
+      "default": "Inspire with Culture",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "86px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "image-speaker": {
+      "type": "image",
+      "default": "assets/6ZV8ATH6S664ADE4GDG39ZX28C.jpg",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
+        }
+      }
+    },
+    "speaker-name": {
+      "type": "text",
+      "default": "Hollie Faust",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "56px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "62px"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 56,
+            "min": 48
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "speaker-role": {
+      "type": "text",
+      "default": "Owner and Consultant",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 71,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "speaker-company": {
+      "type": "text",
+      "default": "Bryant Consultants",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 74,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1200
+        }
+      }
+    }
+  },
+  "optionals": {
+    "speaker": {
+      "contains": [
+        "speaker-name",
+        "speaker-role",
+        "speaker-company"
+      ]
+    }
+  }
+}

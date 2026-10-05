@@ -5,6 +5,8 @@
     "title": "John Hickmott, Sr. Account Executive",
     "description": "Head-and-shoulders cutout (transparent PNG), navy Archy polo. Only for pieces about John Hickmott.",
     "file": "photos/ae-john-hickmott.png",
-    "fits": ["ae-spotlight:ae"]
+    "fits": [
+      "ae-spotlight:image-ae"
+    ]
   }
 ]

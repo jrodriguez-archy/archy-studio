@@ -1,0 +1,39 @@
+{
+  "id": "night-out-venue",
+  "title": "Night Out Venue",
+  "description": "Hosted social evening at a named venue",
+  "useWhen": "Archy hosts at a named venue and there is a good photo of it.",
+  "notWhen": "there is no venue photo (use `Night Out Illustration`).",
+  "paperFileId": "01M1F9VXX1S3JJETTVWG2H2PCD",
+  "discover": {
+    "page": "Templates",
+    "family": "Night Out Venue"
+  },
+  "required": [
+    "headline",
+    "image-venue"
+  ],
+  "guidance": [
+    "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
+    "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
+    "Leave out any fact that does not exist (booth, venue, time): its label goes with it and the layout closes up."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "G8R-1",
+      "label": "Post 1080×1350"
+    },
+    "stories": {
+      "nodeId": "GJ6-1",
+      "label": "Stories 1080×1920"
+    },
+    "og": {
+      "nodeId": "GT0-1",
+      "label": "OG 1200×630"
+    },
+    "square": {
+      "nodeId": "H2U-1",
+      "label": "Square 1080×1080"
+    }
+  }
+}

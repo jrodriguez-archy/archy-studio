@@ -1,0 +1,490 @@
+{
+  "id": "night-out-venue",
+  "title": "Night Out Venue",
+  "description": "Hosted social evening at a named venue",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    },
+    "og": {
+      "label": "OG 1200×630",
+      "width": 1200,
+      "height": 630,
+      "html": "og.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-venue": {
+      "type": "image",
+      "default": "assets/2BEBYSSVVPC4G27ANN2J3TW69R.png",
+      "perFormat": {
+        "post": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 1
+        },
+        "og": {
+          "nodes": 1
+        },
+        "square": {
+          "nodes": 1
+        }
+      }
+    },
+    "headline": {
+      "type": "text",
+      "default": "30 Dallas dentists.\nOne night out.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "104px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "104px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "64px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "66px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "88px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "92px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 19,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 100,
+            "min": 85
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 19,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 100,
+            "min": 85
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 22,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 652
+        },
+        "square": {
+          "maxCharsPerLine": 21,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 88,
+            "min": 75
+          },
+          "roomPx": 870
+        }
+      }
+    },
+    "perks": {
+      "type": "text",
+      "default": "Free golf, appetizers, drinks & socializing",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "0.02em"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "0.02em"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "21px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "28px",
+          "letterSpacing": "0.02em"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "0.02em"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 97,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 21,
+            "min": 18
+          },
+          "roomPx": 1200
+        },
+        "square": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "city": {
+      "type": "text",
+      "default": "Dallas, TX",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "52px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "60px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "52px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "60px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "36px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "48px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "56px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 45,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 52,
+            "min": 44
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 45,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 52,
+            "min": 44
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 86,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 1200
+        },
+        "square": {
+          "maxCharsPerLine": 48,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "venue": {
+      "type": "text",
+      "default": "Topgolf Dallas",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "48px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "48px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "30px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 57,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 57,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 106,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1200
+        },
+        "square": {
+          "maxCharsPerLine": 64,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "date": {
+      "type": "text",
+      "default": "Friday, October 9",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "52px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "60px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "52px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "60px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "36px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "48px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "56px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 42,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 52,
+            "min": 44
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 42,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 52,
+            "min": 44
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 81,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 1200
+        },
+        "square": {
+          "maxCharsPerLine": 45,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "time": {
+      "type": "text",
+      "default": "6:00 – 8:00 PM",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "48px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "48px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "30px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 51,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 51,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 96,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1200
+        },
+        "square": {
+          "maxCharsPerLine": 57,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        }
+      }
+    }
+  },
+  "optionals": {
+    "illustration": {
+      "contains": []
+    },
+    "perks": {
+      "contains": [
+        "perks"
+      ]
+    },
+    "location": {
+      "contains": [
+        "city",
+        "venue"
+      ]
+    },
+    "date": {
+      "contains": [
+        "date",
+        "time"
+      ]
+    }
+  }
+}

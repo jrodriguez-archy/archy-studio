@@ -1,0 +1,597 @@
+{
+  "id": "speaker-invite",
+  "title": "Speaker Invite",
+  "description": "Talk, dinner, local event",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    },
+    "og": {
+      "label": "OG 1200×630",
+      "width": 1200,
+      "height": 630,
+      "html": "og.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "logo-partner": {
+      "type": "logo",
+      "default": null,
+      "perFormat": {
+        "post": {},
+        "square": {},
+        "stories": {},
+        "og": {}
+      }
+    },
+    "headline": {
+      "type": "text",
+      "default": "Lead with Purpose, Inspire with Culture",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "92px",
+          "fontWeight": 500,
+          "lineHeight": "100px",
+          "letterSpacing": "-0.01em"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "76px",
+          "fontWeight": 500,
+          "lineHeight": "84px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "92px",
+          "fontWeight": 500,
+          "lineHeight": "100px",
+          "letterSpacing": "-0.01em"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "64px",
+          "fontWeight": 500,
+          "lineHeight": "70px",
+          "letterSpacing": "-0.01em"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 20,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 92,
+            "min": 78
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 76,
+            "min": 65
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 20,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 92,
+            "min": 78
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 720
+        }
+      }
+    },
+    "image-speaker": {
+      "type": "image",
+      "default": "assets/6ZV8ATH6S664ADE4GDG39ZX28C.jpg",
+      "perFormat": {
+        "post": {
+          "nodes": 1
+        },
+        "square": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 1
+        },
+        "og": {
+          "nodes": 1
+        }
+      }
+    },
+    "speaker-name": {
+      "type": "text",
+      "default": "Hollie Faust",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 600,
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "speaker-role": {
+      "type": "text",
+      "default": "Owner and Consultant",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 400,
+          "lineHeight": "34px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 81,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "speaker-company": {
+      "type": "text",
+      "default": "Bryant Consultants",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 400,
+          "lineHeight": "34px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 59,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 59,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 59,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "og": {
+          "maxCharsPerLine": 84,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "city": {
+      "type": "text",
+      "default": "Denver, CO",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 600,
+          "lineHeight": "56px"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 600,
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 33,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 33,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 33,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "venue": {
+      "type": "text",
+      "default": "Left Hand Brewing Company, RINO",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 45,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 45,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 45,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 870
+        }
+      }
+    },
+    "datetime": {
+      "type": "text",
+      "default": "February 24, 2026 · 6:00 pm",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 400,
+          "lineHeight": "56px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 400,
+          "lineHeight": "56px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "48px",
+          "fontWeight": 400,
+          "lineHeight": "56px"
+        },
+        "og": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 400,
+          "lineHeight": "44px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 36,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 36,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 36,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 48,
+            "min": 41
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 67,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "footer-note": {
+      "type": "text",
+      "default": "Know an office manager who could use a night out? Share this invite.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": 400,
+          "lineHeight": "30px"
+        },
+        "square": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": 400,
+          "lineHeight": "30px"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": 400,
+          "lineHeight": "30px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 76,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 76,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 76,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 870
+        }
+      }
+    }
+  },
+  "optionals": {
+    "location": {
+      "contains": [
+        "city"
+      ]
+    },
+    "date": {
+      "contains": [
+        "datetime"
+      ]
+    },
+    "footer-note": {
+      "contains": [
+        "footer-note"
+      ]
+    }
+  }
+}

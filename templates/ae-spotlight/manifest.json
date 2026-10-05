@@ -1,0 +1,198 @@
+{
+  "id": "ae-spotlight",
+  "title": "AE Spotlight",
+  "description": "Person-led spotlight for an Account Executive: name, title, photo and optional location.",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "post.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    }
+  },
+  "slots": {
+    "ae": {
+      "type": "image",
+      "default": "assets/01M3D77CMZYQ847ZDQD6TGEZPD.png",
+      "perFormat": {
+        "post": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 2
+        }
+      }
+    },
+    "ae-first-name": {
+      "type": "text",
+      "default": "John.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "124px",
+          "fontWeight": 600,
+          "lineHeight": "116px",
+          "letterSpacing": "-0.03em"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "166px",
+          "fontWeight": 600,
+          "lineHeight": "156px",
+          "letterSpacing": "-0.03em"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 7,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 124,
+            "min": 87
+          },
+          "roomPx": 495
+        },
+        "stories": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 166,
+            "min": 116
+          },
+          "roomPx": 459
+        }
+      }
+    },
+    "ae-name": {
+      "type": "text",
+      "default": "John Hickmott",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 600,
+          "lineHeight": "38px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories": {
+          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontSize": "42px",
+          "fontWeight": 600,
+          "lineHeight": "48px",
+          "letterSpacing": "-0.01em"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 18,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 305
+        },
+        "stories": {
+          "maxCharsPerLine": 35,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 42,
+            "min": 36
+          },
+          "roomPx": 786
+        }
+      }
+    },
+    "ae-title": {
+      "type": "text",
+      "default": "Sr. Account Executive",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": 500,
+          "lineHeight": "28px"
+        },
+        "stories": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 318
+        },
+        "stories": {
+          "maxCharsPerLine": 57,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 794
+        }
+      }
+    },
+    "ae-location": {
+      "type": "text",
+      "default": "FORNEY, TX",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 266
+        },
+        "stories": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        }
+      }
+    }
+  },
+  "optionals": {
+    "ae-location": {
+      "contains": [
+        "ae-location"
+      ]
+    }
+  }
+}

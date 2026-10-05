@@ -1,0 +1,7 @@
+node_modules/
+out/
+.scratch/
+.DS_Store
+.vercel
+.env*
+!.env.example

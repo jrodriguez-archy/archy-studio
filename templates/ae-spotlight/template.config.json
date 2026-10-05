@@ -1,0 +1,17 @@
+{
+  "id": "ae-spotlight",
+  "title": "AE Spotlight",
+  "description": "Person-led spotlight for an Account Executive: name, title, photo and optional location.",
+  "paperFileId": "01M4697421B4576AVJ6RKSRGE3",
+  "formats": {
+    "post": {
+      "nodeId": "45A-0",
+      "label": "Post 1080×1080"
+    },
+    "stories": {
+      "nodeId": "46Q-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "paperPage": "Templates"
+}

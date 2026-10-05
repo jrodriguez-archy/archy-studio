@@ -1,4 +1,5 @@
-import { createMcpHandler } from 'mcp-handler';
+import { createMcpHandler, withMcpAuth } from 'mcp-handler';
+import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
 import { MissingRequired, render } from '@/lib/renderer';
 import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
@@ -227,4 +228,10 @@ function publicOrigin(ctx: unknown): string {
   return process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000';
 }
 
-export { handler as GET, handler as POST, handler as DELETE };
+// Sign-in required: Claude gets a Supabase OAuth token (magic link + consent) before using the tools.
+const authed = withMcpAuth(handler, verifyMcpToken, {
+  required: true,
+  resourceMetadataPath: '/.well-known/oauth-protected-resource/mcp',
+});
+
+export { authed as GET, authed as POST, authed as DELETE };

@@ -22,7 +22,10 @@ async function getBrowser(): Promise<Browser> {
     const { chromium } = await import('playwright-core');
     if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
       const sparticuz = (await import('@sparticuz/chromium')).default;
-      return chromium.launch({ executablePath: await sparticuz.executablePath(), args: sparticuz.args, headless: true });
+      // --single-process leaves Chromium unusable once a context closes, which hangs the next
+      // request on a reused (warm) function instance.
+      const args = sparticuz.args.filter((a: string) => a !== '--single-process');
+      return chromium.launch({ executablePath: await sparticuz.executablePath(), args, headless: true });
     }
     // Local: the Chromium downloaded by `npx playwright install chromium`.
     return chromium.launch({ headless: true });
@@ -58,12 +61,17 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
   const t: Record<string, number> = {};
   let t0 = Date.now();
   const mark = (k: string) => { t[k] = Date.now() - t0; t0 = Date.now(); };
-  const browser = await getBrowser();
+  const contextOptions = { viewport: { width: f.width, height: f.height }, deviceScaleFactor: Math.min(Math.max(scale, 1), 3) };
+  let browser = await getBrowser();
+  // A warm instance can hold a dead browser: if it does not answer quickly, start a fresh one.
+  let context = await withTimeout(browser.newContext(contextOptions), 5000).catch(() => null);
+  if (!context) {
+    await browser.close().catch(() => {});
+    browserPromise = null;
+    browser = await getBrowser();
+    context = await browser.newContext(contextOptions);
+  }
   mark('browser');
-  const context = await browser.newContext({
-    viewport: { width: f.width, height: f.height },
-    deviceScaleFactor: Math.min(Math.max(scale, 1), 3),
-  });
   try {
     const page = await context.newPage();
     await page.route(`${ORIGIN}/**`, async (route) => {
@@ -112,4 +120,8 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
   } finally {
     await context.close();
   }
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([p, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
 }

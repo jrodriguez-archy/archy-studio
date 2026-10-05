@@ -14,9 +14,9 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 1. **Pick the template.** Call `list_templates` and choose the one whose `use_when` fits the request. If none fits, say so in one line and suggest asking Marketing & Design; do not improvise a design.
 2. **Read its slots.** Call `get_template`. Note what is required, what can be removed, and the length limits.
 3. **Ask once, then go ahead with what there is.** The templates adapt to the information available, so a missing fact never blocks the piece.
-   - In one short message, ask for the facts the request does not give (photo, title, city...) and say what happens without them ("without a photo I'll use the version with the name card in the blue panel; without a city the pill goes away"). If they answer "no", "don't have it" or "go ahead", render with what there is.
-   - Missing copy is left out and the layout closes up; a block with nothing left (the city pill, the name plate) disappears; without a photo the template switches to its no-photo version. All of this is automatic: just leave the slot out.
-   - Only the template's core fact is truly needed (for a spotlight, the person's name). If even that is missing, ask for it.
+   - In one short message, ask for the facts the request does not give (photo, title, city...) and say what happens without them ("without a title the name card shows only the name; without a city the pill goes away"). If they answer "no", "don't have it" or "go ahead", render with what there is.
+   - Missing copy is left out and the layout closes up; a block with nothing left (the city pill, the name plate) disappears; a template with a no-photo version switches to it when there is no photo. All of this is automatic: just leave the slot out.
+   - Only what `get_template` marks as `required` is truly needed (for `AE Spotlight`: the name and the photo, since it has no version without a photo yet). If that is missing, say so plainly and offer another template that does not need it, if there is one.
    - Never invent names, titles, cities or numbers, and never use the template's sample text to fill a gap.
    - **Photos of people** are always that person's real photo: an approved one from `list_assets`, or a link the requester gives to a photo with the background removed (a PNG cutout). Never use another person's photo, never generate one; without a real photo, go without.
 4. **Write the copy in US English**, even when the conversation is in another language. Keep the requester's wording.

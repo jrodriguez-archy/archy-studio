@@ -20,30 +20,11 @@
     "ae-first-name: first name followed by a period (\"Sarah.\"). \"Meet\" is fixed and scales with the name. If only the full name is given, the first name is derived from it.",
     "ae-name and ae-title share the name plate. Leave either out when unknown; the plate closes up, and disappears when both are missing.",
     "ae-location: city and state (\"Austin, TX\"), set uppercase by the design. Leave it out when unknown and the pill disappears.",
-    "ae: the person's real photo as a cutout (transparent PNG). Without a photo the no-photo version is used automatically (the name plate becomes the centre of the blue panel). Never use another person's photo or generate one."
+    "ae: the person's real photo as a cutout (transparent PNG), head and shoulders. Required: this template has no version without a photo yet. Never use another person's photo or generate one."
   ],
-  "variants": {
-    "no-photo": {
-      "label": "No photo",
-      "when": {
-        "empty": [
-          "ae"
-        ]
-      },
-      "formats": {
-        "post": {
-          "nodeId": "488-0",
-          "label": "Post 1080×1080"
-        },
-        "stories": {
-          "nodeId": "49O-0",
-          "label": "Stories 1080×1920"
-        }
-      }
-    }
-  },
   "required": [
-    "ae-first-name"
+    "ae-first-name",
+    "ae"
   ],
   "derive": {
     "ae-first-name": {

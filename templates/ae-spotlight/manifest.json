@@ -16,30 +16,7 @@
       "html": "stories.html"
     }
   },
-  "variants": {
-    "no-photo": {
-      "label": "No photo",
-      "when": {
-        "empty": [
-          "ae"
-        ]
-      },
-      "formats": {
-        "post": {
-          "label": "Post 1080×1080",
-          "width": 1080,
-          "height": 1080,
-          "html": "post--no-photo.html"
-        },
-        "stories": {
-          "label": "Stories 1080×1920",
-          "width": 1080,
-          "height": 1920,
-          "html": "stories--no-photo.html"
-        }
-      }
-    }
-  },
+  "variants": {},
   "slots": {
     "ae": {
       "type": "image",
@@ -70,20 +47,6 @@
           "fontWeight": 600,
           "lineHeight": "156px",
           "letterSpacing": "-0.03em"
-        },
-        "post--no-photo": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
-          "fontSize": "124px",
-          "fontWeight": 600,
-          "lineHeight": "116px",
-          "letterSpacing": "-0.03em"
-        },
-        "stories--no-photo": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
-          "fontSize": "166px",
-          "fontWeight": 600,
-          "lineHeight": "156px",
-          "letterSpacing": "-0.03em"
         }
       },
       "limits": {
@@ -97,24 +60,6 @@
           "roomPx": 495
         },
         "stories": {
-          "maxCharsPerLine": 10,
-          "maxLines": 1,
-          "fontSize": {
-            "max": 166,
-            "min": 116
-          },
-          "roomPx": 870
-        },
-        "post--no-photo": {
-          "maxCharsPerLine": 7,
-          "maxLines": 1,
-          "fontSize": {
-            "max": 124,
-            "min": 87
-          },
-          "roomPx": 495
-        },
-        "stories--no-photo": {
           "maxCharsPerLine": 10,
           "maxLines": 1,
           "fontSize": {
@@ -142,20 +87,6 @@
           "fontWeight": 600,
           "lineHeight": "48px",
           "letterSpacing": "-0.01em"
-        },
-        "post--no-photo": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
-          "fontSize": "44px",
-          "fontWeight": 600,
-          "lineHeight": "52px",
-          "letterSpacing": "-0.01em"
-        },
-        "stories--no-photo": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
-          "fontSize": "64px",
-          "fontWeight": 600,
-          "lineHeight": "72px",
-          "letterSpacing": "-0.01em"
         }
       },
       "limits": {
@@ -176,24 +107,6 @@
             "min": 36
           },
           "roomPx": 786
-        },
-        "post--no-photo": {
-          "maxCharsPerLine": 13,
-          "maxLines": 2,
-          "fontSize": {
-            "max": 44,
-            "min": 37
-          },
-          "roomPx": 306
-        },
-        "stories--no-photo": {
-          "maxCharsPerLine": 26,
-          "maxLines": 2,
-          "fontSize": {
-            "max": 64,
-            "min": 54
-          },
-          "roomPx": 884
         }
       }
     },
@@ -212,18 +125,6 @@
           "fontSize": "28px",
           "fontWeight": 500,
           "lineHeight": "34px"
-        },
-        "post--no-photo": {
-          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
-          "fontSize": "28px",
-          "fontWeight": 500,
-          "lineHeight": "34px"
-        },
-        "stories--no-photo": {
-          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
-          "fontSize": "38px",
-          "fontWeight": 500,
-          "lineHeight": "46px"
         }
       },
       "limits": {
@@ -244,24 +145,6 @@
             "min": 24
           },
           "roomPx": 794
-        },
-        "post--no-photo": {
-          "maxCharsPerLine": 21,
-          "maxLines": 2,
-          "fontSize": {
-            "max": 28,
-            "min": 24
-          },
-          "roomPx": 300
-        },
-        "stories--no-photo": {
-          "maxCharsPerLine": 44,
-          "maxLines": 2,
-          "fontSize": {
-            "max": 38,
-            "min": 32
-          },
-          "roomPx": 846
         }
       }
     },
@@ -282,20 +165,6 @@
           "fontWeight": 600,
           "lineHeight": "30px",
           "letterSpacing": "0.06em"
-        },
-        "post--no-photo": {
-          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
-          "fontSize": "20px",
-          "fontWeight": 600,
-          "lineHeight": "24px",
-          "letterSpacing": "0.06em"
-        },
-        "stories--no-photo": {
-          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
-          "fontSize": "26px",
-          "fontWeight": 600,
-          "lineHeight": "30px",
-          "letterSpacing": "0.06em"
         }
       },
       "limits": {
@@ -309,24 +178,6 @@
           "roomPx": 266
         },
         "stories": {
-          "maxCharsPerLine": 46,
-          "maxLines": 1,
-          "fontSize": {
-            "max": 26,
-            "min": 22
-          },
-          "roomPx": 793
-        },
-        "post--no-photo": {
-          "maxCharsPerLine": 20,
-          "maxLines": 1,
-          "fontSize": {
-            "max": 20,
-            "min": 17
-          },
-          "roomPx": 266
-        },
-        "stories--no-photo": {
           "maxCharsPerLine": 46,
           "maxLines": 1,
           "fontSize": {

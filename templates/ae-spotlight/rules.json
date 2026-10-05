@@ -50,19 +50,5 @@
         ]
       }
     }
-  ],
-  "variants": {
-    "no-photo": {
-      "slots": {
-        "ae-name": {
-          "inset": 40,
-          "checkBottom": false
-        },
-        "ae-title": {
-          "inset": 40,
-          "checkBottom": false
-        }
-      }
-    }
-  }
+  ]
 }

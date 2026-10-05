@@ -13,13 +13,13 @@ The templates adapt to the information available: always deliver something good 
 Workflow:
 1. list_templates, pick the template that fits (use_when / not_when). If none fits, say so; do not improvise a design.
 2. get_template for its slots, variants, limits and formats.
-3. Be proactive, once: in one short message, ask for the facts the request does not give (photo, title, city...) and say what the piece will look like without them. If they do not have them, or say to go ahead, render without them: missing copy is left out and the layout closes up, a block with nothing left disappears, and templates with a photo switch to their no-photo version. Never invent facts, names or titles, and never fill a gap with the template's sample text.
+3. Be proactive, once: in one short message, ask for the facts the request does not give (photo, title, city...) and say what the piece will look like without them. If they do not have them, or say to go ahead, render without them: missing copy is left out and the layout closes up, a block with nothing left disappears, and a template with a no-photo version switches to it. Only what get_template marks as required blocks a piece; then say so and offer another template if one fits. Never invent facts, names or titles, and never fill a gap with the template's sample text.
 4. render. If copy does not fit, the format is refused with the exact maximum: shorten keeping the requester's wording (or ask), then render again. Never deliver a refused render.
 5. Show the image and give the download link. Say in one line what was adapted (left out, no-photo version, shortened).
 
 Brand rules:
 - All copy on the piece is in US English, even when the conversation is not.
-- Photos of people are always the person's real photo, from the approved library (list_assets) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo; without a photo, render without one.
+- Photos of people are always the person's real photo, from the approved library (list_assets) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo.
 - Keep the template's fixed text and design as they are; only the slots change.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };

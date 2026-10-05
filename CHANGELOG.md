@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.2.1 (2026-10-05)
+
+- `AE Spotlight` no-photo version withdrawn (a full-width design without a photo will come later): the template needs the person's photo again. Missing title, city or name card copy still adapt the layout.
+
 ## archy-studio 0.2.0 (2026-10-05)
 
 - Pieces adapt to the information available instead of refusing: missing copy is left out and the layout closes up, a block left empty (city pill, name plate) disappears, and a missing photo switches to the template's no-photo version.

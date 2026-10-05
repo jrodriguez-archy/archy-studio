@@ -1,4 +1,4 @@
-export const metadata = { title: 'Archy Marketing MCP', description: 'Archy templates rendered from Paper' };
+export const metadata = { title: 'Archy Studio', description: 'Archy templates rendered from Paper' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

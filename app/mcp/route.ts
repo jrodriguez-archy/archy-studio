@@ -6,7 +6,7 @@ import { listTemplates, loadConfig, loadLibrary, loadManifest } from '@/lib/temp
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const INSTRUCTIONS = `Archy marketing templates. Turn a request ("an Instagram ad introducing Sarah, our AE in Austin") into a finished PNG built from Archy's approved Paper templates.
+const INSTRUCTIONS = `Archy Studio: Archy marketing templates. Turn a request ("an Instagram ad introducing Sarah, our AE in Austin") into a finished PNG built from Archy's approved Paper templates.
 
 Workflow:
 1. list_templates, pick the template that fits (use_when / not_when). If none fits, say so; do not improvise a design.
@@ -150,7 +150,7 @@ const handler = createMcpHandler(
     );
   },
   {
-    serverInfo: { name: 'archy-marketing', version: '0.1.0' },
+    serverInfo: { name: 'archy-studio', version: '0.1.0' },
     instructions: INSTRUCTIONS,
   },
 );

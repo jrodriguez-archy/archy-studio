@@ -58,7 +58,13 @@ export type TemplateConfig = {
   useWhen?: string;
   notWhen?: string;
   guidance?: string[];
-  required?: string[];
+  purpose?: string;
+  /** Slots the template cannot go without; anything not listed in optional counts as essential. */
+  essential?: string[];
+  /** Minor slots that may be left out (value and label go, the layout closes up). */
+  optional?: string[];
+  /** The brief fact each slot needs; null = copy written from the brief. */
+  facts?: Record<string, string | null>;
   derive?: Record<string, { from: string; firstWord?: boolean; suffix?: string }>;
   variants?: Record<string, { label: string; when?: { empty?: string[] } }>;
 };

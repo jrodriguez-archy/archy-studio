@@ -74,13 +74,14 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
     const src = slots[d.from];
     if (!slots[k] && src) slots[k] = (d.firstWord ? src.trim().split(/\s+/)[0] : src) + (d.suffix ?? '');
   }
-  const missingRequired = (config.required ?? []).filter((k) => !slots[k]);
-  if (missingRequired.length) throw new MissingRequired(missingRequired);
+  // Everything not marked optional is essential: a template never goes out half empty.
+  const optional = new Set(config.optional ?? []);
+  const missingEssential = Object.keys(manifest.slots).filter((k) => !optional.has(k) && !slots[k] && slotInFormat(manifest, k, format));
+  if (missingEssential.length && !fillDefaults) throw new MissingRequired(missingEssential);
 
   // Variant: the first one whose condition matches (e.g. no photo → "no-photo").
   const variant = Object.entries(manifest.variants ?? {}).find(([, v]) => (v.when?.empty ?? []).every((k) => !slots[k]))?.[0] ?? null;
-  const emptyImage = Object.entries(manifest.slots).find(([k, s]) => s.type === 'image' && !slots[k])?.[0];
-  if (!variant && emptyImage) throw new MissingRequired([emptyImage]);
+
   const f = variant ? manifest.variants![variant].formats[format] : manifest.formats[format];
   if (!f) throw new Error(`Template ${template} variant ${variant} has no format "${format}"`);
 
@@ -162,6 +163,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 // Image slot values: `asset:<id>` from the approved library, an https URL, or a path inside the template.
 // Logos are inlined as data URLs so the page can use them as a CSS mask (no cross-origin limits).
 async function resolveLogo(template: string, v: string): Promise<string> {
+  if (v.startsWith('data:image/')) return v;
   const src = await resolveImage(template, v);
   if (src.startsWith(ORIGIN)) {
     const rel = decodeURIComponent(new URL(src).pathname).replace(/^\/+/, '');
@@ -185,4 +187,10 @@ async function resolveImage(template: string, v: string): Promise<string> {
   }
   if (/^https:\/\//.test(v)) return v;
   return `${ORIGIN}/templates/${template}/${v}`;
+}
+
+// Slots can be absent from some formats (an OG without the venue line).
+function slotInFormat(manifest: Awaited<ReturnType<typeof loadManifest>>, slot: string, format: string) {
+  const per = (manifest.slots[slot] as { perFormat?: Record<string, unknown> }).perFormat;
+  return !per || format in per;
 }

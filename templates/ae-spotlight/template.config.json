@@ -22,15 +22,28 @@
     "ae-location: city and state (\"Austin, TX\"), set uppercase by the design. Leave it out when unknown and the pill disappears.",
     "image-ae: the person's real photo as a cutout (transparent PNG), head and shoulders. Required: this template has no version without a photo yet. Never use another person's photo or generate one."
   ],
-  "required": [
-    "ae-first-name",
-    "image-ae"
-  ],
   "derive": {
     "ae-first-name": {
       "from": "ae-name",
       "firstWord": true,
       "suffix": "."
     }
+  },
+  "purpose": "spotlight",
+  "essential": [
+    "ae-first-name",
+    "image-ae"
+  ],
+  "optional": [
+    "ae-name",
+    "ae-title",
+    "ae-location"
+  ],
+  "facts": {
+    "ae-location": "city",
+    "image-ae": "person-photo",
+    "ae-name": "person",
+    "ae-title": "person-title",
+    "ae-first-name": "person"
   }
 }

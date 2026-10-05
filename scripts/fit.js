@@ -74,23 +74,47 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       if (type === 'image') { if (empty) { touched.add(n.parentElement); n.remove(); } else n.style.backgroundImage = `url("${value}")`; continue; }
       if (empty) { touched.add(n.parentElement); n.remove(); continue; }
       if (type === 'logo') {
-        // A partner mark is one colour on the piece: the colour of the template's own sample mark
-        // (white on blue, navy on a white card). It keeps its proportions at the design's height.
+        // A partner mark is one colour on the piece (the colour of the template's sample mark) and is
+        // sized optically: same visible ink as the sample the designer balanced against the Archy
+        // wordmark, measured without the file's transparent margins, then centred in the slot.
         const box = logoBox.get(n);
         const shape = n.querySelector('path, rect, circle, polygon, ellipse');
         const color = (shape && getComputedStyle(shape).fill.startsWith('rgb') && getComputedStyle(shape).fill) || getComputedStyle(n).color;
-        const img = new Image();
-        img.src = value;
-        await img.decode().catch(() => {});
-        const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 3;
-        let h = box.height, w = h * ratio;
-        if (w > box.width * 1.25) { w = box.width * 1.25; h = w / ratio; }
+        // Reference: the Archy wordmark in the same lockup (the partner mark should weigh the same);
+        // without one, the template's own sample mark.
+        const lockup = n.closest('[data-name="Logo Lockup"]') ?? n.parentElement;
+        const archy = [...lockup.querySelectorAll('svg')].find((x) => /^Logo Archy|Archy Wordmark/.test(x.dataset.name ?? ''));
+        const sample = (archy && await sampleInk(archy)) || await sampleInk(n);
+        const mark = await inkStats(value);
+        let h = sample ? sample.h : box.height, w = h * (mark ? mark.bw / mark.bh : 3);
+        if (sample && mark) {
+          const aspect = mark.bw / mark.bh;
+          h = Math.sqrt(sample.ink / (mark.density * aspect));
+          h = Math.min(Math.max(h, sample.h * 0.6), sample.h * 1.3, box.height);
+          w = h * aspect;
+          // Width: the room the design gives the partner mark (its sample frame), with a little slack.
+          const maxW = Math.max(box.width, sample.w) * 1.25;
+          if (w > maxW) { w = maxW; h = w / aspect; }
+          (report.logos ??= {})[role] = { ref: archy ? 'archy' : 'sample', refH: Math.round(sample.h), refInk: Math.round(sample.ink), density: +mark.density.toFixed(3), aspect: +aspect.toFixed(2), boxH: Math.round(box.height), w: Math.round(w), h: Math.round(h) };
+        }
+        const k = mark ? h / mark.bh : 1;
         n.style.width = 'auto';
-        const mark = document.createElement('div');
-        mark.dataset.logoMark = '';
-        Object.assign(mark.style, { width: `${Math.round(w)}px`, height: `${Math.round(h)}px`, backgroundColor: color });
-        for (const prop of ['mask', '-webkit-mask']) mark.style.setProperty(prop, `url("${value}") center / contain no-repeat`);
-        n.replaceChildren(mark);
+        n.style.display = 'flex';
+        n.style.alignItems = 'center';
+        n.style.justifyContent = 'flex-end';
+        n.style.height = `${Math.round(box.height)}px`;
+        const el = document.createElement('div');
+        el.dataset.logoMark = '';
+        Object.assign(el.style, { width: `${Math.round(w)}px`, height: `${Math.round(h)}px`, backgroundColor: color, flexShrink: '0' });
+        const pos = mark ? `${-mark.bx * k}px ${-mark.by * k}px` : 'center';
+        const size = mark ? `${mark.nw * k}px ${mark.nh * k}px` : 'contain';
+        for (const pre of ['', '-webkit-']) {
+          el.style.setProperty(`${pre}mask-image`, `url("${value}")`);
+          el.style.setProperty(`${pre}mask-repeat`, 'no-repeat');
+          el.style.setProperty(`${pre}mask-position`, pos);
+          el.style.setProperty(`${pre}mask-size`, size);
+        }
+        n.replaceChildren(el);
       } else n.textContent = value;
     }
     if (empty) report.slots[role] = { status: 'removed' };
@@ -355,4 +379,50 @@ function withDefaults(root, rules) {
     rules.containers = outer ? [{ node: outer, mirror: true }] : [];
   }
   return rules;
+}
+
+// Ink of an image: bounding box of its visible pixels (alpha > 10%) and how much of that box is ink.
+async function inkStats(src) {
+  const img = new Image();
+  img.src = src;
+  try { await img.decode(); } catch { return null; }
+  let nw = img.naturalWidth, nh = img.naturalHeight;
+  if (!nw || !nh) { nw = 600; nh = 200; } // SVG without intrinsic size
+  const scale = Math.min(1, 1600 / Math.max(nw, nh));
+  const cw = Math.max(1, Math.round(nw * scale)), ch = Math.max(1, Math.round(nh * scale));
+  const cv = document.createElement('canvas');
+  cv.width = cw; cv.height = ch;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, cw, ch);
+  const { data } = ctx.getImageData(0, 0, cw, ch);
+  let x0 = cw, y0 = ch, x1 = -1, y1 = -1, ink = 0;
+  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+    const a = data[(y * cw + x) * 4 + 3];
+    if (a > 25) { ink += a / 255; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) return null;
+  const bw = (x1 - x0 + 1) / scale, bh = (y1 - y0 + 1) / scale;
+  return { nw, nh, bx: x0 / scale, by: y0 / scale, bw, bh, density: ink / ((x1 - x0 + 1) * (y1 - y0 + 1)) };
+}
+
+// Ink of the template's own sample mark, at the size it is drawn on the piece.
+async function sampleInk(frame) {
+  const svg = frame.tagName.toLowerCase() === 'svg' ? frame : frame.querySelector('svg');
+  if (!svg) return null;
+  const r = svg.getBoundingClientRect();
+  if (!r.width || !r.height) return null;
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('width', r.width * 2);
+  clone.setAttribute('height', r.height * 2);
+  clone.removeAttribute('style');
+  for (const el of clone.querySelectorAll('*')) {
+    if (el.getAttribute('fill') !== 'none') el.setAttribute('fill', '#000');
+    if (el.getAttribute('stroke') && el.getAttribute('stroke') !== 'none') el.setAttribute('stroke', '#000');
+  }
+  if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const st = await inkStats('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(clone.outerHTML));
+  if (!st) return null;
+  const k = r.width / st.nw; // canvas px -> rendered px
+  const w = st.bw * k, h = st.bh * k;
+  return { w, h, ink: st.density * w * h };
 }

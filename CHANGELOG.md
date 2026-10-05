@@ -1,5 +1,11 @@
 # Changelog
 
+## archy-studio 0.4.0 (2026-10-05)
+
+- Brief first: Claude reads the whole brief, lists its facts and calls the new `match_templates` tool, which returns the templates that can be made with them (best first) and what the others are missing. It asks once for what would unlock a better template, then chooses.
+- Every template has essential content and minor optional details: a template never goes out half empty. Without its essentials the render is refused with alternatives of the same purpose; an optional detail is left out with its label (no time: the date stays alone).
+- Partner and offer logos are sized optically: same visible ink as the Archy wordmark, measured without the file's transparent margins, within the room the design gives them, centred and in one colour.
+
 ## archy-studio 0.3.0 (2026-10-05)
 
 - 19 new templates from `Master - Events` (52 formats): booth invites (Icon List, Invite Photo, Invite Offer, Light Rulers, Photo Band), day-before reminders (Countdown Mascot, Masthead, Offer), Speaker Invite, Night Out (Illustration, Venue) and the eight Event Covers. Post, Square, Stories and OG, each within 0.5% of its Paper export (one OG at 0.7%, antialiasing only).

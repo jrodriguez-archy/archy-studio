@@ -9,9 +9,6 @@
     "page": "Templates",
     "family": "Countdown Mascot"
   },
-  "required": [
-    "headline"
-  ],
   "guidance": [
     "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
     "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
@@ -34,5 +31,24 @@
       "nodeId": "4BU-0",
       "label": "OG 1200×630"
     }
+  },
+  "purpose": "reminder",
+  "essential": [
+    "headline",
+    "city",
+    "booth"
+  ],
+  "optional": [
+    "kicker",
+    "venue",
+    "logo-partner"
+  ],
+  "facts": {
+    "logo-partner": "partner-logo",
+    "booth": "booth",
+    "kicker": "event-name",
+    "city": "city",
+    "venue": "venue",
+    "headline": "event-name"
   }
 }

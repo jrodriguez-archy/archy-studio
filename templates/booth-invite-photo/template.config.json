@@ -9,9 +9,6 @@
     "page": "Templates",
     "family": "Booth Invite Photo"
   },
-  "required": [
-    "headline"
-  ],
   "guidance": [
     "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
     "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
@@ -34,5 +31,26 @@
       "nodeId": "46V-0",
       "label": "OG 1200×630"
     }
+  },
+  "purpose": "booth-invite",
+  "essential": [
+    "headline",
+    "city",
+    "date",
+    "booth",
+    "image-photo"
+  ],
+  "optional": [
+    "venue",
+    "logo-partner"
+  ],
+  "facts": {
+    "logo-partner": "partner-logo",
+    "booth": "booth",
+    "city": "city",
+    "venue": "venue",
+    "image-photo": "city-photo",
+    "date": "date",
+    "headline": "event-name"
   }
 }

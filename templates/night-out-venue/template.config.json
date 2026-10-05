@@ -9,10 +9,6 @@
     "page": "Templates",
     "family": "Night Out Venue"
   },
-  "required": [
-    "headline",
-    "image-venue"
-  ],
   "guidance": [
     "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
     "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
@@ -35,5 +31,26 @@
       "nodeId": "H2U-1",
       "label": "Square 1080×1080"
     }
+  },
+  "purpose": "hosted-evening",
+  "essential": [
+    "headline",
+    "image-venue",
+    "venue",
+    "date"
+  ],
+  "optional": [
+    "city",
+    "time",
+    "perks"
+  ],
+  "facts": {
+    "perks": null,
+    "time": "time",
+    "city": "city",
+    "venue": "venue",
+    "headline": "event-name",
+    "date": "date",
+    "image-venue": "venue-photo"
   }
 }

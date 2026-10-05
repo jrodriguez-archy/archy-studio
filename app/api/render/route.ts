@@ -24,7 +24,7 @@ export async function GET(req: Request) {
 async function respond(input: Parameters<typeof render>[0], url: URL) {
   const started = Date.now();
   try {
-    const { png, report } = await render(input);
+    const { png, report, timing } = await render(input);
     const ms = Date.now() - started;
     if (url.searchParams.get('json')) {
       return Response.json({ ok: report.ok, report, ms, image: `data:image/png;base64,${png.toString('base64')}` }, { status: report.ok ? 200 : 422 });
@@ -35,6 +35,7 @@ async function respond(input: Parameters<typeof render>[0], url: URL) {
         'Content-Type': 'image/png',
         'X-Render-Ok': String(report.ok),
         'X-Render-Ms': String(ms),
+        'X-Render-Timing': JSON.stringify(timing),
         'X-Render-Report': Buffer.from(JSON.stringify(report)).toString('base64'),
         'Cache-Control': 'no-store',
       },

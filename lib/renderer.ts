@@ -55,7 +55,11 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
   const rules = await loadRules(template, manifest);
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
 
+  const t: Record<string, number> = {};
+  let t0 = Date.now();
+  const mark = (k: string) => { t[k] = Date.now() - t0; t0 = Date.now(); };
   const browser = await getBrowser();
+  mark('browser');
   const context = await browser.newContext({
     viewport: { width: f.width, height: f.height },
     deviceScaleFactor: Math.min(Math.max(scale, 1), 3),
@@ -75,6 +79,7 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
       }
     });
     await page.goto(`${ORIGIN}/templates/${template}/${f.html}`, { waitUntil: 'load' });
+    mark('load');
     await page.addScriptTag({ content: fitJs });
     await page.evaluate(() => document.fonts.ready);
 
@@ -89,6 +94,7 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
       (a) => window.__fill(a),
       { format, formats: Object.keys(manifest.formats), values, rules, limits },
     )) as RenderReport;
+    mark('fit');
 
     await page.evaluate(async () => {
       await document.fonts.ready;
@@ -99,8 +105,10 @@ export async function render({ template, format, slots, scale = 1 }: RenderInput
       }
       await Promise.all([...urls].map((u) => new Promise((res) => { const i = new Image(); i.onload = i.onerror = res; i.src = u; })));
     });
+    mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
-    return { png, report, width: f.width, height: f.height };
+    mark('screenshot');
+    return { png, report, width: f.width, height: f.height, timing: t };
   } finally {
     await context.close();
   }

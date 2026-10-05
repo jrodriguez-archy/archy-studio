@@ -2,6 +2,8 @@ import { createMcpHandler } from 'mcp-handler';
 import { z } from 'zod';
 import { MissingRequired, render } from '@/lib/renderer';
 import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
+import { saveRender } from '@/lib/renders';
+import { supabaseConfigured } from '@/lib/supabase/admin';
 import { listTemplates, loadConfig, loadLibrary, loadManifest } from '@/lib/templates';
 
 export const runtime = 'nodejs';
@@ -170,9 +172,20 @@ const handler = createMcpHandler(
             refused.push(`${format}: ` + report.errors.map((e) => `${e.slot ?? e.node}: ${e.message}`).join(' | '));
             continue;
           }
-          // Download link carries every decision explicitly (empty = left out), so it renders the same piece.
-          const q = new URLSearchParams({ template, format, scale: '2' });
-          for (const [k, v] of Object.entries(used)) q.set(`slot.${k}`, v ?? '');
+          // The 2x file goes to the shared gallery (Supabase) and the link is a signed download.
+          // Without Supabase configured, the link re-renders the same piece (every decision explicit).
+          let download: string;
+          const saved = supabaseConfigured()
+            ? await render({ template, format, slots, scale: 2 }).then((hi) => saveRender({
+                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2,
+              }))
+            : null;
+          if (saved) download = saved.url;
+          else {
+            const q = new URLSearchParams({ template, format, scale: '2' });
+            for (const [k, v] of Object.entries(used)) q.set(`slot.${k}`, v ?? '');
+            download = `${origin}/api/render?${q.toString()}`;
+          }
           const notes: string[] = [];
           if (variant) notes.push(`${m.variants?.[variant]?.label ?? variant} version`);
           const derived = Object.entries(used).filter(([k, v]) => v && !slots[k] && m.slots[k].type === 'text').map(([k, v]) => `${k} "${v}" (derived)`);
@@ -186,7 +199,7 @@ const handler = createMcpHandler(
           content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
           content.push({
             type: 'text',
-            text: `${m.formats[format].label}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${origin}/api/render?${q.toString()}`,
+            text: `${m.formats[format].label}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}`,
           });
         }
         if (refused.length) {
@@ -201,6 +214,12 @@ const handler = createMcpHandler(
     instructions: INSTRUCTIONS,
   },
 );
+
+// Signed-in user behind the MCP call (set by the auth layer once the MCP requires login).
+function userIdOf(ctx: unknown): string | null {
+  const auth = (ctx as { http?: { authInfo?: { extra?: { userId?: string } } } })?.http?.authInfo;
+  return auth?.extra?.userId ?? null;
+}
 
 function publicOrigin(ctx: unknown): string {
   const req = (ctx as { http?: { req?: Request } })?.http?.req;

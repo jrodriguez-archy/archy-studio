@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PageHeader } from '@/components/app-shell';
 import { catalog, FACT_LABEL, PURPOSE_LABEL } from '@/lib/catalog';
 
 export default async function TemplatePage({ params }: { params: Promise<{ id: string }> }) {
@@ -11,76 +9,73 @@ export default async function TemplatePage({ params }: { params: Promise<{ id: s
   if (!item) notFound();
   const { manifest, config, formats, needs, extras } = item;
   const optional = new Set(config.optional ?? []);
+  const lead = formats.includes('post') ? 'post' : formats[0];
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <Link href="/templates" className="text-sm text-muted-foreground hover:text-foreground">← Templates</Link>
-        <h1 className="text-3xl font-semibold">{config.title}</h1>
-        <p className="max-w-2xl text-muted-foreground">{config.description}</p>
-        <div className="flex flex-wrap gap-2 pt-1 text-sm">
-          <Badge>{PURPOSE_LABEL[config.purpose ?? ''] ?? config.purpose}</Badge>
-          {config.useWhen && <span className="text-muted-foreground">Use when: {config.useWhen}</span>}
-        </div>
-      </div>
+    <>
+      <Link href="/templates" className="mb-3 inline-block text-[13px] text-foreground/40 transition-colors hover:text-foreground">← Templates</Link>
+      <PageHeader title={config.title} description={PURPOSE_LABEL[config.purpose ?? ''] ?? ''} />
 
-      <div className="flex flex-wrap items-end gap-4">
+      <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 lg:flex-wrap lg:overflow-visible">
         {formats.map((f) => {
           const fm = manifest.formats[f];
-          const h = 360;
           return (
-            <figure key={f} className="space-y-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/preview/${manifest.id}/${f}`} alt={fm.label} loading="lazy" className="rounded-md border bg-muted shadow-sm"
-                style={{ height: h, width: Math.round((h * fm.width) / fm.height) }} />
-              <figcaption className="text-xs text-muted-foreground">{fm.label}</figcaption>
+            <figure key={f} className="shrink-0">
+              <div className="flex h-[20rem] items-center rounded-lg bg-foreground/[0.04] p-6 ring-1 ring-foreground/[0.06] xl:h-[24rem]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/api/preview/${manifest.id}/${f}`} alt={fm.label} loading="lazy"
+                  className="h-full w-auto rounded-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_-12px_rgba(0,0,0,0.25)]" style={{ aspectRatio: `${fm.width} / ${fm.height}` }} />
+              </div>
+              <figcaption className="mt-1.5 px-0.5 text-[13px] text-foreground/40">{fm.label}</figcaption>
             </figure>
           );
         })}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="gap-3 p-5 lg:col-span-1">
-          <h2 className="font-heading text-lg font-semibold">What it needs</h2>
-          <div className="flex flex-wrap gap-1">{needs.map((n) => <Badge key={n}>{FACT_LABEL[n] ?? n}</Badge>)}</div>
-          {extras.length > 0 && (
-            <>
-              <h3 className="pt-2 text-sm font-medium">Also shows, when available</h3>
-              <div className="flex flex-wrap gap-1">{extras.map((n) => <Badge key={n} variant="outline">{FACT_LABEL[n] ?? n}</Badge>)}</div>
-            </>
+      <div className="mt-10 grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <section className="space-y-5 text-[13px]">
+          {config.description && config.description !== PURPOSE_LABEL[config.purpose ?? ''] && !config.description.startsWith(PURPOSE_LABEL[config.purpose ?? ''] ?? '\u0000') && (
+            <p className="text-foreground/70">{config.description}</p>
           )}
-          <p className="pt-2 text-xs text-muted-foreground">Headlines and short copy are written from the brief.</p>
-        </Card>
+          {config.useWhen && (
+            <div>
+              <p className="text-foreground/40">Use when</p>
+              <p className="mt-0.5">{config.useWhen}</p>
+            </div>
+          )}
+          <div>
+            <p className="text-foreground/40">Needs</p>
+            <p className="mt-0.5">{needs.map((n) => FACT_LABEL[n] ?? n).join(', ')}</p>
+          </div>
+          {extras.length > 0 && (
+            <div>
+              <p className="text-foreground/40">Also shows, when available</p>
+              <p className="mt-0.5">{extras.map((n) => FACT_LABEL[n] ?? n).join(', ')}</p>
+            </div>
+          )}
+          <p className="text-foreground/40">Headlines and short copy are written from the brief.</p>
+        </section>
 
-        <Card className="py-0 lg:col-span-2">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-4">Slot</TableHead>
-                <TableHead>Example</TableHead>
-                <TableHead className="pr-4">Room</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Object.entries(manifest.slots).map(([k, s]) => {
-                const lim = s.limits?.[formats.includes('post') ? 'post' : formats[0]];
-                return (
-                  <TableRow key={k}>
-                    <TableCell className="pl-4 align-top">
-                      <div className="font-medium">{k}</div>
-                      <div className="text-xs text-muted-foreground">{optional.has(k) ? 'Optional' : 'Essential'} · {s.type}</div>
-                    </TableCell>
-                    <TableCell className="max-w-64 align-top whitespace-normal text-muted-foreground">{s.type === 'text' ? s.default : '—'}</TableCell>
-                    <TableCell className="pr-4 align-top text-muted-foreground">
-                      {lim ? `${lim.maxCharsPerLine} chars × ${lim.maxLines} line${lim.maxLines > 1 ? 's' : ''}` : '—'}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </Card>
+        <section className="text-[13px]">
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] gap-x-6 border-b border-foreground/[0.06] pb-2 text-foreground/40">
+            <span>Slot</span><span>Example</span><span className="text-right">Room</span>
+          </div>
+          {Object.entries(manifest.slots).map(([k, s]) => {
+            const lim = s.limits?.[lead];
+            return (
+              <div key={k} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] gap-x-6 border-b border-foreground/[0.06] py-2.5">
+                <span className="min-w-0">
+                  <span className="block truncate">{k}</span>
+                  <span className="text-foreground/40">{optional.has(k) ? 'Optional' : 'Essential'}</span>
+                </span>
+                <span className="min-w-0 break-words text-foreground/60">{s.type === 'text' ? s.default : s.type === 'logo' ? 'Link to a logo' : 'Link to an image'}</span>
+                <span className="text-right whitespace-nowrap text-foreground/60">{lim ? `${lim.maxCharsPerLine} × ${lim.maxLines}` : '—'}</span>
+              </div>
+            );
+          })}
+          <p className="mt-2 text-foreground/40">Room: characters per line × lines at full size; text can shrink a little to fit more.</p>
+        </section>
       </div>
-    </div>
+    </>
   );
 }

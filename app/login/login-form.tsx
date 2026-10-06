@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabaseBrowser } from '@/lib/supabase/browser';
@@ -59,46 +58,46 @@ export function LoginForm({ next }: { next: string }) {
     'First time here: choose a password of at least 10 characters.';
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={submit} className="space-y-4">
+    <div className="space-y-4 text-[13px]">
+      {step !== 'email' && (
+        <div>
+          <p className="font-medium">{title}</p>
+          <p className="text-muted-foreground">{description}</p>
+        </div>
+      )}
+        <form onSubmit={submit} className="space-y-3">
           {step === 'email' ? (
-            <div className="space-y-2">
-              <Label htmlFor="email">Work email</Label>
-              <Input id="email" type="email" autoComplete="username" placeholder="you@archy.com" required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-[13px] font-normal">Email</Label>
+              <Input className="h-8 text-[13px]" id="email" type="email" autoComplete="username" placeholder="you@archy.com" required autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
           ) : (
             <>
               <input type="email" autoComplete="username" value={email} readOnly hidden />
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required autoFocus minLength={step === 'create-password' ? 10 : undefined}
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-[13px] font-normal">Password</Label>
+                <Input className="h-8 text-[13px]" id="password" type="password" required autoFocus minLength={step === 'create-password' ? 10 : undefined}
                   autoComplete={step === 'create-password' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               {step === 'create-password' && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirm">Repeat password</Label>
-                  <Input id="confirm" type="password" required autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+                <div className="space-y-1">
+                  <Label htmlFor="confirm" className="text-[13px] font-normal">Repeat password</Label>
+                  <Input className="h-8 text-[13px]" id="confirm" type="password" required autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
                 </div>
               )}
             </>
           )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={busy}>
+          {error && <p className="text-destructive">{error}</p>}
+          <Button type="submit" size="lg" className="w-full" disabled={busy}>
             {busy ? 'One moment…' : step === 'email' ? 'Continue' : step === 'sign-in' ? 'Sign in' : 'Create password and sign in'}
           </Button>
           {step !== 'email' && (
-            <Button type="button" variant="ghost" className="w-full" onClick={() => { setStep('email'); setPassword(''); setConfirm(''); setError(''); }}>
+            <Button type="button" variant="ghost" size="lg" className="w-full text-foreground/60" onClick={() => { setStep('email'); setPassword(''); setConfirm(''); setError(''); }}>
               Use another email
             </Button>
           )}
-          {step === 'sign-in' && <p className="text-center text-xs text-muted-foreground">Forgot it? Ask an admin to reset your password.</p>}
+          {step === 'sign-in' && <p className="text-muted-foreground">Forgot it? Ask an admin to reset your password.</p>}
         </form>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

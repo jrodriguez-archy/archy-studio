@@ -1,72 +1,58 @@
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { titleOf } from '@/lib/catalog';
-import { signedUrls, thumbPath } from '@/lib/renders';
-import { supabaseAdmin } from '@/lib/supabase/admin';
+import { PageHeader, Pills, Segmented } from '@/components/app-shell';
+import { PieceGrid } from '@/components/piece-grid';
+import { TYPES, loadPieces } from '@/lib/gallery';
+import { listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 
 export const metadata = { title: 'Gallery · Archy Studio' };
 export const dynamic = 'force-dynamic';
 
-type Row = { id: string; template: string; format: string; storage_path: string; width: number; height: number; created_at: string; profiles: { email: string; full_name: string | null } | null };
+export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ all?: string; type?: string }> }) {
+  const { all, type } = await searchParams;
+  const me = (await currentUser())!;
+  const mine = !all; // default: the signed-in person's own pieces
+  const kind = TYPES.find((t) => t.key === type);
+  const [pieces, projects] = await Promise.all([
+    loadPieces({ userId: mine ? me.id : undefined, formats: kind?.formats }),
+    listProjects(me).catch(() => []),
+  ]);
 
-export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ mine?: string }> }) {
-  const { mine } = await searchParams;
-  const me = await currentUser();
-  let q = supabaseAdmin().from('renders').select('id, template, format, storage_path, width, height, created_at, profiles(email, full_name)').order('created_at', { ascending: false }).limit(60);
-  if (mine && me) q = q.eq('user_id', me.id);
-  const rows = ((await q).data ?? []) as unknown as Row[];
-  const [thumbs, files] = await Promise.all([signedUrls(rows.map((r) => thumbPath(r.storage_path))), signedUrls(rows.map((r) => r.storage_path), 60 * 60, true)]);
-  const titles = Object.fromEntries(await Promise.all([...new Set(rows.map((r) => r.template))].map(async (t) => [t, await titleOf(t)])));
+  const href = (p: { all?: boolean; type?: string }) => {
+    const s = new URLSearchParams();
+    if (p.all) s.set('all', '1');
+    if (p.type) s.set('type', p.type);
+    return s.size ? `/?${s}` : '/';
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">Gallery</h1>
-          <p className="mt-1 text-muted-foreground">Every piece the team made with Studio, newest first.</p>
+    <>
+      <PageHeader title="Gallery" description={mine ? 'The pieces you made with Studio.' : 'Every piece the team made with Studio.'}>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+          <Segmented
+            items={[
+              { href: href({ type }), label: 'Mine', active: mine },
+              { href: href({ all: true, type }), label: 'Team', active: !mine },
+            ]}
+          />
+          <span className="hidden h-5 w-px bg-foreground/10 sm:block" aria-hidden />
+          <Pills
+            items={[
+              { href: href({ all: !mine }), label: 'All types', active: !kind },
+              ...TYPES.map((t) => ({ href: href({ all: !mine, type: t.key }), label: t.label, active: kind?.key === t.key })),
+            ]}
+          />
         </div>
-        <div className="flex gap-1 rounded-lg bg-muted p-1">
-          <Button size="sm" variant={mine ? 'ghost' : 'secondary'} nativeButton={false} render={<Link href="/" />}>Everyone</Button>
-          <Button size="sm" variant={mine ? 'secondary' : 'ghost'} nativeButton={false} render={<Link href="/?mine=1" />}>Mine</Button>
+      </PageHeader>
+
+      {pieces.length === 0 ? (
+        <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
+          <p className="font-medium">{mine ? 'You have no pieces yet' : 'Nothing here yet'}</p>
+          <p className="mt-1 text-muted-foreground">Ask Claude for a piece with the Archy Studio plugin. <Link href="/install" className="text-foreground underline underline-offset-4">Install it</Link></p>
         </div>
-      </div>
-      {rows.length === 0 ? (
-        <Card>
-          <CardContent className="space-y-2 py-12 text-center">
-            <p className="font-medium">No pieces yet</p>
-            <p className="text-sm text-muted-foreground">Ask Claude for one with the Archy Studio plugin. <Link href="/install" className="text-primary underline-offset-4 hover:underline">How to install</Link></p>
-          </CardContent>
-        </Card>
       ) : (
-        <div className="grid grid-cols-2 items-start gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {rows.map((r) => (
-            <Card key={r.id} className="gap-3 overflow-hidden py-0">
-              <div className="bg-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={thumbs[thumbPath(r.storage_path)] ?? files[r.storage_path]} alt={`${titles[r.template]} ${r.format}`} loading="lazy"
-                  className="w-full object-contain" style={{ aspectRatio: `${r.width} / ${r.height}` }} />
-              </div>
-              <CardContent className="space-y-2 px-3 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium">{titles[r.template]}</span>
-                  <Badge variant="secondary" className="ml-auto capitalize">{r.format}</Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                    {r.profiles?.full_name ?? r.profiles?.email ?? 'Before sign-in'} · {new Date(r.created_at).toLocaleDateString()}
-                  </p>
-                  {files[r.storage_path] && (
-                    <Button size="xs" variant="outline" nativeButton={false} render={<a href={files[r.storage_path]} />}>Download</Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <PieceGrid pieces={pieces} projects={projects} me={me} />
       )}
-    </div>
+    </>
   );
 }

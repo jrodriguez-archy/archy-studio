@@ -1,6 +1,5 @@
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader } from '@/components/app-shell';
+import { CopyText } from '@/components/copy-text';
 
 export const metadata = { title: 'Install · Archy Studio' };
 
@@ -12,78 +11,65 @@ const BRIEFS = [
   'Event page cover for our booth at the Greater New York Dental Meeting, booth #4402. City photo: <link>',
 ];
 
+const NOTES = [
+  ['Photos', 'People are always their real photo, as a link to a cutout PNG. Claude never generates a person.'],
+  ['Logos', 'Partner and sponsor logos as a link (PNG or SVG). They are set in the design’s colour and balanced with the Archy logo.'],
+  ['Missing info', 'Small details can be left out (no time: only the date). If something essential is missing, Claude asks or suggests another template.'],
+  ['Gallery', 'Every piece is saved to the gallery with your name. Download links last a week.'],
+];
+
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
-    <li className="flex gap-3">
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{n}</span>
-      <div className="pt-0.5 text-sm leading-relaxed">{children}</div>
+    <li className="grid grid-cols-[20px_1fr] gap-3">
+      <span className="text-foreground/30 tabular-nums">{n}</span>
+      <div className="text-foreground/80">{children}</div>
     </li>
   );
 }
 
-function Code({ children }: { children: React.ReactNode }) {
-  return <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[13px] text-foreground">{children}</code>;
-}
-
 export default function InstallPage() {
   return (
-    <div className="max-w-3xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-semibold">Install</h1>
-        <p className="mt-1 text-muted-foreground">Add Archy Studio to Claude once. Then just ask for a piece in any conversation.</p>
-      </div>
+    <div className="max-w-2xl text-[13px]">
+      <PageHeader title="Install" description="Add Archy Studio to Claude once, then ask for pieces in any conversation." />
 
-      <Tabs defaultValue="app">
-        <TabsList className="h-auto w-full flex-wrap justify-start sm:w-fit">
-          <TabsTrigger value="app">Claude app (Cowork or Code)</TabsTrigger>
-          <TabsTrigger value="terminal">Claude Code in a terminal</TabsTrigger>
-        </TabsList>
-        <TabsContent value="app">
-          <Card>
-            <CardContent className="pt-6">
-              <ol className="space-y-4">
-                <Step n={1}>Click <strong>+</strong>, then <strong>Plugins → Add marketplace</strong>, and enter <Code>jrodriguez-archy/archy-studio</Code>.</Step>
-                <Step n={2}>Install <strong>Archy - Studio</strong>.</Step>
-                <Step n={3}>Start a <strong>new conversation</strong>. The first time you ask for a piece, Claude asks you to connect Archy Studio: sign in here with your Archy email and click <strong>Allow</strong>.</Step>
-                <Step n={4}>Ask for a piece in your own words. Claude reads the brief, asks once for anything missing and picks the right template.</Step>
-              </ol>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="terminal">
-          <Card>
-            <CardContent className="pt-6">
-              <ol className="space-y-4">
-                <Step n={1}>Run <Code>claude plugin marketplace add jrodriguez-archy/archy-studio</Code></Step>
-                <Step n={2}>Run <Code>claude plugin install archy-studio@archy-studio</Code></Step>
-                <Step n={3}>In a new session, type <Code>/mcp</Code>, choose <strong>archy-studio</strong> and <strong>Authenticate</strong>. Sign in and click <strong>Allow</strong>.</Step>
-              </ol>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <section className="mt-8 space-y-3">
+        <h2 className="text-foreground/40">Claude app · Cowork or Code</h2>
+        <ol className="space-y-3">
+          <Step n={1}>Click <strong className="font-medium text-foreground">+</strong>, then <strong className="font-medium text-foreground">Plugins → Add marketplace</strong>, and enter <CopyText text="jrodriguez-archy/archy-studio" />.</Step>
+          <Step n={2}>Install <strong className="font-medium text-foreground">Archy - Studio</strong>.</Step>
+          <Step n={3}>Start a new conversation. The first time, Claude asks you to connect Archy Studio: sign in here and click <strong className="font-medium text-foreground">Allow</strong>.</Step>
+          <Step n={4}>Ask for a piece in your own words. Claude reads the brief, asks once for anything missing and picks the template.</Step>
+        </ol>
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Things to ask</CardTitle>
-          <CardDescription>Write it like a message to a designer. Copy on the piece is always in US English.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {BRIEFS.map((b) => <p key={b} className="rounded-lg border bg-secondary/50 px-3 py-2 text-sm">{b}</p>)}
-        </CardContent>
-      </Card>
+      <section className="mt-10 space-y-3">
+        <h2 className="text-foreground/40">Claude Code in a terminal</h2>
+        <ol className="space-y-3">
+          <Step n={1}><CopyText text="claude plugin marketplace add jrodriguez-archy/archy-studio" /></Step>
+          <Step n={2}><CopyText text="claude plugin install archy-studio@archy-studio" /></Step>
+          <Step n={3}>In a new session type <CopyText text="/mcp" />, choose <strong className="font-medium text-foreground">archy-studio</strong> and <strong className="font-medium text-foreground">Authenticate</strong>.</Step>
+        </ol>
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Good to know</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p><Badge variant="secondary" className="mr-2">Photos</Badge>People are always their real photo, as a link to a cutout PNG (background removed). Claude never generates a person.</p>
-          <p><Badge variant="secondary" className="mr-2">Logos</Badge>Partner and sponsor logos as a link (PNG or SVG). They are set in the design's colour and balanced with the Archy logo.</p>
-          <p><Badge variant="secondary" className="mr-2">Missing info</Badge>Small details can be left out (no time: only the date). If something essential is missing, Claude asks or suggests another template.</p>
-          <p><Badge variant="secondary" className="mr-2">Gallery</Badge>Every piece is saved to the team gallery with your name, and the download link lasts a week.</p>
-        </CardContent>
-      </Card>
+      <section className="mt-10 space-y-3">
+        <h2 className="text-foreground/40">Things to ask</h2>
+        <div className="space-y-1.5">
+          {BRIEFS.map((b) => <p key={b} className="rounded-lg bg-foreground/[0.04] px-3 py-2.5 text-foreground/80">{b}</p>)}
+        </div>
+        <p className="text-foreground/40">Copy on the piece is always in US English.</p>
+      </section>
+
+      <section className="mt-10 space-y-3">
+        <h2 className="text-foreground/40">Good to know</h2>
+        <dl className="divide-y divide-foreground/[0.06] border-y border-foreground/[0.06]">
+          {NOTES.map(([k, v]) => (
+            <div key={k} className="grid grid-cols-[110px_1fr] gap-4 py-2.5">
+              <dt>{k}</dt>
+              <dd className="text-foreground/60">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
     </div>
   );
 }

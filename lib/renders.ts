@@ -18,6 +18,7 @@ export async function saveRender(input: {
   height: number;
   scale: number;
   source?: 'mcp' | 'app';
+  projectId?: string | null;
 }): Promise<SavedRender | null> {
   if (!supabaseConfigured()) return null;
   const db = supabaseAdmin();
@@ -33,7 +34,7 @@ export async function saveRender(input: {
   const slots = Object.fromEntries(Object.entries(input.slots).map(([k, v]) => [k, v?.startsWith('data:') ? '[inline image]' : v]));
   const ins = await db.from('renders').insert({
     id, user_id: input.userId, template: input.template, format: input.format, slots,
-    storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp',
+    storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp', project_id: input.projectId ?? null,
   });
   if (ins.error) throw new Error(`Could not record the render: ${ins.error.message}`);
   return { id, path, url: await signedUrl(path) };

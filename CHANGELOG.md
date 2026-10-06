@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.5.0 (2026-10-05)
+
+- Projects: pieces can be filed into project folders in the Studio gallery, shared with the team or personal. New tools `list_projects` and `create_project`; `render` takes an optional `project`. Claude only files pieces when the requester names a project.
+
 ## archy-studio 0.4.0 (2026-10-05)
 
 - Brief first: Claude reads the whole brief, lists its facts and calls the new `match_templates` tool, which returns the templates that can be made with them (best first) and what the others are missing. It asks once for what would unlock a better template, then chooses.

@@ -6,13 +6,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Member } from '@/lib/team';
 import { addMemberAction, removeMemberAction, resetPasswordAction } from './actions';
 
@@ -29,80 +25,53 @@ export function TeamManager({ team, me }: { team: Member[]; me: string }) {
     });
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardContent>
-          <form
-            className="flex flex-col gap-3 sm:flex-row sm:items-end"
-            onSubmit={(e) => {
-              e.preventDefault();
-              act(() => addMemberAction(email, admin), `${email} can now sign in`);
-              setEmail('');
-              setAdmin(false);
-            }}
-          >
-            <div className="flex-1 space-y-2">
-              <Label htmlFor="new-email">Add someone</Label>
-              <Input id="new-email" type="email" placeholder="name@archy.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <label className="flex h-9 items-center gap-2 text-sm">
-              <Checkbox checked={admin} onCheckedChange={(v) => setAdmin(v === true)} /> Admin
-            </label>
-            <Button type="submit" disabled={pending}>Add</Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="mt-6 space-y-8 text-[13px]">
+      <form
+        className="flex flex-wrap items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          act(() => addMemberAction(email, admin), `${email} can now sign in`);
+          setEmail('');
+          setAdmin(false);
+        }}
+      >
+        <Input type="email" placeholder="name@archy.com" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-8 max-w-xs flex-1 text-[13px]" aria-label="Email to add" />
+        <label className="flex items-center gap-2 px-1 text-foreground/60">
+          <Checkbox checked={admin} onCheckedChange={(v) => setAdmin(v === true)} /> Admin
+        </label>
+        <Button type="submit" size="lg" disabled={pending}>Add person</Button>
+      </form>
 
-      <Card className="overflow-x-auto py-0">
-        <Table className="min-w-[560px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-4">Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell">Last sign-in</TableHead>
-              <TableHead className="pr-4 text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {team.map((m) => (
-              <TableRow key={m.email}>
-                <TableCell className="pl-4">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{m.email}</span>
-                    {m.is_admin && <Badge variant="secondary">Admin</Badge>}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {m.status === 'active' ? <Badge>Active</Badge> : <Badge variant="outline">Waiting for first sign-in</Badge>}
-                </TableCell>
-                <TableCell className="hidden text-muted-foreground md:table-cell">
-                  {m.last_sign_in ? new Date(m.last_sign_in).toLocaleString() : '—'}
-                </TableCell>
-                <TableCell className="pr-4 text-right">
-                  {m.email !== me && (
-                    <div className="flex justify-end gap-2">
-                      <Confirm
-                        trigger={<Button variant="outline" size="sm" disabled={pending || m.status === 'pending'}>Reset password</Button>}
-                        title={`Reset ${m.email}'s password?`}
-                        description="Their current password stops working. The next time they sign in, they create a new one."
-                        action="Reset"
-                        onConfirm={() => act(() => resetPasswordAction(m.email), 'Password reset')}
-                      />
-                      <Confirm
-                        trigger={<Button variant="ghost" size="sm" className="text-destructive" disabled={pending}>Remove</Button>}
-                        title={`Remove ${m.email}?`}
-                        description="They lose access to Studio and Claude. The pieces they made stay in the gallery."
-                        action="Remove"
-                        onConfirm={() => act(() => removeMemberAction(m.email), 'Removed')}
-                      />
-                    </div>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+      <div className="border-t border-foreground/[0.06]">
+        {team.map((m) => (
+          <div key={m.email} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-foreground/[0.06] py-2.5">
+            <span className={`size-1.5 shrink-0 rounded-full ${m.status === 'active' ? 'bg-emerald-500' : 'bg-foreground/20'}`} aria-hidden />
+            <span className="min-w-0 truncate">{m.email}</span>
+            {m.is_admin && <span className="text-foreground/40">Admin</span>}
+            <span className="text-foreground/40">
+              {m.status === 'active' ? (m.last_sign_in ? `Last in ${new Date(m.last_sign_in).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'Active') : 'Waiting for first sign-in'}
+            </span>
+            {m.email !== me && (
+              <span className="ml-auto flex gap-1">
+                <Confirm
+                  trigger={<Button variant="ghost" size="sm" disabled={pending || m.status === 'pending'} className="text-foreground/60">Reset password</Button>}
+                  title={`Reset ${m.email}'s password?`}
+                  description="Their current password stops working. The next time they sign in, they create a new one."
+                  action="Reset"
+                  onConfirm={() => act(() => resetPasswordAction(m.email), 'Password reset')}
+                />
+                <Confirm
+                  trigger={<Button variant="ghost" size="sm" disabled={pending} className="text-destructive">Remove</Button>}
+                  title={`Remove ${m.email}?`}
+                  description="They lose access to Studio and Claude. The pieces they made stay in the gallery."
+                  action="Remove"
+                  onConfirm={() => act(() => removeMemberAction(m.email), 'Removed')}
+                />
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

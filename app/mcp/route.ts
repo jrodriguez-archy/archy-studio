@@ -3,7 +3,9 @@ import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
 import { MissingRequired, render } from '@/lib/renderer';
 import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
+import { createProject, findProject, listProjects } from '@/lib/projects';
 import { saveRender } from '@/lib/renders';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
 import { listTemplates, loadConfig, loadLibrary, loadManifest } from '@/lib/templates';
 
@@ -20,6 +22,8 @@ Brief first, then the best template:
 5. get_template for its slots and limits, then render. Each template has essential content (always filled) and minor optional details: an optional detail you do not have is left out with its label (no time: the date stays alone).
 6. If copy does not fit, the format is refused with the exact maximum: shorten keeping the requester's wording, then render again. Never deliver a refused render.
 7. Show the images, give the download links, and say in one line which template you chose and why, and what was left out.
+
+Projects: pieces can be filed into project folders in the Studio gallery (one project per piece). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
 
 Brand rules:
 - All copy on the piece is in US English, even when the conversation is not.
@@ -135,6 +139,40 @@ const handler = createMcpHandler(
     );
 
     server.registerTool(
+      'list_projects',
+      {
+        title: 'List projects',
+        description: 'Project folders in the Studio gallery that the signed-in person can file pieces into: the team ones and their own personal ones.',
+        inputSchema: z.object({}),
+        annotations: { readOnlyHint: true },
+      },
+      async (_args, ctx) => {
+        const me = await whoIs(ctx);
+        if (!me) return { isError: true, content: [{ type: 'text', text: 'Projects need a signed-in Studio account.' }] };
+        const list = (await listProjects(me)).map((p) => ({ project: p.name, id: p.id, visible_to: p.shared ? 'team' : 'only the requester', pieces: p.count }));
+        return { content: [{ type: 'text', text: JSON.stringify(list, null, 2) }] };
+      },
+    );
+
+    server.registerTool(
+      'create_project',
+      {
+        title: 'Create a project',
+        description: 'Create a project folder in the Studio gallery. If one with the same name already exists, that one is returned.',
+        inputSchema: z.object({
+          name: z.string().min(1).max(80).describe('Project name, e.g. "Chicago Midwinter 2027"'),
+          shared: z.boolean().default(true).describe('true: the whole team sees it (default). false: only the requester.'),
+        }),
+      },
+      async ({ name, shared }, ctx) => {
+        const me = await whoIs(ctx);
+        if (!me) return { isError: true, content: [{ type: 'text', text: 'Projects need a signed-in Studio account.' }] };
+        const p = await createProject(me, name, shared);
+        return { content: [{ type: 'text', text: `Project "${p.name}" ready (${p.shared ? 'team' : 'only the requester'}). Pass it to render as project.` }] };
+      },
+    );
+
+    server.registerTool(
       'render',
       {
         title: 'Render a piece',
@@ -143,10 +181,18 @@ const handler = createMcpHandler(
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"]. Default: all.'),
           slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" or an https URL to a cutout PNG. Leave out (or null) what you do not have.'),
+          project: z.string().optional().describe('Project to file the pieces in (name or id from list_projects). Only when the requester mentions one.'),
         }),
         annotations: { readOnlyHint: true, openWorldHint: false },
       },
-      async ({ template, formats, slots }, ctx) => {
+      async ({ template, formats, slots, project }, ctx) => {
+        let projectId: string | null = null;
+        if (project) {
+          const me = await whoIs(ctx);
+          const found = me ? await findProject(me, project) : null;
+          if (!found) return { isError: true, content: [{ type: 'text', text: `No project "${project}" for this account. Call list_projects, or create_project first.` }] };
+          projectId = found.id;
+        }
         const m = await loadManifest(template);
         const wanted = formats?.length ? formats : Object.keys(m.formats);
         const origin = publicOrigin(ctx);
@@ -178,7 +224,7 @@ const handler = createMcpHandler(
           let download: string;
           const saved = supabaseConfigured()
             ? await render({ template, format, slots, scale: 2 }).then((hi) => saveRender({
-                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2,
+                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId,
               }))
             : null;
           if (saved) download = saved.url;
@@ -211,7 +257,7 @@ const handler = createMcpHandler(
     );
   },
   {
-    serverInfo: { name: 'archy-studio', version: '0.4.0' },
+    serverInfo: { name: 'archy-studio', version: '0.5.0' },
     instructions: INSTRUCTIONS,
   },
 );
@@ -220,6 +266,13 @@ const handler = createMcpHandler(
 function userIdOf(ctx: unknown): string | null {
   const auth = (ctx as { http?: { authInfo?: { extra?: { userId?: string } } } })?.http?.authInfo;
   return auth?.extra?.userId ?? null;
+}
+
+async function whoIs(ctx: unknown): Promise<{ id: string; is_admin: boolean } | null> {
+  const id = userIdOf(ctx);
+  if (!id || !supabaseConfigured()) return null;
+  const { data } = await supabaseAdmin().from('profiles').select('id, is_admin').eq('id', id).maybeSingle();
+  return (data as { id: string; is_admin: boolean } | null) ?? null;
 }
 
 function publicOrigin(ctx: unknown): string {

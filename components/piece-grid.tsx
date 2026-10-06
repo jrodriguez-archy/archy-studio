@@ -81,7 +81,8 @@ function SetCard({ set: s, projects, canManage, project, onOpen }: { set: PieceS
         <div className="truncate">{s.title}</div>
         <div className="truncate text-foreground/40">{s.templates.length > 1 ? `${s.templates.length} templates` : r.title} · {formatsOf(s)}</div>
         <div className="truncate text-foreground/40">
-          {s.author} · {day(s.archived_at ?? s.created_at)}{s.archived_at ? ' · archived' : ''}
+          {/* Dates are in the viewer's time zone; the server renders UTC. */}
+          {s.author} · <span suppressHydrationWarning>{day(s.archived_at ?? s.created_at)}</span>{s.archived_at ? ' · archived' : ''}
           {project && <> · {project}</>}
         </div>
       </figcaption>
@@ -155,7 +156,7 @@ function SetInfo({ set, shown, project, projects, canManage }: { set: PieceSet; 
           ['File', `PNG @${shown.scale}x`],
           ['Project', project ?? '—'],
           ['Made by', set.author],
-          ['Created', when(set.created_at)],
+          ['Created', <span key="c" suppressHydrationWarning>{when(set.created_at)}</span>],
         ]}
       />
 

@@ -1,26 +1,16 @@
-// What the editor reads from the template page: its components, its colours and its tokens.
-//
-// A template is a tree of Paper layers (frames inside frames, "Group", "Vector"…). People edit
-// components instead: a text, a button, an icon, a photo, the background. Layout frames stay out of
-// sight. The Archy logo is a component too, locked: it is never edited, moved or hidden.
+// What the editor reads from the template page: its components (from scripts/components.js, shared
+// with the server), its colours and its tokens.
 
 import type { NodeEdit } from '@/lib/canvas-shared';
 
-export type Kind = 'background' | 'text' | 'button' | 'icon' | 'photo' | 'partner' | 'archy' | 'tag' | 'line' | 'decoration';
+export type Kind = 'background' | 'group' | 'text' | 'button' | 'icon' | 'photo' | 'partner' | 'archy' | 'tag' | 'line' | 'decoration';
 export type Comp = {
-  id: string; kind: Kind; name: string; slot?: string;
-  /** Inner parts edited from this component: the label text and the icon of a button. */
+  id: string; kind: Kind; name: string; parent: string | null; slot?: string;
+  /** Inner parts edited from a button: its label text and its icon. */
   textId?: string; textSlot?: string; iconId?: string;
 };
+export type Box = { x: number; y: number; w: number; h: number; name?: string };
 export type Token = { name: string; value: string; hex: string; group: 'Blues' | 'Neutrals' | 'Accents' };
-
-export const SECTIONS: { title: string; kinds: Kind[] }[] = [
-  { title: 'Text', kinds: ['text'] },
-  { title: 'Buttons & icons', kinds: ['button', 'icon'] },
-  { title: 'Images & logos', kinds: ['photo', 'partner', 'archy'] },
-  { title: 'Shapes', kinds: ['tag', 'line', 'decoration'] },
-  { title: 'Background', kinds: ['background'] },
-];
 
 // Facts about a node as it is drawn now, for the properties panel.
 export type LayerInfo = {
@@ -28,94 +18,18 @@ export type LayerInfo = {
   color: string; backgroundColor: string; text: string; opacity: number;
 };
 
-const ARCHY = /^(Logo Archy|Archy Wordmark)/;
-const BUTTON = /^(CTA|Button)$/i;
-const DECORATION = /^(Mascot|Stars|Swoosh|Drinks Pattern|Pixel Dissolve|Rulers|BK Fade|Scrim|RIBBON|Border|Photo Panel|Cocktail|Illustration)/i;
-const LINE = /^(Ruler|Divider|Dot)\b/;
-const GENERIC = /^(Label|Text|Title|Copy|Group|Vector|SVG|Frame|Info|Body)$/i;
-
-const nameOf = (el: Element) => el.getAttribute('data-name') ?? '';
 // Not instanceof: the nodes live in the iframe's realm.
 const isSvg = (el: Element) => el.namespaceURI === 'http://www.w3.org/2000/svg';
-// "slot-text-ae-first-name" → "AE first name", "Photo Panel · Gradient Royal Blue" → "Photo panel", "RIBBON" → "Ribbon".
-const human = (s: string) => {
-  let t = s.replace(/^(slot-(text|image|logo)-|optional-)/, '').replace(/\s*·.*$/, '').replace(/-/g, ' ').trim();
-  if (t === t.toUpperCase()) t = t.toLowerCase();
-  t = t.replace(/\b(ae|cta|og)\b/gi, (w) => w.toUpperCase());
-  return t.charAt(0).toUpperCase() + t.slice(1).replace(/\b([A-Z])([a-z]+)\b/g, (w, a, b, i) => (i === 0 || /^(AE|CTA|OG)$/.test(w) ? w : a.toLowerCase() + b));
-};
-const titleCase = (s: string) => {
-  const t = s.replace(/\s+/g, ' ').trim();
-  const short = t.length > 28 ? `${t.slice(0, 27)}…` : t;
-  return short === short.toUpperCase() ? short.charAt(0) + short.slice(1).toLowerCase() : short;
-};
-const optionalOf = (el: Element) => el.closest('[data-optional]')?.getAttribute('data-optional') ?? null;
-const hasFill = (el: Element) => { const bg = getComputedStyle(el).backgroundColor; return !!bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent'; };
-const isIcon = (el: Element) => el.tagName.toLowerCase() === 'svg' && (/^Icon/.test(nameOf(el)) || /^Icon$/.test(nameOf(el.parentElement!)) || el.getAttribute('viewBox') === '0 0 24 24');
-const firstText = (el: Element) => [...el.querySelectorAll('[data-node]')].find((n) => n.tagName.toLowerCase() !== 'svg' && !n.querySelector('[data-node]') && n.textContent?.trim()) ?? null;
 
-export function readComponents(doc: Document): Comp[] {
-  const root = doc.querySelector('body > [data-node]');
-  if (!root) return [];
-  const out: Comp[] = [];
-  const id = (el: Element) => el.getAttribute('data-node')!;
-  const walk = (el: Element) => {
-    const name = nameOf(el);
-    const type = (el as HTMLElement).dataset?.slotType;
-    const slot = (el as HTMLElement).dataset?.slot;
-    const svg = el.tagName.toLowerCase() === 'svg';
-    if (ARCHY.test(name)) { out.push({ id: id(el), kind: 'archy', name: 'Archy logo' }); return; }
-    if (type === 'logo') { out.push({ id: id(el), kind: 'partner', name: `${human((slot ?? 'partner').replace(/^logo-/, ''))} logo`, slot }); return; }
-    if (type === 'image') {
-      const what = human((slot ?? 'photo').replace(/^image-/, ''));
-      out.push({ id: id(el), kind: 'photo', name: /^photo$/i.test(what) ? 'Photo' : `${what} photo`, slot });
-      return;
-    }
-    if (type === 'text') { out.push({ id: id(el), kind: 'text', name: human(slot!), slot }); return; }
-    if (BUTTON.test(name)) {
-      const t = firstText(el);
-      const icon = [...el.querySelectorAll('svg[data-node]')][0];
-      out.push({ id: id(el), kind: 'button', name: 'Button', textId: t ? id(t) : undefined, textSlot: (t as HTMLElement | null)?.dataset.slot, iconId: icon ? id(icon) : undefined });
-      return;
-    }
-    if (svg && isIcon(el)) {
-      const own = name.replace(/^Icon\s*·?\s*/, '').trim();
-      const label = own && !GENERIC.test(own) ? own : optionalOf(el) ?? nameOf(el.closest('[data-name^="Benefit"]') ?? el).replace(/^Benefit\s*·\s*/, '');
-      out.push({ id: id(el), kind: 'icon', name: `${human(label && !GENERIC.test(label) ? label : 'Icon')} icon`.replace(/^Icon icon$/, 'Icon') });
-      return;
-    }
-    if (LINE.test(name)) { out.push({ id: id(el), kind: 'line', name: name.startsWith('Dot') ? 'Dot' : 'Line' }); return; }
-    if (DECORATION.test(name) || (el as HTMLElement).dataset?.optional === 'illustration') { out.push({ id: id(el), kind: 'decoration', name: human(name.replace(/^optional-/, '')) }); return; }
-    if (svg) { out.push({ id: id(el), kind: 'decoration', name: GENERIC.test(name) ? 'Graphic' : human(name) }); return; }
-    const kids = [...el.children].filter((c) => c.hasAttribute('data-node'));
-    if (!kids.length && el.textContent?.trim()) {
-      out.push({ id: id(el), kind: 'text', name: GENERIC.test(name) || !name ? titleCase(el.textContent) : human(name) });
-      return;
-    }
-    if (!kids.length && /url\(/.test(getComputedStyle(el).backgroundImage)) { out.push({ id: id(el), kind: 'decoration', name: GENERIC.test(name) ? 'Image' : human(name) }); return; }
-    // A pill, plate or badge: an optional block with its own fill. Its texts stay separate components.
-    const opt = (el as HTMLElement).dataset?.optional;
-    if (opt && hasFill(el)) out.push({ id: id(el), kind: 'tag', name: `${human(opt)} tag` });
-    for (const k of kids) walk(k);
-  };
-  out.push({ id: id(root), kind: 'background', name: 'Background' });
-  for (const k of root.children) if (k.hasAttribute('data-node')) walk(k);
-  // Repeated names get a number ("Line 2"), so the list reads well.
-  const count: Record<string, number> = {};
-  for (const c of out) count[c.name] = (count[c.name] ?? 0) + 1;
-  const seen: Record<string, number> = {};
-  for (const c of out) if (count[c.name] > 1) { seen[c.name] = (seen[c.name] ?? 0) + 1; c.name = `${c.name} ${seen[c.name]}`; }
-  return out;
-}
-
-// The component a click lands on: the outermost one containing the element (the button, not its label).
+// What a click lands on: the outermost component around the element that is not a group (the button,
+// not its label; a tag, not its text). Groups are picked in the layers or with a marquee.
 export function componentAt(el: Element | null, comps: Comp[]): Comp | null {
   if (!el) return null;
   const byId = new Map(comps.map((c) => [c.id, c]));
   let found: Comp | null = null;
   for (let n: Element | null = el; n; n = n.parentElement) {
     const c = byId.get(n.getAttribute('data-node') ?? '');
-    if (c && c.kind !== 'background') found = c;
+    if (c && c.kind !== 'background' && c.kind !== 'group') found = c;
   }
   return found ?? comps.find((c) => c.kind === 'background') ?? null;
 }
@@ -124,14 +38,17 @@ export function componentAt(el: Element | null, comps: Comp[]): Comp | null {
 export function innermostAt(el: Element | null, comps: Comp[]): Comp | null {
   const byId = new Map(comps.map((c) => [c.id, c]));
   for (let n: Element | null = el; n; n = n.parentElement) {
-    const c = byId.get(n.getAttribute('data-node') ?? '');
+    const id = n.getAttribute('data-node') ?? '';
+    const c = byId.get(id);
     if (c) return c;
-    // A button's label is not a component on its own; double-clicking it edits the button's text.
-    const parent = comps.find((p) => p.textId && p.textId === n?.getAttribute('data-node'));
-    if (parent) return parent;
+    const button = comps.find((p) => p.textId === id);
+    if (button) return button;
   }
   return null;
 }
+
+// The component and everything inside it (a group, a tag).
+export const within = (comps: Comp[], id: string): string[] => [id, ...comps.filter((c) => c.parent === id).flatMap((c) => within(comps, c.id))];
 
 // Brand colours: the template's --color-* tokens, one swatch per distinct colour (aliases such as
 // light-* / dark-* that repeat a colour are dropped).

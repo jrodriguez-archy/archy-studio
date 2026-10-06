@@ -17,7 +17,7 @@ export const useSidebar = () => useContext(SidebarContext);
 
 const WIDE = 240, NARROW = 60;
 // Full-screen tools open with the rail collapsed, without changing the saved preference.
-const opensCollapsed = (path: string) => /^\/canvas\/[^/]+/.test(path);
+const opensCollapsed = (path: string) => /^\/canvas(\/|$)/.test(path);
 
 // The app frame: the left rail (240px, or 60px with icons only) and the content. The preference lives
 // in a cookie so the server draws the right width on the first paint. ⌘\ toggles it.

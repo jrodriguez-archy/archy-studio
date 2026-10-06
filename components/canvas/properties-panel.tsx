@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
-import type { Edits, NodeEdit } from '@/lib/canvas-shared';
+import type { Edits, NodeEdit, Preset } from '@/lib/canvas-shared';
 import { IconPicker } from './icon-picker';
 import type { Comp, LayerInfo, Token } from './model';
 
@@ -20,12 +20,16 @@ export type Align = 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
 
 const WEIGHTS = [[400, 'Regular'], [500, 'Medium'], [600, 'Semibold'], [700, 'Bold']] as const;
 const KIND_LABEL: Record<Comp['kind'], string> = {
-  text: 'Text', button: 'Button', icon: 'Icon', photo: 'Photo', partner: 'Logo', archy: 'Archy logo',
+  text: 'Text', button: 'Button', icon: 'Icon', photo: 'Photo', partner: 'Logo', archy: 'Archy logo', group: 'Group',
   tag: 'Tag', line: 'Line', decoration: 'Decoration', background: 'Background',
 };
 
 type Props = {
   comp: Comp;
+  /** Where Align puts it ("Content", "the safe area"…). */
+  alignIn?: string;
+  preset?: Preset;
+  onPreset: (p: Preset) => void;
   info: (id?: string) => LayerInfo | null;
   edits: Edits;
   slots: Record<string, string | null>;
@@ -41,21 +45,31 @@ type Props = {
 
 // Right column: what the selected component lets you change, inside the brand (palette colours, the
 // template's weights, sizes within the slot's limits).
-export function PropertiesPanel({ comp, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign }: Props) {
+export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign }: Props) {
   const edit = edits[comp.id];
   const box = edit?.box ?? {};
   const me = info(comp.id);
   const edited = [comp.id, comp.textId, comp.iconId].some((id) => id && edits[id] && Object.keys(edits[id]).length);
   const slot = comp.slot ? { value: slots[comp.slot] ?? null, meta: slotMeta[comp.slot], preview: previews[comp.slot] ?? null } : null;
-  const movable = !['background', 'archy'].includes(comp.kind);
+  const movable = comp.kind !== 'background';
 
   if (comp.kind === 'archy') {
     return (
-      <Panel comp={comp}>
+      <Panel comp={comp} onReset={edited ? onReset : undefined}>
         <div className="flex gap-2.5 rounded-md bg-foreground/[0.04] p-3 text-foreground/60">
           <HugeiconsIcon icon={LockIcon} className="mt-px size-4 shrink-0 text-foreground/50" strokeWidth={1.6} />
-          <p>The Archy logo is locked. It always appears as the brand designed it: same drawing, colour, size and place.</p>
+          <p>The drawing and its colour are the brand’s. You can move it and scale it; it turns white or Archy blue with the theme.</p>
         </div>
+        <Section title="Position">
+          <AlignRow alignIn={alignIn} onAlign={onAlign} />
+          <div className="grid grid-cols-2 gap-2">
+            <NumberField label="X" value={box.dx ?? 0} onCommit={(v) => onEdit(comp.id, { box: { dx: v } })} />
+            <NumberField label="Y" value={box.dy ?? 0} onCommit={(v) => onEdit(comp.id, { box: { dy: v } })} />
+          </div>
+          <Row label="Scale">
+            <SliderField value={Math.round((box.scale ?? 1) * 100)} min={30} max={300} suffix="%" onChange={(v, commit) => onEdit(comp.id, { box: { scale: v / 100 } }, commit)} />
+          </Row>
+        </Section>
       </Panel>
     );
   }
@@ -116,6 +130,21 @@ export function PropertiesPanel({ comp, info, edits, slots, slotMeta, previews, 
         </Section>
       )}
 
+      {comp.kind === 'background' && (
+        <Section title="Theme">
+          <div className="grid grid-cols-3 gap-1.5">
+            {PRESETS.map(([key, label, swatch]) => (
+              <button key={key} type="button" onClick={() => onPreset(key)}
+                className={`flex flex-col items-center gap-1.5 rounded-md p-2 ring-1 transition-colors ${preset === key ? 'bg-[#E6F4FF] ring-primary/50' : 'ring-foreground/10 hover:bg-foreground/[0.03]'}`}>
+                <span className="flex h-8 w-full items-center justify-center rounded-[4px] text-[11px] font-semibold" style={swatch}>Aa</span>
+                <span className={preset === key ? 'font-medium text-primary' : 'text-foreground/70'}>{label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-foreground/40">Texts, buttons, lines, icons and the Archy logo follow the theme.</p>
+        </Section>
+      )}
+
       {(comp.kind === 'tag' || comp.kind === 'line' || comp.kind === 'background') && (
         <Section title={comp.kind === 'background' ? 'Fill' : 'Colour'}>
           <ColorField tokens={tokens} current={me?.backgroundColor ?? ''} onPick={(v) => onEdit(comp.id, { style: { backgroundColor: v } })} />
@@ -129,14 +158,7 @@ export function PropertiesPanel({ comp, info, edits, slots, slotMeta, previews, 
 
       {movable && me && (
         <Section title="Position">
-          <div className="grid grid-cols-6 gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5">
-            {([['left', AlignLeftIcon], ['center', AlignHorizontalCenterIcon], ['right', AlignRightIcon], ['top', AlignTopIcon], ['middle', AlignVerticalCenterIcon], ['bottom', AlignBottomIcon]] as const).map(([a, icon]) => (
-              <button key={a} type="button" title={`Align ${a} on the piece`} aria-label={`Align ${a}`} onClick={() => onAlign(a)}
-                className="flex h-6 items-center justify-center rounded-[4px] text-foreground/60 hover:bg-background hover:text-foreground hover:shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">
-                <HugeiconsIcon icon={icon} className="size-3.5" strokeWidth={1.6} />
-              </button>
-            ))}
-          </div>
+          <AlignRow alignIn={alignIn} onAlign={onAlign} />
           <div className="grid grid-cols-2 gap-2">
             <NumberField label="X" value={box.dx ?? 0} onCommit={(v) => onEdit(comp.id, { box: { dx: v } })} />
             <NumberField label="Y" value={box.dy ?? 0} onCommit={(v) => onEdit(comp.id, { box: { dy: v } })} />
@@ -154,6 +176,56 @@ export function PropertiesPanel({ comp, info, edits, slots, slotMeta, previews, 
         </Section>
       )}
     </Panel>
+  );
+}
+
+const PRESETS: [Preset, string, React.CSSProperties][] = [
+  ['dark', 'Dark', { background: 'linear-gradient(180deg, #000484, #00004E 55%)', color: '#fff' }],
+  ['blue', 'Blue', { background: '#013DF5', color: '#fff' }],
+  ['light', 'Light', { background: '#fff', color: '#00004E', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)' }],
+];
+
+const ALIGNS = [['left', AlignLeftIcon], ['center', AlignHorizontalCenterIcon], ['right', AlignRightIcon], ['top', AlignTopIcon], ['middle', AlignVerticalCenterIcon], ['bottom', AlignBottomIcon]] as const;
+
+// Align inside the container (without its padding) or the safe area, never against the artboard edge.
+function AlignRow({ alignIn, onAlign, label = 'in' }: { alignIn?: string; onAlign: (a: Align) => void; label?: string }) {
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-6 gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5">
+        {ALIGNS.map(([a, icon]) => (
+          <button key={a} type="button" title={`Align ${a}${alignIn ? ` ${label} ${alignIn}` : ''}`} aria-label={`Align ${a}`} onClick={() => onAlign(a)}
+            className="flex h-6 items-center justify-center rounded-[4px] text-foreground/60 hover:bg-background hover:text-foreground hover:shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">
+            <HugeiconsIcon icon={icon} className="size-3.5" strokeWidth={1.6} />
+          </button>
+        ))}
+      </div>
+      {alignIn && <p className="text-[11px] text-foreground/40">Aligns {label} {alignIn}.</p>}
+    </div>
+  );
+}
+
+// Several components selected: move them with the arrows or by dragging, align them to each other or
+// to their container, hide them.
+export function MultiPanel({ count, onAlign, onHide, onReset }: { count: number; onAlign: (a: Align, to: 'selection' | 'container') => void; onHide: () => void; onReset: () => void }) {
+  return (
+    <div className="space-y-5 px-4 py-4 text-[12px]">
+      <div>
+        <p className="text-[13px] font-medium">{count} selected</p>
+        <p className="text-foreground/40">Drag to move them together. ⌘-click to add or remove one.</p>
+      </div>
+      <Section title="Align to each other"><AlignRow onAlign={(a) => onAlign(a, 'selection')} /></Section>
+      <Section title="Align in their container"><AlignRow onAlign={(a) => onAlign(a, 'container')} /></Section>
+      <Section title="Selection">
+        <div className="grid grid-cols-2 gap-1.5">
+          <button type="button" onClick={onHide} className="flex h-7 items-center justify-center gap-1.5 rounded-md bg-foreground/[0.05] text-foreground/70 hover:bg-foreground/[0.09]">
+            <HugeiconsIcon icon={ViewOffSlashIcon} className="size-3.5" /> Hide
+          </button>
+          <button type="button" onClick={onReset} className="flex h-7 items-center justify-center gap-1.5 rounded-md bg-foreground/[0.05] text-foreground/70 hover:bg-foreground/[0.09]">
+            <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-3.5" /> Reset
+          </button>
+        </div>
+      </Section>
+    </div>
   );
 }
 

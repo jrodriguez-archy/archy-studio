@@ -1,6 +1,6 @@
 // Template HTML, assets, fonts, the asset library and the fit engine are read from disk at runtime.
 const renderFiles = [
-  './templates/**/*', './fonts/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js',
+  './templates/**/*', './fonts/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js',
   './node_modules/@sparticuz/chromium/bin/**', './node_modules/playwright-core/**',
 ];
 // Routes that render or read template files (Canvas renders from its page's server actions).

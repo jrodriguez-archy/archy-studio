@@ -4,12 +4,14 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
 import type { Edits, FillPlan, NodeEdit, RenderReport } from '@/lib/canvas-shared';
-import { movingEdges, snap, type Box, type Guide } from './guides';
-import { componentAt, innermostAt, readComponents, readInfo, readTokens, readUsedColors, type Comp, type LayerInfo, type Token } from './model';
+import { movingEdges, snap, type Guide } from './guides';
+import { componentAt, innermostAt, readInfo, readTokens, readUsedColors, within, type Box, type Comp, type LayerInfo, type Token } from './model';
 
 type Win = Window & {
   __fill: (a: unknown) => Promise<RenderReport>;
   __applyEdits: (e: Edits, u: Record<string, string>, i: Record<string, string>) => void;
+  __components: () => { comps: Comp[]; safe: Box };
+  __alignBox: (id: string) => Box | null;
 };
 
 const scripts: Record<string, Promise<string>> = {};
@@ -19,18 +21,27 @@ export type StageHandle = {
   info: (id: string) => LayerInfo | null;
   /** Where a node sits on the artboard (artboard px). */
   rect: (id: string) => Box | null;
+  /** The box a component aligns in: its container without padding, or the safe area. */
+  alignBox: (id: string) => Box | null;
 };
+
+export type SelectMode = 'replace' | 'toggle';
 
 type Props = {
   plan: FillPlan;
   edits: Edits;
   zoom: number;
-  selected: string | null;
+  selected: string[];
+  hover: string | null;
   comps: Comp[];
-  onSelect: (id: string | null) => void;
-  onReady: (r: { comps: Comp[]; tokens: Token[]; used: string[]; report: RenderReport }) => void;
-  /** Live change while dragging (commit=false) and the final one (commit=true, goes in history). */
-  onEdit: (id: string, e: NodeEdit, commit: boolean) => void;
+  safe: Box | null;
+  /** The hand tool (space held, or chosen): the stage lets the viewport pan. */
+  panning: boolean;
+  onSelect: (ids: string[], mode: SelectMode) => void;
+  onHover: (id: string | null) => void;
+  onReady: (r: { comps: Comp[]; safe: Box; tokens: Token[]; used: string[]; report: RenderReport }) => void;
+  /** Live changes while dragging (commit=false) and the final ones (commit=true, one history step). */
+  onEdit: (changes: Record<string, NodeEdit>, commit: boolean) => void;
   /** Typed in place. False when refused: the page is drawn again as it was. */
   onText: (nodeId: string, text: string) => boolean;
   onInfo: () => void;
@@ -41,21 +52,27 @@ const HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'] as const;
 type Handle = (typeof HANDLES)[number];
 const SNAP_PX = 6; // on screen
 
-// The piece itself: the real template page in a same-origin iframe, filled by fit.js and edited by
-// edits.js exactly as the renderer does, under an overlay that selects, moves and resizes components.
-export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, comps, onSelect, onReady, onEdit, onText, onInfo }, ref) {
+type Drag = {
+  ids: string[]; handle: Handle | 'move' | 'marquee'; x: number; y: number; moved: boolean; shift?: boolean;
+  bases: Record<string, NodeEdit>; box: Box; w: number; h: number; targets: Box[];
+};
+
+// The piece itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
+// and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
+export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo }, ref) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [ready, setReady] = useState(false);
-  const [hover, setHover] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [badge, setBadge] = useState<string | null>(null);
+  const [marquee, setMarquee] = useState<Rect | null>(null);
+  const [outside, setOutside] = useState(false);
   const [, setTick] = useState(0);
   const [nonce, setNonce] = useState(0);
   const redraw = useCallback(() => setTick((t) => t + 1), []);
   const live = useRef({ edits, plan, onReady, onInfo });
   live.current = { edits, plan, onReady, onInfo };
-  const drag = useRef<{ id: string; handle: Handle | 'move'; x: number; y: number; base: NodeEdit; w: number; h: number; box: Box; targets: Box[]; moved: boolean } | null>(null);
+  const drag = useRef<Drag | null>(null);
 
   const doc = () => frame.current?.contentDocument ?? null;
   const win = () => frame.current?.contentWindow as Win | null;
@@ -72,6 +89,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   useImperativeHandle(ref, () => ({
     info: (id) => { const n = el(id); return n ? readInfo(n, live.current.edits[id]?.box?.scale ?? 1) : null; },
     rect: boxOf,
+    alignBox: (id) => win()?.__alignBox(id) ?? null,
   }), [el, boxOf]);
 
   // A new fill (copy, slot image, variant) reloads the page; edits alone are re-applied in place.
@@ -84,7 +102,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     let stale = false;
     const load = async () => {
       const d = f.contentDocument!, w = f.contentWindow as Win;
-      for (const name of ['fit.js', 'edits.js']) {
+      for (const name of ['fit.js', 'edits.js', 'components.js']) {
         const s = d.createElement('script');
         s.textContent = await script(name);
         d.head.appendChild(s);
@@ -95,11 +113,11 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       // Colours and components are read before the hand edits, so they describe the piece as designed.
       const tokens = readTokens(d);
       const used = readUsedColors(d, tokens);
-      const comps = readComponents(d);
+      const { comps, safe } = w.__components();
       w.__applyEdits(live.current.edits, live.current.plan.imageUrls, live.current.plan.iconSvgs);
       await d.fonts.ready;
       setReady(true);
-      live.current.onReady({ comps, tokens, used, report });
+      live.current.onReady({ comps, safe, tokens, used, report });
       redraw();
     };
     const onLoad = () => { load().catch((e) => console.error('Canvas could not draw the piece', e)); };
@@ -117,36 +135,67 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   }, [edits, plan.imageUrls, plan.iconSvgs, ready, redraw]);
 
   const screen = (b: Box | null): Rect | null => b && { x: b.x * zoom, y: b.y * zoom, w: b.w * zoom, h: b.h * zoom };
-
-  const pointAt = (e: React.PointerEvent | React.MouseEvent) => {
-    const d = doc(), box = frame.current?.getBoundingClientRect();
-    if (!d || !box) return null;
-    const x = (e.clientX - box.left) / zoom, y = (e.clientY - box.top) / zoom;
+  const union = (bs: Box[]): Box => {
+    const x = Math.min(...bs.map((b) => b.x)), y = Math.min(...bs.map((b) => b.y));
+    return { x, y, w: Math.max(...bs.map((b) => b.x + b.w)) - x, h: Math.max(...bs.map((b) => b.y + b.h)) - y };
+  };
+  const local = (e: { clientX: number; clientY: number }) => {
+    const box = frame.current!.getBoundingClientRect();
+    return { x: (e.clientX - box.left) / zoom, y: (e.clientY - box.top) / zoom };
+  };
+  const pointAt = (e: { clientX: number; clientY: number }) => {
+    const d = doc();
+    if (!d || !frame.current) return null;
+    const { x, y } = local(e);
     return d.elementsFromPoint(x, y).find((n) => n.closest('[data-node]') && n !== d.body && n !== d.documentElement) ?? null;
   };
-  const hit = (e: React.PointerEvent | React.MouseEvent) => componentAt(pointAt(e), comps);
+  const kindOf = (id: string) => comps.find((c) => c.id === id)?.kind;
+  const movable = (id: string) => !!id && !['background'].includes(kindOf(id) ?? 'background');
 
-  const startDrag = (e: React.PointerEvent, id: string, handle: Handle | 'move') => {
-    const n = el(id), box = boxOf(id);
-    if (!n || !box) return;
-    const base = edits[id] ?? {};
-    const scale = base.box?.scale ?? 1;
-    // Snap targets: the artboard and every other visible component that is not inside this one.
-    const art = { x: 0, y: 0, w: plan.width, h: plan.height };
+  const startDrag = (e: React.PointerEvent, ids: string[], handle: Drag['handle']) => {
+    const boxes = ids.map(boxOf).filter((b): b is Box => !!b);
+    if (handle !== 'marquee' && !boxes.length) return;
+    const box = handle === 'marquee' ? { ...local(e), w: 0, h: 0 } : union(boxes);
+    const bases = Object.fromEntries(ids.map((id) => [id, edits[id] ?? {}]));
+    const scale = ids.length === 1 ? bases[ids[0]].box?.scale ?? 1 : 1;
+    // Snap targets: the artboard, the safe area, every other component outside the moving ones, and
+    // where the moving one sits in the design (so it is easy to put back in line).
+    const moving = new Set(ids.flatMap((id) => within(comps, id)));
+    const nodes = ids.map(el).filter(Boolean) as HTMLElement[];
     const others = comps.filter((c) => {
       const o = el(c.id);
-      return c.id !== id && c.kind !== 'background' && o && !n.contains(o) && !o.contains(n);
+      return !moving.has(c.id) && c.kind !== 'background' && c.kind !== 'group' && o && !nodes.some((n) => n.contains(o) || o.contains(n));
     });
-    const targets = [art, ...others.map((c) => boxOf(c.id)).filter((b): b is Box => !!b)];
-    drag.current = { id, handle, x: e.clientX, y: e.clientY, base, w: box.w / scale, h: box.h / scale, box, targets, moved: false };
+    const original = ids.length === 1 && handle === 'move'
+      ? [{ ...box, x: box.x - (bases[ids[0]].box?.dx ?? 0), y: box.y - (bases[ids[0]].box?.dy ?? 0) }] : [];
+    const targets = [{ x: 0, y: 0, w: plan.width, h: plan.height }, ...(safe ? [safe] : []), ...original, ...others.map((c) => boxOf(c.id)).filter((b): b is Box => !!b)];
+    drag.current = { ids, handle, x: e.clientX, y: e.clientY, moved: false, bases, box, w: box.w / scale, h: box.h / scale, targets };
     (e.currentTarget as Element).setPointerCapture(e.pointerId);
   };
 
   const dragTo = (e: React.PointerEvent, final: boolean) => {
     const g = drag.current!;
     let dx = (e.clientX - g.x) / zoom, dy = (e.clientY - g.y) / zoom;
+
+    if (g.handle === 'marquee') {
+      const m = { x: Math.min(g.box.x, g.box.x + dx), y: Math.min(g.box.y, g.box.y + dy), w: Math.abs(dx), h: Math.abs(dy) };
+      setMarquee(final ? null : { x: m.x * zoom, y: m.y * zoom, w: m.w * zoom, h: m.h * zoom });
+      if (final) {
+        // Everything the rectangle touches, at the level a click would pick (no groups, no background).
+        const hit = comps.filter((c) => {
+          if (c.kind === 'background' || c.kind === 'group' || (c.parent && comps.find((p) => p.id === c.parent)?.kind === 'tag')) return false;
+          const b = boxOf(c.id);
+          return b && b.x < m.x + m.w && b.x + b.w > m.x && b.y < m.y + m.h && b.y + b.h > m.y;
+        });
+        onSelect(hit.map((c) => c.id), e.shiftKey || e.metaKey || e.ctrlKey ? 'toggle' : 'replace');
+      }
+      return;
+    }
+
     let lines: Guide[] = [];
-    if (!e.metaKey) {
+    const logo = g.ids.length === 1 && kindOf(g.ids[0]) === 'archy';
+    if (g.handle === 'move' && e.shiftKey) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; } // one axis
+    if (!e.metaKey && !logo) {
       const h = g.handle;
       const moved = h === 'move'
         ? { ...g.box, x: g.box.x + dx, y: g.box.y + dy }
@@ -155,32 +204,54 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
             w: g.box.w + (h.includes('e') ? dx : h.includes('w') ? -dx : 0), h: g.box.h + (h.includes('s') ? dy : h.includes('n') ? -dy : 0),
           };
       const s = snap(moved, movingEdges(h), g.targets, SNAP_PX / zoom);
-      dx += s.dx; dy += s.dy; lines = s.guides;
+      if (!(g.handle === 'move' && e.shiftKey && !dx)) dx += s.dx;
+      if (!(g.handle === 'move' && e.shiftKey && !dy)) dy += s.dy;
+      lines = s.guides;
     }
-    const edit = boxFor(g, dx, dy, e.shiftKey);
-    onEdit(g.id, edit, final);
+    if (g.handle === 'move') {
+      // Never off the artboard.
+      dx = Math.min(Math.max(dx, -g.box.x), plan.width - g.box.w - g.box.x);
+      dy = Math.min(Math.max(dy, -g.box.y), plan.height - g.box.h - g.box.y);
+    }
+    const changes: Record<string, NodeEdit> = {};
+    if (logo && g.handle !== 'move') {
+      // The Archy logo scales from its centre, keeping its proportions.
+      const b0 = g.bases[g.ids[0]].box ?? {};
+      const grow = ((g.handle.includes('e') ? dx : g.handle.includes('w') ? -dx : 0) + (g.handle.includes('s') ? dy : g.handle.includes('n') ? -dy : 0)) * 2;
+      const k = Math.max(0.3, Math.min(3, (b0.scale ?? 1) * (1 + grow / (g.w + g.h))));
+      changes[g.ids[0]] = { box: { scale: Math.round(k * 100) / 100 } };
+    } else {
+      for (const id of g.ids) changes[id] = boxFor({ handle: g.handle, base: g.bases[id], w: g.w, h: g.h }, dx, dy, e.shiftKey);
+    }
+    onEdit(changes, final);
     setGuides(final ? [] : lines);
-    const b = edit.box ?? {};
-    setBadge(final ? null : g.handle === 'move' ? `X ${b.dx ?? 0}   Y ${b.dy ?? 0}` : `${b.width ?? Math.round(g.w)} × ${b.height ?? Math.round(g.h)}`);
+    const moved = { ...g.box, x: g.box.x + (g.handle === 'move' ? dx : 0), y: g.box.y + (g.handle === 'move' ? dy : 0) };
+    setOutside(!final && !!safe && g.handle === 'move' && (moved.x < safe.x - 1 || moved.y < safe.y - 1 || moved.x + moved.w > safe.x + safe.w + 1 || moved.y + moved.h > safe.y + safe.h + 1));
+    const b = changes[g.ids[0]]?.box ?? {};
+    setBadge(final ? null : logo && g.handle !== 'move' ? `${Math.round((b.scale ?? 1) * 100)}%` : g.handle === 'move' ? `X ${Math.round(dx)}   Y ${Math.round(dy)}` : `${b.width ?? Math.round(g.w)} × ${b.height ?? Math.round(g.h)}`);
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (e.button !== 0 || editing) return;
-    const c = hit(e);
-    // Inside the current selection, a drag moves the selection (a button keeps its label).
-    const current = comps.find((k) => k.id === selected);
-    const sel = current && current.kind !== 'background' ? screen(boxOf(current.id)) : null;
-    const box = frame.current!.getBoundingClientRect();
-    const x = e.clientX - box.left, y = e.clientY - box.top;
-    const inSel = sel && x >= sel.x && x <= sel.x + sel.w && y >= sel.y && y <= sel.y + sel.h;
-    const target = inSel ? current! : c;
-    onSelect(target?.id ?? null);
-    if (target && target.kind !== 'background' && target.kind !== 'archy') startDrag(e, target.id, 'move');
+    if (e.button !== 0 || editing || panning) return;
+    const add = e.metaKey || e.ctrlKey || e.shiftKey;
+    const c = componentAt(pointAt(e), comps);
+    // Inside the current selection, a drag moves the whole selection.
+    const p = local(e);
+    const inSel = !add && selected.some((id) => { const b = boxOf(id); return b && movable(id) && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h; });
+    if (inSel) { startDrag(e, selected.filter(movable), 'move'); return; }
+    if (!c || c.kind === 'background') {
+      // Empty ground: a click selects the background, a drag draws a selection rectangle.
+      if (!add) onSelect(c ? [c.id] : [], 'replace');
+      startDrag(e, [], 'marquee');
+      return;
+    }
+    onSelect([c.id], add ? 'toggle' : 'replace');
+    if (!add) startDrag(e, [c.id], 'move');
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     const g = drag.current;
-    if (!g) { setHover(hit(e)?.id ?? null); return; }
+    if (!g) { if (!panning) onHover(componentAt(pointAt(e), comps)?.id ?? null); return; }
     if (!g.moved && Math.abs(e.clientX - g.x) + Math.abs(e.clientY - g.y) < 3) return;
     g.moved = true;
     dragTo(e, false);
@@ -192,6 +263,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     drag.current = null;
     setGuides([]);
     setBadge(null);
+    setMarquee(null);
+    setOutside(false);
   };
 
   // Double-click a text (or a button's label) to type in place.
@@ -200,7 +273,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const nodeId = c?.kind === 'text' ? c.id : c?.kind === 'button' ? c.textId : undefined;
     if (!c || !nodeId) return;
     const n = el(nodeId)!;
-    onSelect(c.id);
+    onSelect([c.id], 'replace');
     setEditing(nodeId);
     n.contentEditable = 'plaintext-only';
     n.focus();
@@ -226,11 +299,15 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     n.addEventListener('keydown', onKey);
   };
 
-  const selComp = comps.find((c) => c.id === selected);
-  const sel = ready && selComp && selComp.kind !== 'background' ? screen(boxOf(selected)) : null;
+  const sel = ready ? selected.filter((id) => kindOf(id) !== 'background').map((id) => ({ id, r: screen(boxOf(id)) })).filter((s) => s.r) as { id: string; r: Rect }[] : [];
+  const single = sel.length === 1 ? sel[0] : null;
+  const logo = single && kindOf(single.id) === 'archy';
+  const group = sel.length > 1 ? screen(union(sel.map((s) => ({ x: s.r.x / zoom, y: s.r.y / zoom, w: s.r.w / zoom, h: s.r.h / zoom })))) : null;
   const hovComp = comps.find((c) => c.id === hover);
-  const hov = ready && hovComp && hovComp.kind !== 'background' && hover !== selected && !drag.current ? screen(boxOf(hover)) : null;
-  const locked = selComp?.kind === 'archy';
+  const hov = ready && hovComp && hovComp.kind !== 'background' && !selected.includes(hovComp.id) && !drag.current ? screen(boxOf(hover)) : null;
+  const handles: readonly Handle[] = logo ? ['nw', 'ne', 'se', 'sw'] : HANDLES;
+  const frameBox = (single ?? (group ? { r: group } : null))?.r;
+  const safeR = screen(safe);
 
   return (
     <div data-stage className="relative shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)]" style={{ width: plan.width * zoom, height: plan.height * zoom }}>
@@ -242,31 +319,37 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       />
       {!ready && <div className="absolute inset-0 animate-pulse bg-foreground/[0.04]" />}
       <div
-        className={`absolute inset-0 ${editing ? 'pointer-events-none' : 'cursor-default'}`}
+        className={`absolute inset-0 ${editing || panning ? 'pointer-events-none' : 'cursor-default'}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerLeave={() => setHover(null)}
+        onPointerLeave={() => onHover(null)}
         onDoubleClick={onDoubleClick}
       >
+        {/* The safe area shows while something moves; red when the piece leaves it. */}
+        {safeR && badge && <div className={`pointer-events-none absolute border border-dashed ${outside ? 'border-[#F2385A]' : 'border-primary/40'}`} style={{ left: safeR.x, top: safeR.y, width: safeR.w, height: safeR.h }} />}
         {hov && (
           <div className="pointer-events-none absolute ring-1 ring-primary/60" style={{ left: hov.x, top: hov.y, width: hov.w, height: hov.h }}>
-            {hovComp?.kind === 'archy' && <LockBadge />}
+            {hovComp?.kind === 'archy' && <Tag icon>Archy logo · move and scale only</Tag>}
           </div>
         )}
-        {sel && (
-          <div className={`pointer-events-none absolute ring-[1.5px] ${locked ? 'ring-foreground/40' : 'ring-primary'}`} style={{ left: sel.x, top: sel.y, width: sel.w, height: sel.h }}>
-            {locked ? <LockBadge /> : !editing && HANDLES.map((h) => (
+        {sel.length > 1 && sel.map((s) => <div key={s.id} className="pointer-events-none absolute ring-1 ring-primary" style={{ left: s.r.x, top: s.r.y, width: s.r.w, height: s.r.h }} />)}
+        {frameBox && (
+          <div className={`pointer-events-none absolute ${sel.length > 1 ? 'ring-1 ring-primary/50 ring-offset-0' : 'ring-[1.5px] ring-primary'}`} style={{ left: frameBox.x, top: frameBox.y, width: frameBox.w, height: frameBox.h }}>
+            {single && !editing && handles.map((h) => (
               <span
                 key={h}
-                onPointerDown={(e) => { e.stopPropagation(); if (selected) startDrag(e, selected, h); }}
+                onPointerDown={(e) => { e.stopPropagation(); startDrag(e, [single.id], h); }}
                 className="pointer-events-auto absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-[2px] border border-primary bg-white"
                 style={{ left: h.includes('w') ? 0 : h.includes('e') ? '100%' : '50%', top: h.includes('n') ? 0 : h.includes('s') ? '100%' : '50%', cursor: `${h}-resize` }}
               />
             ))}
-            {badge && <span className="absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] bg-primary px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums">{badge}</span>}
+            {logo && !badge && <Tag icon>Archy logo · move and scale only</Tag>}
+            {sel.length > 1 && !badge && <Tag>{sel.length} selected</Tag>}
+            {badge && <span className={`absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums ${outside ? 'bg-[#F2385A]' : 'bg-primary'}`}>{outside ? `${badge}   Outside the safe area` : badge}</span>}
           </div>
         )}
+        {marquee && <div className="pointer-events-none absolute border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
         {guides.map((g, i) => (
           <div key={i} className="pointer-events-none absolute bg-[#F2385A]"
             style={g.axis === 'x' ? { left: g.at * zoom, top: g.from * zoom, width: 1, height: (g.to - g.from) * zoom } : { top: g.at * zoom, left: g.from * zoom, height: 1, width: (g.to - g.from) * zoom }} />
@@ -276,20 +359,20 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   );
 });
 
-function LockBadge() {
+function Tag({ icon, children }: { icon?: boolean; children: React.ReactNode }) {
   return (
     <span className="absolute -top-6 left-0 flex items-center gap-1 rounded-[4px] bg-foreground px-1.5 py-0.5 text-[10px] whitespace-nowrap text-background">
-      <HugeiconsIcon icon={LockIcon} className="size-3" strokeWidth={2} /> Archy logo is locked
+      {icon && <HugeiconsIcon icon={LockIcon} className="size-3" strokeWidth={2} />} {children}
     </span>
   );
 }
 
 // The box edit for a drag: move adds to the offset; a handle changes the size and, from the left or top,
 // moves the layer so the opposite edge stays put. Shift on a corner keeps the proportions.
-function boxFor(g: { handle: Handle | 'move'; base: NodeEdit; w: number; h: number }, dx: number, dy: number, keep: boolean): NodeEdit {
+function boxFor(g: { handle: Handle | 'move' | 'marquee'; base: NodeEdit; w: number; h: number }, dx: number, dy: number, keep: boolean): NodeEdit {
   const b = g.base.box ?? {};
   const x0 = b.dx ?? 0, y0 = b.dy ?? 0;
-  if (g.handle === 'move') return { box: { dx: Math.round(x0 + dx), dy: Math.round(y0 + dy) } };
+  if (g.handle === 'move' || g.handle === 'marquee') return { box: { dx: Math.round(x0 + dx), dy: Math.round(y0 + dy) } };
   const s = b.scale ?? 1;
   const h = g.handle;
   let w = g.w, ht = g.h;

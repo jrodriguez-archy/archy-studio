@@ -11,11 +11,14 @@ export type NodeEdit = {
   icon?: string;
   /** Only on the THEME entry: brand colour swaps for the whole piece, hex → var(--color-*). */
   theme?: Record<string, string>;
+  /** Only on the THEME entry: the piece redrawn on a Dark, Blue or Light ground (scripts/edits.js). */
+  preset?: Preset;
   hidden?: boolean;
   box?: { dx?: number; dy?: number; width?: number; height?: number; scale?: number };
   style?: { color?: string; backgroundColor?: string; fontSize?: number; fontWeight?: number; opacity?: number };
 };
 export type Edits = Record<string, NodeEdit>;
+export type Preset = 'dark' | 'blue' | 'light';
 // The piece-level entry of Edits (not a layer).
 export const THEME = ':theme';
 
@@ -55,6 +58,7 @@ export function cleanEdits(edits: Edits): Edits {
     if (e.icon) n.icon = e.icon;
     const theme = Object.fromEntries(Object.entries(e.theme ?? {}).filter(([, v]) => v));
     if (Object.keys(theme).length) n.theme = theme;
+    if (e.preset) n.preset = e.preset;
     if (e.hidden) n.hidden = true;
     if (Object.keys(box).length) n.box = box;
     if (Object.keys(style).length) n.style = style;

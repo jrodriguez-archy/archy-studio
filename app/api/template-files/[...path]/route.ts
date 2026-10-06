@@ -4,11 +4,11 @@ import { ROOT } from '@/lib/templates';
 
 export const runtime = 'nodejs';
 
-// The repo files a template page reads (its HTML, assets, fonts, the asset library) plus the two page
+// The repo files a template page reads (its HTML, assets, fonts, the asset library) plus the page
 // scripts, served same-origin so the Canvas editor can open the real template in an iframe and run the
 // same fill and edits as the renderer. Signed-in only (proxy.ts).
 const DIRS = ['templates', 'fonts', 'library'];
-const SCRIPTS = ['scripts/fit.js', 'scripts/edits.js'];
+const SCRIPTS = ['scripts/fit.js', 'scripts/edits.js', 'scripts/components.js'];
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.json': 'application/json',

@@ -1,11 +1,31 @@
 // Runs inside the template page after window.__fill: the hand edits made in Canvas, layer by layer
-// (keyed by data-node), plus the piece's colour swaps (the ':theme' entry). The editor and the renderer
-// both run it, so what is on the canvas is the PNG. Re-applying is safe: every touched layer is first
-// put back the way __fill left it.
+// (keyed by data-node), plus the piece-level ':theme' entry (a Dark / Blue / Light theme and colour
+// swaps). The editor and the renderer both run it, so what is on the canvas is the PNG. Re-applying is
+// safe: every touched layer is first put back the way __fill left it.
 window.__applyEdits = function applyEdits(edits, urls, icons) {
   const root = document.querySelector('body > [data-node]');
   const ARCHY = /^(Logo Archy|Archy Wordmark)/;
-  const inArchyLogo = (el) => { for (let n = el; n && n !== root; n = n.parentElement) if (ARCHY.test(n.getAttribute?.('data-name') ?? '')) return true; return false; };
+  const BUTTON = /^(CTA|Button)$/i;
+  const DECORATION = /^(Mascot|Stars|Swoosh|Drinks Pattern|Pixel Dissolve|Rulers|BK Fade|Scrim|RIBBON|Border|Photo Panel|Cocktail|Illustration)/i;
+  const nameOf = (el) => el.getAttribute?.('data-name') ?? '';
+  const inside = (el, test) => { for (let n = el; n && n !== root; n = n.parentElement) if (test(n)) return n; return null; };
+  const inArchyLogo = (el) => !!inside(el, (n) => ARCHY.test(nameOf(n)));
+  const isSvg = (el) => el.namespaceURI === 'http://www.w3.org/2000/svg';
+  // Keep what __fill left, once, so the next pass can put it back.
+  const keep = (el) => {
+    if ('editStyle' in el.dataset) return;
+    el.dataset.editStyle = el.getAttribute('style') ?? '';
+    const cs = getComputedStyle(el);
+    el.dataset.editFont = cs.fontSize;
+    el.dataset.editLine = cs.lineHeight;
+    if (isSvg(el)) el.dataset.editHtml = el.innerHTML;
+    else if (!el.children.length) el.dataset.editText = el.textContent;
+  };
+  const setAttr = (el, attr, value) => {
+    const k = attr === 'fill' ? 'themeFill' : 'themeStroke';
+    if (!(k in el.dataset)) el.dataset[k] = el.getAttribute(attr) ?? '';
+    el.setAttribute(attr, value);
+  };
 
   // ---- Put everything back ----
   for (const el of document.querySelectorAll('[data-edit-style]')) {
@@ -19,8 +39,64 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     if ('themeStroke' in el.dataset) { el.setAttribute('stroke', el.dataset.themeStroke); delete el.dataset.themeStroke; }
   }
 
+  const piece = edits?.[':theme'] ?? {};
+
+  // ---- Theme: the piece redrawn on a Dark, Blue or Light ground, by role (text, accent, button,
+  // surface, line, icon, the Archy logo's approved colour). Photos and illustrations keep theirs. ----
+  const PRESETS = {
+    dark: { bg: 'linear-gradient(in oklab 180deg, var(--color-dark-foreground) 0%, var(--color-dark-background) 55%)', text: '#FFFFFF', accent: '#66BFFF', surface: '#000484', border: '#0000C9', button: '#013DF5', onButton: '#FFFFFF', logo: '#FFFFFF' },
+    blue: { bg: '#013DF5', text: '#FFFFFF', accent: '#CCEAFF', surface: '#0000C9', border: '#66BFFF', button: '#FFFFFF', onButton: '#013DF5', logo: '#FFFFFF' },
+    light: { bg: '#FFFFFF', text: '#00004E', accent: '#013DF5', surface: '#F3F9FF', border: '#EEEEEE', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5' },
+  };
+  const t = PRESETS[piece.preset];
+  if (t) {
+    keep(root);
+    root.style.background = t.bg;
+    const rgb = (c) => (c.match(/\d+(\.\d+)?/g) ?? []).map(Number);
+    const lum = (c) => { const [r, g, b] = rgb(c); return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+    const saturated = (c) => { const [r, g, b, a] = rgb(c); return a !== 0 && Math.max(r, g, b) - Math.min(r, g, b) > 90; };
+    const filled = (el) => { const bg = getComputedStyle(el).backgroundColor; return bg && !/rgba\(0, 0, 0, 0\)|transparent/.test(bg); };
+    const skip = (el) => inArchyLogo(el) || !!inside(el, (n) => DECORATION.test(nameOf(n)) || n.dataset?.optional === 'illustration' || n.dataset?.slotType === 'image');
+    // Buttons and royal boxes (booth badges) carry their own pair of colours. Roles are read from the
+    // design first, then applied, so one change never misleads the next.
+    const all = [...root.querySelectorAll('*')].filter((el) => !isSvg(el) && !skip(el));
+    const buttons = new Set(all.filter((n) => BUTTON.test(nameOf(n)) || (filled(n) && saturated(getComputedStyle(n).backgroundColor))));
+    const buttonOf = (el) => inside(el, (n) => buttons.has(n));
+    const plan = all.map((el) => {
+      const cs = getComputedStyle(el);
+      const btn = buttonOf(el);
+      const name = nameOf(el);
+      return {
+        el, btn,
+        mark: el.dataset.logoMark !== undefined,
+        fill: filled(el) ? (btn === el ? t.button : /^(Ruler|Divider)/.test(name) ? t.border : /^Dot/.test(name) ? (btn ? t.onButton : t.accent) : btn ? null : t.surface) : null,
+        border: parseFloat(cs.borderTopWidth) > 0 && !btn,
+        color: [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) ? (btn ? t.onButton : saturated(cs.color) && lum(cs.color) < 0.8 ? t.accent : t.text) : null,
+      };
+    });
+    for (const p of plan) {
+      const st = p.el.style;
+      if (p.mark) { keep(p.el); st.backgroundColor = t.text; continue; }
+      if (p.fill || p.border || p.color) keep(p.el);
+      if (p.fill) { if (/gradient|url\(/.test(getComputedStyle(p.el).backgroundImage) && p.fill === t.surface) st.backgroundImage = 'none'; st.backgroundColor = p.fill; }
+      if (p.border) st.borderColor = t.border;
+      if (p.color) st.color = p.color;
+    }
+    for (const el of root.querySelectorAll('svg [stroke], svg[stroke]')) {
+      const s = el.getAttribute('stroke');
+      if (!s || s === 'none' || skip(el)) continue;
+      setAttr(el, 'stroke', buttonOf(el) ? t.onButton : t.accent);
+    }
+    for (const el of root.querySelectorAll('svg [fill]')) {
+      if (el.getAttribute('fill') === 'none') continue;
+      if (inArchyLogo(el)) setAttr(el, 'fill', t.logo);
+      // A partner's sample mark (one colour, like the marks Studio places) follows the text.
+      else if (inside(el, (n) => n.dataset?.slotType === 'logo')) setAttr(el, 'fill', t.text);
+    }
+  }
+
   // ---- Colour swaps for the whole piece: every token with that colour, and the same colour drawn in SVGs ----
-  const theme = edits?.[':theme']?.theme ?? {};
+  const theme = piece.theme ?? {};
   if (Object.keys(theme).length) {
     const probe = document.createElement('div');
     root.appendChild(probe);
@@ -34,17 +110,15 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     const targets = Object.fromEntries(Object.entries(theme).map(([from, to]) => [from.toUpperCase(), { to, hex: hexOf(to) }]));
     const set = [];
     for (const v of vars) {
-      const t = targets[toHex(docStyle.getPropertyValue(v).trim())];
-      if (t && t.to !== `var(${v})`) { root.style.setProperty(v, t.hex); set.push(v); }
+      const tg = targets[toHex(docStyle.getPropertyValue(v).trim())];
+      if (tg && tg.to !== `var(${v})`) { root.style.setProperty(v, tg.hex); set.push(v); }
     }
     root.dataset.themeVars = set.join(' ');
     for (const el of root.querySelectorAll('[fill], [stroke]')) {
       if (inArchyLogo(el)) continue;
       for (const attr of ['fill', 'stroke']) {
-        const t = targets[toHex(el.getAttribute(attr) ?? '')];
-        if (!t) continue;
-        el.dataset[attr === 'fill' ? 'themeFill' : 'themeStroke'] = el.getAttribute(attr);
-        el.setAttribute(attr, t.hex);
+        const tg = targets[toHex(el.getAttribute(attr) ?? '')];
+        if (tg) setAttr(el, attr, tg.hex);
       }
     }
     probe.remove();
@@ -54,17 +128,16 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
   for (const [id, e] of Object.entries(edits ?? {})) {
     if (id === ':theme') continue;
     const el = root.matches(`[data-node="${CSS.escape(id)}"]`) ? root : root.querySelector(`[data-node="${CSS.escape(id)}"]`);
-    if (!el || !e || inArchyLogo(el)) continue; // the Archy logo is never edited
-    const svg = el.tagName.toLowerCase() === 'svg';
-    if (!('editStyle' in el.dataset)) {
-      el.dataset.editStyle = el.getAttribute('style') ?? '';
-      const cs = getComputedStyle(el);
-      el.dataset.editFont = cs.fontSize;
-      el.dataset.editLine = cs.lineHeight;
-      if (svg) el.dataset.editHtml = el.innerHTML;
-      else if (!el.children.length) el.dataset.editText = el.textContent;
-    }
+    if (!el || !e) continue;
+    const logo = inArchyLogo(el); // the Archy logo only moves and scales
+    if (logo && !ARCHY.test(nameOf(el))) continue;
+    const svg = isSvg(el);
+    keep(el);
     const s = el.style;
+    const b = e.box ?? {};
+    if (b.dx || b.dy) s.translate = `${b.dx ?? 0}px ${b.dy ?? 0}px`;
+    if (b.scale && b.scale !== 1) s.scale = String(b.scale);
+    if (logo) continue;
     if (e.text != null && !svg && !el.children.length) el.textContent = e.text;
     if (e.image && urls?.[e.image]) s.backgroundImage = `url("${urls[e.image]}")`;
     if (svg && e.icon && icons?.[e.icon]) {
@@ -79,9 +152,6 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       s.color = e.style.color;
       for (const n of el.querySelectorAll('[stroke]')) if (n.getAttribute('stroke') !== 'none') n.setAttribute('stroke', 'currentColor');
     }
-    const b = e.box ?? {};
-    if (b.dx || b.dy) s.translate = `${b.dx ?? 0}px ${b.dy ?? 0}px`;
-    if (b.scale && b.scale !== 1) s.scale = String(b.scale);
     if (b.width != null) { s.width = `${b.width}px`; s.flexShrink = '0'; }
     if (b.height != null) { s.height = `${b.height}px`; s.flexShrink = '0'; }
     const st = e.style ?? {};

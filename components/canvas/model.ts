@@ -84,27 +84,6 @@ export function readTokens(doc: Document): Token[] {
   return out;
 }
 
-// The brand colours the piece is drawn with (fills, text, lines, icons), most used first. The Archy
-// logo does not count: it never changes colour.
-export function readUsedColors(doc: Document, tokens: Token[]): string[] {
-  const root = doc.querySelector('body > [data-node]');
-  if (!root) return [];
-  const known = new Set(tokens.map((t) => t.hex));
-  const n: Record<string, number> = {};
-  const add = (c: string | null, w = 1) => { const h = c && toHex(c); if (h && known.has(h)) n[h] = (n[h] ?? 0) + w; };
-  const rootStyle = getComputedStyle(root);
-  add(rootStyle.backgroundColor, 50);
-  for (const m of rootStyle.backgroundImage.matchAll(/(rgba?\([^)]*\)|#[0-9a-f]{3,6})/gi)) add(m[1], 50);
-  for (const el of root.querySelectorAll('*')) {
-    if (el.closest('[data-name^="Logo Archy"], [data-name^="Archy Wordmark"]')) continue;
-    if (isSvg(el)) { add(el.getAttribute('fill')); add(el.getAttribute('stroke')); continue; }
-    const cs = getComputedStyle(el);
-    if (el.childNodes.length && [...el.childNodes].some((c) => c.nodeType === 3 && c.textContent?.trim())) add(cs.color, 3);
-    add(cs.backgroundColor, 5);
-  }
-  return Object.entries(n).sort((a, b) => b[1] - a[1]).map(([h]) => h);
-}
-
 export function toHex(c: string): string | null {
   if (/^#[0-9a-f]{6}$/i.test(c)) return c.toUpperCase();
   if (/^#[0-9a-f]{3}$/i.test(c)) return ('#' + [...c.slice(1)].map((x) => x + x).join('')).toUpperCase();

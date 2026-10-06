@@ -5,7 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
 import type { Edits, FillPlan, NodeEdit, RenderReport } from '@/lib/canvas-shared';
 import { movingEdges, snap, type Guide } from './guides';
-import { componentAt, innermostAt, parentOf, readInfo, readTokens, readUsedColors, within, type Box, type Comp, type LayerInfo, type Token } from './model';
+import { componentAt, innermostAt, parentOf, readInfo, readTokens, within, type Box, type Comp, type LayerInfo, type Token } from './model';
 
 type Win = Window & {
   __fill: (a: unknown) => Promise<RenderReport>;
@@ -40,7 +40,7 @@ type Props = {
   panning: boolean;
   onSelect: (ids: string[], mode: SelectMode) => void;
   onHover: (id: string | null) => void;
-  onReady: (r: { comps: Comp[]; safe: Box; tokens: Token[]; used: string[]; report: RenderReport }) => void;
+  onReady: (r: { comps: Comp[]; safe: Box; tokens: Token[]; report: RenderReport }) => void;
   /** Live changes while dragging (commit=false) and the final ones (commit=true, one history step). */
   onEdit: (changes: Record<string, NodeEdit>, commit: boolean) => void;
   /** Typed in place. False when refused: the page is drawn again as it was. */
@@ -117,14 +117,13 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       await d.fonts.ready;
       const report = await w.__fill(live.current.plan.fill);
       if (stale) return;
-      // Colours and components are read before the hand edits, so they describe the piece as designed.
+      // Tokens and components are read before the hand edits, so they describe the piece as designed.
       const tokens = readTokens(d);
-      const used = readUsedColors(d, tokens);
       const { comps, safe } = w.__components();
       w.__applyEdits(live.current.edits, live.current.plan.imageUrls, live.current.plan.iconSvgs);
       await d.fonts.ready;
       setReady(true);
-      live.current.onReady({ comps, safe, tokens, used, report });
+      live.current.onReady({ comps, safe, tokens, report });
       check();
       redraw();
     };

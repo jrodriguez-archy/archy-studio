@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   AlignBottomIcon, AlignHorizontalCenterIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, AlignVerticalCenterIcon,
-  ArrowTurnBackwardIcon, Cancel01Icon, Delete02Icon, ImageUploadIcon, LockIcon, Tick02Icon, ViewIcon, ViewOffSlashIcon,
+  ArrowRight01Icon, ArrowTurnBackwardIcon, ArrowUpRight01Icon, Delete02Icon, ImageUploadIcon, LockIcon, Tick02Icon, ViewIcon, ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -31,6 +32,9 @@ type Props = {
   alignIn?: string;
   preset?: Preset;
   onPreset: (p: Preset) => void;
+  /** Colour swaps made earlier on the whole piece (kept working; can be cleared here). */
+  swaps: number;
+  onClearSwaps: () => void;
   info: (id?: string) => LayerInfo | null;
   edits: Edits;
   slots: Record<string, string | null>;
@@ -46,7 +50,7 @@ type Props = {
 
 // Right column: what the selected component lets you change, inside the brand (palette colours, the
 // template's weights, sizes within the slot's limits).
-export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign }: Props) {
+export function PropertiesPanel({ comp, alignIn, preset, onPreset, swaps, onClearSwaps, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign }: Props) {
   const edit = edits[comp.id];
   const box = edit?.box ?? {};
   const me = info(comp.id);
@@ -143,6 +147,11 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
             ))}
           </div>
           <p className="text-foreground/40">Texts, buttons, lines, icons and the Archy logo follow the theme.</p>
+          {swaps > 0 && (
+            <button type="button" onClick={onClearSwaps} className="text-left text-foreground/50 underline-offset-4 hover:text-foreground hover:underline">
+              {swaps} colour swap{swaps > 1 ? 's' : ''} on this piece · back to the theme’s colours
+            </button>
+          )}
         </Section>
       )}
 
@@ -236,58 +245,48 @@ export function MultiPanel({ count, onAlign, onHide, onReset }: { count: number;
   );
 }
 
-// No selection: the colours the piece is drawn with. Swapping one changes it everywhere (texts, fills,
-// lines, icons, the background), except in the Archy logo.
-export function ColorsPanel({ used, tokens, theme, onSwap, onClear }: {
-  used: string[]; tokens: Token[]; theme: Record<string, string>; onSwap: (from: string, to: string | null) => void; onClear: () => void;
-}) {
-  const byHex = new Map(tokens.map((t) => [t.hex, t]));
+// No selection: whether Claude can work on this piece, and the few shortcuts that matter.
+export function PiecePanel({ pieceId, title, seenAt }: { pieceId?: string; title: string; seenAt: string | null }) {
+  const connected = !!seenAt && Date.now() - new Date(seenAt).getTime() < 30 * 24 * 3600 * 1000;
   return (
     <div className="space-y-5 px-4 py-4 text-[12px]">
-      <div>
-        <p className="text-[13px] font-medium">Colours</p>
-        <p className="text-foreground/50">Swap one and it changes everywhere.</p>
-      </div>
-      <div className="grid grid-cols-3 gap-x-2 gap-y-3">
-        {used.map((hex) => {
-          const from = byHex.get(hex);
-          const to = theme[hex] ? tokens.find((t) => t.value === theme[hex]) : null;
-          return (
-            <div key={hex} className="relative">
-              <Popover>
-                <PopoverTrigger className="group block w-full text-left">
-                  <span className="relative block aspect-[4/3] overflow-hidden rounded-md ring-1 ring-foreground/10 ring-inset transition-shadow group-hover:ring-primary/40"
-                    style={{ background: to ? `linear-gradient(135deg, ${hex} 50%, ${to.hex} 50%)` : hex }} />
-                  <span className="mt-1 block truncate">{to ? to.name : from?.name ?? hex}</span>
-                  <span className="block truncate text-[11px] text-foreground/40">{to ? `was ${from?.name ?? hex}` : hex}</span>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-[248px] p-3">
-                  <p className="pb-2.5 text-[12px]">Replace <span className="font-medium">{from?.name ?? hex}</span> with</p>
-                  <Swatches tokens={tokens} current={to?.hex ?? hex} onPick={(v) => onSwap(hex, tokens.find((t) => t.value === v)?.hex === hex ? null : v)} />
-                </PopoverContent>
-              </Popover>
-              {to && (
-                <button type="button" onClick={() => onSwap(hex, null)} aria-label="Back to the original colour" title="Back to the original"
-                  className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-background text-foreground/60 shadow-[0_0_0_1px_rgba(0,0,0,0.1)] hover:text-foreground">
-                  <HugeiconsIcon icon={Cancel01Icon} className="size-2.5" strokeWidth={2.5} />
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      {Object.keys(theme).length > 0 && (
-        <button type="button" onClick={onClear} className="text-foreground/50 underline-offset-4 hover:text-foreground hover:underline">Back to the original colours</button>
-      )}
-      <div className="space-y-1.5 border-t border-foreground/[0.06] pt-4 text-foreground/55">
+      <section className="space-y-2.5">
+        <p className="text-[13px] font-medium">Claude</p>
+        <div className={`flex items-start gap-2 rounded-md px-2.5 py-2 ${connected ? 'bg-[#DEF2E6] text-[#11845B]' : 'bg-foreground/[0.04] text-foreground/60'}`}>
+          <span className={`mt-1 size-1.5 shrink-0 rounded-full ${connected ? 'bg-[#05C168]' : 'bg-foreground/30'}`} />
+          <p>{connected ? <>Connected to your Claude · used {ago(seenAt!)}</> : 'Not connected to your Claude yet'}</p>
+        </div>
+        {connected ? (
+          <button type="button" disabled={!pieceId}
+            onClick={() => window.open(`https://claude.ai/new?q=${encodeURIComponent(`On my Archy Studio Canvas piece "${title}" (canvas id ${pieceId}): `)}`, '_blank', 'noopener')}
+            className="flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-primary font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
+            Open Claude <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3" />
+          </button>
+        ) : (
+          <Link href="/install" className="flex h-8 items-center justify-center gap-1 rounded-md bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.09]">
+            Install the connector <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
+          </Link>
+        )}
+        {connected && !pieceId && <p className="text-foreground/40">Save the piece first, so Claude can find it.</p>}
+      </section>
+      <section className="space-y-1.5 border-t border-foreground/[0.06] pt-4 text-foreground/55">
+        <p className="pb-1 text-[13px] font-medium text-foreground">Tips</p>
         <Tip keys={['Click']} text="select" more={['⇧', 'Click']} moreText="add" />
         <Tip keys={['⌘', 'Click']} text="select inside" more={['Double-click']} moreText="edit text" />
         <Tip keys={['Drag']} text="move" more={['⌘']} moreText="move freely" />
         <Tip keys={['Scroll']} text="pan" more={['⌘', 'Scroll']} moreText="zoom" />
-      </div>
+      </section>
     </div>
   );
 }
+
+const ago = (iso: string) => {
+  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (m < 2) return 'just now';
+  if (m < 60) return `${m} min ago`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `${h} h ago` : `${Math.round(h / 24)} d ago`;
+};
 
 function Tip({ keys, text, more, moreText }: { keys: string[]; text: string; more: string[]; moreText: string }) {
   const k = (x: string) => <kbd key={x} className="rounded-[3px] bg-foreground/[0.06] px-1 py-px font-sans text-[11px] text-foreground/70">{x}</kbd>;

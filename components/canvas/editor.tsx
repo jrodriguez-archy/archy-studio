@@ -17,7 +17,7 @@ import { AssetsTab, CanvasPanel, LibraryTab, type PanelTab } from './canvas-pane
 import { ClaudeTab } from './claude-tab';
 import { LayersPanel } from './layers-panel';
 import { merge, within, type Box, type Comp, type Token } from './model';
-import { ColorsPanel, MultiPanel, PropertiesPanel, type Align, type SlotMeta } from './properties-panel';
+import { MultiPanel, PiecePanel, PropertiesPanel, type Align, type SlotMeta } from './properties-panel';
 import { Stage, type SelectMode, type StageHandle } from './stage';
 import { useViewport } from './viewport';
 
@@ -73,7 +73,6 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   const [planError, setPlanError] = useState<string | null>(null);
   const [comps, setComps] = useState<Comp[]>([]);
   const [safe, setSafe] = useState<Box | null>(null);
-  const [used, setUsed] = useState<string[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [report, setReport] = useState<RenderReport | null>(null);
   const [editErrors, setEditErrors] = useState<RenderReport['errors']>([]);
@@ -194,7 +193,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
 
   const piece = snap.edits[THEME] ?? {};
   const theme = piece.theme ?? {};
-  const swapColor = (from: string, to: string | null) => editLayer(THEME, { theme: { ...theme, [from]: to ?? '' } });
+  const clearSwaps = () => editLayer(THEME, { theme: Object.fromEntries(Object.keys(theme).map((k) => [k, ''])) });
   const setPreset = (p: Preset) => {
     // A theme replaces any loose background colour and colour swaps, so the piece stays coherent.
     const bg = comps.find((c) => c.kind === 'background')?.id;
@@ -391,7 +390,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               panning={vp.panning}
               onSelect={select}
               onHover={setHover}
-              onReady={(r) => { setComps(r.comps); setSafe(r.safe); setTokens(r.tokens); setUsed(r.used); setReport(r.report); }}
+              onReady={(r) => { setComps(r.comps); setSafe(r.safe); setTokens(r.tokens); setReport(r.report); }}
               onEdit={editMany}
               onText={typed}
               onInfo={refreshInfo}
@@ -428,6 +427,8 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               alignIn={one.kind === 'background' ? undefined : stage.current?.alignBox(one.id)?.name}
               preset={piece.preset}
               onPreset={setPreset}
+              swaps={Object.keys(theme).length}
+              onClearSwaps={clearSwaps}
               info={(id) => (id ? stage.current?.info(id) ?? null : null)}
               edits={snap.edits}
               slots={snap.slots}
@@ -441,7 +442,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               onAlign={(a) => align(a)}
             />
           ) : (
-            <ColorsPanel used={used} tokens={tokens} theme={theme} onSwap={swapColor} onClear={() => editLayer(THEME, { theme: Object.fromEntries(Object.keys(theme).map((k) => [k, ''])) })} />
+            <PiecePanel pieceId={isNew ? undefined : pieceId} title={title} seenAt={library.mcpSeenAt} />
           )}
         </aside>
       </div>

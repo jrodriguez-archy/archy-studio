@@ -51,7 +51,7 @@ async function findPiece(me: Who, ref?: string): Promise<{ piece: PieceSource; d
 
 async function describe(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
   const out = await render({ template: piece.template, format: piece.format, slots, edits, inspect: true });
-  return { png: out.png, report: out.report, comps: out.inspected!.comps, tokens: out.inspected!.tokens };
+  return { png: out.png, report: out.report, comps: out.inspected!.comps, tokens: out.inspected!.tokens, review: out.inspected!.review };
 }
 
 const KIND: Record<string, string> = { text: 'text', button: 'button', icon: 'icon', photo: 'photo', partner: 'partner logo', archy: 'Archy logo (locked: move/scale only)', group: 'group', tag: 'tag', line: 'line', decoration: 'decoration', background: 'background' };
@@ -71,6 +71,7 @@ export async function getCanvas(me: Who, ref?: string) {
       'Components (edit them by name):',
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,
+      ...(d.review.length ? ['Inspector suggestions:', ...d.review.map((t) => `- ${t.title}: ${t.detail}`)] : []),
       'Themes: dark, blue, sky, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
     ].join('\n'),
   };
@@ -157,12 +158,11 @@ export async function editCanvas(me: Who, input: { piece?: string; changes: Canv
     }
     done.push(c.name);
   }
-  // Same check as Save: copy that does not fit is refused, nothing is written.
-  const after = await render({ template: piece.template, format: piece.format, slots, edits: cleanEdits(edits) });
-  if (!after.report.ok) throw new Error(`Not applied, it does not fit: ${after.report.errors.map((e) => e.message ?? e.code).join(' ')}`);
+  const after = await render({ template: piece.template, format: piece.format, slots, edits: cleanEdits(edits), inspect: true });
+  const tips = after.inspected?.review ?? [];
   const note = input.note?.trim() || `Changed ${[...new Set(done)].join(', ')}`;
   await saveDraft({ pieceId: piece.id, userId: me.id, slots, edits, by: 'claude', note });
-  return { piece, png: after.png, note };
+  return { piece, png: after.png, note, suggestions: tips.map((t) => `${t.title}: ${t.detail}`) };
 }
 
 export async function saveCanvas(me: Who, ref?: string) {

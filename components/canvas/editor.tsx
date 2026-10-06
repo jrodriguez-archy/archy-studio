@@ -5,16 +5,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
-  Alert02Icon, ArrowLeft02Icon, Cursor01Icon, Download04Icon, HandGrabIcon, MinusSignIcon, PlusSignIcon, Redo02Icon, Undo02Icon,
+  Alert02Icon, ArrowLeft02Icon, Cursor01Icon, SearchVisualIcon, Download04Icon, HandGrabIcon, MinusSignIcon, PlusSignIcon, Redo02Icon, Undo02Icon,
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { exportAction, prepareAction, saveAction, saveDraftAction } from '@/app/(app)/canvas/actions';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { CanvasLibrary } from '@/lib/canvas';
-import { THEME, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport } from '@/lib/canvas-shared';
+import { THEME, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import { AssetsTab, CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
-import { ClaudeTab } from './claude-tab';
+import { InspectorTab } from './inspector-tab';
 import { LayersPanel } from './layers-panel';
 import { merge, within, type Box, type Comp, type Token } from './model';
 import { MultiPanel, PiecePanel, PropertiesPanel, type Align, type SlotMeta } from './properties-panel';
@@ -34,7 +34,7 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });
 const luminance = (hex: string) => { const n = parseInt(hex.slice(1), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
 
-// Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, Claude), the piece in a
+// Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the piece in a
 // pannable, zoomable viewport, the selection's properties on the right. Copy and slot images change the
 // brief (the fit rules still apply); everything else is a hand edit kept with the piece. Save renders it
 // again with the same engine as Claude's pieces.
@@ -46,7 +46,7 @@ export function CanvasEditor({ piece, library }: { piece?: PieceProps; library: 
         <header className="flex h-12 shrink-0 items-center border-b border-foreground/[0.06] bg-background px-4"><p className="font-medium">Canvas</p></header>
         <div className="flex min-h-0 flex-1">
           <CanvasPanel tab={tab === 'layers' ? 'library' : tab} onTab={setTab}>
-            {tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'claude' ? <ClaudeTab seenAt={library.mcpSeenAt} /> : <LibraryTab library={library} confirmLeave={() => true} />}
+            {tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a piece and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
           </CanvasPanel>
           <main className="flex flex-1 items-center justify-center p-8">
             <div className="max-w-sm text-center">
@@ -75,7 +75,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   const [safe, setSafe] = useState<Box | null>(null);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [report, setReport] = useState<RenderReport | null>(null);
-  const [editErrors, setEditErrors] = useState<RenderReport['errors']>([]);
+  const [review, setReview] = useState<Suggestion[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [hover, setHover] = useState<string | null>(null);
   const [, setInfoTick] = useState(0);
@@ -192,12 +192,10 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   };
 
   const piece = snap.edits[THEME] ?? {};
-  const theme = piece.theme ?? {};
-  const clearSwaps = () => editLayer(THEME, { theme: Object.fromEntries(Object.keys(theme).map((k) => [k, ''])) });
   const setPreset = (p: Preset) => {
-    // A theme replaces any loose background colour and colour swaps, so the piece stays coherent.
+    // A theme replaces any loose background colour, so the piece stays coherent.
     const bg = comps.find((c) => c.kind === 'background')?.id;
-    const changes: Record<string, NodeEdit> = { [THEME]: { preset: p, theme: Object.fromEntries(Object.keys(theme).map((k) => [k, ''])) } };
+    const changes: Record<string, NodeEdit> = { [THEME]: { preset: p } };
     if (bg && snap.edits[bg]?.style?.backgroundColor) changes[bg] = { style: { backgroundColor: undefined } };
     editMany(changes);
   };
@@ -267,7 +265,6 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
 
   // ---- Live with Claude: the draft is kept as people edit; Claude's edits arrive over Realtime ----
   const version = useRef(draft?.version ?? 0);
-  const [claudeNote, setClaudeNote] = useState<string | null>(null);
   const synced = useRef(JSON.stringify(cleanSnap(initial)));
   useEffect(() => {
     if (draft) toast(draft.by === 'claude' ? `Claude’s changes are here: ${draft.note ?? 'edited by Claude'}` : 'Your unsaved changes are back.');
@@ -301,7 +298,6 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           const next = { slots: row.slots ?? {}, edits: row.edits ?? {} };
           synced.current = JSON.stringify(cleanSnap(next));
           commit(next); // one step: undo takes it back
-          setClaudeNote(row.note ?? 'Claude edited the piece');
           toast(`Claude: ${row.note ?? 'edited the piece'}`, { action: { label: 'Undo', onClick: () => undo() } });
         })
         .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });
@@ -309,7 +305,21 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     return () => { gone = true; if (channel) db.removeChannel(channel); };
   }, [pieceId, isNew, commit, undo]);
 
-  const blocked = planError ?? (report && !report.ok ? report.errors.map((e) => e.message ?? e.code).join(' ') : editErrors.length ? editErrors.map((e) => e.message ?? e.code).join(' ') : null);
+  // The Inspector: its review of the edits, plus copy from the brief the template could not fit.
+  // Nothing here blocks Save or Download.
+  const suggestions: Suggestion[] = [
+    ...(report && !report.ok ? report.errors.map((e) => {
+      const c = comps.find((x) => x.slot === e.slot || x.textSlot === e.slot);
+      return { id: c?.id ?? '', level: 'warn' as const, title: `${c?.name ?? 'Some copy'} doesn’t fit the design`, detail: e.message ?? 'Shorten it a little.' };
+    }) : []),
+    ...review,
+  ];
+  const fix = (sg: Suggestion) => {
+    if (!sg.fix) return;
+    const b = snap.edits[sg.id]?.box ?? {};
+    editLayer(sg.id, { box: { dx: (b.dx ?? 0) + sg.fix.dx, dy: (b.dy ?? 0) + sg.fix.dy } });
+  };
+  const warnings = suggestions.filter((x) => x.level === 'warn').length;
 
   const download = () => start(async () => {
     const r = await exportAction(pieceId, snap.slots, snap.edits);
@@ -349,18 +359,25 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           <ToolButton label="Undo (⌘Z)" icon={Undo02Icon} disabled={!past.length} onClick={undo} />
           <ToolButton label="Redo (⇧⌘Z)" icon={Redo02Icon} disabled={!future.length} onClick={redo} />
         </div>
-        <button type="button" onClick={download} disabled={busy || !!blocked}
+        {suggestions.length > 0 && (
+          <button type="button" onClick={() => setTab('inspector')} title="Open the Inspector"
+            className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[12px] ${warnings ? 'bg-[#FFF4E5] text-[#B45309] hover:bg-[#FFEACC]' : 'bg-[#E6F4FF] text-primary hover:bg-[#CCEAFF]'}`}>
+            <HugeiconsIcon icon={warnings ? Alert02Icon : SearchVisualIcon} className="size-3.5" />
+            {suggestions.length} suggestion{suggestions.length > 1 ? 's' : ''}
+          </button>
+        )}
+        <button type="button" onClick={download} disabled={busy}
           className="flex h-8 items-center gap-1.5 rounded-md bg-foreground/[0.05] px-3 text-foreground/80 hover:bg-foreground/[0.09] disabled:opacity-50">
           <HugeiconsIcon icon={Download04Icon} className="size-3.5" /> Download
         </button>
-        <button type="button" onClick={() => (isNew ? save('version') : setSaving(true))} disabled={busy || !dirty || !!blocked}
+        <button type="button" onClick={() => (isNew ? save('version') : setSaving(true))} disabled={busy || !dirty}
           className="flex h-8 items-center rounded-md bg-primary px-3.5 font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
           {isNew ? (busy ? 'Saving…' : 'Save to gallery') : 'Save'}
         </button>
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <CanvasPanel tab={tab} onTab={setTab}>
+        <CanvasPanel tab={tab} onTab={setTab} badges={{ inspector: warnings }}>
           {tab === 'layers' && (
             <LayersPanel comps={comps} edits={snap.edits} selected={selected} hover={hover} onHover={setHover}
               onSelect={(id, add) => select([id], add ? 'toggle' : 'replace')}
@@ -368,7 +385,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           )}
           {tab === 'library' && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
           {tab === 'assets' && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
-          {tab === 'claude' && <ClaudeTab pieceId={isNew ? undefined : pieceId} title={title} live={claudeNote} seenAt={library.mcpSeenAt} />}
+          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} />}
         </CanvasPanel>
 
         <main
@@ -394,14 +411,14 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               onEdit={editMany}
               onText={typed}
               onInfo={refreshInfo}
-              onCheck={setEditErrors}
+              onReview={setReview}
             />
           </div>
 
-          {blocked && (
+          {planError && (
             <div className="absolute top-4 left-1/2 flex max-w-[min(560px,90%)] -translate-x-1/2 items-start gap-2 rounded-lg bg-background px-3.5 py-2.5 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_8px_24px_-8px_rgba(0,0,0,0.2)]">
               <HugeiconsIcon icon={Alert02Icon} className="mt-px size-4 shrink-0 text-[#D97706]" />
-              <p><span className="font-medium">Doesn’t fit yet.</span> <span className="text-foreground/60">{blocked}</span></p>
+              <p className="text-foreground/70">{planError}</p>
             </div>
           )}
 
@@ -427,8 +444,6 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               alignIn={one.kind === 'background' ? undefined : stage.current?.alignBox(one.id)?.name}
               preset={piece.preset}
               onPreset={setPreset}
-              swaps={Object.keys(theme).length}
-              onClearSwaps={clearSwaps}
               info={(id) => (id ? stage.current?.info(id) ?? null : null)}
               edits={snap.edits}
               slots={snap.slots}

@@ -3,31 +3,32 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { AiChat02Icon, ArrowDown01Icon, ArrowRight01Icon, Image01Icon, ImageUploadIcon, Layers01Icon, LibraryIcon } from '@hugeicons/core-free-icons';
+import { ArrowDown01Icon, SearchVisualIcon, ArrowRight01Icon, Image01Icon, ImageUploadIcon, Layers01Icon, LibraryIcon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CanvasLibrary } from '@/lib/canvas';
 
-export type PanelTab = 'layers' | 'library' | 'assets' | 'claude';
+export type PanelTab = 'layers' | 'library' | 'assets' | 'inspector';
 const TABS: { key: PanelTab; label: string; icon: typeof Layers01Icon }[] = [
   { key: 'layers', label: 'Layers', icon: Layers01Icon },
   { key: 'library', label: 'Library', icon: LibraryIcon },
   { key: 'assets', label: 'Assets', icon: Image01Icon },
-  { key: 'claude', label: 'Claude', icon: AiChat02Icon },
+  { key: 'inspector', label: 'Inspector', icon: SearchVisualIcon },
 ];
 const CATEGORY: Record<string, string> = { events: 'Events', ads: 'Ads', covers: 'Event covers', other: 'More' };
 const CLOSED_KEY = 'canvas.library.closed';
 
 // Canvas's own sidebar (Relume-like): a rail of tabs and the open tab.
-export function CanvasPanel({ tab, onTab, children }: { tab: PanelTab; onTab: (t: PanelTab) => void; children: React.ReactNode }) {
+export function CanvasPanel({ tab, onTab, badges = {}, children }: { tab: PanelTab; onTab: (t: PanelTab) => void; badges?: Partial<Record<PanelTab, number>>; children: React.ReactNode }) {
   return (
     <aside className="flex w-[300px] shrink-0 border-r border-foreground/[0.06] bg-background max-md:hidden">
       <div className="flex w-11 shrink-0 flex-col items-center gap-1 border-r border-foreground/[0.06] py-2">
         {TABS.map((t) => (
           <Tooltip key={t.key}>
             <TooltipTrigger render={<button type="button" onClick={() => onTab(t.key)} aria-label={t.label} aria-pressed={tab === t.key} />}
-              className={`flex size-8 items-center justify-center rounded-md transition-colors ${tab === t.key ? 'bg-[#E6F4FF] text-primary' : 'text-foreground/45 hover:bg-foreground/[0.05] hover:text-foreground'}`}>
+              className={`relative flex size-8 items-center justify-center rounded-md transition-colors ${tab === t.key ? 'bg-[#E6F4FF] text-primary' : 'text-foreground/45 hover:bg-foreground/[0.05] hover:text-foreground'}`}>
               <HugeiconsIcon icon={t.icon} className="size-4" strokeWidth={1.6} />
+              {!!badges[t.key] && <span className="absolute -top-0.5 -right-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#D97706] px-1 text-[9px] font-semibold text-white">{badges[t.key]}</span>}
             </TooltipTrigger>
             <TooltipContent side="right">{t.label}</TooltipContent>
           </Tooltip>

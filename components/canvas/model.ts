@@ -117,6 +117,5 @@ export const merge = (a: NodeEdit | undefined, b: NodeEdit): NodeEdit => ({
   ...a, ...b,
   box: b.box ? { ...a?.box, ...b.box } : a?.box,
   style: b.style ? { ...a?.style, ...b.style } : a?.style,
-  theme: b.theme ? { ...a?.theme, ...b.theme } : a?.theme,
   layout: b.layout ? { ...a?.layout, ...b.layout } : a?.layout,
 });

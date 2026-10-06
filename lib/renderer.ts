@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Browser } from 'playwright-core';
-import type { Edits, FillPlan, RenderReport } from './canvas-shared';
+import type { Edits, FillPlan, RenderReport, Suggestion } from './canvas-shared';
 import { iconMarkup } from './icons';
 import { supabaseAdmin } from './supabase/admin';
 import { ROOT, loadConfig, loadLibrary, loadManifest, loadRules } from './templates';
@@ -58,6 +58,7 @@ export type InspectedComp = {
   text?: string; layout?: string; hidden: boolean; box: { x: number; y: number; w: number; h: number }; alignBox: { x: number; y: number; w: number; h: number; name?: string } | null;
 };
 let componentsJs: string | null = null;
+
 
 export class MissingRequired extends Error {
   constructor(public slots: string[]) {
@@ -169,21 +170,22 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
       (a) => window.__fill(a),
       plan.fill,
     )) as RenderReport;
-    if (Object.keys(edits).length) {
+    // Inspecting needs edits.js even without edits: it keeps the design's baseline for the Inspector.
+    if (Object.keys(edits).length || inspect) {
       await page.addScriptTag({ content: editsJs });
       // @ts-expect-error __applyEdits is defined by edits.js inside the page
       await page.evaluate(([e, u, i]) => window.__applyEdits(e, u, i), [edits, plan.imageUrls, plan.iconSvgs] as const);
       await page.evaluate(() => document.fonts.ready);
-      // @ts-expect-error __checkEdits is defined by edits.js inside the page
-      const extra = (await page.evaluate(([e, r, f]) => window.__checkEdits(e, r, f), [edits, plan.fill.rules, format] as const)) as RenderReport['errors'];
-      if (extra.length) { report.ok = false; report.errors.push(...extra); }
     }
-    let inspected: { comps: InspectedComp[]; tokens: Record<string, string> } | null = null;
+    let inspected: { comps: InspectedComp[]; tokens: Record<string, string>; review: Suggestion[] } | null = null;
     if (inspect) {
       componentsJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'components.js'), 'utf8');
       await page.addScriptTag({ content: componentsJs });
       // @ts-expect-error __inspect is defined by components.js inside the page
-      inspected = (await page.evaluate(() => window.__inspect())) as { comps: InspectedComp[]; tokens: Record<string, string> };
+      const seen = (await page.evaluate(() => window.__inspect())) as { comps: InspectedComp[]; tokens: Record<string, string> };
+      // @ts-expect-error __review is defined by components.js inside the page
+      const review = (await page.evaluate(([e, r, f]) => window.__review(e, r, f), [edits, plan.fill.rules, format] as const)) as Suggestion[];
+      inspected = { ...seen, review };
     }
     mark('fit');
 

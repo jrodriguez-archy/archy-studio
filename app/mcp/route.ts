@@ -38,7 +38,7 @@ Brand rules:
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
-Canvas (live editing with the person): when they ask to change a piece they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon"), call get_canvas to see its components by name, then edit_canvas with the changes. Each edit appears live in their Canvas and they can undo it. Brand colours only, copy must fit, and the Archy logo can only be moved or scaled. Save with save_canvas only when they ask.`;
+Canvas (live editing with the person): when they ask to change a piece they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon"), call get_canvas to see its components by name, then edit_canvas with the changes. Each edit appears live in their Canvas and they can undo it. Brand colours only, and the Archy logo can only be moved or scaled; follow the Inspector's suggestions when they come from your change. Save with save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 
@@ -208,7 +208,7 @@ const handler = createMcpHandler(
       'edit_canvas',
       {
         title: 'Edit the piece open in Canvas',
-        description: 'Change components of the piece open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); copy that does not fit is refused; the Archy logo can only be moved, aligned or scaled.',
+        description: 'Change components of the piece open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); the Archy logo can only be moved, aligned or scaled. The answer lists the Inspector’s design suggestions (misaligned, outside the safe area, hard to read…); fix them when they come from your change.',
         inputSchema: z.object({
           piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.'),
           theme: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Redraw the whole piece on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground.'),
@@ -240,7 +240,8 @@ const handler = createMcpHandler(
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
           const out = await editCanvas(me, { piece, theme, changes, note });
-          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it. Save with save_canvas only when they ask.` }] };
+          const tips = out.suggestions.length ? ` The Inspector suggests: ${out.suggestions.join(' | ')}` : '';
+          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it.${tips} Save with save_canvas only when they ask.` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
         }

@@ -3,14 +3,14 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
-import type { Edits, FillPlan, NodeEdit, RenderReport } from '@/lib/canvas-shared';
+import type { Edits, FillPlan, NodeEdit, RenderReport, Suggestion } from '@/lib/canvas-shared';
 import { movingEdges, snap, type Guide } from './guides';
 import { componentAt, innermostAt, parentOf, readInfo, readTokens, within, type Box, type Comp, type LayerInfo, type Token } from './model';
 
 type Win = Window & {
   __fill: (a: unknown) => Promise<RenderReport>;
   __applyEdits: (e: Edits, u: Record<string, string>, i: Record<string, string>) => void;
-  __checkEdits: (e: Edits, rules: unknown, format: string) => RenderReport['errors'];
+  __review: (e: Edits, rules: unknown, format: string) => Suggestion[];
   __components: () => { comps: Comp[]; safe: Box };
   __alignBox: (id: string) => Box | null;
 };
@@ -46,8 +46,8 @@ type Props = {
   /** Typed in place. False when refused: the page is drawn again as it was. */
   onText: (nodeId: string, text: string) => boolean;
   onInfo: () => void;
-  /** What no longer fits after the hand edits (same check as the server). */
-  onCheck: (errors: RenderReport['errors']) => void;
+  /** The Inspector's suggestions after each change (same review as the server). */
+  onReview: (items: Suggestion[]) => void;
 };
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -62,7 +62,7 @@ type Drag = {
 
 // The piece itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
-export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onCheck }, ref) {
+export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview }, ref) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [ready, setReady] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -73,11 +73,11 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const [, setTick] = useState(0);
   const [nonce, setNonce] = useState(0);
   const redraw = useCallback(() => setTick((t) => t + 1), []);
-  const live = useRef({ edits, plan, onReady, onInfo, onCheck });
-  live.current = { edits, plan, onReady, onInfo, onCheck };
+  const live = useRef({ edits, plan, onReady, onInfo, onReview });
+  live.current = { edits, plan, onReady, onInfo, onReview };
   const check = useCallback(() => {
     const w = frame.current?.contentWindow as Win | null;
-    if (w?.__checkEdits) live.current.onCheck(w.__checkEdits(live.current.edits, live.current.plan.fill.rules, live.current.plan.format));
+    if (w?.__review) live.current.onReview(w.__review(live.current.edits, live.current.plan.fill.rules, live.current.plan.format));
   }, []);
   const drag = useRef<Drag | null>(null);
 
@@ -342,7 +342,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   // The group around what is hovered, faint, so its container is easy to see (and pick).
   const ctxComp = ready && !drag.current ? parentOf(comps, hover) : null;
   const ctx = ctxComp && !selected.includes(ctxComp.id) ? screen(boxOf(ctxComp.id)) : null;
-  const handles: readonly Handle[] = logo ? ['nw', 'ne', 'se', 'sw'] : HANDLES;
+  // Texts hug their copy: only their width is pulled; the logo only scales from its corners.
+  const handles: readonly Handle[] = logo ? ['nw', 'ne', 'se', 'sw'] : single && kindOf(single.id) === 'text' ? ['e', 'w'] : HANDLES;
   // While typing, one thin frame around the text being edited, nothing else.
   const frameBox = editing ? null : (single ?? (group ? { r: group } : null))?.r;
   const editBox = editing && ready ? screen(boxOf(editing)) : null;

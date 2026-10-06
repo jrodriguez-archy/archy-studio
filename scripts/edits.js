@@ -1,7 +1,7 @@
 // Runs inside the template page after window.__fill: the hand edits made in Canvas, layer by layer
-// (keyed by data-node), plus the piece-level ':theme' entry (a Dark / Blue / Sky / Ice / Light theme and colour
-// swaps). The editor and the renderer both run it, so what is on the canvas is the PNG. Re-applying is
-// safe: every touched layer is first put back the way __fill left it.
+// (keyed by data-node), plus the piece-level ':theme' entry (a Dark / Blue / Sky / Ice / Light theme).
+// The editor and the renderer both run it, so what is on the canvas is the PNG. Re-applying is safe:
+// every touched layer is first put back the way __fill left it.
 window.__applyEdits = function applyEdits(edits, urls, icons) {
   const root = document.querySelector('body > [data-node]');
   const ARCHY = /^(Logo Archy|Archy Wordmark)/;
@@ -33,10 +33,28 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     if ('editText' in el.dataset) el.textContent = el.dataset.editText;
     if ('editHtml' in el.dataset) el.innerHTML = el.dataset.editHtml;
   }
-  for (const v of (root.dataset.themeVars ?? '').split(' ').filter(Boolean)) root.style.removeProperty(v);
   for (const el of root.querySelectorAll('[data-theme-fill], [data-theme-stroke]')) {
     if ('themeFill' in el.dataset) { el.setAttribute('fill', el.dataset.themeFill); delete el.dataset.themeFill; }
     if ('themeStroke' in el.dataset) { el.setAttribute('stroke', el.dataset.themeStroke); delete el.dataset.themeStroke; }
+  }
+
+  // The piece as designed, kept once (before any theme or edit), for the Inspector.
+  // How many lines each text takes as designed (before any hand edit), for the Inspector.
+  for (const el of root.querySelectorAll('[data-node]')) {
+    if (!('baseLines' in el.dataset) && !isSvg(el) && !el.children.length && el.textContent.trim()) {
+      el.dataset.baseLines = String(lineCount(el));
+      // What the design itself already spills (glyph overhangs, tight boxes) is not an error later.
+      el.dataset.baseOver = `${Math.max(0, el.scrollWidth - el.clientWidth)},${Math.max(0, el.scrollHeight - el.clientHeight)}`;
+    }
+  }
+  // Where everything sits as designed (for the Inspector: it only flags what the edits changed).
+  const R0 = root.getBoundingClientRect();
+  for (const el of root.querySelectorAll('[data-node]')) {
+    if ('baseBox' in el.dataset) continue;
+    const b = el.getBoundingClientRect();
+    el.dataset.baseBox = [b.left - R0.left, b.top - R0.top, b.width, b.height].map((n) => Math.round(n)).join(',');
+    if (!isSvg(el)) el.dataset.baseFont = String(parseFloat(getComputedStyle(el).fontSize));
+    if (!isSvg(el) && !el.children.length && el.textContent.trim()) el.dataset.baseContrast = String(contrastOf(el) ?? '');
   }
 
   const piece = edits?.[':theme'] ?? {};
@@ -46,7 +64,7 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
   const PRESETS = {
     dark: { bg: 'linear-gradient(in oklab 180deg, var(--color-dark-foreground) 0%, var(--color-dark-background) 55%)', text: '#FFFFFF', accent: '#66BFFF', surface: '#000484', border: '#0000C9', button: '#013DF5', onButton: '#FFFFFF', logo: '#FFFFFF' },
     blue: { bg: '#013DF5', text: '#FFFFFF', accent: '#CCEAFF', surface: '#0000C9', border: '#66BFFF', button: '#FFFFFF', onButton: '#013DF5', logo: '#FFFFFF' },
-    sky: { bg: '#0095FF', text: '#FFFFFF', accent: '#00004E', surface: '#66BFFF', border: '#CCEAFF', button: '#00004E', onButton: '#FFFFFF', logo: '#FFFFFF' },
+    sky: { bg: '#0095FF', text: '#FFFFFF', accent: '#00004E', surface: '#013DF5', border: '#CCEAFF', button: '#00004E', onButton: '#FFFFFF', logo: '#FFFFFF' },
     ice: { bg: '#E6F4FF', text: '#00004E', accent: '#013DF5', surface: '#FFFFFF', border: '#CCEAFF', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5' },
     light: { bg: '#FFFFFF', text: '#00004E', accent: '#013DF5', surface: '#F3F9FF', border: '#EEEEEE', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5' },
   };
@@ -73,7 +91,9 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
         mark: el.dataset.logoMark !== undefined,
         fill: filled(el) ? (btn === el ? t.button : /^(Ruler|Divider)/.test(name) ? t.border : /^Dot/.test(name) ? (btn ? t.onButton : t.accent) : btn ? null : t.surface) : null,
         border: parseFloat(cs.borderTopWidth) > 0 && !btn,
-        color: [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) ? (btn ? t.onButton : saturated(cs.color) && lum(cs.color) < 0.8 ? t.accent : t.text) : null,
+        // Inside a pill or plate (its own fill), text takes the theme's text colour, never the accent.
+        color: [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())
+          ? (btn ? t.onButton : saturated(cs.color) && lum(cs.color) < 0.8 && !inside(el.parentElement, (n) => filled(n) && !buttons.has(n)) ? t.accent : t.text) : null,
       };
     });
     for (const p of plan) {
@@ -94,44 +114,6 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       if (inArchyLogo(el)) setAttr(el, 'fill', t.logo);
       // A partner's sample mark (one colour, like the marks Studio places) follows the text.
       else if (inside(el, (n) => n.dataset?.slotType === 'logo')) setAttr(el, 'fill', t.text);
-    }
-  }
-
-  // ---- Colour swaps for the whole piece: every token with that colour, and the same colour drawn in SVGs ----
-  const theme = piece.theme ?? {};
-  if (Object.keys(theme).length) {
-    const probe = document.createElement('div');
-    root.appendChild(probe);
-    const hexOf = (css) => { probe.style.color = ''; probe.style.color = css; return toHex(getComputedStyle(probe).color); };
-    const vars = [];
-    for (const sheet of document.styleSheets) {
-      let rules; try { rules = sheet.cssRules; } catch { continue; }
-      for (const r of rules) if (r.selectorText === ':root') for (const p of r.style) if (p.startsWith('--color-')) vars.push(p);
-    }
-    const docStyle = getComputedStyle(document.documentElement);
-    const targets = Object.fromEntries(Object.entries(theme).map(([from, to]) => [from.toUpperCase(), { to, hex: hexOf(to) }]));
-    const set = [];
-    for (const v of vars) {
-      const tg = targets[toHex(docStyle.getPropertyValue(v).trim())];
-      if (tg && tg.to !== `var(${v})`) { root.style.setProperty(v, tg.hex); set.push(v); }
-    }
-    root.dataset.themeVars = set.join(' ');
-    for (const el of root.querySelectorAll('[fill], [stroke]')) {
-      if (inArchyLogo(el)) continue;
-      for (const attr of ['fill', 'stroke']) {
-        const tg = targets[toHex(el.getAttribute(attr) ?? '')];
-        if (tg) setAttr(el, attr, tg.hex);
-      }
-    }
-    probe.remove();
-  }
-
-  // How many lines each text takes as designed (before any hand edit), for __checkEdits.
-  for (const el of root.querySelectorAll('[data-node]')) {
-    if (!('baseLines' in el.dataset) && !isSvg(el) && !el.children.length && el.textContent.trim()) {
-      el.dataset.baseLines = String(lineCount(el));
-      // What the design itself already spills (glyph overhangs, tight boxes) is not an error later.
-      el.dataset.baseOver = `${Math.max(0, el.scrollWidth - el.clientWidth)},${Math.max(0, el.scrollHeight - el.clientHeight)}`;
     }
   }
 
@@ -163,8 +145,13 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       s.color = e.style.color;
       for (const n of el.querySelectorAll('[stroke]')) if (n.getAttribute('stroke') !== 'none') n.setAttribute('stroke', 'currentColor');
     }
-    if (b.width != null) { s.width = `${b.width}px`; s.flexShrink = '0'; }
-    if (b.height != null) { s.height = `${b.height}px`; s.flexShrink = '0'; }
+    // A text's box hugs its copy: its height follows the lines, a narrower width wraps them.
+    const text = !svg && !el.children.length && !!el.textContent.trim();
+    if (b.width != null) {
+      s.width = `${b.width}px`; s.flexShrink = '0';
+      if (text && /^(pre|nowrap)$/.test(getComputedStyle(el).whiteSpace)) s.whiteSpace = 'pre-wrap';
+    }
+    if (b.height != null && !text) { s.height = `${b.height}px`; s.flexShrink = '0'; }
     const st = e.style ?? {};
     if (st.color && !svg) s.color = st.color;
     if (st.backgroundColor) s.background = st.backgroundColor;
@@ -187,6 +174,26 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     if (e.hidden) s.display = 'none';
   }
 
+  // Contrast of a text against what is behind it (null when a photo is behind).
+  function contrastOf(el) {
+    const rgb = (c) => (c.match(/[\d.]+/g) ?? []).map(Number);
+    const lum = ([r0, g0, b0]) => [r0, g0, b0].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    let bg = null;
+    for (let n = el; n && !bg; n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      if (/url\(/.test(cs.backgroundImage)) return null;
+      const stops = cs.backgroundImage.match(/rgba?\([^)]*\)/g);
+      if (stops?.length) { const all = stops.map(rgb); bg = [0, 1, 2].map((i) => all.reduce((a, c) => a + c[i], 0) / all.length); break; }
+      const c = rgb(cs.backgroundColor);
+      if (c.length >= 3 && (c[3] ?? 1) > 0.5) bg = c;
+      if (n === root) break;
+    }
+    const fg = rgb(getComputedStyle(el).color);
+    if (!bg || fg.length < 3) return null;
+    const [l1, l2] = [lum(fg), lum(bg)].sort((x, y) => y - x);
+    return Math.round(((l1 + 0.05) / (l2 + 0.05)) * 100) / 100;
+  }
+
   function lineCount(el) {
     const r = document.createRange();
     r.selectNodeContents(el);
@@ -203,37 +210,3 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
   }
 };
 
-// After the hand edits: a text a resize, a smaller box, a bigger size or a layout change has affected
-// must still fit, as fit.js makes sure for the copy. Same check in the editor and on the server, so a
-// piece that does not fit is never saved.
-window.__checkEdits = function checkEdits(edits, rules, format) {
-  const root = document.querySelector('body > [data-node]');
-  const R = root.getBoundingClientRect();
-  const touched = Object.entries(edits ?? {}).filter(([id, e]) => id !== ':theme' && e && (e.box || e.style?.fontSize || e.style?.fontWeight || e.layout || e.text != null));
-  if (!touched.length) return [];
-  const nodes = touched.map(([id]) => root.querySelector(`[data-node="${CSS.escape(id)}"]`)).filter(Boolean);
-  const errors = [];
-  const pick = (v) => (v && typeof v === 'object' ? v[format] : v);
-  const lines = (el) => {
-    const r = document.createRange();
-    r.selectNodeContents(el);
-    return new Set([...r.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 4))).size || 1;
-  };
-  const name = (el) => {
-    const slot = el.dataset.slot;
-    const t = slot ? slot.replace(/-/g, ' ') : el.textContent.trim().replace(/\s+/g, ' ').slice(0, 24);
-    return t.charAt(0).toUpperCase() + t.slice(1);
-  };
-  for (const el of root.querySelectorAll('[data-node]')) {
-    if (el.namespaceURI === 'http://www.w3.org/2000/svg' || el.children.length || !el.textContent.trim()) continue;
-    if (getComputedStyle(el).display === 'none' || !nodes.some((n) => n === el || n.contains(el) || el.contains(n))) continue;
-    const slot = el.dataset.slot;
-    const allowed = Math.max(Number(el.dataset.baseLines) || 1, (slot && pick(rules?.slots?.[slot]?.maxLines)) || 0);
-    const now = lines(el);
-    const b = el.getBoundingClientRect();
-    if (now > allowed) errors.push({ node: el.dataset.node, slot, code: 'edit-lines', message: `${name(el)} now takes ${now} lines; the design allows ${allowed}. Widen its box or make the text smaller.` });
-    else if ((() => { const [w0, h0] = (el.dataset.baseOver ?? '0,0').split(',').map(Number); return el.scrollWidth - el.clientWidth > w0 + 2 || el.scrollHeight - el.clientHeight > h0 + 2; })()) errors.push({ node: el.dataset.node, slot, code: 'edit-overflow', message: `${name(el)} no longer fits its box. Make the box bigger or the text smaller.` });
-    else if (b.left < R.left - 1 || b.top < R.top - 1 || b.right > R.right + 1 || b.bottom > R.bottom + 1) errors.push({ node: el.dataset.node, slot, code: 'edit-outside', message: `${name(el)} goes off the piece.` });
-  }
-  return errors;
-};

@@ -9,8 +9,6 @@ export type NodeEdit = {
   image?: string;
   /** Another Hugeicons icon for an icon layer (export name, e.g. "Calendar03Icon"). */
   icon?: string;
-  /** Only on the THEME entry: brand colour swaps for the whole piece, hex → var(--color-*). */
-  theme?: Record<string, string>;
   /** Only on the THEME entry: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground (scripts/edits.js). */
   preset?: Preset;
   hidden?: boolean;
@@ -59,8 +57,6 @@ export function cleanEdits(edits: Edits): Edits {
     if (e.text != null) n.text = e.text;
     if (e.image) n.image = e.image;
     if (e.icon) n.icon = e.icon;
-    const theme = Object.fromEntries(Object.entries(e.theme ?? {}).filter(([, v]) => v));
-    if (Object.keys(theme).length) n.theme = theme;
     if (e.preset) n.preset = e.preset;
     if (e.hidden) n.hidden = true;
     if (Object.keys(box).length) n.box = box;
@@ -71,3 +67,6 @@ export function cleanEdits(edits: Edits): Edits {
   }
   return out;
 }
+
+// A design suggestion from the Inspector (components.js __review): never a block.
+export type Suggestion = { id: string; level: 'warn' | 'tip'; title: string; detail: string; fix?: { dx: number; dy: number } };

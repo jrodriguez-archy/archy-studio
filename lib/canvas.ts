@@ -74,9 +74,8 @@ export async function editorContext(piece: PieceSource) {
 
 // Render the edited piece at 2x. Copy that does not fit is refused, as in the MCP.
 async function renderEdited(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
-  const out = await render({ template: piece.template, format: piece.format, slots: pick(piece, slots), edits: cleanEdits(edits), scale: 2 });
-  if (!out.report.ok) throw new Error(out.report.errors.map((e) => e.message ?? e.code).join(' '));
-  return out;
+  // Nothing blocks a save: the Inspector suggests, the person decides.
+  return render({ template: piece.template, format: piece.format, slots: pick(piece, slots), edits: cleanEdits(edits), scale: 2 });
 }
 
 // Only the slots the template has (the client cannot add others).

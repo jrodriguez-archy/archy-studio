@@ -32,9 +32,6 @@ type Props = {
   alignIn?: string;
   preset?: Preset;
   onPreset: (p: Preset) => void;
-  /** Colour swaps made earlier on the whole piece (kept working; can be cleared here). */
-  swaps: number;
-  onClearSwaps: () => void;
   info: (id?: string) => LayerInfo | null;
   edits: Edits;
   slots: Record<string, string | null>;
@@ -50,7 +47,7 @@ type Props = {
 
 // Right column: what the selected component lets you change, inside the brand (palette colours, the
 // template's weights, sizes within the slot's limits).
-export function PropertiesPanel({ comp, alignIn, preset, onPreset, swaps, onClearSwaps, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign }: Props) {
+export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign }: Props) {
   const edit = edits[comp.id];
   const box = edit?.box ?? {};
   const me = info(comp.id);
@@ -147,11 +144,6 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, swaps, onClea
             ))}
           </div>
           <p className="text-foreground/40">Texts, buttons, lines, icons and the Archy logo follow the theme.</p>
-          {swaps > 0 && (
-            <button type="button" onClick={onClearSwaps} className="text-left text-foreground/50 underline-offset-4 hover:text-foreground hover:underline">
-              {swaps} colour swap{swaps > 1 ? 's' : ''} on this piece · back to the theme’s colours
-            </button>
-          )}
         </Section>
       )}
 
@@ -179,7 +171,13 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, swaps, onClea
             {comp.kind !== 'decoration' && (
               <>
                 <NumberField label="W" value={box.width ?? me.width} min={4} onChange={(v, c) => onEdit(comp.id, { box: { width: v } }, c)} />
-                <NumberField label="H" value={box.height ?? me.height} min={4} onChange={(v, c) => onEdit(comp.id, { box: { height: v } }, c)} />
+                {comp.kind === 'text' ? (
+                  <label className="flex h-7 items-center gap-1.5 rounded-md bg-foreground/[0.04] px-2 text-foreground/45" title="A text's height follows its lines">
+                    <span className="min-w-3">H</span> Auto
+                  </label>
+                ) : (
+                  <NumberField label="H" value={box.height ?? me.height} min={4} onChange={(v, c) => onEdit(comp.id, { box: { height: v } }, c)} />
+                )}
               </>
             )}
           </div>
@@ -320,9 +318,8 @@ function TextControls({ info, edit, tokens, slot, onText, onEdit }: {
     <Section title="Text">
       <TextField value={slot ? slot.value ?? '' : edit?.text ?? info.text} onCommit={onText} optional={!slot || slot.meta?.optional} />
       <Row label="Size">
-        <NumberField label="Aa" value={edit?.style?.fontSize ?? info.fontSize} suffix="px" min={slot?.meta?.fontSize?.min ?? 8} max={slot?.meta?.fontSize?.max ?? 400} onChange={(v, c) => onEdit({ style: { fontSize: v } }, c)} />
+        <NumberField label="Aa" value={edit?.style?.fontSize ?? info.fontSize} suffix="px" min={8} max={400} onChange={(v, c) => onEdit({ style: { fontSize: v } }, c)} />
       </Row>
-      {slot?.meta?.fontSize && <p className="-mt-1 text-foreground/40">This text goes from {slot.meta.fontSize.min} to {slot.meta.fontSize.max}px.</p>}
       <Row label="Weight">
         <div className="grid grid-cols-4 gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5">
           {WEIGHTS.map(([w, label]) => (

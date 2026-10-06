@@ -151,6 +151,111 @@
     return { comps, tokens };
   };
 
+  // The Inspector: design suggestions after hand edits, never a block. It compares with the piece as
+  // designed (edits.js keeps each layer's original box, size and line count) so it only speaks about
+  // what the edits changed. Each suggestion may carry a fix: a nudge (dx, dy) for that component.
+  window.__review = function review(edits, rules, format) {
+    const r = root(), R = r.getBoundingClientRect();
+    const { comps, safe } = window.__components();
+    const W = R.width, H = R.height;
+    const node = (id) => r.querySelector(`[data-node="${CSS.escape(id)}"]`);
+    const boxOf = (el) => { const b = el.getBoundingClientRect(); return { x: b.left - R.left, y: b.top - R.top, w: b.width, h: b.height }; };
+    const baseOf = (el) => { const v = el.dataset?.baseBox?.split(',').map(Number); return v ? { x: v[0], y: v[1], w: v[2], h: v[3] } : null; };
+    const touched = new Set(Object.entries(edits ?? {}).filter(([id, e]) => id !== ':theme' && e && Object.keys(e).length).map(([id]) => id));
+    const changed = (el) => { for (let n = el; n && n !== r; n = n.parentElement) if (touched.has(idOf(n))) return true; return [...touched].some((id) => el.contains(node(id))); };
+    const out = [];
+    const inside = (a, b, m = 1) => a.x >= b.x - m && a.y >= b.y - m && a.x + a.w <= b.x + b.w + m && a.y + a.h <= b.y + b.h + m;
+    const meet = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+    const pick = (v) => (v && typeof v === 'object' ? v[format] : v);
+    const lines = (el) => { const g = document.createRange(); g.selectNodeContents(el); return new Set([...g.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 4))).size || 1; };
+    const rgb = (c) => (c.match(/[\d.]+/g) ?? []).map(Number);
+    const lum = ([r0, g0, b0]) => [r0, g0, b0].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const ground = (el) => {
+      for (let n = el; n; n = n.parentElement) {
+        const cs = getComputedStyle(n);
+        if (/url\(/.test(cs.backgroundImage)) return null; // a photo behind: can't judge
+        const stops = cs.backgroundImage.match(/rgba?\([^)]*\)/g);
+        if (stops?.length) { const all = stops.map(rgb); return [0, 1, 2].map((i) => all.reduce((a, c) => a + c[i], 0) / all.length); }
+        const c = rgb(cs.backgroundColor);
+        if (c.length >= 3 && (c[3] ?? 1) > 0.5) return c;
+        if (n === r) return null;
+      }
+      return null;
+    };
+    const visible = comps.filter((c) => c.kind !== 'background' && c.kind !== 'group' && node(c.id) && getComputedStyle(node(c.id)).display !== 'none');
+    const solid = visible.filter((c) => ['text', 'button', 'photo', 'partner', 'archy', 'tag', 'icon'].includes(c.kind));
+    const boxes = new Map(visible.map((c) => [c.id, boxOf(node(c.id))]));
+
+    for (const c of visible) {
+      const el = node(c.id), b = boxes.get(c.id), b0 = baseOf(el);
+      if (!b0) continue;
+      // Cut off / outside the safe area: also when another edit pushed it there.
+      const own = changed(el);
+      const moved = own && (Math.abs(b.x - b0.x) > 0.5 || Math.abs(b.y - b0.y) > 0.5);
+      // Off the piece, or out of the safe area, when the design had it in.
+      if (!inside(b, { x: 0, y: 0, w: W, h: H }) && inside(b0, { x: 0, y: 0, w: W, h: H })) {
+        out.push({ id: c.id, level: 'warn', title: `${c.name} is cut off`, detail: own ? 'Part of it falls off the piece.' : 'Another change pushed part of it off the piece.', ...(own ? { fix: { dx: Math.round(Math.min(0, W - b.x - b.w) - Math.min(0, b.x)), dy: Math.round(Math.min(0, H - b.y - b.h) - Math.min(0, b.y)) } } : {}) });
+      } else if (safe && !inside(b, safe, 2) && inside(b0, safe, 2) && c.kind !== 'decoration') {
+        out.push({ id: c.id, level: 'warn', title: `${c.name} is outside the safe area`, detail: own ? 'Keep it inside the margins the design uses.' : 'Another change pushed it past the margins.', ...(own ? { fix: { dx: Math.round(Math.min(0, safe.x + safe.w - b.x - b.w) - Math.min(0, b.x - safe.x)), dy: Math.round(Math.min(0, safe.y + safe.h - b.y - b.h) - Math.min(0, b.y - safe.y)) } } : {}) });
+      }
+      // Almost lined up with something: a few px off an edge or centre.
+      if (moved && c.kind !== 'decoration') {
+        let best = null;
+        const targets = [...(safe ? [{ name: 'the safe area', b: safe }] : []), { name: 'the piece', b: { x: 0, y: 0, w: W, h: H } },
+          ...visible.filter((o) => o.id !== c.id && !el.contains(node(o.id)) && !node(o.id).contains(el)).map((o) => ({ name: o.name, b: boxes.get(o.id) }))];
+        for (const axis of ['x', 'y']) {
+          const p = axis === 'x' ? [b.x, b.x + b.w / 2, b.x + b.w] : [b.y, b.y + b.h / 2, b.y + b.h];
+          for (const t of targets) {
+            const q = axis === 'x' ? [t.b.x, t.b.x + t.b.w / 2, t.b.x + t.b.w] : [t.b.y, t.b.y + t.b.h / 2, t.b.y + t.b.h];
+            for (const a of p) for (const z of q) {
+              const d = z - a;
+              if (Math.abs(d) >= 1 && Math.abs(d) <= 8 && (!best || Math.abs(d) < Math.abs(best.d))) best = { d, axis, name: t.name };
+            }
+          }
+        }
+        if (best) out.push({ id: c.id, level: 'tip', title: `${c.name} is almost aligned`, detail: `${Math.abs(Math.round(best.d))} px off ${best.name}.`, fix: best.axis === 'x' ? { dx: Math.round(best.d), dy: 0 } : { dx: 0, dy: Math.round(best.d) } });
+      }
+      if (!own) continue;
+      // Texts: more lines than designed, smaller than readable.
+      if (c.kind === 'text') {
+        const allowed = Math.max(Number(el.dataset.baseLines) || 1, (c.slot && pick(rules?.slots?.[c.slot]?.maxLines)) || 0);
+        const now = lines(el);
+        if (now > allowed) out.push({ id: c.id, level: 'warn', title: `${c.name} runs to ${now} lines`, detail: `The design uses ${allowed}. A wider box or a smaller size keeps it tidy.` });
+        const size = parseFloat(getComputedStyle(el).fontSize), size0 = Number(el.dataset.baseFont) || size;
+        if (size < size0 && size < 18 * (W / 1080)) out.push({ id: c.id, level: 'tip', title: `${c.name} is small to read`, detail: `${Math.round(size)} px; keep text at ${Math.round(18 * (W / 1080))} px or more.` });
+      }
+      if (c.kind === 'archy') {
+        const k = b.w / b0.w;
+        if (k < 0.6) out.push({ id: c.id, level: 'tip', title: 'The Archy logo is small', detail: `${Math.round(k * 100)}% of its designed size.` });
+      }
+    }
+
+    // Things that now sit on top of each other but did not in the design.
+    for (let i = 0; i < solid.length; i++) for (let j = i + 1; j < solid.length; j++) {
+      const a = solid[i], c = solid[j], ea = node(a.id), ec = node(c.id);
+      if (ea.contains(ec) || ec.contains(ea)) continue;
+      const a0 = baseOf(ea), c0 = baseOf(ec);
+      if (meet(boxes.get(a.id), boxes.get(c.id)) > 16 && a0 && c0 && meet(a0, c0) <= 16) {
+        const who = changed(ea) ? a : c;
+        out.push({ id: who.id, level: 'warn', title: `${a.name} overlaps ${c.name}`, detail: 'Move one of them so both read clearly.' });
+      }
+    }
+
+    // Contrast of every text against what is behind it (themes and colours can change it).
+    for (const c of visible.filter((x) => x.kind === 'text' || x.kind === 'button')) {
+      const el = c.kind === 'button' ? node(c.textId) : node(c.id);
+      if (!el) continue;
+      const fg = rgb(getComputedStyle(el).color), bg = ground(el);
+      if (!bg || fg.length < 3) continue;
+      const [l1, l2] = [lum(fg), lum(bg)].sort((x, y) => y - x);
+      const ratio = (l1 + 0.05) / (l2 + 0.05);
+      // Only worse than as designed counts (no baseline yet: nothing to compare with).
+      const ratio0 = Number(el.dataset.baseContrast);
+      if (ratio0 && ratio < 3 && ratio < ratio0 - 0.2) out.push({ id: c.id, level: 'warn', title: `${c.name} is hard to read`, detail: `Low contrast with what is behind it (${ratio.toFixed(1)}:1). Try another colour or theme.` });
+    }
+    return out;
+  };
+
   // Where "align" puts a component: inside its nearest container that has room (without its padding),
   // or the safe area when that container is the artboard itself.
   window.__alignBox = function alignBox(id) {

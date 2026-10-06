@@ -9,7 +9,8 @@ import {
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { exportAction, prepareAction, saveAction } from '@/app/(app)/canvas/actions';
+import { exportAction, prepareAction, saveAction, saveDraftAction } from '@/app/(app)/canvas/actions';
+import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { CanvasLibrary } from '@/lib/canvas';
 import { THEME, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport } from '@/lib/canvas-shared';
 import { AssetsTab, CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
@@ -24,6 +25,9 @@ type Snap = { slots: Record<string, string | null>; edits: Edits };
 export type PieceProps = {
   pieceId: string; title: string; formatLabel: string; backHref: string; canReplace: boolean; isNew: boolean;
   initial: Snap; plan: FillPlan; slotMeta: Record<string, SlotMeta>;
+  /** The piece as saved (the baseline for "unsaved changes" and Reset); initial may be a draft. */
+  saved?: Snap;
+  draft?: { version: number; by: string; note: string | null } | null;
 };
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -57,12 +61,12 @@ export function CanvasEditor({ piece, library }: { piece?: PieceProps; library: 
   return <Editor key={piece.pieceId} {...piece} library={library} tab={tab} setTab={setTab} />;
 }
 
-function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, initial, plan: firstPlan, slotMeta, library, tab, setTab }: PieceProps & { library: CanvasLibrary; tab: PanelTab; setTab: (t: PanelTab) => void }) {
+function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, initial, saved: savedSnap, draft, plan: firstPlan, slotMeta, library, tab, setTab }: PieceProps & { library: CanvasLibrary; tab: PanelTab; setTab: (t: PanelTab) => void }) {
   const router = useRouter();
   const [snap, setSnap] = useState<Snap>(initial);
   const [past, setPast] = useState<Snap[]>([]);
   const [future, setFuture] = useState<Snap[]>([]);
-  const [saved, setSaved] = useState<Snap>(initial);
+  const [saved, setSaved] = useState<Snap>(savedSnap ?? initial);
   const liveBase = useRef<Snap | null>(null);
 
   const [plan, setPlan] = useState(firstPlan);
@@ -150,7 +154,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     const slots = { ...snap.slots };
     for (const c of comps.filter((x) => ids.includes(x.id))) {
       for (const id of [c.id, c.textId, c.iconId]) if (id) delete edits[id];
-      for (const k of [c.slot, c.textSlot]) if (k) slots[k] = initial.slots[k] ?? null;
+      for (const k of [c.slot, c.textSlot]) if (k) slots[k] = saved.slots[k] ?? null;
     }
     commit({ edits, slots });
   };
@@ -261,6 +265,50 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   }, [changed]);
   const confirmLeave = () => !changed || window.confirm('Leave without saving your changes?');
 
+  // ---- Live with Claude: the draft is kept as people edit; Claude's edits arrive over Realtime ----
+  const version = useRef(draft?.version ?? 0);
+  const [claudeNote, setClaudeNote] = useState<string | null>(null);
+  const synced = useRef(JSON.stringify(cleanSnap(initial)));
+  useEffect(() => {
+    if (draft) toast(draft.by === 'claude' ? `Claude’s changes are here: ${draft.note ?? 'edited by Claude'}` : 'Your unsaved changes are back.');
+  }, [draft]);
+  useEffect(() => {
+    if (isNew) return;
+    const key = JSON.stringify(cleanSnap(snap));
+    if (key === synced.current) return;
+    const t = setTimeout(async () => {
+      synced.current = key;
+      const r = await saveDraftAction(pieceId, snap.slots, snap.edits);
+      if (r.ok) version.current = Math.max(version.current, r.version);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [snap, pieceId, isNew]);
+  useEffect(() => {
+    if (isNew) return;
+    const db = supabaseBrowser();
+    let channel: ReturnType<typeof db.channel> | null = null;
+    let gone = false;
+    (async () => {
+      // Drafts are readable by signed-in people only (RLS): Realtime needs the session's token.
+      const { data } = await db.auth.getSession();
+      if (gone) return;
+      db.realtime.setAuth(data.session?.access_token ?? null);
+      channel = db.channel(`canvas:${pieceId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=eq.${pieceId}` }, (payload) => {
+          const row = payload.new as { slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null };
+          if (row?.updated_by !== 'claude' || !row.version || row.version <= version.current) return;
+          version.current = row.version;
+          const next = { slots: row.slots ?? {}, edits: row.edits ?? {} };
+          synced.current = JSON.stringify(cleanSnap(next));
+          commit(next); // one step: undo takes it back
+          setClaudeNote(row.note ?? 'Claude edited the piece');
+          toast(`Claude: ${row.note ?? 'edited the piece'}`, { action: { label: 'Undo', onClick: () => undo() } });
+        })
+        .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });
+    })();
+    return () => { gone = true; if (channel) db.removeChannel(channel); };
+  }, [pieceId, isNew, commit, undo]);
+
   const blocked = planError ?? (report && !report.ok ? report.errors.map((e) => e.message ?? e.code).join(' ') : null);
 
   const download = () => start(async () => {
@@ -320,7 +368,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           )}
           {tab === 'library' && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
           {tab === 'assets' && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
-          {tab === 'claude' && <ClaudeTab pieceId={isNew ? undefined : pieceId} title={title} />}
+          {tab === 'claude' && <ClaudeTab pieceId={isNew ? undefined : pieceId} title={title} live={claudeNote} />}
         </CanvasPanel>
 
         <main

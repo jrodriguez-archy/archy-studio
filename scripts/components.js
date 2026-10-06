@@ -122,6 +122,32 @@
     return { x: m, y: m, w: R.width - 2 * m, h: R.height - 2 * m, name: 'the safe area' };
   }
 
+  // For the server (Claude's Canvas tools): each component with what it says, where it sits and where
+  // it aligns, and the brand colours by name (aliases that repeat a colour left out).
+  window.__inspect = function inspect() {
+    const r = root(), R = r.getBoundingClientRect();
+    const node = (id) => (id ? r.querySelector(`[data-node="${CSS.escape(id)}"]`) ?? (idOf(r) === id ? r : null) : null);
+    const comps = window.__components().comps.map((c) => {
+      const el = node(c.id), b = el.getBoundingClientRect();
+      const textEl = c.kind === 'button' ? node(c.textId) : c.kind === 'text' ? el : null;
+      return {
+        ...c, text: textEl?.textContent ?? undefined, hidden: getComputedStyle(el).display === 'none',
+        box: { x: Math.round(b.left - R.left), y: Math.round(b.top - R.top), w: Math.round(b.width), h: Math.round(b.height) },
+        alignBox: c.kind === 'background' ? null : window.__alignBox(c.id),
+      };
+    });
+    const tokens = {}, seen = new Set();
+    for (const sheet of document.styleSheets) {
+      let rules; try { rules = sheet.cssRules; } catch { continue; }
+      for (const rule of rules) if (rule.selectorText === ':root') for (const p of rule.style) {
+        if (!p.startsWith('--color-') || /^--color-(light|dark)-/.test(p)) continue;
+        const v = getComputedStyle(document.documentElement).getPropertyValue(p).trim().toUpperCase();
+        if (!seen.has(v)) { seen.add(v); tokens[p.slice(8)] = v; }
+      }
+    }
+    return { comps, tokens };
+  };
+
   // Where "align" puts a component: inside its nearest container that has room (without its padding),
   // or the safe area when that container is the artboard itself.
   window.__alignBox = function alignBox(id) {

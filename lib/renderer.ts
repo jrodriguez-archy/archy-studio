@@ -48,7 +48,16 @@ export type RenderInput = {
   fillDefaults?: boolean;
   /** Hand edits from Canvas, applied after the fill. */
   edits?: Edits;
+  /** Also describe the piece's components (scripts/components.js), for the Canvas tools of the MCP. */
+  inspect?: boolean;
 };
+
+// A component as Claude sees it: what it is, what it says, where it sits and where it aligns.
+export type InspectedComp = {
+  id: string; kind: string; name: string; parent: string | null; slot?: string; textId?: string; textSlot?: string; iconId?: string;
+  text?: string; hidden: boolean; box: { x: number; y: number; w: number; h: number }; alignBox: { x: number; y: number; w: number; h: number; name?: string } | null;
+};
+let componentsJs: string | null = null;
 
 export class MissingRequired extends Error {
   constructor(public slots: string[]) {
@@ -116,7 +125,7 @@ export async function prepareFill({ template, format, slots: given, fillDefaults
   };
 }
 
-export async function render({ template, format, slots: given, scale = 1, fillDefaults = false, edits = {} }: RenderInput) {
+export async function render({ template, format, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false }: RenderInput) {
   const plan = await prepareFill({ template, format, slots: given, fillDefaults, edits });
   const { variant, slots, width, height } = plan;
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
@@ -165,6 +174,13 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
       // @ts-expect-error __applyEdits is defined by edits.js inside the page
       await page.evaluate(([e, u, i]) => window.__applyEdits(e, u, i), [edits, plan.imageUrls, plan.iconSvgs] as const);
     }
+    let inspected: { comps: InspectedComp[]; tokens: Record<string, string> } | null = null;
+    if (inspect) {
+      componentsJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'components.js'), 'utf8');
+      await page.addScriptTag({ content: componentsJs });
+      // @ts-expect-error __inspect is defined by components.js inside the page
+      inspected = (await page.evaluate(() => window.__inspect())) as { comps: InspectedComp[]; tokens: Record<string, string> };
+    }
     mark('fit');
 
     await page.evaluate(async () => {
@@ -179,7 +195,7 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
     mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
     mark('screenshot');
-    return { png, report, variant, slots, width, height, timing: t };
+    return { png, report, variant, slots, width, height, timing: t, inspected };
   } finally {
     await context.close();
   }

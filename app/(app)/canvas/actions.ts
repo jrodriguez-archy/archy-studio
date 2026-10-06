@@ -1,7 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { exportEdited, loadSource, saveEdited } from '@/lib/canvas';
+import { exportEdited, isNew, loadSource, saveEdited } from '@/lib/canvas';
+import { clearDraft, saveDraft } from '@/lib/canvas-claude';
 import type { Edits, FillPlan } from '@/lib/canvas-shared';
 import { MissingRequired, prepareFill } from '@/lib/renderer';
 import { currentUser } from '@/lib/team';
@@ -37,7 +38,16 @@ export async function exportAction(id: string, slots: Record<string, string | nu
 export async function saveAction(id: string, slots: Record<string, string | null>, edits: Edits, mode: 'version' | 'replace') {
   return run(id, async (me, piece) => {
     const saved = await saveEdited(me, piece, slots, edits, mode);
+    if (!isNew(piece)) await clearDraft(piece.id);
     revalidatePath('/', 'layout');
     return { id: saved.id, url: saved.url };
+  });
+}
+
+// The work in progress, kept as people edit so Claude (through the MCP) works on what they see.
+export async function saveDraftAction(id: string, slots: Record<string, string | null>, edits: Edits) {
+  return run(id, async (me, piece) => {
+    if (isNew(piece)) return { version: 0 };
+    return { version: await saveDraft({ pieceId: piece.id, userId: me.id, slots, edits, by: 'app' }) };
   });
 }

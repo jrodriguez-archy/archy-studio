@@ -31,6 +31,14 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
    - Show the images.
    - Save the high-resolution files: when you can run commands, download each `Download (2x PNG)` link into the working folder as `<template>-<format>.png` (for example with `curl -L -o ae-spotlight-post.png "<link>"`). Otherwise give them the links.
    - Give the **Edit in Canvas** link of each format: there they can fix copy, colours, images or sizes by hand and download again, without a new render.
+
+## Live editing in Canvas
+
+When the requester has a piece open in Studio's Canvas and asks you to change it ("shorter headline", "light theme", "use a ticket icon", "centre the button"), work on that piece instead of rendering a new one:
+
+1. `get_canvas` (no arguments: the piece they have open) shows its components by name, the copy, the theme and the brand colours.
+2. `edit_canvas` with the changes by component name, plus a one-line `note`. They see each change live in Canvas and can undo it. Brand colours only; copy that does not fit is refused (shorten and try again); the Archy logo can only be moved, aligned or scaled.
+3. `save_canvas` only when they ask to save. It keeps the original and saves a new version.
    - Say in one line which template you chose and why, what was left out, and offer to redo it when they get the missing facts or photos.
 
 ## When something fails

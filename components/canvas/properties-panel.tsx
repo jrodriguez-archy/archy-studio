@@ -274,8 +274,9 @@ export function ColorsPanel({ used, tokens, theme, onSwap, onClear }: {
       )}
       <div className="space-y-1.5 border-t border-foreground/[0.06] pt-4 text-foreground/50">
         <p className="text-foreground">Tips</p>
-        <p>Click anything on the piece, or a component on the left. Double-click a text to type in place.</p>
-        <p>Drag to move: it snaps to the centre and edges (hold ⌘ to move freely). Pull a handle to resize, Shift keeps proportions. Arrows nudge 1px, Shift+arrows 10px.</p>
+        <p>Click anything on the piece, or a layer. Double-click a text to type in place. ⌘-click or drag a box around things to select several.</p>
+        <p>Drag to move: it snaps to its container, the safe area and the other pieces (hold ⌘ to move freely, Shift for one direction). Arrows nudge 1px, Shift+arrows 10px.</p>
+        <p>Scroll to move around, pinch or ⌘+scroll to zoom, hold Space to drag the view. ⌘0 fits the piece.</p>
       </div>
     </div>
   );

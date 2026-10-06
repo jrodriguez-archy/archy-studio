@@ -1,6 +1,7 @@
 import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
+import { editCanvas, getCanvas, saveCanvas } from '@/lib/canvas-claude';
 import { MissingRequired, render } from '@/lib/renderer';
 import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
 import { createProject, findProject, listProjects } from '@/lib/projects';
@@ -35,7 +36,9 @@ Brand rules:
 - All copy on the piece is in US English, even when the conversation is not.
 - Photos of people are always the person's real photo, from the approved library (list_assets) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo.
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
-- Keep the template's fixed text and design as they are; only the slots change.`;
+- Keep the template's fixed text and design as they are; only the slots change.
+
+Canvas (live editing with the person): when they ask to change a piece they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon"), call get_canvas to see its components by name, then edit_canvas with the changes. Each edit appears live in their Canvas and they can undo it. Brand colours only, copy must fit, and the Archy logo can only be moved or scaled. Save with save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 
@@ -178,6 +181,81 @@ const handler = createMcpHandler(
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Projects need a signed-in Studio account.' }] };
         const p = await createProject(me, name, shared);
         return { content: [{ type: 'text', text: `Project "${p.name}" ready (${p.shared ? 'team' : 'only the requester'}). Pass it to render as project.` }] };
+      },
+    );
+
+    server.registerTool(
+      'get_canvas',
+      {
+        title: 'See the piece open in Canvas',
+        description: 'The piece the person has open in Archy Studio Canvas (or the canvas id given): its components by name (texts with their copy, buttons, icons, photos, logos, groups), the theme and the brand colours, plus an image of it as it is now.',
+        inputSchema: z.object({ piece: z.string().optional().describe('Canvas id or link of the piece. Omit for the one the person has open.') }),
+        annotations: { readOnlyHint: true },
+      },
+      async ({ piece }, ctx) => {
+        const me = await whoIs(ctx);
+        if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
+        try {
+          const out = await getCanvas(me, piece);
+          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: out.text }] };
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
+      },
+    );
+
+    server.registerTool(
+      'edit_canvas',
+      {
+        title: 'Edit the piece open in Canvas',
+        description: 'Change components of the piece open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); copy that does not fit is refused; the Archy logo can only be moved, aligned or scaled.',
+        inputSchema: z.object({
+          piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.'),
+          theme: z.enum(['dark', 'blue', 'light']).optional().describe('Redraw the whole piece on a Dark, Blue or Light ground.'),
+          changes: z.array(z.object({
+            component: z.string().describe('Component name from get_canvas, e.g. "Headline", "Claim your spot", "Location icon"'),
+            text: z.string().optional().describe('New copy (US English). For a button, its label.'),
+            color: z.string().optional().describe('Text or icon colour: a brand colour name, e.g. "white", "royal-blue-500"'),
+            fill: z.string().optional().describe('Fill of a button, tag, line or the background: a brand colour name'),
+            icon: z.string().optional().describe('Hugeicons name or a word to search, e.g. "ticket"'),
+            hidden: z.boolean().optional(),
+            font_size: z.number().optional().describe('Text size in px'),
+            move: z.object({ x: z.number().optional(), y: z.number().optional() }).optional().describe('Nudge in px from where it is'),
+            align: z.enum(['left', 'center', 'right', 'top', 'middle', 'bottom']).optional().describe('Align inside its container (its padding kept)'),
+            scale: z.number().optional().describe('Scale, 1 = as designed (photos, the Archy logo)'),
+            image: z.string().optional().describe('For a photo or logo: asset:<id> (list_assets) or an https URL'),
+          })).default([]),
+          note: z.string().optional().describe('One short line the person sees, e.g. "Shorter headline, light theme"'),
+        }),
+      },
+      async ({ piece, theme, changes, note }, ctx) => {
+        const me = await whoIs(ctx);
+        if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
+        try {
+          const out = await editCanvas(me, { piece, theme, changes, note });
+          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it. Save with save_canvas only when they ask.` }] };
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
+      },
+    );
+
+    server.registerTool(
+      'save_canvas',
+      {
+        title: 'Save the Canvas piece',
+        description: 'Save the piece open in Canvas to the gallery as a new version (the original is kept). Only when the person asks to save it.',
+        inputSchema: z.object({ piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.') }),
+      },
+      async ({ piece }, ctx) => {
+        const me = await whoIs(ctx);
+        if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
+        try {
+          const saved = await saveCanvas(me, piece);
+          return { content: [{ type: 'text', text: `Saved as a new version. Download (2x PNG): ${saved.url} · Edit in Canvas: ${publicOrigin(ctx)}/canvas/${saved.id}` }] };
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
       },
     );
 

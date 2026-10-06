@@ -299,7 +299,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     if (!d.getElementById('canvas-editing')) {
       const st = d.createElement('style');
       st.id = 'canvas-editing';
-      st.textContent = '[data-canvas-editing]{outline:none!important}[data-canvas-editing]::selection{background:rgba(1,61,245,.22)}';
+      st.textContent = '[data-canvas-editing]{outline:none!important}[data-canvas-editing]::selection{background:rgba(0,149,255,.7);color:#fff}';
       d.head.appendChild(st);
     }
     n.dataset.canvasEditing = '';

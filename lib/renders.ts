@@ -40,3 +40,10 @@ export async function signedUrl(path: string, seconds = SIGNED_URL_SECONDS): Pro
   if (error || !data) throw new Error(`Could not sign the download link: ${error?.message}`);
   return data.signedUrl;
 }
+
+// Many signed links in one call (gallery). Not a download: shown inline.
+export async function signedUrls(paths: string[], seconds = 60 * 60): Promise<Record<string, string>> {
+  if (!paths.length || !supabaseConfigured()) return {};
+  const { data } = await supabaseAdmin().storage.from(BUCKET).createSignedUrls(paths, seconds);
+  return Object.fromEntries((data ?? []).filter((d) => d.path && d.signedUrl).map((d) => [d.path as string, d.signedUrl as string]));
+}

@@ -16,10 +16,10 @@ async function run<T>(id: string, fn: (me: { id: string; is_admin: boolean }, pi
     const me = await currentUser();
     if (!me) throw new Error('Sign in again.');
     const piece = await loadSource(id);
-    if (!piece) throw new Error('Piece not found.');
+    if (!piece) throw new Error('Design not found.');
     return { ok: true, ...(await fn(me, piece)) };
   } catch (e) {
-    if (e instanceof MissingRequired) return { ok: false, error: `This piece cannot go without ${e.slots.join(', ')}.` };
+    if (e instanceof MissingRequired) return { ok: false, error: `This design cannot go without ${e.slots.join(', ')}.` };
     return { ok: false, error: (e as Error).message };
   }
 }

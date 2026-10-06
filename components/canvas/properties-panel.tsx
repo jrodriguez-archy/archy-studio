@@ -243,7 +243,7 @@ export function MultiPanel({ count, onAlign, onHide, onReset }: { count: number;
   );
 }
 
-// No selection: whether Claude can work on this piece, and the few shortcuts that matter.
+// No selection: whether Claude can work on this design, and the few shortcuts that matter.
 export function PiecePanel({ pieceId, title, seenAt }: { pieceId?: string; title: string; seenAt: string | null }) {
   const connected = !!seenAt && Date.now() - new Date(seenAt).getTime() < 30 * 24 * 3600 * 1000;
   return (
@@ -265,7 +265,7 @@ export function PiecePanel({ pieceId, title, seenAt }: { pieceId?: string; title
             Install the connector <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
           </Link>
         )}
-        {connected && !pieceId && <p className="text-foreground/40">Save the piece first, so Claude can find it.</p>}
+        {connected && !pieceId && <p className="text-foreground/40">Save the design first, so Claude can find it.</p>}
       </section>
       <section className="space-y-1.5 border-t border-foreground/[0.06] pt-4 text-foreground/55">
         <p className="pb-1 text-[13px] font-medium text-foreground">Tips</p>
@@ -365,7 +365,7 @@ function TextField({ value, onCommit, optional }: { value: string; onCommit: (v:
   useEffect(() => setV(value), [value]);
   const commit = () => {
     if (v === value) return;
-    if (!v.trim() && !optional) { toast.error('This copy is essential to the piece. Write something shorter instead.'); setV(value); return; }
+    if (!v.trim() && !optional) { toast.error('This copy is essential to the design. Write something shorter instead.'); setV(value); return; }
     onCommit(v);
   };
   return (
@@ -552,7 +552,7 @@ function ImagePicker({ kind, preview, library, onPick }: { kind: Comp['kind']; p
         )}
       </div>
       <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-      <p className="text-foreground/40">{kind === 'partner' ? 'A PNG or SVG with a transparent background. It takes the colour of the piece.' : 'PNG, JPG or WebP up to 4 MB. Cutouts look best with a transparent background.'}</p>
+      <p className="text-foreground/40">{kind === 'partner' ? 'A PNG or SVG with a transparent background. It takes the colour of the design.' : 'PNG, JPG or WebP up to 4 MB. Cutouts look best with a transparent background.'}</p>
     </div>
   );
 }

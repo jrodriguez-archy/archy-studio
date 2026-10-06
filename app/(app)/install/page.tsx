@@ -15,7 +15,7 @@ const NOTES = [
   ['Photos', 'People are always their real photo, as a link to a cutout PNG. Claude never generates a person.'],
   ['Logos', 'Partner and sponsor logos as a link (PNG or SVG). They are set in the design’s colour and balanced with the Archy logo.'],
   ['Missing info', 'Small details can be left out (no time: only the date). If something essential is missing, Claude asks or suggests another template.'],
-  ['Gallery', 'Every piece is saved to the gallery with your name. Download links last a week.'],
+  ['Gallery', 'Every design is saved to the gallery with your name. Download links last a week.'],
 ];
 
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
@@ -30,7 +30,7 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 export default function InstallPage() {
   return (
     <div className="max-w-2xl text-[13px]">
-      <PageHeader title="Install" description="Add Archy Studio to Claude once, then ask for pieces in any conversation." />
+      <PageHeader title="Install" description="Add Archy Studio to Claude once, then ask for designs in any conversation." />
 
       <section className="mt-8 space-y-3">
         <h2 className="text-foreground/40">Claude app · Cowork or Code</h2>
@@ -39,7 +39,7 @@ export default function InstallPage() {
           <Step n={2}>Install <strong className="font-medium text-foreground">Archy - Studio</strong>.</Step>
           <Step n={3}>Connect your account, once. In a new conversation type <CopyText text="/mcp" /> and send it. Find <strong className="font-medium text-foreground">archy-studio</strong> (it shows <span className="text-foreground/60">needs auth</span>) and click <strong className="font-medium text-foreground">Sign in</strong>.</Step>
           <Step n={4}>Your browser opens Archy Studio. Sign in with your Archy email and click <strong className="font-medium text-foreground">Allow</strong>. Then go back to Claude.</Step>
-          <Step n={5}>Ask for a piece in your own words. Claude reads the brief, asks once for anything missing and picks the template.</Step>
+          <Step n={5}>Ask for a design in your own words. Claude reads the brief, asks once for anything missing and picks the template.</Step>
         </ol>
         <p className="text-foreground/40">You can also connect it from <strong className="font-medium text-foreground/60">Connectors</strong> in the Claude app. If Claude ever says Archy Studio is not signed in, repeat steps 3 and 4.</p>
       </section>
@@ -58,7 +58,7 @@ export default function InstallPage() {
         <div className="space-y-1.5">
           {BRIEFS.map((b) => <p key={b} className="rounded-lg bg-foreground/[0.04] px-3 py-2.5 text-foreground/80">{b}</p>)}
         </div>
-        <p className="text-foreground/40">Copy on the piece is always in US English.</p>
+        <p className="text-foreground/40">Copy on the design is always in US English.</p>
       </section>
 
       <section className="mt-10 space-y-3">

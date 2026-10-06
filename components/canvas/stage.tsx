@@ -64,7 +64,7 @@ type Drag = {
   bases: Record<string, NodeEdit>; box: Box; w: number; h: number; targets: Box[];
 };
 
-// The piece itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
+// The design itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
 export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview }, ref) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -135,7 +135,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       check();
       redraw();
     };
-    const onLoad = () => { load().catch((e) => console.error('Canvas could not draw the piece', e)); };
+    const onLoad = () => { load().catch((e) => console.error('Canvas could not draw the design', e)); };
     f.addEventListener('load', onLoad);
     // A new query each load makes the iframe reload; the file itself comes from the CDN and the browser cache.
     f.src = `/api/template-files/${plan.html}?load=${++loads}`;
@@ -362,7 +362,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     <div data-stage className="relative shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)]" style={{ width: plan.width * zoom, height: plan.height * zoom }}>
       <iframe
         ref={frame}
-        title="Piece"
+        title="Design"
         className={`absolute top-0 left-0 origin-top-left border-0 bg-white transition-opacity duration-150 ${ready ? 'opacity-100' : 'opacity-0'}`}
         style={{ width: plan.width, height: plan.height, transform: `scale(${zoom})` }}
       />

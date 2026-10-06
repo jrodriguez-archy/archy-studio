@@ -16,11 +16,11 @@ export default async function ArchivePage() {
 
   return (
     <>
-      <PageHeader title="Archive" description="Archived pieces are hidden from the gallery. Restore them, or delete them for good." />
+      <PageHeader title="Archive" description="Archived designs are hidden from the gallery. Restore them, or delete them for good." />
       {sets.length === 0 ? (
         <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
           <p className="font-medium">Nothing archived</p>
-          <p className="mt-1 text-muted-foreground">Right-click a piece in the gallery and choose Archive.</p>
+          <p className="mt-1 text-muted-foreground">Right-click a design in the gallery and choose Archive.</p>
         </div>
       ) : (
         <PieceGrid sets={sets} projects={projects} me={me} />

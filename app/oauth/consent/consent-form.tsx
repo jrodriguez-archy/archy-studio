@@ -23,10 +23,10 @@ export function ConsentForm({ authorizationId, clientName, email, scopes }: { au
       <div className="space-y-1">
         <p className="font-medium">Connect {clientName}</p>
         <p className="text-muted-foreground">
-          {clientName} will make pieces from Archy templates as <span className="text-foreground">{email}</span>. Each piece is saved to the gallery under your name.
+          {clientName} will make designs from Archy templates as <span className="text-foreground">{email}</span>. Each design is saved to the gallery under your name.
         </p>
       </div>
-      <p className="text-muted-foreground">It can list templates, render pieces and read approved assets. It cannot change templates or your account.</p>
+      <p className="text-muted-foreground">It can list templates, render designs and read approved assets. It cannot change templates or your account.</p>
       {scopes.length > 0 && <p className="text-foreground/40">Requested: {scopes.join(', ')}</p>}
       {error && <p className="text-destructive">{error}</p>}
       <div className="flex gap-2">

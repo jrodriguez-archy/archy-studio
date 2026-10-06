@@ -65,7 +65,7 @@ export function Pills({ items }: { items: { href: string; label: string; active:
   );
 }
 
-// Two-way switch (whose pieces): a grey track with the chosen option lifted onto white.
+// Two-way switch (whose designs): a grey track with the chosen option lifted onto white.
 export function Segmented({ items }: { items: { href: string; label: string; active: boolean }[] }) {
   return (
     <div className="inline-flex h-7 shrink-0 items-center rounded-[5px] bg-foreground/[0.05] p-0.5">

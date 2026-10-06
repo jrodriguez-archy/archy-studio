@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   try {
     const piece = body?.id ? await loadSource(String(body.id)) : null;
-    if (!piece) throw new Error('Piece not found.');
+    if (!piece) throw new Error('Design not found.');
     if (body.action === 'export') return Response.json({ ok: true, url: await exportEdited(piece, body.slots ?? {}, body.edits ?? {}) });
     if (body.action === 'save') {
       const saved = await saveEdited(me, piece, body.slots ?? {}, body.edits ?? {}, body.mode === 'replace' ? 'replace' : 'version');

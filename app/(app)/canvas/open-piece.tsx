@@ -48,7 +48,7 @@ function CannotOpen({ back, text }: { back: string; text: string }) {
   return (
     <div data-fullbleed className="flex min-h-dvh items-center justify-center bg-[#F5F5F5] p-6 text-[13px]">
       <div className="max-w-sm space-y-3 rounded-lg bg-background p-6 shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">
-        <p className="text-[15px] font-medium">This piece can’t open in Canvas</p>
+        <p className="text-[15px] font-medium">This design can’t open in Canvas</p>
         <p className="text-foreground/60">{text}</p>
         <Link href={back} className="inline-flex h-8 items-center rounded-md bg-foreground/[0.05] px-3 hover:bg-foreground/[0.09]">Go back</Link>
       </div>

@@ -59,7 +59,7 @@ export function ProjectActions({ project }: { project: { id: string; name: strin
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete “{project.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>The project goes away. Its pieces stay in the gallery, without a project.</AlertDialogDescription>
+            <AlertDialogDescription>The project goes away. Its designs stay in the gallery, without a project.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

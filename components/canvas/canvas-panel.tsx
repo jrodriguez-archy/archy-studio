@@ -56,7 +56,7 @@ function Segmented<T extends string>({ value, items, onChange }: { value: T; ite
 // Library: start from a template (it opens with its sample copy) or open a piece already made.
 export function LibraryTab({ library, current, confirmLeave }: { library: CanvasLibrary; current?: string; confirmLeave: () => boolean }) {
   const router = useRouter();
-  const [view, setView] = useState<'pieces' | 'templates'>(current ? 'pieces' : 'templates');
+  const [view, setView] = useState<'designs' | 'templates'>(current ? 'designs' : 'templates');
   const [whose, setWhose] = useState<'mine' | 'team'>('mine');
   const go = (href: string) => { if (confirmLeave()) router.push(href); };
   const pieces = whose === 'mine' ? library.mine : library.team;
@@ -73,15 +73,15 @@ export function LibraryTab({ library, current, confirmLeave }: { library: Canvas
   });
   return (
     <div className="pb-4 text-[12px]">
-      <Segmented value={view} items={[['templates', 'Templates'], ['pieces', 'Pieces']]} onChange={setView} />
-      {view === 'pieces' ? (
+      <Segmented value={view} items={[['templates', 'Templates'], ['designs', 'Designs']]} onChange={setView} />
+      {view === 'designs' ? (
         <>
           <div className="flex gap-3 px-3 pb-2">
             {(['mine', 'team'] as const).map((w) => (
               <button key={w} type="button" onClick={() => setWhose(w)} className={whose === w ? 'font-medium text-foreground' : 'text-foreground/45 hover:text-foreground'}>{w === 'mine' ? 'Mine' : 'Team'}</button>
             ))}
           </div>
-          {!pieces.length && <p className="px-3 py-6 text-center text-foreground/45">No pieces yet. Start from a template, or ask Claude for one.</p>}
+          {!pieces.length && <p className="px-3 py-6 text-center text-foreground/45">No designs yet. Start from a template, or ask Claude for one.</p>}
           <div className="grid grid-cols-2 gap-x-2 gap-y-3 px-3">
             {pieces.map((p) => (
               <button key={p.id} type="button" onClick={() => go(`/canvas/${p.id}`)} className="group text-left">
@@ -140,7 +140,7 @@ export function AssetsTab({ library, target, onPick }: { library: CanvasLibrary;
   const input = useRef<HTMLInputElement>(null);
   const [uploads, setUploads] = useState(library.uploads);
   const [busy, setBusy] = useState(false);
-  const pick = (value: string) => (target ? onPick(value) : toast('Select a photo or a logo on the piece first.'));
+  const pick = (value: string) => (target ? onPick(value) : toast('Select a photo or a logo on the design first.'));
   const upload = async (file: File) => {
     setBusy(true);
     try {
@@ -177,7 +177,7 @@ export function AssetsTab({ library, target, onPick }: { library: CanvasLibrary;
           <HugeiconsIcon icon={ImageUploadIcon} className="size-3.5" /> {busy ? 'Uploading…' : 'Upload an image'}
         </button>
         <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-        <p className="mt-1.5 text-foreground/40">{target ? 'Click an image to place it in the selected photo or logo.' : 'Select a photo or a logo on the piece, then click an image.'}</p>
+        <p className="mt-1.5 text-foreground/40">{target ? 'Click an image to place it in the selected photo or logo.' : 'Select a photo or a logo on the design, then click an image.'}</p>
       </div>
       <div>
         <p className="px-3 pb-1.5 text-[11px] font-medium tracking-[0.02em] text-foreground/40">Approved images</p>

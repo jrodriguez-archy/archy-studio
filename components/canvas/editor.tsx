@@ -40,10 +40,10 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });
 const luminance = (hex: string) => { const n = parseInt(hex.slice(1), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
 
-// Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the piece in a
+// Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the design in a
 // pannable, zoomable viewport, the selection's properties on the right. Copy and slot images change the
-// brief (the fit rules still apply); everything else is a hand edit kept with the piece. Save renders it
-// again with the same engine as Claude's pieces.
+// brief (the fit rules still apply); everything else is a hand edit kept with the design. Save renders it
+// again with the same engine as Claude's designs.
 export function CanvasEditor({ piece, library: given = null, seenAt = null }: { piece?: PieceProps; library?: CanvasLibrary | null; seenAt?: string | null }) {
   // With a piece, the panel's library (templates, pieces, images) loads after the piece is on screen.
   const [library, setLibrary] = useState<CanvasLibrary | null>(given);
@@ -60,12 +60,12 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
         <header className="flex h-12 shrink-0 items-center border-b border-foreground/[0.06] bg-background px-4"><p className="font-medium">Canvas</p></header>
         <div className="flex min-h-0 flex-1">
           <CanvasPanel tab={tab === 'layers' ? 'library' : tab} onTab={setTab}>
-            {!library ? <PanelLoading /> : tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a piece and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
+            {!library ? <PanelLoading /> : tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a design and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
           </CanvasPanel>
           <main className="flex flex-1 items-center justify-center p-8">
             <div className="max-w-sm text-center">
               <p className="text-[15px] font-medium">Pick something to work on</p>
-              <p className="mt-1 text-foreground/50">Start from a template in the Library, or open one of your pieces. Everything Claude made is there too.</p>
+              <p className="mt-1 text-foreground/50">Start from a template in the Library, or open one of your designs. Everything Claude made is there too.</p>
             </div>
           </main>
         </div>
@@ -178,7 +178,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     const c = comps.find((x) => x.id === nodeId) ?? comps.find((x) => x.textId === nodeId);
     const slot = c?.id === nodeId ? c.slot : c?.textSlot;
     if (slot) {
-      if (!text.trim() && !slotMeta[slot]?.optional) { toast.error('This copy is essential to the piece.'); return false; }
+      if (!text.trim() && !slotMeta[slot]?.optional) { toast.error('This copy is essential to the design.'); return false; }
       if (text !== (snap.slots[slot] ?? '')) setSlot(slot, text);
     } else editLayer(nodeId, { text });
     return true;
@@ -368,7 +368,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     if (!r.ok) { toast.error(r.error); return; }
     setSaving(false);
     setSaved(snap);
-    if (isNew) { toast.success('Saved to the gallery as a new piece.'); router.replace(`/canvas/${r.id}`); }
+    if (isNew) { toast.success('Saved to the gallery as a new design.'); router.replace(`/canvas/${r.id}`); }
     else if (mode === 'version') { toast.success('Saved as a new version. The original is kept.'); router.replace(`/canvas/${r.id}`); }
     else toast.success('The original was replaced.');
   });
@@ -507,13 +507,13 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
         <DialogContent className="gap-5 rounded-md p-6 text-[13px] sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="text-[15px] font-medium">Save changes</DialogTitle>
-            <DialogDescription className="text-[13px]">Keep the original, or put the edited piece in its place.</DialogDescription>
+            <DialogDescription className="text-[13px]">Keep the original, or put the edited design in its place.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-2">
             <SaveOption title="Save as a new version" text="The original stays in the history. The new one takes its place in the set." onClick={() => save('version')} disabled={busy} primary />
-            <SaveOption title="Replace the original" text={canReplace ? 'Same piece and link, with the new image.' : 'Only the person who made it, the project owner or an admin can do this.'} onClick={() => save('replace')} disabled={busy || !canReplace} />
+            <SaveOption title="Replace the original" text={canReplace ? 'Same design and link, with the new image.' : 'Only the person who made it, the project owner or an admin can do this.'} onClick={() => save('replace')} disabled={busy || !canReplace} />
           </div>
-          {busy && <p className="text-foreground/50">Rendering the piece…</p>}
+          {busy && <p className="text-foreground/50">Rendering the design…</p>}
         </DialogContent>
       </Dialog>
     </div>

@@ -3,7 +3,7 @@ import { newRef } from '@/lib/canvas';
 import { currentUser } from '@/lib/team';
 import { OpenPiece } from '../open-piece';
 
-export const metadata = { title: 'New piece · Archy Studio' };
+export const metadata = { title: 'New design · Archy Studio' };
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 

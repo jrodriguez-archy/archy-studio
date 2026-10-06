@@ -28,7 +28,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title="Gallery" description={mine ? 'The pieces you made with Studio.' : 'Every piece the team made with Studio.'}>
+      <PageHeader title="Gallery" description={mine ? 'The designs you made with Studio.' : 'Every design the team made with Studio.'}>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <Segmented
             items={[
@@ -48,8 +48,8 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
 
       {sets.length === 0 ? (
         <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
-          <p className="font-medium">{mine ? 'You have no pieces yet' : 'Nothing here yet'}</p>
-          <p className="mt-1 text-muted-foreground">Ask Claude for a piece with the Archy Studio plugin. <Link href="/install" className="text-foreground underline underline-offset-4">Install it</Link></p>
+          <p className="font-medium">{mine ? 'You have no designs yet' : 'Nothing here yet'}</p>
+          <p className="mt-1 text-muted-foreground">Ask Claude for a design with the Archy Studio plugin. <Link href="/install" className="text-foreground underline underline-offset-4">Install it</Link></p>
         </div>
       ) : (
         <PieceGrid sets={sets} projects={projects} me={me} />

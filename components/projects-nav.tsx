@@ -91,7 +91,7 @@ export function ProjectsNav({ projects, me, onNavigate }: { projects: ProjectLin
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete “{deleting?.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>The project goes away. Its pieces stay in the gallery, without a project.</AlertDialogDescription>
+            <AlertDialogDescription>The project goes away. Its designs stay in the gallery, without a project.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

@@ -28,17 +28,17 @@ Brief first, then the best template:
 
 Event page covers: a template with a cover (list_templates shows it) has a matching event page cover (1200×900, the Webflow event page thumbnail). After making that style, offer the cover in one short line; never force it. If they want it, render the cover template with the same facts and the same set, so it stacks with the social formats.
 
-Projects: pieces can be filed into project folders in the Studio gallery (one project per piece). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
+Projects: designs can be filed into project folders in the Studio gallery (one project per design). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
 
-Sets: every render answer ends with "Set: <id>". All pieces from one brief (more formats, retries after shortening copy, other templates or options) belong together: pass that id as set to every later render of the same brief. A new brief starts without set.
+Sets: every render answer ends with "Set: <id>". All designs from one brief (more formats, retries after shortening copy, other templates or options) belong together: pass that id as set to every later render of the same brief. A new brief starts without set.
 
 Brand rules:
-- All copy on the piece is in US English, even when the conversation is not.
+- All copy on the design is in US English, even when the conversation is not.
 - Photos of people are always the person's real photo, from the approved library (list_assets) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo.
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
-Canvas (live editing with the person): when they ask to change a piece they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon"), call get_canvas to see its components by name, then edit_canvas with the changes. Each edit appears live in their Canvas and they can undo it. Brand colours only, and the Archy logo can only be moved or scaled; follow the Inspector's suggestions when they come from your change. Save with save_canvas only when they ask.`;
+Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon"), call get_canvas to see its components by name, then edit_canvas with the changes. Each edit appears live in their Canvas and they can undo it. Brand colours only, and the Archy logo can only be moved or scaled; follow the Inspector's suggestions when they come from your change. Save with save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 
@@ -121,7 +121,7 @@ const handler = createMcpHandler(
         description: 'Which templates can be made with the facts a brief brings, best first, and what each other template is missing. Call it after reading the brief, and again after asking for missing facts.',
         inputSchema: z.object({
           facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for a cover background; guest-photo = people enjoying a venue.'),
-          purpose: z.enum(PURPOSES).optional().describe('What the piece is for, when clear from the brief.'),
+          purpose: z.enum(PURPOSES).optional().describe('What the design is for, when clear from the brief.'),
         }),
         annotations: { readOnlyHint: true },
       },
@@ -154,7 +154,7 @@ const handler = createMcpHandler(
       'list_projects',
       {
         title: 'List projects',
-        description: 'Project folders in the Studio gallery that the signed-in person can file pieces into: the team ones and their own personal ones.',
+        description: 'Project folders in the Studio gallery that the signed-in person can file designs into: the team ones and their own personal ones.',
         inputSchema: z.object({}),
         annotations: { readOnlyHint: true },
       },
@@ -187,9 +187,9 @@ const handler = createMcpHandler(
     server.registerTool(
       'get_canvas',
       {
-        title: 'See the piece open in Canvas',
-        description: 'The piece the person has open in Archy Studio Canvas (or the canvas id given): its components by name (texts with their copy, buttons, icons, photos, logos, groups), the theme and the brand colours, plus an image of it as it is now.',
-        inputSchema: z.object({ piece: z.string().optional().describe('Canvas id or link of the piece. Omit for the one the person has open.') }),
+        title: 'See the design open in Canvas',
+        description: 'The design the person has open in Archy Studio Canvas (or the canvas id given): its components by name (texts with their copy, buttons, icons, photos, logos, groups), the theme and the brand colours, plus an image of it as it is now.',
+        inputSchema: z.object({ piece: z.string().optional().describe('Canvas id or link of the design. Omit for the one the person has open.') }),
         annotations: { readOnlyHint: true },
       },
       async ({ piece }, ctx) => {
@@ -207,11 +207,11 @@ const handler = createMcpHandler(
     server.registerTool(
       'edit_canvas',
       {
-        title: 'Edit the piece open in Canvas',
-        description: 'Change components of the piece open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); the Archy logo can only be moved, aligned or scaled. The answer lists the Inspector’s design suggestions (misaligned, outside the safe area, hard to read…); fix them when they come from your change.',
+        title: 'Edit the design open in Canvas',
+        description: 'Change components of the design open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); the Archy logo can only be moved, aligned or scaled. The answer lists the Inspector’s design suggestions (misaligned, outside the safe area, hard to read…); fix them when they come from your change.',
         inputSchema: z.object({
           piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.'),
-          theme: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Redraw the whole piece on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground.'),
+          theme: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Redraw the whole design on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground.'),
           changes: z.array(z.object({
             component: z.string().describe('Component name from get_canvas, e.g. "Headline", "Claim your spot", "Location icon"'),
             text: z.string().optional().describe('New copy (US English). For a button, its label.'),
@@ -251,8 +251,8 @@ const handler = createMcpHandler(
     server.registerTool(
       'save_canvas',
       {
-        title: 'Save the Canvas piece',
-        description: 'Save the piece open in Canvas to the gallery as a new version (the original is kept). Only when the person asks to save it.',
+        title: 'Save the Canvas design',
+        description: 'Save the design open in Canvas to the gallery as a new version (the original is kept). Only when the person asks to save it.',
         inputSchema: z.object({ piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.') }),
       },
       async ({ piece }, ctx) => {
@@ -270,13 +270,13 @@ const handler = createMcpHandler(
     server.registerTool(
       'render',
       {
-        title: 'Render a piece',
+        title: 'Render a design',
         description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts; without a photo the no-photo version is used. Copy that does not fit is refused with the exact maximum so it can be shortened.',
         inputSchema: z.object({
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"]. Default: all.'),
           slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" or an https URL to a cutout PNG. Leave out (or null) what you do not have.'),
-          project: z.string().optional().describe('Project to file the pieces in (name or id from list_projects). Only when the requester mentions one.'),
+          project: z.string().optional().describe('Project to file the designs in (name or id from list_projects). Only when the requester mentions one.'),
           set: z.string().optional().describe('Set id returned by an earlier render of the same brief. Pass it for every later render of that brief (other formats, retries, other templates or options) so the gallery stacks them together.'),
         }),
         annotations: { readOnlyHint: true, openWorldHint: false },
@@ -354,7 +354,7 @@ const handler = createMcpHandler(
         if (refused.length) {
           content.push({ type: 'text', text: `Not rendered, the copy does not fit. Shorten and render again:\n${refused.join('\n')}` });
         }
-        content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the pieces stay together in the gallery).` });
+        content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the designs stay together in the gallery).` });
         return { isError: refused.length === wanted.length, content };
       },
     );

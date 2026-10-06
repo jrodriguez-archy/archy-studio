@@ -16,7 +16,7 @@ export function InspectorTab({ items, onPick, onFix, onRevert, onFixAll, pieceId
   const connected = !!seenAt && Date.now() - new Date(seenAt).getTime() < 30 * 24 * 3600 * 1000;
   const askClaude = () => {
     const prompt = [
-      `On my Archy Studio Canvas piece "${title}" (canvas id ${pieceId}), the Inspector suggests:`,
+      `On my Archy Studio Canvas design "${title}" (canvas id ${pieceId}), the Inspector suggests:`,
       ...items.map((i) => `- ${i.title}: ${i.detail}`),
       'Use get_canvas and edit_canvas to fix them in the brand: keep the copy\'s meaning if you shorten it, use brand colours, keep things aligned.',
     ].join('\n');
@@ -45,7 +45,7 @@ export function InspectorTab({ items, onPick, onFix, onRevert, onFixAll, pieceId
         ) : pieceId ? (
           <Link href="/install" className="mt-2 block text-primary underline-offset-4 hover:underline">Connect Claude first →</Link>
         ) : (
-          <p className="mt-1.5 text-foreground/40">Save the piece first, so Claude can find it.</p>
+          <p className="mt-1.5 text-foreground/40">Save the design first, so Claude can find it.</p>
         )}
       </div>
       {fixable > 0 && (

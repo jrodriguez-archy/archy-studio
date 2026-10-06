@@ -63,7 +63,7 @@ export function TeamManager({ team, me }: { team: Member[]; me: string }) {
                 <Confirm
                   trigger={<Button variant="ghost" size="sm" disabled={pending} className="text-destructive">Remove</Button>}
                   title={`Remove ${m.email}?`}
-                  description="They lose access to Studio and Claude. The pieces they made stay in the gallery."
+                  description="They lose access to Studio and Claude. The designs they made stay in the gallery."
                   action="Remove"
                   onConfirm={() => act(() => removeMemberAction(m.email), 'Removed')}
                 />

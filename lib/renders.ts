@@ -49,7 +49,7 @@ export async function replaceRender(input: { id: string; storagePath: string; sl
   const { error } = await supabaseAdmin().from('renders').update({
     slots: await keepInlineImages(input.userId, input.slots), edits: input.edits, variant: input.variant, edited_at: new Date().toISOString(),
   }).eq('id', input.id);
-  if (error) throw new Error(`Could not update the piece: ${error.message}`);
+  if (error) throw new Error(`Could not update the design: ${error.message}`);
   return { id: input.id, path: input.storagePath, url: await signedUrl(input.storagePath) };
 }
 

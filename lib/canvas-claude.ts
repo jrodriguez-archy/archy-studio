@@ -24,9 +24,9 @@ async function findPiece(me: Who, ref?: string): Promise<{ piece: PieceSource; d
     const { data } = await supabaseAdmin().from('canvas_drafts').select('piece_id').eq('user_id', me.id).order('updated_at', { ascending: false }).limit(1);
     id = data?.[0]?.piece_id;
   }
-  if (!id) throw new Error('No piece open in Canvas. Ask the person to open the piece in Archy Studio → Canvas (or give its canvas id).');
+  if (!id) throw new Error('No design open in Canvas. Ask the person to open the design in Archy Studio → Canvas (or give its canvas id).');
   const piece = await loadSource(id);
-  if (!piece) throw new Error(`No piece ${id}.`);
+  if (!piece) throw new Error(`No design ${id}.`);
   return { piece, draft: await getDraft(id) };
 }
 
@@ -48,7 +48,7 @@ export async function getCanvas(me: Who, ref?: string) {
   return {
     piece, png: d.png,
     text: [
-      `Canvas piece ${piece.id}: ${config.title}, ${piece.format} ${piece.width}×${piece.height}. Theme: ${edits[THEME]?.preset ?? 'as designed'}.`,
+      `Canvas design ${piece.id}: ${config.title}, ${piece.format} ${piece.width}×${piece.height}. Theme: ${edits[THEME]?.preset ?? 'as designed'}.`,
       'Components (edit them by name):',
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,

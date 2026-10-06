@@ -1,6 +1,6 @@
 ---
 name: studio
-description: Make a finished Archy marketing piece (PNG) from an approved template, just by asking, with the Archy Studio tools. Use when someone wants an Archy ad or social image ready to post: an AE or team member spotlight, a trade show booth invite, a day-before reminder, a speaker or hosted-evening invite, or an event page cover, in Post, Square, Stories, OG or Cover size, or asks what Archy Studio can make. Not for designing something new or editing a template (that is the designers' job in Paper).
+description: Make a finished Archy marketing design (PNG) from an approved template, just by asking, with the Archy Studio tools. Use when someone wants an Archy ad or social image ready to post: an AE or team member spotlight, a trade show booth invite, a day-before reminder, a speaker or hosted-evening invite, or an event page cover, in Post, Square, Stories, OG or Cover size, or asks what Archy Studio can make. Not for designing something new or editing a template (that is the designers' job in Paper).
 ---
 
 # Archy Studio
@@ -14,7 +14,7 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 0. **A template ID or a Studio prompt.** When the person gives a template ID (like `booth-icon-list`, copied from the Studio app) or a `/templates?t=` link, use that template directly: skip `match_templates`, call `get_template`, ask once only for missing essential facts, then render. A prompt copied from the gallery ("Make a new version of… Keep it in set <id>") renders in that `set`.
 1. **Read the whole brief first.** List the facts it brings: event name, city, venue, dates, time, booth, photos (city, venue, speaker, person), logos (partner, offer), speaker name, role, company. Facts are things that must come from the requester; headlines and subheads you write from the brief.
 2. **Find the templates that fit.** Call `match_templates` with those facts (and the purpose when clear: booth invite, day-before reminder, hosted evening, speaker invite, event cover, spotlight). It lists the templates that can be made with what there is, best first, and what the others are missing.
-3. **Ask once, well.** In one short message, ask for what would unlock a better template or complete the piece: a city photo, the partner logo, the booth number, the time. Say why in a few words ("with a city photo I can use the photo version"). Never invent facts, names, titles or numbers.
+3. **Ask once, well.** In one short message, ask for what would unlock a better template or complete the design: a city photo, the partner logo, the booth number, the time. Say why in a few words ("with a city photo I can use the photo version"). Never invent facts, names, titles or numbers.
 4. **Choose the template.** With the answers, call `match_templates` again and pick the best eligible one; offer two when they are equally good. Every template has **essential content** that is always filled; if no template is eligible, say what is missing instead of forcing one.
 5. **Read its slots.** Call `get_template` for the slots, the limits and which details are optional.
    - An optional detail you do not have is left out with its label and the layout closes up (no time: the date stays alone; no venue: only the city). Just leave the slot out.
@@ -34,9 +34,9 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 
 ## Live editing in Canvas
 
-When the requester has a piece open in Studio's Canvas and asks you to change it ("shorter headline", "light theme", "use a ticket icon", "centre the button"), work on that piece instead of rendering a new one:
+When the requester has a design open in Studio's Canvas and asks you to change it ("shorter headline", "light theme", "use a ticket icon", "centre the button"), work on that design instead of rendering a new one:
 
-1. `get_canvas` (no arguments: the piece they have open) shows its components by name, the copy, the theme and the brand colours.
+1. `get_canvas` (no arguments: the design they have open) shows its components by name, the copy, the theme and the brand colours.
 2. `edit_canvas` with the changes by component name, plus a one-line `note`. They see each change live in Canvas and can undo it. Brand colours only; the Archy logo can only be moved, aligned or scaled. The answer lists the Inspector's suggestions (misaligned, outside the safe area, hard to read…); fix the ones your change caused.
 3. `save_canvas` only when they ask to save. It keeps the original and saves a new version.
    - Say in one line which template you chose and why, what was left out, and offer to redo it when they get the missing facts or photos.
@@ -45,7 +45,7 @@ When the requester has a piece open in Studio's Canvas and asks you to change it
 
 | Symptom | What to do |
 |---|---|
-| Archy Studio is not signed in (the tools need authentication, or ask to sign in) | Only they can sign in. Give these steps, numbered: 1. Type `/mcp` in this conversation and send it. 2. Find **archy-studio** (it shows "needs auth"). 3. Click **Sign in**. 4. The browser opens Archy Studio: sign in with their Archy email and click **Allow**. 5. Come back and say they are done. They can also connect it from **Connectors** in the Claude app. Then check the tools respond and continue with the piece |
+| Archy Studio is not signed in (the tools need authentication, or ask to sign in) | Only they can sign in. Give these steps, numbered: 1. Type `/mcp` in this conversation and send it. 2. Find **archy-studio** (it shows "needs auth"). 3. Click **Sign in**. 4. The browser opens Archy Studio: sign in with their Archy email and click **Allow**. 5. Come back and say they are done. They can also connect it from **Connectors** in the Claude app. Then check the tools respond and continue with the design |
 | The Archy Studio tools are missing | Ask them to make sure the **Archy - Studio** plugin is installed and enabled, then start a new conversation |
 | A tool returns an error about the service | Try once more; if it fails again, tell them to send the error to Marketing & Design |
 | The first render is slow (several seconds) | Normal: the renderer is starting up. The next ones are faster |

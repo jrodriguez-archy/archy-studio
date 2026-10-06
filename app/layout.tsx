@@ -5,7 +5,7 @@ import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
-export const metadata = { title: 'Archy Studio', description: 'Finished Archy marketing pieces from approved templates' };
+export const metadata = { title: 'Archy Studio', description: 'Finished Archy marketing designs from approved templates' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

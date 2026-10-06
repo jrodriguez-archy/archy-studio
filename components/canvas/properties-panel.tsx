@@ -216,7 +216,7 @@ export function MultiPanel({ count, onAlign, onHide, onReset }: { count: number;
     <div className="space-y-5 px-4 py-4 text-[12px]">
       <div>
         <p className="text-[13px] font-medium">{count} selected</p>
-        <p className="text-foreground/40">Drag to move them together. ⌘-click to add or remove one.</p>
+        <p className="text-foreground/40">Drag to move them together. Shift-click to add or remove one.</p>
       </div>
       <Section title="Align to each other"><AlignRow onAlign={(a) => onAlign(a, 'selection')} /></Section>
       <Section title="Align in their container"><AlignRow onAlign={(a) => onAlign(a, 'container')} /></Section>
@@ -278,7 +278,8 @@ export function ColorsPanel({ used, tokens, theme, onSwap, onClear }: {
         <button type="button" onClick={onClear} className="text-foreground/50 underline-offset-4 hover:text-foreground hover:underline">Back to the original colours</button>
       )}
       <div className="space-y-1.5 border-t border-foreground/[0.06] pt-4 text-foreground/55">
-        <Tip keys={['Click']} text="select" more={['⌘', 'Click']} moreText="add" />
+        <Tip keys={['Click']} text="select" more={['⇧', 'Click']} moreText="add" />
+        <Tip keys={['⌘', 'Click']} text="select inside" more={['Double-click']} moreText="edit text" />
         <Tip keys={['Drag']} text="move" more={['⌘']} moreText="move freely" />
         <Tip keys={['Scroll']} text="pan" more={['⌘', 'Scroll']} moreText="zoom" />
       </div>

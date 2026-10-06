@@ -24,17 +24,26 @@ export type LayerInfo = {
 const isSvg = (el: Element) => el.namespaceURI === 'http://www.w3.org/2000/svg';
 
 // What a click lands on: the outermost component around the element that is not a group (the button,
-// not its label; a tag, not its text). Groups are picked in the layers or with a marquee.
+// not its label; a tag, not its text). On a group's own ground (the space between its items) it is
+// that group, the innermost one, so Header and Content can be picked on the piece too.
 export function componentAt(el: Element | null, comps: Comp[]): Comp | null {
   if (!el) return null;
   const byId = new Map(comps.map((c) => [c.id, c]));
   let found: Comp | null = null;
+  let group: Comp | null = null;
   for (let n: Element | null = el; n; n = n.parentElement) {
     const c = byId.get(n.getAttribute('data-node') ?? '');
     if (c && c.kind !== 'background' && c.kind !== 'group') found = c;
+    if (c?.kind === 'group' && !group) group = c;
   }
-  return found ?? comps.find((c) => c.kind === 'background') ?? null;
+  return found ?? group ?? comps.find((c) => c.kind === 'background') ?? null;
 }
+
+// The group a component sits in (for the faint outline of its context).
+export const parentOf = (comps: Comp[], id: string | null) => {
+  const pid = comps.find((c) => c.id === id)?.parent;
+  return pid ? comps.find((c) => c.id === pid) ?? null : null;
+};
 
 // The innermost component (double-click: the label inside a button, a text inside a tag).
 export function innermostAt(el: Element | null, comps: Comp[]): Comp | null {

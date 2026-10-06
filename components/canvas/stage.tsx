@@ -5,7 +5,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
 import type { Edits, FillPlan, NodeEdit, RenderReport } from '@/lib/canvas-shared';
 import { movingEdges, snap, type Guide } from './guides';
-import { componentAt, innermostAt, readInfo, readTokens, readUsedColors, within, type Box, type Comp, type LayerInfo, type Token } from './model';
+import { componentAt, innermostAt, parentOf, readInfo, readTokens, readUsedColors, within, type Box, type Comp, type LayerInfo, type Token } from './model';
 
 type Win = Window & {
   __fill: (a: unknown) => Promise<RenderReport>;
@@ -160,6 +160,12 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const { x, y } = local(e);
     return d.elementsFromPoint(x, y).find((n) => n.closest('[data-node]') && n !== d.body && n !== d.documentElement) ?? null;
   };
+  // A click picks the component (or the group whose ground it lands on); ⌘/Ctrl picks straight inside:
+  // the text in a tag, an item in a group, like design tools.
+  const pick = (e: { clientX: number; clientY: number; metaKey: boolean; ctrlKey: boolean }) => {
+    const el = pointAt(e);
+    return ((e.metaKey || e.ctrlKey) && innermostAt(el, comps)) || componentAt(el, comps);
+  };
   const kindOf = (id: string) => comps.find((c) => c.id === id)?.kind;
   const movable = (id: string) => !!id && !['background'].includes(kindOf(id) ?? 'background');
 
@@ -198,7 +204,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
           const b = boxOf(c.id);
           return b && b.x < m.x + m.w && b.x + b.w > m.x && b.y < m.y + m.h && b.y + b.h > m.y;
         });
-        onSelect(hit.map((c) => c.id), e.shiftKey || e.metaKey || e.ctrlKey ? 'toggle' : 'replace');
+        onSelect(hit.map((c) => c.id), e.shiftKey ? 'toggle' : 'replace');
       }
       return;
     }
@@ -244,11 +250,11 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 || editing || panning) return;
-    const add = e.metaKey || e.ctrlKey || e.shiftKey;
-    const c = componentAt(pointAt(e), comps);
+    const add = e.shiftKey;
+    const c = pick(e);
     // Inside the current selection, a drag moves the whole selection.
     const p = local(e);
-    const inSel = !add && selected.some((id) => { const b = boxOf(id); return b && movable(id) && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h; });
+    const inSel = !add && !(e.metaKey || e.ctrlKey) && selected.some((id) => { const b = boxOf(id); return b && movable(id) && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h; });
     if (inSel) { startDrag(e, selected.filter(movable), 'move'); return; }
     if (!c || c.kind === 'background') {
       // Empty ground: a click selects the background, a drag draws a selection rectangle.
@@ -262,7 +268,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
 
   const onPointerMove = (e: React.PointerEvent) => {
     const g = drag.current;
-    if (!g) { if (!panning) onHover(componentAt(pointAt(e), comps)?.id ?? null); return; }
+    if (!g) { if (!panning) onHover(pick(e)?.id ?? null); return; }
     if (!g.moved && Math.abs(e.clientX - g.x) + Math.abs(e.clientY - g.y) < 3) return;
     g.moved = true;
     dragTo(e, false);
@@ -316,6 +322,9 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const group = sel.length > 1 ? screen(union(sel.map((s) => ({ x: s.r.x / zoom, y: s.r.y / zoom, w: s.r.w / zoom, h: s.r.h / zoom })))) : null;
   const hovComp = comps.find((c) => c.id === hover);
   const hov = ready && hovComp && hovComp.kind !== 'background' && !selected.includes(hovComp.id) && !drag.current ? screen(boxOf(hover)) : null;
+  // The group around what is hovered, faint, so its container is easy to see (and pick).
+  const ctxComp = ready && !drag.current ? parentOf(comps, hover) : null;
+  const ctx = ctxComp && !selected.includes(ctxComp.id) ? screen(boxOf(ctxComp.id)) : null;
   const handles: readonly Handle[] = logo ? ['nw', 'ne', 'se', 'sw'] : HANDLES;
   const frameBox = (single ?? (group ? { r: group } : null))?.r;
   const safeR = screen(safe);
@@ -339,9 +348,10 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       >
         {/* The safe area shows while something moves; red when the piece leaves it. */}
         {safeR && badge && <div className={`pointer-events-none absolute border border-dashed ${outside ? 'border-[#F2385A]' : 'border-primary/40'}`} style={{ left: safeR.x, top: safeR.y, width: safeR.w, height: safeR.h }} />}
+        {ctx && <div className="pointer-events-none absolute outline-1 outline-offset-0 outline-dashed outline-primary/35" style={{ left: ctx.x, top: ctx.y, width: ctx.w, height: ctx.h }}><Tag right>{ctxComp!.name}</Tag></div>}
         {hov && (
-          <div className="pointer-events-none absolute ring-1 ring-primary/60" style={{ left: hov.x, top: hov.y, width: hov.w, height: hov.h }}>
-            {hovComp?.kind === 'archy' && <Tag icon>Archy logo · move and scale only</Tag>}
+          <div className={`pointer-events-none absolute ${hovComp?.kind === 'group' ? 'bg-primary/[0.04] outline-1 outline-dashed outline-primary/70' : 'ring-1 ring-primary/60'}`} style={{ left: hov.x, top: hov.y, width: hov.w, height: hov.h }}>
+            {hovComp?.kind === 'archy' ? <Tag icon>Archy logo · move and scale only</Tag> : hovComp?.kind === 'group' && <Tag>{hovComp.name}</Tag>}
           </div>
         )}
         {sel.length > 1 && sel.map((s) => <div key={s.id} className="pointer-events-none absolute ring-1 ring-primary" style={{ left: s.r.x, top: s.r.y, width: s.r.w, height: s.r.h }} />)}
@@ -370,9 +380,9 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   );
 });
 
-function Tag({ icon, children }: { icon?: boolean; children: React.ReactNode }) {
+function Tag({ icon, right, children }: { icon?: boolean; right?: boolean; children: React.ReactNode }) {
   return (
-    <span className="absolute -top-6 left-0 flex items-center gap-1 rounded-[4px] bg-foreground px-1.5 py-0.5 text-[10px] whitespace-nowrap text-background">
+    <span className={`absolute -top-6 ${right ? 'right-0 opacity-70' : 'left-0'} flex items-center gap-1 rounded-[4px] bg-foreground px-1.5 py-0.5 text-[10px] whitespace-nowrap text-background`}>
       {icon && <HugeiconsIcon icon={LockIcon} className="size-3" strokeWidth={2} />} {children}
     </span>
   );

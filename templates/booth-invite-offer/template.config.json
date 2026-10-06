@@ -1,6 +1,7 @@
 {
   "id": "booth-invite-offer",
   "title": "Booth Invite Offer",
+  "category": "events",
   "description": "Booth invite with a giveaway",
   "useWhen": "there is a booth and a prize or tickets to promote.",
   "notWhen": "there is no offer (use `Booth Invite Photo`).",

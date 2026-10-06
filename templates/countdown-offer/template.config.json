@@ -1,6 +1,7 @@
 {
   "id": "countdown-offer",
   "title": "Countdown Offer",
+  "category": "events",
   "description": "Day-before reminder with a giveaway",
   "useWhen": "the event is tomorrow and there is an offer to promote.",
   "notWhen": null,

@@ -1,6 +1,7 @@
 {
   "id": "booth-icon-list",
   "title": "Booth Icon List",
+  "category": "events",
   "description": "Booth invite",
   "useWhen": "the brief is \"come see us at booth #N\": event name, city, venue, dates, booth number and the organiser's logo.",
   "notWhen": "there is no booth (a talk, a dinner, a local meetup) or it is the day-before reminder.",

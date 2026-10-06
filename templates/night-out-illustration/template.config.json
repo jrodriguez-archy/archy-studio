@@ -1,6 +1,7 @@
 {
   "id": "night-out-illustration",
   "title": "Night Out Illustration",
+  "category": "events",
   "description": "Hosted social evening (dinner, drinks, golf) with a sign-up",
   "useWhen": "Archy is the host, there is a date, time and place, and no venue photo (or a lighter, illustrated feel is wanted).",
   "notWhen": "it is a booth at a trade show, or a talk with a named speaker (use `Speaker Invite`).",

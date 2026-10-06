@@ -1,6 +1,7 @@
 {
   "id": "speaker-invite",
   "title": "Speaker Invite",
+  "category": "events",
   "description": "Talk, dinner, local event",
   "useWhen": "there is a speaker and a date and time.",
   "notWhen": "it is a booth at a trade show.",

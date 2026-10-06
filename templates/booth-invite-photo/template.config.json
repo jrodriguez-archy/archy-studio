@@ -1,6 +1,7 @@
 {
   "id": "booth-invite-photo",
   "title": "Booth Invite Photo",
+  "category": "events",
   "description": "Booth invite",
   "useWhen": "there is a booth and a good city photo.",
   "notWhen": "there is no photo of the city (use `Booth Icon List` or `Booth Light Rulers`).",

@@ -1,6 +1,9 @@
 import 'server-only';
 import { listTemplates, loadConfig, type Manifest, type TemplateConfig } from './templates';
 
+// Top-level groups, in catalog order. New ones (social, decks...) are added here as templates arrive.
+export const CATEGORY_LABEL: Record<string, string> = { events: 'Events', ads: 'Ads' };
+
 export const PURPOSE_LABEL: Record<string, string> = {
   'booth-invite': 'Booth invite',
   reminder: 'Day-before reminder',
@@ -29,8 +32,9 @@ export async function catalog(): Promise<CatalogItem[]> {
     const extras = [...new Set((config.optional ?? []).map(fact).filter((f): f is string => !!f && !needs.includes(f)))];
     return { manifest, config, formats: Object.keys(manifest.formats), needs, extras };
   }));
+  const cats = Object.keys(CATEGORY_LABEL);
   const order = Object.keys(PURPOSE_LABEL);
-  return items.sort((a, b) => order.indexOf(a.config.purpose ?? '') - order.indexOf(b.config.purpose ?? '') || a.config.title.localeCompare(b.config.title));
+  return items.sort((a, b) => cats.indexOf(a.config.category ?? '') - cats.indexOf(b.config.category ?? '') || order.indexOf(a.config.purpose ?? '') - order.indexOf(b.config.purpose ?? '') || a.config.title.localeCompare(b.config.title));
 }
 
 export const titleOf = async (id: string) => {

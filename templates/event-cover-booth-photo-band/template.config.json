@@ -1,6 +1,7 @@
 {
   "id": "event-cover-booth-photo-band",
   "title": "Event Cover · Booth Photo Band",
+  "category": "events",
   "description": "Thumbnail of the event page in the Webflow CMS (1200×900) (Booth Photo Band content block)",
   "useWhen": "an event page, Luma or email invite needs a header image.",
   "notWhen": "the piece is a social post or a day-before reminder. Pick the cover that matches the social template of the same campaign (the table below); when the event has no social template yet, choose by content: a booth, a speaker, or a hosted evening.",

@@ -1,6 +1,7 @@
 {
   "id": "countdown-mascot",
   "title": "Countdown Mascot",
+  "category": "events",
   "description": "Day-before reminder",
   "useWhen": "the event is tomorrow.",
   "notWhen": "it is an invitation weeks ahead.",

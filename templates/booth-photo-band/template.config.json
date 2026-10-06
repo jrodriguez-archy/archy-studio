@@ -1,6 +1,7 @@
 {
   "id": "booth-photo-band",
   "title": "Booth Photo Band",
+  "category": "events",
   "description": "Booth invite",
   "useWhen": "there is a strong city photo and a lighter look is wanted.",
   "notWhen": "there is no photo.",

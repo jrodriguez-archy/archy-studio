@@ -1,6 +1,7 @@
 {
   "id": "booth-light-rulers",
   "title": "Booth Light Rulers",
+  "category": "events",
   "description": "Booth invite",
   "useWhen": "the piece should feel light and editorial, or sits next to other light pieces.",
   "notWhen": "the feed needs a strong colour moment.",

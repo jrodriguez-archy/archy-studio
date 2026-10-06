@@ -1,6 +1,7 @@
 {
   "id": "night-out-venue",
   "title": "Night Out Venue",
+  "category": "events",
   "description": "Hosted social evening at a named venue",
   "useWhen": "Archy hosts at a named venue and there is a good photo of it.",
   "notWhen": "there is no venue photo (use `Night Out Illustration`).",

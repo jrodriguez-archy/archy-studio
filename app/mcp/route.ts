@@ -50,6 +50,7 @@ const handler = createMcpHandler(
           return {
             template: m.id,
             title: c.title,
+            category: c.category,
             description: c.description,
             use_when: c.useWhen,
             not_when: c.notWhen,

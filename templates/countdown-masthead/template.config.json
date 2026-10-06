@@ -1,6 +1,7 @@
 {
   "id": "countdown-masthead",
   "title": "Countdown Masthead",
+  "category": "events",
   "description": "Day-before reminder",
   "useWhen": "the event is tomorrow and the name should lead.",
   "notWhen": "it is an early invitation.",

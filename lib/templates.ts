@@ -58,6 +58,8 @@ export type TemplateConfig = {
   useWhen?: string;
   notWhen?: string;
   guidance?: string[];
+  /** Top-level group in the catalog (the Paper master it comes from): events, ads... */
+  category?: string;
   purpose?: string;
   /** Slots the template cannot go without; anything not listed in optional counts as essential. */
   essential?: string[];

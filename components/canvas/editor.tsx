@@ -208,7 +208,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     const changes: Record<string, NodeEdit> = { [id]: { style: { backgroundColor: value } } };
     if (hex) {
       const l = luminance(hex);
-      const want: Preset = l > 0.6 ? 'light' : hex === '#013DF5' || hex === '#0000C9' ? 'blue' : 'dark';
+      const want: Preset = hex === '#FFFFFF' || hex === '#F7F7F7' ? 'light' : l > 0.6 ? 'ice' : hex === '#0095FF' || hex === '#66BFFF' ? 'sky' : hex === '#013DF5' || hex === '#0000C9' ? 'blue' : 'dark';
       if (want !== (piece.preset ?? null)) changes[THEME] = { preset: want };
     }
     editMany(changes);

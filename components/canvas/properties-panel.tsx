@@ -133,12 +133,12 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
 
       {comp.kind === 'background' && (
         <Section title="Theme">
-          <div className="grid grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-5 gap-1">
             {PRESETS.map(([key, label, swatch]) => (
               <button key={key} type="button" onClick={() => onPreset(key)}
-                className={`flex flex-col items-center gap-1.5 rounded-md p-2 ring-1 transition-colors ${preset === key ? 'bg-[#E6F4FF] ring-primary/50' : 'ring-foreground/10 hover:bg-foreground/[0.03]'}`}>
-                <span className="flex h-8 w-full items-center justify-center rounded-[4px] text-[11px] font-semibold" style={swatch}>Aa</span>
-                <span className={preset === key ? 'font-medium text-primary' : 'text-foreground/70'}>{label}</span>
+                className={`flex flex-col items-center gap-1 rounded-md p-1 ring-1 transition-colors ${preset === key ? 'bg-[#E6F4FF] ring-primary/50' : 'ring-foreground/10 hover:bg-foreground/[0.03]'}`}>
+                <span className="flex h-7 w-full items-center justify-center rounded-[4px] text-[11px] font-semibold" style={swatch}>Aa</span>
+                <span className={`text-[11px] ${preset === key ? 'font-medium text-primary' : 'text-foreground/70'}`}>{label}</span>
               </button>
             ))}
           </div>
@@ -187,6 +187,8 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
 const PRESETS: [Preset, string, React.CSSProperties][] = [
   ['dark', 'Dark', { background: 'linear-gradient(180deg, #000484, #00004E 55%)', color: '#fff' }],
   ['blue', 'Blue', { background: '#013DF5', color: '#fff' }],
+  ['sky', 'Sky', { background: '#0095FF', color: '#fff' }],
+  ['ice', 'Ice', { background: '#E6F4FF', color: '#00004E' }],
   ['light', 'Light', { background: '#fff', color: '#00004E', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)' }],
 ];
 

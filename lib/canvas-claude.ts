@@ -71,7 +71,7 @@ export async function getCanvas(me: Who, ref?: string) {
       'Components (edit them by name):',
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,
-      'Themes: dark, blue, light. Icons: any Hugeicons name or a word to search ("calendar").',
+      'Themes: dark, blue, sky, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
     ].join('\n'),
   };
 }

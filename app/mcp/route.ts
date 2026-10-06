@@ -211,7 +211,7 @@ const handler = createMcpHandler(
         description: 'Change components of the piece open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); copy that does not fit is refused; the Archy logo can only be moved, aligned or scaled.',
         inputSchema: z.object({
           piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.'),
-          theme: z.enum(['dark', 'blue', 'light']).optional().describe('Redraw the whole piece on a Dark, Blue or Light ground.'),
+          theme: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Redraw the whole piece on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground.'),
           changes: z.array(z.object({
             component: z.string().describe('Component name from get_canvas, e.g. "Headline", "Claim your spot", "Location icon"'),
             text: z.string().optional().describe('New copy (US English). For a button, its label.'),

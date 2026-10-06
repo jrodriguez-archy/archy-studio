@@ -1,5 +1,5 @@
 // Runs inside the template page after window.__fill: the hand edits made in Canvas, layer by layer
-// (keyed by data-node), plus the piece-level ':theme' entry (a Dark / Blue / Light theme and colour
+// (keyed by data-node), plus the piece-level ':theme' entry (a Dark / Blue / Sky / Ice / Light theme and colour
 // swaps). The editor and the renderer both run it, so what is on the canvas is the PNG. Re-applying is
 // safe: every touched layer is first put back the way __fill left it.
 window.__applyEdits = function applyEdits(edits, urls, icons) {
@@ -41,11 +41,13 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
 
   const piece = edits?.[':theme'] ?? {};
 
-  // ---- Theme: the piece redrawn on a Dark, Blue or Light ground, by role (text, accent, button,
+  // ---- Theme: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground, by role (text, accent, button,
   // surface, line, icon, the Archy logo's approved colour). Photos and illustrations keep theirs. ----
   const PRESETS = {
     dark: { bg: 'linear-gradient(in oklab 180deg, var(--color-dark-foreground) 0%, var(--color-dark-background) 55%)', text: '#FFFFFF', accent: '#66BFFF', surface: '#000484', border: '#0000C9', button: '#013DF5', onButton: '#FFFFFF', logo: '#FFFFFF' },
     blue: { bg: '#013DF5', text: '#FFFFFF', accent: '#CCEAFF', surface: '#0000C9', border: '#66BFFF', button: '#FFFFFF', onButton: '#013DF5', logo: '#FFFFFF' },
+    sky: { bg: '#0095FF', text: '#FFFFFF', accent: '#00004E', surface: '#66BFFF', border: '#CCEAFF', button: '#00004E', onButton: '#FFFFFF', logo: '#FFFFFF' },
+    ice: { bg: '#E6F4FF', text: '#00004E', accent: '#013DF5', surface: '#FFFFFF', border: '#CCEAFF', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5' },
     light: { bg: '#FFFFFF', text: '#00004E', accent: '#013DF5', surface: '#F3F9FF', border: '#EEEEEE', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5' },
   };
   const t = PRESETS[piece.preset];

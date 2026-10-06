@@ -55,7 +55,7 @@ export type RenderInput = {
 // A component as Claude sees it: what it is, what it says, where it sits and where it aligns.
 export type InspectedComp = {
   id: string; kind: string; name: string; parent: string | null; slot?: string; textId?: string; textSlot?: string; iconId?: string;
-  text?: string; hidden: boolean; box: { x: number; y: number; w: number; h: number }; alignBox: { x: number; y: number; w: number; h: number; name?: string } | null;
+  text?: string; layout?: string; hidden: boolean; box: { x: number; y: number; w: number; h: number }; alignBox: { x: number; y: number; w: number; h: number; name?: string } | null;
 };
 let componentsJs: string | null = null;
 

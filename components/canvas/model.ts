@@ -16,6 +16,8 @@ export type Token = { name: string; value: string; hex: string; group: 'Blues' |
 export type LayerInfo = {
   width: number; height: number; fontSize: number; fontWeight: number;
   color: string; backgroundColor: string; text: string; opacity: number;
+  /** For flex frames (groups, tags, buttons): how the content is laid out now. */
+  layout?: { direction: 'row' | 'column'; distribute: 'packed' | 'space-between'; gap: number; position: 'start' | 'center' | 'end'; align: 'start' | 'center' | 'end' };
 };
 
 // Not instanceof: the nodes live in the iframe's realm.
@@ -102,6 +104,8 @@ export function toHex(c: string): string | null {
   return ('#' + [m[1], m[2], m[3]].map((x) => Number(x).toString(16).padStart(2, '0')).join('')).toUpperCase();
 }
 
+const place = (v: string): 'start' | 'center' | 'end' => (/center/.test(v) ? 'center' : /end/.test(v) ? 'end' : 'start');
+
 export function readInfo(el: HTMLElement | SVGElement, scale = 1): LayerInfo {
   const r = el.getBoundingClientRect();
   const cs = getComputedStyle(el);
@@ -111,6 +115,13 @@ export function readInfo(el: HTMLElement | SVGElement, scale = 1): LayerInfo {
     fontSize: Math.round(parseFloat(cs.fontSize)), fontWeight: Number(cs.fontWeight) || 400,
     color: toHex(stroke ?? cs.color) ?? '', backgroundColor: toHex(cs.backgroundColor) ?? '',
     text: el.textContent ?? '', opacity: Number(cs.opacity),
+    layout: cs.display.includes('flex') ? {
+      direction: cs.flexDirection.startsWith('column') ? 'column' : 'row',
+      distribute: /space-(between|around|evenly)/.test(cs.justifyContent) ? 'space-between' : 'packed',
+      gap: Math.round(parseFloat(cs.flexDirection.startsWith('column') ? cs.rowGap : cs.columnGap) || 0),
+      position: place(cs.justifyContent),
+      align: place(cs.alignItems),
+    } : undefined,
   };
 }
 
@@ -119,4 +130,5 @@ export const merge = (a: NodeEdit | undefined, b: NodeEdit): NodeEdit => ({
   box: b.box ? { ...a?.box, ...b.box } : a?.box,
   style: b.style ? { ...a?.style, ...b.style } : a?.style,
   theme: b.theme ? { ...a?.theme, ...b.theme } : a?.theme,
+  layout: b.layout ? { ...a?.layout, ...b.layout } : a?.layout,
 });

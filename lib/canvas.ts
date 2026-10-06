@@ -116,8 +116,9 @@ export async function saveEdited(me: Who, piece: PieceSource, slots: Record<stri
 // The Canvas panel: templates to start from, the pieces to open (mine and the team's), the approved
 // images and the person's own uploads.
 export async function canvasLibrary(me: Who) {
-  const [items, mine, team, library, uploads] = await Promise.all([
+  const [items, mine, team, library, uploads, seen] = await Promise.all([
     catalog(), loadPieces({ userId: me.id }, 80), loadPieces({}, 80), loadLibrary(), listUploads(me.id),
+    supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle(),
   ]);
   const card = (p: Awaited<ReturnType<typeof loadPieces>>[number], title: string) => ({ id: p.id, title, format: fmt(p.format), thumb: p.thumb ?? null, width: p.width, height: p.height, author: p.author });
   const pieces = (list: Awaited<ReturnType<typeof loadPieces>>) => groupSets(list).flatMap((s) => s.pieces.map((p) => card(p, s.title)));
@@ -130,6 +131,8 @@ export async function canvasLibrary(me: Who) {
     team: pieces(team),
     images: library.map((a) => ({ value: `asset:${a.id}`, title: a.title, kind: a.kind, url: `/api/template-files/library/${a.file}` })),
     uploads,
+    /** When this person last used the Archy Studio connector from Claude (null: never). */
+    mcpSeenAt: (seen.data?.mcp_seen_at as string | null | undefined) ?? null,
   };
 }
 export type CanvasLibrary = Awaited<ReturnType<typeof canvasLibrary>>;

@@ -130,8 +130,11 @@
     const comps = window.__components().comps.map((c) => {
       const el = node(c.id), b = el.getBoundingClientRect();
       const textEl = c.kind === 'button' ? node(c.textId) : c.kind === 'text' ? el : null;
+      const cs = getComputedStyle(el);
+      const flex = ['group', 'tag', 'button'].includes(c.kind) && cs.display.includes('flex');
       return {
-        ...c, text: textEl?.textContent ?? undefined, hidden: getComputedStyle(el).display === 'none',
+        ...c, text: textEl?.textContent ?? undefined, hidden: cs.display === 'none',
+        layout: flex ? `${cs.flexDirection.startsWith('column') ? 'vertical' : 'horizontal'}, ${/space-/.test(cs.justifyContent) ? 'space between' : `packed, gap ${parseFloat(cs.gap) || 0}px`}` : undefined,
         box: { x: Math.round(b.left - R.left), y: Math.round(b.top - R.top), w: Math.round(b.width), h: Math.round(b.height) },
         alignBox: c.kind === 'background' ? null : window.__alignBox(c.id),
       };

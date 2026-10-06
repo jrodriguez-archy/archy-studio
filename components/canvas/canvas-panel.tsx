@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { AiChat02Icon, Image01Icon, ImageUploadIcon, Layers01Icon, LibraryIcon } from '@hugeicons/core-free-icons';
+import { AiChat02Icon, ArrowDown01Icon, ArrowRight01Icon, Image01Icon, ImageUploadIcon, Layers01Icon, LibraryIcon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CanvasLibrary } from '@/lib/canvas';
@@ -15,7 +15,8 @@ const TABS: { key: PanelTab; label: string; icon: typeof Layers01Icon }[] = [
   { key: 'assets', label: 'Assets', icon: Image01Icon },
   { key: 'claude', label: 'Claude', icon: AiChat02Icon },
 ];
-const CATEGORY: Record<string, string> = { events: 'Events', ads: 'Ads', other: 'More' };
+const CATEGORY: Record<string, string> = { events: 'Events', ads: 'Ads', covers: 'Event covers', other: 'More' };
+const CLOSED_KEY = 'canvas.library.closed';
 
 // Canvas's own sidebar (Relume-like): a rail of tabs and the open tab.
 export function CanvasPanel({ tab, onTab, children }: { tab: PanelTab; onTab: (t: PanelTab) => void; children: React.ReactNode }) {
@@ -58,7 +59,17 @@ export function LibraryTab({ library, current, confirmLeave }: { library: Canvas
   const [whose, setWhose] = useState<'mine' | 'team'>('mine');
   const go = (href: string) => { if (confirmLeave()) router.push(href); };
   const pieces = whose === 'mine' ? library.mine : library.team;
-  const cats = [...new Set(library.templates.map((t) => t.category))];
+  // Event page covers get their own shelf, closed until wanted.
+  const catOf = (t: CanvasLibrary['templates'][number]) => (t.cover ? 'covers' : t.category);
+  const cats = [...new Set(library.templates.map(catOf))].sort((a, b) => (a === 'covers' ? 1 : b === 'covers' ? -1 : 0));
+  const [closed, setClosed] = useState<string[]>(['covers']);
+  // Read after mount (the server has no storage), so the first paint matches.
+  useEffect(() => { try { const v = localStorage.getItem(CLOSED_KEY); if (v) setClosed(JSON.parse(v)); } catch {} }, []);
+  const toggle = (c: string) => setClosed((cur) => {
+    const next = cur.includes(c) ? cur.filter((x) => x !== c) : [...cur, c];
+    try { localStorage.setItem(CLOSED_KEY, JSON.stringify(next)); } catch {}
+    return next;
+  });
   return (
     <div className="pb-4 text-[12px]">
       <Segmented value={view} items={[['templates', 'Templates'], ['pieces', 'Pieces']]} onChange={setView} />
@@ -84,30 +95,40 @@ export function LibraryTab({ library, current, confirmLeave }: { library: Canvas
           </div>
         </>
       ) : (
-        cats.map((cat) => (
-          <div key={cat} className="pb-3">
-            <p className="px-3 pt-2 pb-1.5 text-[11px] font-medium tracking-[0.02em] text-foreground/40">{CATEGORY[cat] ?? cat}</p>
-            <div className="space-y-2 px-3">
-              {library.templates.filter((t) => t.category === cat).map((t) => (
-                <div key={t.id} className="flex gap-2.5 rounded-md p-1.5 hover:bg-foreground/[0.03]">
-                  <button type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${t.formats[0].key}`)} className="size-14 shrink-0 overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/preview/${t.id}/${t.formats[0].key}`} alt="" loading="lazy" className="size-full object-cover object-top" />
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{t.title}</p>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {t.formats.map((f) => (
-                        <button key={f.key} type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${f.key}`)} title={`${f.width}×${f.height}`}
-                          className="h-5 rounded-[3px] bg-foreground/[0.05] px-1.5 text-[11px] text-foreground/70 hover:bg-[#E6F4FF] hover:text-primary">{f.label}</button>
-                      ))}
+        cats.map((cat) => {
+          const list = library.templates.filter((t) => catOf(t) === cat);
+          const open = !closed.includes(cat);
+          return (
+            <div key={cat} className="pb-1">
+              <button type="button" onClick={() => toggle(cat)} className="flex h-8 w-full items-center gap-1 px-3 text-left hover:bg-foreground/[0.03]">
+                <HugeiconsIcon icon={open ? ArrowDown01Icon : ArrowRight01Icon} className="size-3 text-foreground/40" strokeWidth={2} />
+                <span className="text-[11px] font-medium tracking-[0.02em] text-foreground/60">{CATEGORY[cat] ?? cat}</span>
+                <span className="text-[11px] text-foreground/35">{list.length}</span>
+              </button>
+              {open && (
+                <div className="space-y-1 px-2 pb-2">
+                  {list.map((t) => (
+                    <div key={t.id} className="flex items-center gap-2.5 rounded-md p-1.5 hover:bg-foreground/[0.03]">
+                      <button type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${t.formats[0].key}`)} className="size-12 shrink-0 overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={`/api/preview/${t.id}/${t.formats[0].key}`} alt="" loading="lazy" className="size-full object-cover object-top" />
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{t.title.replace(/^Event Cover · /, '')}</p>
+                        <div className="mt-1 flex gap-1 overflow-x-auto [scrollbar-width:none]">
+                          {t.formats.map((f) => (
+                            <button key={f.key} type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${f.key}`)} title={`${f.width}×${f.height}`}
+                              className="h-5 shrink-0 rounded-[3px] bg-foreground/[0.05] px-1.5 text-[11px] text-foreground/70 hover:bg-[#E6F4FF] hover:text-primary">{f.label}</button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

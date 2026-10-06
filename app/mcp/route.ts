@@ -224,6 +224,13 @@ const handler = createMcpHandler(
             align: z.enum(['left', 'center', 'right', 'top', 'middle', 'bottom']).optional().describe('Align inside its container (its padding kept)'),
             scale: z.number().optional().describe('Scale, 1 = as designed (photos, the Archy logo)'),
             image: z.string().optional().describe('For a photo or logo: asset:<id> (list_assets) or an https URL'),
+            layout: z.object({
+              distribute: z.enum(['packed', 'space-between']).optional(),
+              gap: z.number().optional().describe('px between items when packed'),
+              position: z.enum(['start', 'center', 'end']).optional().describe('Where packed items sit along the group'),
+              align: z.enum(['start', 'center', 'end']).optional().describe('How items line up across the group'),
+            }).optional().describe('For a group (Header, Details, Content…): how its content is spread'),
+            size: z.object({ width: z.number().optional(), height: z.number().optional() }).optional().describe('New size in px'),
           })).default([]),
           note: z.string().optional().describe('One short line the person sees, e.g. "Shorter headline, light theme"'),
         }),

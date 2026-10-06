@@ -16,7 +16,10 @@ export type NodeEdit = {
   hidden?: boolean;
   box?: { dx?: number; dy?: number; width?: number; height?: number; scale?: number };
   style?: { color?: string; backgroundColor?: string; fontSize?: number; fontWeight?: number; opacity?: number };
+  /** A group's layout (it is a flex frame from Paper): spread packed or space-between, gap, placement. */
+  layout?: Layout;
 };
+export type Layout = { distribute?: 'packed' | 'space-between'; gap?: number; position?: 'start' | 'center' | 'end'; align?: 'start' | 'center' | 'end' };
 export type Edits = Record<string, NodeEdit>;
 export type Preset = 'dark' | 'blue' | 'light';
 // The piece-level entry of Edits (not a layer).
@@ -62,6 +65,8 @@ export function cleanEdits(edits: Edits): Edits {
     if (e.hidden) n.hidden = true;
     if (Object.keys(box).length) n.box = box;
     if (Object.keys(style).length) n.style = style;
+    const layout = Object.fromEntries(Object.entries(e.layout ?? {}).filter(([, v]) => v != null));
+    if (Object.keys(layout).length) n.layout = layout;
     if (Object.keys(n).length) out[id] = n;
   }
   return out;

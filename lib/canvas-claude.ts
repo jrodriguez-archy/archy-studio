@@ -1,5 +1,5 @@
 import 'server-only';
-import { cleanEdits, THEME, type Edits, type NodeEdit, type Preset } from './canvas-shared';
+import { cleanEdits, THEME, type Edits, type Layout, type NodeEdit, type Preset } from './canvas-shared';
 import { loadSource, saveEdited, type PieceSource } from './canvas';
 import { iconMarkup, searchIcons } from './icons';
 import { render, type InspectedComp } from './renderer';
@@ -62,7 +62,7 @@ export async function getCanvas(me: Who, ref?: string) {
   const d = await describe(piece, slots, edits);
   const byId = new Map(d.comps.map((c) => [c.id, c]));
   const depth = (c: InspectedComp): number => (c.parent ? 1 + depth(byId.get(c.parent)!) : 0);
-  const lines = d.comps.map((c) => `${'  '.repeat(depth(c))}- ${c.name} [${KIND[c.kind] ?? c.kind}]${c.text ? `: "${c.text.replace(/\s+/g, ' ').trim()}"` : ''}${c.slot || c.textSlot ? ' (from the brief)' : ''}${c.hidden ? ' (hidden)' : ''}`);
+  const lines = d.comps.map((c) => `${'  '.repeat(depth(c))}- ${c.name} [${KIND[c.kind] ?? c.kind}]${c.text ? `: "${c.text.replace(/\s+/g, ' ').trim()}"` : ''}${c.layout ? ` (${c.layout})` : ''}${c.slot || c.textSlot ? ' (from the brief)' : ''}${c.hidden ? ' (hidden)' : ''}`);
   const config = await loadConfig(piece.template);
   return {
     piece, png: d.png,
@@ -88,6 +88,9 @@ export type CanvasChange = {
   align?: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
   scale?: number;
   image?: string;
+  /** For a group, tag or button: how its content is spread. */
+  layout?: Layout;
+  size?: { width?: number; height?: number };
 };
 
 export async function editCanvas(me: Who, input: { piece?: string; changes: CanvasChange[]; theme?: Preset; note?: string }) {
@@ -133,6 +136,12 @@ export async function editCanvas(me: Who, input: { piece?: string; changes: Canv
       edit(target, { icon: name });
     }
     if (ch.hidden != null) edit(c.id, { hidden: ch.hidden });
+    if (ch.layout) {
+      if (!['group', 'tag', 'button'].includes(c.kind)) throw new Error(`${c.name} is not a group; layout applies to groups (e.g. Header, Details, Content).`);
+      const a = edits[c.id]?.layout ?? {};
+      edits[c.id] = { ...edits[c.id], layout: { ...a, ...ch.layout } };
+    }
+    if (ch.size) edit(c.id, { box: { ...(ch.size.width ? { width: ch.size.width } : {}), ...(ch.size.height ? { height: ch.size.height } : {}) } });
     if (ch.font_size) edit(c.id, { style: { fontSize: ch.font_size } });
     if (ch.scale) edit(c.id, { box: { scale: Math.max(0.3, Math.min(3, ch.scale)) } });
     if (ch.image) {

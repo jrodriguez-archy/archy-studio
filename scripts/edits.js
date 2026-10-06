@@ -165,6 +165,14 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       s.fontSize = `${st.fontSize}px`;
       if (f0 && l0) s.lineHeight = `${Math.round((l0 * st.fontSize) / f0)}px`;
     }
+    const l = e.layout;
+    if (l) {
+      const flex = { start: 'flex-start', center: 'center', end: 'flex-end' };
+      if (l.distribute === 'space-between') s.justifyContent = 'space-between';
+      else if (l.distribute === 'packed' || l.position) s.justifyContent = flex[l.position ?? 'start'];
+      if (l.gap != null) s.gap = `${l.gap}px`;
+      if (l.align) s.alignItems = flex[l.align];
+    }
     if (e.hidden) s.display = 'none';
   }
 

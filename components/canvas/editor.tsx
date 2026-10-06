@@ -46,7 +46,7 @@ export function CanvasEditor({ piece, library }: { piece?: PieceProps; library: 
         <header className="flex h-12 shrink-0 items-center border-b border-foreground/[0.06] bg-background px-4"><p className="font-medium">Canvas</p></header>
         <div className="flex min-h-0 flex-1">
           <CanvasPanel tab={tab === 'layers' ? 'library' : tab} onTab={setTab}>
-            {tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'claude' ? <ClaudeTab /> : <LibraryTab library={library} confirmLeave={() => true} />}
+            {tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'claude' ? <ClaudeTab seenAt={library.mcpSeenAt} /> : <LibraryTab library={library} confirmLeave={() => true} />}
           </CanvasPanel>
           <main className="flex flex-1 items-center justify-center p-8">
             <div className="max-w-sm text-center">
@@ -368,7 +368,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           )}
           {tab === 'library' && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
           {tab === 'assets' && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
-          {tab === 'claude' && <ClaudeTab pieceId={isNew ? undefined : pieceId} title={title} live={claudeNote} />}
+          {tab === 'claude' && <ClaudeTab pieceId={isNew ? undefined : pieceId} title={title} live={claudeNote} seenAt={library.mcpSeenAt} />}
         </CanvasPanel>
 
         <main

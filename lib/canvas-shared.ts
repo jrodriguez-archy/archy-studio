@@ -45,6 +45,10 @@ export type RenderReport = {
   ok: boolean;
   slots: Record<string, { status: string; scale?: number; wrapped?: boolean; groupWrapped?: boolean; lines?: number; fontSize?: number }>;
   errors: { slot?: string; node?: string; code: string; message?: string; maxLength?: number; reason?: string }[];
+  /** How the content filled the design's room (fit.js balance): its lead text grown, the footer sent down. */
+  fill?: { footprint: number; before: number; after?: number; grew?: { slot: string; scale: number }; footer?: string; gap?: number };
+  /** px the column started lower to stay clear of a decoration above it (a detail left out at the top). */
+  clearedTop?: number;
 };
 
 // Edits with nothing left in them are dropped, so a restored layer leaves no trace.
@@ -75,4 +79,6 @@ export type Suggestion = {
   fix?: { dx: number; dy: number };
   /** Undo the hand edit that caused it (back to the design's value): fields like 'box.width', 'style.color'. */
   revert?: { id: string; fields: string[]; label: string };
+  /** The revert is safe to apply without asking (Fix all does it): a size forced below the design… */
+  auto?: boolean;
 };

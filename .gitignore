@@ -8,3 +8,4 @@ out/
 .next/
 next-env.d.ts
 *.tsbuildinfo
+.qa/

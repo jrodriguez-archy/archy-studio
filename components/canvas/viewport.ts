@@ -15,15 +15,17 @@ export function useViewport(width: number, height: number) {
   view.current = { zoom, pan };
   const dragging = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
 
-  const fit = useCallback(() => {
+  // Frame a part of the content (an artboard), or all of it.
+  const frame = useCallback((b: { x: number; y: number; w: number; h: number }, keep = true) => {
     const el = area.current;
     if (!el) return;
     const { width: W, height: H } = el.getBoundingClientRect();
-    const z = Math.max(0.05, Math.min((W - 96) / width, (H - 120) / height, 1));
+    const z = Math.max(0.05, Math.min((W - 96) / b.w, (H - 140) / b.h, 1));
     setZoom(z);
-    setPan({ x: (W - width * z) / 2, y: (H - height * z) / 2 - 12 });
-    setFitted(true);
-  }, [width, height]);
+    setPan({ x: (W - b.w * z) / 2 - b.x * z, y: (H - b.h * z) / 2 - b.y * z + 4 });
+    setFitted(keep);
+  }, []);
+  const fit = useCallback(() => frame({ x: 0, y: 0, w: width, h: height }), [frame, width, height]);
 
   // Zoom keeping the point under `at` (area px) in place; the centre when not given.
   const zoomTo = useCallback((z: number, at?: { x: number; y: number }) => {
@@ -100,5 +102,5 @@ export function useViewport(width: number, height: number) {
     onPointerUp: () => { dragging.current = null; },
   };
 
-  return { area, zoom, pan, fit, zoomTo, panning, hand, setHand, handlers, grabbing: !!dragging.current };
+  return { area, zoom, pan, fit, frame, zoomTo, panning, hand, setHand, handlers, grabbing: !!dragging.current };
 }

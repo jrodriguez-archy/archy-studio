@@ -26,14 +26,17 @@ export async function exportEdited(piece: PieceSource, slots: Record<string, str
   return storeExport(out.png, `${piece.template}-${piece.format}.png`);
 }
 
-export async function saveEdited(me: Who, piece: PieceSource, slots: Record<string, string | null>, edits: Edits, mode: 'version' | 'replace') {
+// A new design joins `set` when given (a format added to an existing set); otherwise it starts its own.
+type SetOf = { id: string; projectId: string | null; title: string | null };
+
+export async function saveEdited(me: Who, piece: PieceSource, slots: Record<string, string | null>, edits: Edits, mode: 'version' | 'replace', set?: SetOf) {
   const out = await renderEdited(piece, slots, edits);
   const clean = cleanEdits(edits);
   if (isNew(piece)) {
-    // A piece started from a template: its own set, like a brief made with Claude.
+    // A piece started from a template: its own set (like a brief made with Claude), or a format added to one.
     const saved = await saveRender({
       userId: me.id, template: piece.template, format: piece.format, slots: out.slots, png: out.png, width: out.width, height: out.height, scale: 2,
-      source: 'app', setId: randomUUID(), variant: out.variant, edits: clean,
+      source: 'app', setId: set?.id ?? randomUUID(), projectId: set?.projectId ?? null, setTitle: set?.title ?? null, variant: out.variant, edits: clean,
     });
     if (!saved) throw new Error('Saving needs the gallery (Supabase) configured.');
     return saved;
@@ -50,3 +53,16 @@ export async function saveEdited(me: Who, piece: PieceSource, slots: Record<stri
   return saved;
 }
 
+
+// Save every artboard that changed (and every format added) in one go. Existing designs follow `mode`;
+// added formats join the set of the designs they were made from (a new set when all are new).
+export async function saveSet(me: Who, items: { piece: PieceSource; slots: Record<string, string | null>; edits: Edits }[], mode: 'version' | 'replace', from: PieceSource | null) {
+  const base = from && !isNew(from) ? from : items.map((i) => i.piece).find((p) => !isNew(p)) ?? null;
+  const set: SetOf = base ? { id: base.set_id ?? base.id, projectId: base.project_id, title: base.set_title } : { id: randomUUID(), projectId: null, title: null };
+  if (mode === 'replace') {
+    const refused = [];
+    for (const i of items) if (!isNew(i.piece) && !(await canReplace(me, i.piece))) refused.push(i.piece.format);
+    if (refused.length) throw new Error('Only the person who made it, the project owner or an admin can replace the original. Save it as a new version.');
+  }
+  return Promise.all(items.map(async (i) => ({ ref: i.piece.id, ...(await saveEdited(me, i.piece, i.slots, i.edits, mode, set)) })));
+}

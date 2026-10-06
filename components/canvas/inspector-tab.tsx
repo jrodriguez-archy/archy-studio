@@ -32,7 +32,7 @@ export function InspectorTab({ items, onPick, onFix, onRevert, onFixAll, pieceId
     );
   }
   const groups = [['warn', 'To look at'], ['tip', 'Suggestions']] as const;
-  const fixable = items.filter((i) => i.fix).length;
+  const fixable = items.filter((i) => i.fix || i.auto).length;
   return (
     <div className="space-y-4 px-2 pb-4 text-[12px]">
       <div className="mx-1 rounded-md bg-foreground/[0.03] p-2.5">

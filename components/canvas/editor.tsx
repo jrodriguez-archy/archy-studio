@@ -10,15 +10,18 @@ import {
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { libraryAction, prepareAction, saveDraftAction } from '@/app/(app)/canvas/actions';
+import { useRendersLive } from '@/components/use-renders-live';
 
 // Export and save render with Chromium in their own route (/api/canvas), not in this page's function.
-async function canvasCall(body: Record<string, unknown>): Promise<{ ok: true; id?: string; url: string } | { ok: false; error: string }> {
+async function canvasCall<T = { url: string }>(body: Record<string, unknown>): Promise<({ ok: true } & T) | { ok: false; error: string }> {
   const res = await fetch('/api/canvas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   return res.json().catch(() => ({ ok: false, error: `The server did not answer (${res.status}).` }));
 }
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { CanvasLibrary } from '@/lib/canvas';
 import { THEME, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
+import { follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
+import { BoardLabel, GhostBoard } from './artboards';
 import { AssetsTab, CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
 import { InspectorTab } from './inspector-tab';
 import { LayersPanel } from './layers-panel';
@@ -27,32 +30,45 @@ import { MultiPanel, PiecePanel, PropertiesPanel, type Align, type SlotMeta } fr
 import { Stage, type SelectMode, type StageHandle } from './stage';
 import { useViewport } from './viewport';
 
-type Snap = { slots: Record<string, string | null>; edits: Edits };
-export type PieceProps = {
-  pieceId: string; title: string; formatLabel: string; backHref: string; canReplace: boolean; isNew: boolean;
-  initial: Snap; plan: FillPlan; slotMeta: Record<string, SlotMeta>;
-  /** The piece as saved (the baseline for "unsaved changes" and Reset); initial may be a draft. */
-  saved?: Snap;
+/** One format of the design on the canvas (a saved design, or a format being added). */
+export type Board = {
+  ref: string; format: string; label: string; width: number; height: number; isNew: boolean; canReplace: boolean;
+  initial: Snap; plan?: FillPlan;
+  /** As saved (the baseline for "unsaved changes" and Reset); initial may be a draft. */
+  saved: Snap;
   draft?: { version: number; by: string; note: string | null } | null;
 };
+/** A format of the template the design does not have yet. */
+export type Ghost = { ref: string; format: string; label: string; width: number; height: number; defaults: Record<string, string | null> };
+export type EditorProps = {
+  title: string; backHref: string; active: string; boards: Board[]; ghosts: Ghost[];
+  slotMeta: Record<string, Record<string, SlotMeta>>;
+};
+
+type Doc = Record<string, Snap>;
+type Meta = { comps: Comp[]; safe: Box | null; tokens: Token[]; report: RenderReport | null; keys: Keys | null; review: Suggestion[] };
+const EMPTY: Meta = { comps: [], safe: null, tokens: [], report: null, keys: null, review: [] };
+const GAP = 120; // between artboards, in design px
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });
 const luminance = (hex: string) => { const n = parseInt(hex.slice(1), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
+const planKeyOf = (s: Snap) => JSON.stringify([s.slots, Object.values(s.edits).flatMap((e) => [e.image, e.icon]).filter(Boolean).sort()]);
 
-// Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the design in a
-// pannable, zoomable viewport, the selection's properties on the right. Copy and slot images change the
-// brief (the fit rules still apply); everything else is a hand edit kept with the design. Save renders it
-// again with the same engine as Claude's designs.
-export function CanvasEditor({ piece, library: given = null, seenAt = null }: { piece?: PieceProps; library?: CanvasLibrary | null; seenAt?: string | null }) {
-  // With a piece, the panel's library (templates, pieces, images) loads after the piece is on screen.
+// Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the design's
+// formats side by side as artboards in a pannable, zoomable viewport, the selection's properties on the
+// right. One artboard is edited at a time; what is shared (copy, images, theme, styles) follows to the
+// formats kept in sync. Save renders every changed format again with the same engine as Claude's designs.
+export function CanvasEditor({ piece, library: given = null, seenAt = null }: { piece?: EditorProps; library?: CanvasLibrary | null; seenAt?: string | null }) {
+  // With a piece, the panel's library (templates, pieces, images) loads after the piece is on screen,
+  // and follows new designs and replaced images live.
   const [library, setLibrary] = useState<CanvasLibrary | null>(given);
-  useEffect(() => {
-    if (given) return;
-    let gone = false;
-    libraryAction().then((l) => { if (!gone && l) setLibrary(l); }).catch(() => {});
-    return () => { gone = true; };
-  }, [given]);
+  const [updating, setUpdating] = useState<string[]>([]);
+  const reload = useCallback(() => {
+    libraryAction().then((l) => { if (l) { setLibrary(l); setUpdating([]); } }).catch(() => {});
+  }, []);
+  useEffect(() => { if (!given) reload(); }, [given, reload]);
+  useRendersLive(reload);
   const [tab, setTab] = useState<PanelTab>(piece ? 'layers' : 'library');
   if (!piece) {
     return (
@@ -72,94 +88,168 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
       </div>
     );
   }
-  return <Editor key={piece.pieceId} {...piece} library={library} seenAt={library?.mcpSeenAt ?? seenAt} tab={tab} setTab={setTab} />;
+  return (
+    <Editor key={piece.boards.map((b) => b.ref).join()} {...piece} library={library} updating={updating} onSaved={(ids) => setUpdating(ids)}
+      seenAt={library?.mcpSeenAt ?? seenAt} tab={tab} setTab={setTab} />
+  );
 }
 
-function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, initial, saved: savedSnap, draft, plan: firstPlan, slotMeta, library, seenAt, tab, setTab }: PieceProps & { library: CanvasLibrary | null; seenAt: string | null; tab: PanelTab; setTab: (t: PanelTab) => void }) {
+function Editor({ title, backHref, active: firstActive, boards: firstBoards, ghosts: firstGhosts, slotMeta: slotMetaOf, library, updating, onSaved, seenAt, tab, setTab }: EditorProps & {
+  library: CanvasLibrary | null; updating: string[]; onSaved: (ids: string[]) => void; seenAt: string | null; tab: PanelTab; setTab: (t: PanelTab) => void;
+}) {
   const router = useRouter();
-  const [snap, setSnap] = useState<Snap>(initial);
-  const [past, setPast] = useState<Snap[]>([]);
-  const [future, setFuture] = useState<Snap[]>([]);
-  const [saved, setSaved] = useState<Snap>(savedSnap ?? initial);
-  const liveBase = useRef<Snap | null>(null);
+  // ---- The artboards: one document of snaps (one per format), one history for all of them ----
+  const [boards, setBoards] = useState<Board[]>(firstBoards);
+  const [ghosts, setGhosts] = useState<Ghost[]>(firstGhosts);
+  const [unsynced, setUnsynced] = useState<string[]>([]);
+  const [active, setActiveRef] = useState(firstActive);
+  const [doc, setDocState] = useState<Doc>(() => Object.fromEntries(firstBoards.map((b) => [b.ref, b.initial])));
+  const [past, setPast] = useState<Doc[]>([]);
+  const [future, setFuture] = useState<Doc[]>([]);
+  const docRef = useRef(doc);
+  const setDoc = useCallback((d: Doc) => { docRef.current = d; setDocState(d); }, []);
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  const boardsRef = useRef(boards);
+  boardsRef.current = boards;
+  const unsyncedRef = useRef(unsynced);
+  unsyncedRef.current = unsynced;
+  const liveBase = useRef<Doc | null>(null);
+  const board = boards.find((b) => b.ref === active) ?? boards[0];
+  const snap = doc[board.ref];
+  const isNew = board.isNew;
+  const slotMeta = slotMetaOf[board.format] ?? {};
 
-  const [plan, setPlan] = useState(firstPlan);
-  const [planError, setPlanError] = useState<string | null>(null);
-  const [comps, setComps] = useState<Comp[]>([]);
-  const [safe, setSafe] = useState<Box | null>(null);
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [report, setReport] = useState<RenderReport | null>(null);
-  const [review, setReview] = useState<Suggestion[]>([]);
-  const [claude, setClaude] = useState<string | null>(null);
-  const [flash, setFlash] = useState<{ ids: string[]; at: number } | null>(null);
+  const [plans, setPlans] = useState<Record<string, FillPlan>>(() => Object.fromEntries(firstBoards.filter((b) => b.plan).map((b) => [b.ref, b.plan!])));
+  const [planErrors, setPlanErrors] = useState<Record<string, string | null>>({});
+  const [meta, setMetaState] = useState<Record<string, Meta>>({});
+  const metaRef = useRef(meta);
+  const setMeta = useCallback((ref: string, m: Partial<Meta>) => {
+    metaRef.current = { ...metaRef.current, [ref]: { ...(metaRef.current[ref] ?? EMPTY), ...m } };
+    setMetaState(metaRef.current);
+  }, []);
+  const plan = plans[board.ref];
+  const { comps, safe, tokens, report, review } = meta[board.ref] ?? EMPTY;
+  const planError = planErrors[board.ref] ?? null;
+
+  const [claude, setClaude] = useState<{ ref: string; status: string } | null>(null);
+  const [flash, setFlash] = useState<{ ref: string; ids: string[]; at: number } | null>(null);
   useEffect(() => { if (!claude) return; const t = setTimeout(() => setClaude(null), 90_000); return () => clearTimeout(t); }, [claude]);
   useEffect(() => { if (!flash) return; const t = setTimeout(() => setFlash(null), 1800); return () => clearTimeout(t); }, [flash]);
   const [selected, setSelected] = useState<string[]>([]);
   const [hover, setHover] = useState<string | null>(null);
   const [, setInfoTick] = useState(0);
-  const stage = useRef<StageHandle>(null);
-  const vp = useViewport(plan.width, plan.height);
+  const stages = useRef<Record<string, StageHandle | null>>({});
+  const stage = { current: stages.current[board.ref] ?? null };
+
+  // Artboards in a row, top-aligned; the formats to add follow.
+  const place = (() => {
+    let x = 0;
+    const at: Record<string, number> = {};
+    for (const b of [...boards, ...ghosts]) { at[b.ref] = x; x += b.width + GAP; }
+    return at;
+  })();
+  const allW = boards.reduce((s, b) => s + b.width, 0) + GAP * (boards.length - 1);
+  const allH = Math.max(...boards.map((b) => b.height));
+  const vp = useViewport(allW, allH);
+  const frameBoard = (ref: string) => {
+    const b = [...boards, ...ghosts].find((x) => x.ref === ref);
+    if (b) vp.frame({ x: place[ref], y: 0, w: b.width, h: b.height }, false);
+  };
 
   const [saving, setSaving] = useState(false);
   const [busy, start] = useTransition();
-  const dirty = isNew || !same(cleanSnap(snap), cleanSnap(saved));
-  const changed = !same(cleanSnap(snap), cleanSnap(saved));
+  const edited = (b: Board) => !same(cleanSnap(doc[b.ref]), cleanSnap(b.saved));
+  // To save: what changed, and every format not in the gallery yet.
+  const pending = boards.filter((b) => b.isNew || edited(b));
+  // Worth a warning before leaving: real edits, or formats added.
+  const changed = boards.some(edited) || boards.length > firstBoards.length;
+  const dirty = pending.length > 0;
+
+  // ---- Keeping the formats in step ----
+  // Formats that still need to match the one they were made from (their page was not read yet).
+  const toMatch = useRef<Record<string, string>>({});
+  const synced = (ref: string) => !unsyncedRef.current.includes(ref);
+  // The document with one artboard changed, and what is shared followed to the synced ones.
+  const spread = useCallback((d: Doc, ref: string, next: Snap): Doc => {
+    const prev = d[ref];
+    const out = { ...d, [ref]: next };
+    if (!prev || !synced(ref)) return out;
+    for (const b of boardsRef.current) {
+      if (b.ref === ref || !synced(b.ref) || !out[b.ref]) continue;
+      const src = metaRef.current[ref]?.keys ?? undefined, dst = metaRef.current[b.ref]?.keys ?? undefined;
+      out[b.ref] = follow(prev, next, out[b.ref], src, dst);
+      if (!src || !dst) toMatch.current[b.ref] = ref;
+    }
+    return out;
+  }, []);
+  // Once a page is read (its keys known), a format waiting to match does.
+  const settle = useCallback(() => {
+    let d = docRef.current, moved = false;
+    for (const [ref, from] of Object.entries(toMatch.current)) {
+      const a = metaRef.current[from]?.keys, b = metaRef.current[ref]?.keys;
+      if (!a || !b || !d[from] || !d[ref]) continue;
+      delete toMatch.current[ref];
+      d = { ...d, [ref]: match(d[from], d[ref], a, b) };
+      moved = true;
+    }
+    if (moved) setDoc(d);
+  }, [setDoc]);
 
   // ---- History ----
-  const snapRef = useRef(snap);
-  snapRef.current = snap;
-  const compsRef = useRef<Comp[]>([]);
-  compsRef.current = comps;
+  const cur = useCallback(() => docRef.current[activeRef.current], []);
   const pastRef = useRef(past);
   pastRef.current = past;
   const futureRef = useRef(future);
   futureRef.current = future;
-  const commit = useCallback((next: Snap) => {
-    const before = liveBase.current ?? snapRef.current;
+  const commitTo = useCallback((ref: string, next: Snap) => {
+    const before = liveBase.current ?? docRef.current;
     liveBase.current = null;
     setPast((p) => [...p.slice(-99), before]);
     setFuture([]);
-    setSnap(next);
-  }, []);
+    setDoc(spread(docRef.current, ref, next));
+  }, [setDoc, spread]);
+  const commit = useCallback((next: Snap) => commitTo(activeRef.current, next), [commitTo]);
+  // A history step brings every format back; formats added since stay.
   const undo = useCallback(() => {
     const p = pastRef.current;
     if (!p.length) return;
-    setFuture([snapRef.current, ...futureRef.current]);
+    setFuture([docRef.current, ...futureRef.current]);
     setPast(p.slice(0, -1));
-    setSnap(p[p.length - 1]);
-  }, []);
+    setDoc({ ...docRef.current, ...p[p.length - 1] });
+  }, [setDoc]);
   const redo = useCallback(() => {
     const f = futureRef.current;
     if (!f.length) return;
-    setPast([...pastRef.current, snapRef.current]);
+    setPast([...pastRef.current, docRef.current]);
     setFuture(f.slice(1));
-    setSnap(f[0]);
-  }, []);
+    setDoc({ ...docRef.current, ...f[0] });
+  }, [setDoc]);
 
   // Several layer edits at once (a drag of many, an align): one history step.
   const editMany = useCallback((changes: Record<string, NodeEdit>, final = true) => {
-    const cur = snapRef.current;
-    const edits = { ...cur.edits };
+    const s = cur();
+    const edits = { ...s.edits };
     for (const [id, e] of Object.entries(changes)) {
-      const one = cleanEdits({ [id]: merge(cur.edits[id], e) });
+      const one = cleanEdits({ [id]: merge(s.edits[id], e) });
       if (one[id]) edits[id] = one[id]; else delete edits[id];
     }
-    const next = { ...cur, edits };
+    const next = { ...s, edits };
     if (final) commit(next);
-    else { liveBase.current ??= cur; setSnap(next); }
-  }, [commit]);
+    else { liveBase.current ??= docRef.current; setDoc(spread(docRef.current, activeRef.current, next)); }
+  }, [commit, cur, setDoc, spread]);
   const editLayer = useCallback((id: string, e: NodeEdit, final = true) => editMany({ [id]: e }, final), [editMany]);
 
   const setSlot = useCallback((name: string, value: string | null) => {
-    const cur = snapRef.current;
-    if ((cur.slots[name] ?? null) === value) return;
-    commit({ ...cur, slots: { ...cur.slots, [name]: value } });
-  }, [commit]);
+    const s = cur();
+    if ((s.slots[name] ?? null) === value) return;
+    commit({ ...s, slots: { ...s.slots, [name]: value } });
+  }, [commit, cur]);
 
   const select = useCallback((ids: string[], mode: SelectMode) => {
-    setSelected((cur) => {
+    setSelected((now) => {
       if (mode === 'replace') return ids;
-      const next = [...cur];
+      const next = [...now];
       for (const id of ids) { const i = next.indexOf(id); if (i >= 0) next.splice(i, 1); else next.push(id); }
       // Never a component together with something inside it, nor the background with others.
       const bg = comps.find((c) => c.kind === 'background')?.id;
@@ -168,13 +258,58 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     });
   }, [comps]);
 
+  // Edit another format: its artboard becomes the active one (and the address follows, without a reload).
+  const activate = (ref: string, pick: string | null = null) => {
+    if (ref !== activeRef.current) {
+      setActiveRef(ref);
+      activeRef.current = ref;
+      setHover(null);
+      if (!ref.startsWith('new:')) window.history.replaceState(null, '', `/canvas/${ref}`);
+    }
+    setSelected(pick ? [pick] : []);
+  };
+
+  // Add a format: made from the one being edited (copy, images, theme and styles), kept in sync.
+  const addFormats = (list: Ghost[]) => {
+    if (!list.length) return;
+    const from = activeRef.current;
+    const src = docRef.current[from];
+    let d = { ...docRef.current };
+    const added: Board[] = [];
+    for (const g of list) {
+      const slots = Object.fromEntries(Object.entries(g.defaults).map(([k, v]) => {
+        const had = [src, ...Object.values(d)].find((s) => k in s.slots);
+        return [k, had ? had.slots[k] ?? null : v];
+      }));
+      const initial: Snap = { slots, edits: src.edits[THEME] ? { [THEME]: src.edits[THEME] } : {} };
+      d = { ...d, [g.ref]: initial };
+      toMatch.current[g.ref] = from;
+      added.push({ ref: g.ref, format: g.format, label: g.label, width: g.width, height: g.height, isNew: true, canReplace: false, initial, saved: initial });
+    }
+    const order = [...boardsRef.current, ...ghosts].map((b) => b.format);
+    setBoards((bs) => [...bs, ...added].sort((a, b) => order.indexOf(a.format) - order.indexOf(b.format)));
+    setGhosts((gs) => gs.filter((g) => !list.some((x) => x.ref === g.ref)));
+    setDoc(d);
+  };
+  const toggleSync = (ref: string) => {
+    if (unsynced.includes(ref)) {
+      // Back in sync: it takes what is shared from the one being edited (or the first synced one).
+      const from = ref !== active ? active : boards.find((b) => b.ref !== ref && !unsynced.includes(b.ref))?.ref;
+      setUnsynced((u) => u.filter((x) => x !== ref));
+      if (from) {
+        const a = meta[from]?.keys, b = meta[ref]?.keys;
+        if (a && b) commitTo(ref, match(docRef.current[from], docRef.current[ref], a, b));
+      }
+    } else setUnsynced((u) => [...u, ref]);
+  };
+
   const one = selected.length === 1 ? comps.find((c) => c.id === selected[0]) ?? null : null;
   const resetIds = (ids: string[]) => {
     const edits = { ...snap.edits };
     const slots = { ...snap.slots };
     for (const c of comps.filter((x) => ids.includes(x.id))) {
       for (const id of [c.id, c.textId, c.iconId]) if (id) delete edits[id];
-      for (const k of [c.slot, c.textSlot]) if (k) slots[k] = saved.slots[k] ?? null;
+      for (const k of [c.slot, c.textSlot]) if (k) slots[k] = board.saved.slots[k] ?? null;
     }
     commit({ edits, slots });
   };
@@ -231,18 +366,26 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     editMany(changes);
   };
 
-  // ---- The fill follows the copy, the images and the icons (debounced round trip) ----
-  const planKey = JSON.stringify([snap.slots, Object.values(snap.edits).flatMap((e) => [e.image, e.icon]).filter(Boolean).sort()]);
-  const firstKey = useRef(planKey);
+  // ---- Each format's fill follows its copy, images and icons (debounced round trip) ----
+  const planKeys = boards.map((b) => [b.ref, planKeyOf(doc[b.ref])] as const);
+  const planned = useRef<Record<string, string>>(Object.fromEntries(firstBoards.filter((b) => b.plan).map((b) => [b.ref, planKeyOf(b.initial)])));
+  const planSig = JSON.stringify(planKeys);
   useEffect(() => {
-    if (planKey === firstKey.current) { setPlanError(null); return; }
-    const t = setTimeout(async () => {
-      const r = await prepareAction(pieceId, snapRef.current.slots, snapRef.current.edits);
-      if (r.ok) { firstKey.current = planKey; setPlan(r.plan); setPlanError(null); }
-      else setPlanError(r.error);
+    const due = planKeys.filter(([ref, k]) => planned.current[ref] !== k);
+    for (const [ref] of planKeys) if (!due.some(([r]) => r === ref) && planErrors[ref]) setPlanErrors((e) => ({ ...e, [ref]: null }));
+    if (!due.length) return;
+    const t = setTimeout(() => {
+      for (const [ref, k] of due) {
+        const s = docRef.current[ref];
+        prepareAction(ref, s.slots, s.edits).then((r) => {
+          if (r.ok) { planned.current[ref] = k; setPlans((p) => ({ ...p, [ref]: r.plan })); setPlanErrors((e) => ({ ...e, [ref]: null })); }
+          else setPlanErrors((e) => ({ ...e, [ref]: r.error }));
+        }).catch(() => {});
+      }
     }, 250);
     return () => clearTimeout(t);
-  }, [planKey, pieceId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planSig]);
 
   const refreshInfo = useCallback(() => setInfoTick((t) => t + 1), []);
   useEffect(() => { refreshInfo(); }, [refreshInfo, selected, comps]);
@@ -265,7 +408,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
       const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
       if (d) {
         e.preventDefault();
-        editMany(Object.fromEntries(ids.map((id) => { const b = snapRef.current.edits[id]?.box ?? {}; return [id, { box: { dx: (b.dx ?? 0) + d[0], dy: (b.dy ?? 0) + d[1] } }]; })));
+        editMany(Object.fromEntries(ids.map((id) => { const b = cur().edits[id]?.box ?? {}; return [id, { box: { dx: (b.dx ?? 0) + d[0], dy: (b.dy ?? 0) + d[1] } }]; })));
       } else if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
         editMany(Object.fromEntries(ids.filter((id) => comps.find((c) => c.id === id)?.kind !== 'archy').map((id) => [id, { hidden: true }])));
@@ -273,7 +416,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [comps, selected, undo, redo, editMany, vp]);
+  }, [comps, selected, undo, redo, editMany, vp, cur]);
 
   useEffect(() => {
     if (!changed) return;
@@ -283,25 +426,29 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   }, [changed]);
   const confirmLeave = () => !changed || window.confirm('Leave without saving your changes?');
 
-  // ---- Live with Claude: the draft is kept as people edit; Claude's edits arrive over Realtime ----
-  const version = useRef(draft?.version ?? 0);
-  const synced = useRef(JSON.stringify(cleanSnap(initial)));
+  // ---- Live with Claude: each saved format's draft is kept as people edit; Claude's edits arrive over Realtime ----
+  const saved = boards.filter((b) => !b.isNew);
+  const savedIds = saved.map((b) => b.ref).join();
+  const versions = useRef<Record<string, number>>(Object.fromEntries(firstBoards.map((b) => [b.ref, b.draft?.version ?? 0])));
+  const drafted = useRef<Record<string, string>>(Object.fromEntries(firstBoards.map((b) => [b.ref, JSON.stringify(cleanSnap(b.initial))])));
   useEffect(() => {
-    if (draft) toast(draft.by === 'claude' ? `Claude’s changes are here: ${draft.note ?? 'edited by Claude'}` : 'Your unsaved changes are back.');
-  }, [draft]);
+    const d = firstBoards.find((b) => b.ref === firstActive)?.draft;
+    if (d) toast(d.by === 'claude' ? `Claude’s changes are here: ${d.note ?? 'edited by Claude'}` : 'Your unsaved changes are back.');
+  }, [firstBoards, firstActive]);
   useEffect(() => {
-    if (isNew) return;
-    const key = JSON.stringify(cleanSnap(snap));
-    if (key === synced.current) return;
-    const t = setTimeout(async () => {
-      synced.current = key;
-      const r = await saveDraftAction(pieceId, snap.slots, snap.edits);
-      if (r.ok) version.current = Math.max(version.current, r.version);
+    const due = boards.filter((b) => !b.isNew && JSON.stringify(cleanSnap(doc[b.ref])) !== drafted.current[b.ref]);
+    if (!due.length) return;
+    const t = setTimeout(() => {
+      for (const b of due) {
+        const s = docRef.current[b.ref];
+        drafted.current[b.ref] = JSON.stringify(cleanSnap(s));
+        saveDraftAction(b.ref, s.slots, s.edits).then((r) => { if (r.ok) versions.current[b.ref] = Math.max(versions.current[b.ref] ?? 0, r.version); }).catch(() => {});
+      }
     }, 800);
     return () => clearTimeout(t);
-  }, [snap, pieceId, isNew]);
+  }, [doc, boards]);
   useEffect(() => {
-    if (isNew) return;
+    if (!savedIds) return;
     const db = supabaseBrowser();
     let channel: ReturnType<typeof db.channel> | null = null;
     let gone = false;
@@ -310,38 +457,48 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
       const { data } = await db.auth.getSession();
       if (gone) return;
       db.realtime.setAuth(data.session?.access_token ?? null);
-      channel = db.channel(`canvas:${pieceId}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=eq.${pieceId}` }, (payload) => {
-          const row = payload.new as { slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null };
-          // Claude at work on this design: shown on the artboard until its edit lands (or 90 s pass).
-          if (row?.claude_working_at && Date.now() - new Date(row.claude_working_at).getTime() < 90_000) setClaude(row.claude_status ?? 'Working on the design');
-          else if (row && !row.claude_working_at) setClaude(null);
-          if (row?.updated_by !== 'claude' || !row.version || row.version <= version.current) return;
-          version.current = row.version;
+      channel = db.channel(`canvas:${savedIds}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=in.(${savedIds})` }, (payload) => {
+          const row = payload.new as { piece_id?: string; slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null };
+          const ref = row?.piece_id;
+          if (!ref || !docRef.current[ref]) return;
+          // Claude at work on this design: shown on its artboard until its edit lands (or 90 s pass).
+          if (row.claude_working_at && Date.now() - new Date(row.claude_working_at).getTime() < 90_000) setClaude({ ref, status: row.claude_status ?? 'Working on the design' });
+          else if (!row.claude_working_at) setClaude((c) => (c?.ref === ref ? null : c));
+          if (row.updated_by !== 'claude' || !row.version || row.version <= (versions.current[ref] ?? 0)) return;
+          versions.current[ref] = row.version;
           const next = { slots: row.slots ?? {}, edits: row.edits ?? {} };
           // What Claude changed flashes on the piece.
-          const prev = snapRef.current;
+          const prev = docRef.current[ref];
+          const comps = metaRef.current[ref]?.comps ?? [];
           const ids = new Set(Object.keys({ ...prev.edits, ...next.edits }).filter((id) => id !== THEME && JSON.stringify(prev.edits[id]) !== JSON.stringify(next.edits[id])));
-          for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = compsRef.current.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
-          setFlash({ ids: [...ids], at: Date.now() });
-          synced.current = JSON.stringify(cleanSnap(next));
-          commit(next); // one step: undo takes it back
+          for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = comps.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
+          setFlash({ ref, ids: [...ids], at: Date.now() });
+          drafted.current[ref] = JSON.stringify(cleanSnap(next));
+          commitTo(ref, next); // one step: undo takes it back; synced formats follow
           toast(`Claude ${row.note ? row.note.charAt(0).toLowerCase() + row.note.slice(1) : 'edited the design'}`, { action: { label: 'Undo', onClick: () => undo() } });
         })
         .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });
     })();
     return () => { gone = true; if (channel) db.removeChannel(channel); };
-  }, [pieceId, isNew, commit, undo]);
+  }, [savedIds, commitTo, undo]);
 
   // The Inspector: its review of the edits, plus copy from the brief the template could not fit.
   // Nothing here blocks Save or Download.
-  const suggestions: Suggestion[] = [
-    ...(report && !report.ok ? report.errors.map((e) => {
-      const c = comps.find((x) => x.slot === e.slot || x.textSlot === e.slot);
-      return { id: c?.id ?? '', level: 'warn' as const, title: `${c?.name ?? 'Some copy'} doesn’t fit the design`, detail: e.message ?? 'Shorten it a little.' };
-    }) : []),
-    ...review,
-  ];
+  const suggestionsOf = (ref: string): Suggestion[] => {
+    const m = meta[ref] ?? EMPTY;
+    return [
+      ...(m.report && !m.report.ok ? m.report.errors.map((e) => {
+        const c = m.comps.find((x) => x.slot === e.slot || x.textSlot === e.slot);
+        return { id: c?.id ?? '', level: 'warn' as const, title: `${c?.name ?? 'Some copy'} doesn’t fit the design`, detail: e.message ?? 'Shorten it a little.' };
+      }) : []),
+      ...m.review,
+    ];
+  };
+  const suggestions = suggestionsOf(board.ref);
+  const warnings = suggestions.filter((x) => x.level === 'warn').length;
+  const otherWarnings = boards.filter((b) => b.ref !== board.ref).reduce((n, b) => n + suggestionsOf(b.ref).filter((x) => x.level === 'warn').length, 0);
+  const fixable = suggestions.filter((x) => x.fix || x.auto).length;
   const fix = (sg: Suggestion) => {
     if (!sg.fix) return;
     const b = snap.edits[sg.id]?.box ?? {};
@@ -350,41 +507,54 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   // Undo the hand edit that caused a suggestion: those fields go back to the design's values.
   const revert = (sg: Suggestion) => {
     if (!sg.revert) return;
-    const cur = snapRef.current;
-    const e = structuredClone(cur.edits[sg.revert.id] ?? {}) as Record<string, unknown>;
+    const s = cur();
+    const e = structuredClone(s.edits[sg.revert.id] ?? {}) as Record<string, unknown>;
     for (const f of sg.revert.fields) {
       const [k, sub] = f.split('.');
       if (sub) { const o = e[k] as Record<string, unknown> | undefined; if (o) delete o[sub]; } else delete e[k];
     }
     const one = cleanEdits({ [sg.revert.id]: e as NodeEdit });
-    const edits = { ...cur.edits };
+    const edits = { ...s.edits };
     if (one[sg.revert.id]) edits[sg.revert.id] = one[sg.revert.id]; else delete edits[sg.revert.id];
-    commit({ ...cur, edits });
+    commit({ ...s, edits });
   };
-  const warnings = suggestions.filter((x) => x.level === 'warn').length;
-  const fixable = suggestions.filter((x) => x.fix).length;
   // Fix all: every automatic fix, settled in the page over a few rounds, as one undo step.
   const fixAll = () => {
-    const next = stage.current?.autofix(snapRef.current.edits);
+    const next = stage.current?.autofix(cur().edits);
     if (!next) return;
-    const cur = snapRef.current;
-    commit({ ...cur, edits: cleanEdits(next) });
+    commit({ ...cur(), edits: cleanEdits(next) });
   };
 
   const download = () => start(async () => {
-    const r = await canvasCall({ action: 'export', id: pieceId, slots: snap.slots, edits: snap.edits });
+    const r = await canvasCall({ action: 'export', id: board.ref, slots: snap.slots, edits: snap.edits });
     if (!r.ok) { toast.error(r.error); return; }
     window.location.href = r.url;
   });
 
+  // Save every format that changed (and every format added) at once.
+  const existing = pending.filter((b) => !b.isNew);
+  const canReplace = existing.every((b) => b.canReplace);
   const save = (mode: 'version' | 'replace') => start(async () => {
-    const r = await canvasCall({ action: 'save', id: pieceId, slots: snap.slots, edits: snap.edits, mode });
+    const items = pending.map((b) => ({ id: b.ref, slots: doc[b.ref].slots, edits: doc[b.ref].edits }));
+    const from = boards.find((b) => !b.isNew)?.ref ?? null;
+    const r = await canvasCall<{ saved: { ref: string; id: string }[] }>({ action: 'save-set', items, mode, from });
     if (!r.ok) { toast.error(r.error); return; }
     setSaving(false);
-    setSaved(snap);
-    if (isNew) { toast.success('Saved to the gallery as a new design.'); router.replace(`/canvas/${r.id}`); }
-    else if (mode === 'version') { toast.success('Saved as a new version. The original is kept.'); router.replace(`/canvas/${r.id}`); }
-    else toast.success('The original was replaced.');
+    const ids = Object.fromEntries(r.saved.map((s) => [s.ref, s.id]));
+    const n = r.saved.length, added = pending.filter((b) => b.isNew).length;
+    toast.success(
+      added === n ? (n > 1 ? `Saved ${n} formats to the gallery.` : 'Saved to the gallery as a new design.')
+        : mode === 'replace' ? (n > 1 ? `Saved ${n} formats. The originals were replaced.` : 'The original was replaced.')
+          : n > 1 ? `Saved ${n} formats as new versions. The originals are kept.` : 'Saved as a new version. The original is kept.',
+    );
+    // Library shows these as updating until the new images arrive.
+    onSaved(Object.values(ids));
+    setBoards((bs) => bs.map((b) => (ids[b.ref] ? { ...b, saved: doc[b.ref] } : b)));
+    // Open the saved formats from the gallery (new versions and added formats have new ids).
+    const next = ids[board.ref] ?? board.ref;
+    if (next.startsWith('new:')) return;
+    if (next !== board.ref || Object.entries(ids).some(([ref, id]) => ref !== id)) router.replace(`/canvas/${next}`);
+    router.refresh();
   });
 
   const imageTarget = one && (one.kind === 'photo' || one.kind === 'partner') ? one : null;
@@ -394,6 +564,8 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   };
   const pickerImages = (library?.images ?? []).map((a) => ({ id: a.value.slice(6), title: a.title, kind: a.kind, url: a.url }));
   const pct = Math.round(vp.zoom * 100);
+  const allNew = boards.every((b) => b.isNew);
+  const status = allNew ? ' · New from template' : pending.length ? ` · Unsaved changes${pending.length > 1 ? ` in ${pending.length} formats` : ''}` : '';
 
   return (
     <div data-fullbleed className="flex h-dvh flex-col bg-[#F5F5F5] text-[13px]">
@@ -403,12 +575,18 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
         </Link>
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{title}</p>
-          <p className="truncate text-[11px] text-foreground/40">{formatLabel} · {plan.width}×{plan.height}{isNew ? ' · New from template' : changed ? ' · Unsaved changes' : ''}</p>
+          <p className="truncate text-[11px] text-foreground/40">{board.label} · {board.width}×{board.height}{status}</p>
         </div>
         <div className="flex items-center gap-0.5">
           <ToolButton label="Undo (⌘Z)" icon={Undo02Icon} disabled={!past.length} onClick={undo} />
           <ToolButton label="Redo (⇧⌘Z)" icon={Redo02Icon} disabled={!future.length} onClick={redo} />
         </div>
+        {ghosts.length > 0 && (
+          <button type="button" onClick={() => addFormats(ghosts)} title={`Add ${ghosts.map((g) => g.label).join(', ')}, made from ${board.label}`}
+            className="flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[12px] text-foreground/70 hover:bg-foreground/[0.05] hover:text-foreground">
+            <HugeiconsIcon icon={PlusSignIcon} className="size-3.5" /> Add {ghosts.length > 1 ? 'all formats' : ghosts[0].label}
+          </button>
+        )}
         {suggestions.length > 0 && (
           <button type="button" onClick={() => setTab('inspector')} title="Open the Inspector"
             className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[12px] ${warnings ? 'bg-[#FFF4E5] text-[#B45309] hover:bg-[#FFEACC]' : 'bg-[#E6F4FF] text-primary hover:bg-[#CCEAFF]'}`}>
@@ -420,56 +598,85 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           <button type="button" onClick={fixAll} title="Apply every automatic fix (one undo step)"
             className="flex h-8 items-center rounded-md px-2.5 text-[12px] font-medium text-primary hover:bg-[#E6F4FF]">Fix all</button>
         )}
-        <button type="button" onClick={download} disabled={busy}
+        <button type="button" onClick={download} disabled={busy} title={`Download ${board.label}`}
           className="flex h-8 items-center gap-1.5 rounded-md bg-foreground/[0.05] px-3 text-foreground/80 hover:bg-foreground/[0.09] disabled:opacity-50">
           <HugeiconsIcon icon={Download04Icon} className="size-3.5" /> Download
         </button>
-        <button type="button" onClick={() => (isNew ? save('version') : setSaving(true))} disabled={busy || !dirty}
+        <button type="button" onClick={() => (existing.length ? setSaving(true) : save('version'))} disabled={busy || !dirty}
           className="flex h-8 items-center rounded-md bg-primary px-3.5 font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
-          {isNew ? (busy ? 'Saving…' : 'Save to gallery') : 'Save'}
+          {!allNew ? 'Save' : busy ? 'Saving…' : 'Save to gallery'}
         </button>
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <CanvasPanel tab={tab} onTab={setTab} badges={{ inspector: warnings }}>
+        <CanvasPanel tab={tab} onTab={setTab} badges={{ inspector: warnings + otherWarnings }}>
           {tab === 'layers' && (
             <LayersPanel comps={comps} edits={snap.edits} selected={selected} hover={hover} onHover={setHover}
               onSelect={(id, add) => select([id], add ? 'toggle' : 'replace')}
               onToggle={(id) => editLayer(id, { hidden: !snap.edits[id]?.hidden })} />
           )}
           {(tab === 'library' || tab === 'assets') && !library && <PanelLoading />}
-          {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
+          {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : board.ref} updating={updating} confirmLeave={confirmLeave} />}
           {tab === 'assets' && library && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
-          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : pieceId} title={title} seenAt={seenAt} />}
+          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />}
         </CanvasPanel>
 
         <main
           ref={vp.area}
           className={`relative min-w-0 flex-1 overflow-hidden ${vp.panning ? (vp.grabbing ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
           {...vp.handlers}
-          onPointerDownCapture={(e) => { if (!vp.panning && !(e.target as Element).closest('[data-stage], [data-toolbar]')) setSelected([]); }}
+          onPointerDownCapture={(e) => { if (!vp.panning && !(e.target as Element).closest('[data-stage], [data-toolbar], [data-board-label]')) setSelected([]); }}
         >
           <div className="absolute top-0 left-0" style={{ transform: `translate(${vp.pan.x}px, ${vp.pan.y}px)` }}>
-            <Stage
-              ref={stage}
-              claude={claude}
-              flash={flash?.ids ?? []}
-              plan={plan}
-              edits={snap.edits}
-              zoom={vp.zoom}
-              selected={selected}
-              hover={hover}
-              comps={comps}
-              safe={safe}
-              panning={vp.panning}
-              onSelect={select}
-              onHover={setHover}
-              onReady={(r) => { setComps(r.comps); setSafe(r.safe); setTokens(r.tokens); setReport(r.report); }}
-              onEdit={editMany}
-              onText={typed}
-              onInfo={refreshInfo}
-              onReview={setReview}
-            />
+            {boards.map((b) => {
+              const isActive = b.ref === board.ref;
+              const p = plans[b.ref];
+              const m = meta[b.ref] ?? EMPTY;
+              const sg = suggestionsOf(b.ref);
+              const busyClaude = claude?.ref === b.ref ? claude.status : null;
+              return (
+                <div key={b.ref} className="absolute top-0" style={{ left: place[b.ref] * vp.zoom }}>
+                  {!busyClaude && (
+                    <BoardLabel label={b.label} size={`${b.width}×${b.height}`} compact={b.width * vp.zoom < 230} active={isActive} synced={!unsynced.includes(b.ref)} isNew={b.isNew && !allNew}
+                      count={sg.length} warn={sg.some((x) => x.level === 'warn')} onPick={() => activate(b.ref)} onFrame={() => frameBoard(b.ref)} onSync={() => toggleSync(b.ref)} />
+                  )}
+                  {p ? (
+                    <div className={isActive || boards.length === 1 ? '' : 'opacity-[0.97] transition-opacity hover:opacity-100'}>
+                      <Stage
+                        ref={(h) => { stages.current[b.ref] = h; }}
+                        passive={!isActive}
+                        onActivate={(id) => activate(b.ref, id && m.comps.find((c) => c.id === id)?.kind !== 'background' ? id : null)}
+                        claude={busyClaude}
+                        flash={flash?.ref === b.ref ? flash.ids : []}
+                        plan={p}
+                        edits={doc[b.ref].edits}
+                        zoom={vp.zoom}
+                        selected={isActive ? selected : []}
+                        hover={isActive ? hover : null}
+                        comps={m.comps}
+                        safe={m.safe}
+                        panning={vp.panning}
+                        onSelect={select}
+                        onHover={setHover}
+                        onReady={(r) => { setMeta(b.ref, { comps: r.comps, safe: r.safe, tokens: r.tokens, report: r.report, keys: r.keys }); settle(); }}
+                        onEdit={editMany}
+                        onText={typed}
+                        onInfo={refreshInfo}
+                        onReview={(items) => setMeta(b.ref, { review: items })}
+                      />
+                    </div>
+                  ) : (
+                    <div className="animate-pulse rounded-[2px] bg-foreground/[0.06]" style={{ width: b.width * vp.zoom, height: b.height * vp.zoom }} />
+                  )}
+                </div>
+              );
+            })}
+            {ghosts.map((g) => (
+              <div key={g.ref} className="absolute top-0" style={{ left: place[g.ref] * vp.zoom }}>
+                <p className="absolute -top-6 left-0 text-[11px] whitespace-nowrap text-foreground/35">{g.label} · {g.width}×{g.height}</p>
+                <GhostBoard label={g.label} size={`${g.width}×${g.height}`} width={g.width} height={g.height} zoom={vp.zoom} onAdd={() => addFormats([g])} />
+              </div>
+            ))}
           </div>
 
           {planError && (
@@ -485,8 +692,11 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
             <ToolButton label="Hand (H, or hold Space)" icon={HandGrabIcon} active={vp.hand} onClick={() => vp.setHand(true)} />
             <span className="mx-1 h-5 w-px bg-foreground/10" />
             <ToolButton label="Zoom out (⌘−)" icon={MinusSignIcon} onClick={() => vp.zoomTo(vp.zoom / 1.25)} />
-            <button type="button" onClick={vp.fit} title="Fit (⌘0)" className="h-7 w-12 rounded-md text-[12px] tabular-nums hover:bg-foreground/[0.06]">{pct}%</button>
+            <button type="button" onClick={vp.fit} title="Fit all formats (⌘0)" className="h-7 w-12 rounded-md text-[12px] tabular-nums hover:bg-foreground/[0.06]">{pct}%</button>
             <ToolButton label="Zoom in (⌘+)" icon={PlusSignIcon} onClick={() => vp.zoomTo(vp.zoom * 1.25)} />
+            {boards.length > 1 && (
+              <button type="button" onClick={() => frameBoard(board.ref)} title={`Frame ${board.label}`} className="h-7 rounded-md px-2 text-[12px] text-foreground/70 hover:bg-foreground/[0.06]">{board.label}</button>
+            )}
           </div>
         </main>
 
@@ -494,9 +704,9 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           {selected.length > 1 ? (
             <MultiPanel count={selected.length} onAlign={(a, to) => align(a, to)} onReset={() => resetIds(selected)}
               onHide={() => editMany(Object.fromEntries(selected.filter((id) => comps.find((c) => c.id === id)?.kind !== 'archy').map((id) => [id, { hidden: true }])))} />
-          ) : one ? (
+          ) : one && plan ? (
             <PropertiesPanel
-              key={one.id}
+              key={`${board.ref}:${one.id}`}
               comp={one}
               alignIn={one.kind === 'background' ? undefined : stage.current?.alignBox(one.id)?.name}
               preset={piece.preset}
@@ -514,7 +724,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               onAlign={(a) => align(a)}
             />
           ) : (
-            <PiecePanel pieceId={isNew ? undefined : pieceId} title={title} seenAt={seenAt} />
+            <PiecePanel pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />
           )}
         </aside>
       </div>
@@ -523,13 +733,16 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
         <DialogContent className="gap-5 rounded-md p-6 text-[13px] sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="text-[15px] font-medium">Save changes</DialogTitle>
-            <DialogDescription className="text-[13px]">Keep the original, or put the edited design in its place.</DialogDescription>
+            <DialogDescription className="text-[13px]">
+              {pending.length > 1 ? `${pending.map((b) => b.label).join(', ')} changed. ` : ''}Keep the original{existing.length > 1 ? 's' : ''}, or put the edited design{existing.length > 1 ? 's' : ''} in {existing.length > 1 ? 'their' : 'its'} place.
+              {pending.some((b) => b.isNew) ? ' Added formats join the set either way.' : ''}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2">
             <SaveOption title="Save as a new version" text="The original stays in the history. The new one takes its place in the set." onClick={() => save('version')} disabled={busy} primary />
             <SaveOption title="Replace the original" text={canReplace ? 'Same design and link, with the new image.' : 'Only the person who made it, the project owner or an admin can do this.'} onClick={() => save('replace')} disabled={busy || !canReplace} />
           </div>
-          {busy && <p className="text-foreground/50">Rendering the design…</p>}
+          {busy && <p className="text-foreground/50">Rendering {pending.length > 1 ? `${pending.length} formats` : 'the design'}…</p>}
         </DialogContent>
       </Dialog>
     </div>

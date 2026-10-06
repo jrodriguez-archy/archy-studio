@@ -107,6 +107,29 @@
     return { comps, safe: safeArea() };
   };
 
+  // The same layer in every format of a template: each format is its own page with its own data-node
+  // ids, but the Paper layer names (and the slots) repeat. Key: the slot, or the path of layer names from
+  // the artboard (with the place among same-named siblings). Plus the text size as filled, so a size
+  // changed in one format can follow in proportion in the others.
+  window.__keys = function keys() {
+    const r = root();
+    const out = { [idOf(r)]: { key: ':root' } };
+    const visit = (el, path) => {
+      const count = {};
+      for (const k of kids(el)) {
+        const n = nameOf(k);
+        count[n] = (count[n] ?? 0) + 1;
+        const here = `${path}/${n}#${count[n]}`;
+        const slot = k.getAttribute('data-slot');
+        const leaf = !isSvg(k) && !k.querySelector('[data-node]') && k.textContent.trim();
+        out[idOf(k)] = { key: slot ? `slot:${slot}` : here, ...(leaf ? { fontSize: parseFloat(getComputedStyle(k).fontSize) } : {}) };
+        visit(k, here);
+      }
+    };
+    visit(r, '');
+    return out;
+  };
+
   // The safe area: the design's content frame (an absolute "Content" frame on the artboard); without
   // one, the smallest margin the design keeps around its texts.
   function safeArea() {
@@ -263,6 +286,8 @@
         const now = lines(el);
         if (now > allowed) out.push({ id: c.id, level: 'warn', title: `${c.name} runs to ${now} lines`, detail: `The design uses ${allowed}. A wider box or a smaller size keeps it tidy.`, ...revertOn(el, ['box.width', 'style.fontSize', 'style.fontWeight'], 'Undo size change') });
         const size = parseFloat(getComputedStyle(el).fontSize), size0 = Number(el.dataset.baseFont) || size;
+        const forced = edits?.[c.id]?.style?.fontSize;
+        if (c.slot && forced && forced < size0 * 0.85 && !out.some((x) => x.id === c.id)) out.push({ id: c.id, level: 'warn', title: `${c.name} is smaller than the design`, detail: `${Math.round(forced)} px; the design sets it at ${Math.round(size0)} px and never goes below ${Math.round(size0 * 0.85)}.`, revert: { id: c.id, fields: ['style.fontSize'], label: 'Back to design size' }, auto: true });
         if (size < size0 && size < 18 * (W / 1080)) out.push({ id: c.id, level: 'tip', title: `${c.name} is small to read`, detail: `${Math.round(size)} px; keep text at ${Math.round(18 * (W / 1080))} px or more.`, ...revertOn(el, ['style.fontSize'], 'Reset size') });
       }
       if (c.kind === 'archy') {
@@ -303,6 +328,34 @@
       }
     }
 
+    // Empty space: the content column fills much less than it did as drawn (a type size forced down, a
+    // block hidden). The fix undoes the edit that emptied it most.
+    const col = r.querySelector('[data-filled]');
+    if (col && getComputedStyle(col).display !== 'none') {
+      const kids = [...col.children].filter((k) => getComputedStyle(k).position !== 'absolute' && getComputedStyle(k).display !== 'none');
+      const cs = getComputedStyle(col), gap = /space-/.test(cs.justifyContent) ? 0 : parseFloat(cs.rowGap) || 0;
+      const used = kids.reduce((a, k) => a + k.getBoundingClientRect().height + (k.style.marginTop === 'auto' ? 0 : parseFloat(getComputedStyle(k).marginTop) || 0), 0)
+        + gap * Math.max(0, kids.length - 1) + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      const filled = Number(col.dataset.filled);
+      if (filled && used < filled * 0.85) {
+        let cause = null;
+        for (const [id, e] of Object.entries(edits ?? {})) {
+          const el = node(id);
+          if (!el || !col.contains(el)) continue;
+          const base = Number(el.dataset.baseFont), now = e.style?.fontSize;
+          const loss = e.hidden ? (baseOf(el)?.h ?? 0) : now && base && now < base ? (1 - now / base) * (baseOf(el)?.h ?? 0) : 0;
+          if (loss > (cause?.loss ?? 0)) cause = { id, loss, field: e.hidden ? 'hidden' : 'style.fontSize' };
+        }
+        // Only when a hand edit emptied it (the design fills its own room by itself).
+        const name = comps.find((c) => c.id === cause?.id)?.name ?? 'An edit';
+        if (cause) out.push({
+          id: cause.id, level: 'warn', title: 'Too much empty space',
+          detail: `The content fills ${Math.round((used / filled) * 100)}% of the room the design gives it. ${name} is what emptied it most.`,
+          revert: { id: cause.id, fields: [cause.field], label: cause.field === 'hidden' ? 'Show it again' : 'Back to design size' }, auto: true,
+        });
+      }
+    }
+
     // Contrast of every text against what is behind it (themes and colours can change it).
     for (const c of visible.filter((x) => x.kind === 'text' || x.kind === 'button')) {
       const el = c.kind === 'button' ? node(c.textId) : node(c.id);
@@ -323,8 +376,16 @@
   window.__autofix = function autofix(edits, rules, format, urls, icons) {
     const e = JSON.parse(JSON.stringify(edits ?? {}));
     for (let round = 0; round < 4; round++) {
-      const fixes = window.__review(e, rules, format).filter((x) => x.fix && (x.fix.dx || x.fix.dy));
-      if (!fixes.length) break;
+      const review = window.__review(e, rules, format);
+      const fixes = review.filter((x) => x.fix && (x.fix.dx || x.fix.dy));
+      // Reverts marked auto (a size forced below the design, what emptied the column) are safe to apply.
+      const reverts = review.filter((x) => x.auto && x.revert);
+      if (!fixes.length && !reverts.length) break;
+      for (const { revert: v } of reverts) {
+        const one = { ...(e[v.id] ?? {}) };
+        for (const f of v.fields) { const [k, sub] = f.split('.'); if (sub) { if (one[k]) { one[k] = { ...one[k] }; delete one[k][sub]; } } else delete one[k]; }
+        e[v.id] = one;
+      }
       const done = new Set();
       for (const f of fixes) {
         if (done.has(f.id)) continue;

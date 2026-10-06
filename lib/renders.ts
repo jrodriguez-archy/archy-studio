@@ -43,14 +43,17 @@ export async function saveRender(input: {
   return { id, path, url: await signedUrl(path) };
 }
 
-// Canvas "replace the original": the new PNG goes over the old file and the record takes the new source.
+// Canvas "replace the original": same record (same design and link) with the new source and image.
+// The image goes to a new file, so no cached thumbnail shows the old one; the old files are removed.
 export async function replaceRender(input: { id: string; storagePath: string; slots: Record<string, string | null>; edits: Edits; variant: string | null; png: Buffer; userId: string }): Promise<SavedRender> {
-  await storeFiles(input.storagePath, input.png, true);
+  const path = input.storagePath.replace(/(-v[0-9a-z]+)?\.png$/, `-v${Date.now().toString(36)}.png`);
+  await storeFiles(path, input.png, false);
   const { error } = await supabaseAdmin().from('renders').update({
-    slots: await keepInlineImages(input.userId, input.slots), edits: input.edits, variant: input.variant, edited_at: new Date().toISOString(),
+    slots: await keepInlineImages(input.userId, input.slots), edits: input.edits, variant: input.variant, edited_at: new Date().toISOString(), storage_path: path,
   }).eq('id', input.id);
   if (error) throw new Error(`Could not update the design: ${error.message}`);
-  return { id: input.id, path: input.storagePath, url: await signedUrl(input.storagePath) };
+  await supabaseAdmin().storage.from(BUCKET).remove([input.storagePath, thumbPath(input.storagePath)]).catch(() => {});
+  return { id: input.id, path, url: await signedUrl(path) };
 }
 
 async function storeFiles(path: string, png: Buffer, upsert: boolean) {

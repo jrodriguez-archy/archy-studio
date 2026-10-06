@@ -54,7 +54,7 @@ function Segmented<T extends string>({ value, items, onChange }: { value: T; ite
 }
 
 // Library: start from a template (it opens with its sample copy) or open a piece already made.
-export function LibraryTab({ library, current, confirmLeave }: { library: CanvasLibrary; current?: string; confirmLeave: () => boolean }) {
+export function LibraryTab({ library, current, updating = [], confirmLeave }: { library: CanvasLibrary; current?: string; updating?: string[]; confirmLeave: () => boolean }) {
   const router = useRouter();
   const [view, setView] = useState<'designs' | 'templates'>(current ? 'designs' : 'templates');
   const [whose, setWhose] = useState<'mine' | 'team'>('mine');
@@ -85,9 +85,14 @@ export function LibraryTab({ library, current, confirmLeave }: { library: Canvas
           <div className="grid grid-cols-2 gap-x-2 gap-y-3 px-3">
             {pieces.map((p) => (
               <button key={p.id} type="button" onClick={() => go(`/canvas/${p.id}`)} className="group text-left">
-                <div className={`flex aspect-square items-center justify-center overflow-hidden rounded-md bg-foreground/[0.04] p-1.5 ring-1 transition-colors ${p.id === current ? 'ring-2 ring-primary' : 'ring-foreground/[0.06] group-hover:ring-primary/40'}`}>
+                <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-md bg-foreground/[0.04] p-1.5 ring-1 transition-colors ${p.id === current ? 'ring-2 ring-primary' : 'ring-foreground/[0.06] group-hover:ring-primary/40'}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {p.thumb && <img src={p.thumb} alt="" loading="lazy" className="max-h-full max-w-full rounded-[2px]" style={{ aspectRatio: `${p.width} / ${p.height}` }} />}
+                  {updating.includes(p.id) && (
+                    <span className="absolute inset-0 flex items-end justify-center bg-background/50 pb-1.5 backdrop-blur-[1px]">
+                      <span className="animate-pulse rounded-full bg-background px-2 py-0.5 text-[10px] text-foreground/60 shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">Updating…</span>
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 truncate">{p.title}</p>
                 <p className="truncate text-foreground/40">{p.format}{whose === 'team' ? ` · ${p.author}` : ''}</p>

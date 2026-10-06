@@ -43,6 +43,33 @@ export async function loadSource(ref: string): Promise<PieceSource | null> {
 
 export const isNew = (piece: PieceSource) => piece.id.startsWith('new:');
 
+// The formats of a design, as artboards: the newest design of each format of the same template in its
+// set (the piece itself for its own format), and the template's formats the set does not have yet.
+export async function loadSet(piece: PieceSource) {
+  const manifest = await loadManifest(piece.template);
+  const order = Object.keys(manifest.formats);
+  let siblings: PieceSource[] = [];
+  if (!isNew(piece) && piece.set_id) {
+    const { data } = await supabaseAdmin().from('renders')
+      .select('id, template, format, slots, edits, set_id, set_title, project_id, user_id, storage_path, width, height, created_at')
+      .eq('set_id', piece.set_id).eq('template', piece.template).is('archived_at', null)
+      .order('created_at', { ascending: false });
+    const seen = new Set([piece.format]);
+    for (const r of data ?? []) {
+      if (seen.has(r.format) || !manifest.formats[r.format]) continue;
+      seen.add(r.format);
+      siblings.push({ ...(r as PieceSource), slots: r.slots ?? {}, edits: r.edits ?? {} });
+    }
+  }
+  siblings = [piece, ...siblings].sort((a, b) => order.indexOf(a.format) - order.indexOf(b.format));
+  const have = new Set(siblings.map((p) => p.format));
+  const missing = order.filter((f) => !have.has(f)).map((f) => ({
+    ref: newRef(piece.template, f), format: f, width: manifest.formats[f].width, height: manifest.formats[f].height,
+    defaults: Object.fromEntries(Object.entries(manifest.slots).map(([k, v]) => [k, v.default])) as Record<string, string | null>,
+  }));
+  return { pieces: siblings, missing };
+}
+
 export async function canReplace(me: Who, piece: PieceSource) {
   if (isNew(piece)) return false;
   if (me.is_admin || piece.user_id === me.id) return true;
@@ -58,11 +85,13 @@ export type SlotInfo = { type: 'text' | 'image' | 'logo'; optional: boolean; fon
 export async function editorContext(piece: PieceSource) {
   const [manifest, config, library, title] = await Promise.all([loadManifest(piece.template), loadConfig(piece.template), loadLibrary(), titleOf(piece.template)]);
   const optional = new Set(config.optional ?? []);
-  const slots: Record<string, SlotInfo> = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, {
-    type: s.type, optional: optional.has(k), fontSize: s.limits?.[piece.format]?.fontSize,
+  const slotsOf = (format: string): Record<string, SlotInfo> => Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, {
+    type: s.type, optional: optional.has(k), fontSize: s.limits?.[format]?.fontSize,
   }]));
   return {
-    title, formatLabel: formatLabel(piece.format), slots,
+    title, formatLabel: formatLabel(piece.format), slots: slotsOf(piece.format),
+    /** The same, for every format of the template (each artboard). */
+    slotsByFormat: Object.fromEntries(Object.keys(manifest.formats).map((f) => [f, slotsOf(f)])),
     library: library.map((a) => ({ id: a.id, title: a.title, kind: a.kind, url: `/api/template-files/library/${a.file}` })),
   };
 }

@@ -1,47 +1,69 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CanvasEditor } from '@/components/canvas/editor';
-import { canReplace, editorContext, isNew, loadSource } from '@/lib/canvas';
+import { CanvasEditor, type Board } from '@/components/canvas/editor';
+import { canReplace, editorContext, isNew, loadSet, loadSource, type PieceSource } from '@/lib/canvas';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { titleFromSlots } from '@/lib/gallery-shared';
+import { formatLabel, titleFromSlots } from '@/lib/gallery-shared';
 import { getDraft } from '@/lib/drafts';
 import { prepareFill } from '@/lib/fill';
 
-// A piece (or a new one from a template) in Canvas. The panel's library loads afterwards, in the browser.
-export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: { id: string; is_admin: boolean } }) {
+type Who = { id: string; is_admin: boolean };
+
+// A piece (or a new one from a template) in Canvas, with the other formats of its set as artboards.
+// The panel's library loads afterwards, in the browser.
+export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: Who }) {
   const piece = await loadSource(pieceRef);
   if (!piece) notFound();
   const fresh = isNew(piece);
   const back = fresh ? '/templates' : `/?all=1&set=${piece.set_id ?? piece.id}`;
-  // Pieces made before Canvas lost inline logos ('[inline image]'): they cannot be drawn again.
-  // Work in progress (by hand or by Claude) picks up where it was left.
-  const draft = fresh ? null : await getDraft(piece.id);
-  const lost = Object.entries(draft?.slots ?? piece.slots).filter(([, v]) => v === '[inline image]').map(([k]) => k);
-  if (lost.length) return <CannotOpen back={back} text={`Its ${lost.join(', ')} was sent inline before Canvas existed and was not kept. Ask Claude for a new version with the logo, then open that one.`} />;
   let ready;
   try {
-    ready = await Promise.all([
+    const [set, ctx, seenAt] = await Promise.all([
+      loadSet(piece),
       editorContext(piece),
-      prepareFill({ template: piece.template, format: piece.format, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits }, '/api/template-files'),
-      prepareFill({ template: piece.template, format: piece.format, slots: piece.slots, edits: piece.edits }, '/api/template-files').then((p) => p.slots),
-      canReplace(me, piece),
       supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle().then((r) => (r.data?.mcp_seen_at as string | null | undefined) ?? null),
     ]);
+    const boards = await Promise.all(set.pieces.map((p) => openBoard(p, me)));
+    ready = { set, ctx, seenAt, boards };
   } catch (e) {
     return <CannotOpen back={back} text={(e as Error).message} />;
   }
-  const [ctx, plan, savedSlots, replace, seenAt] = ready;
+  const { set, ctx, seenAt, boards } = ready;
+  const mine = boards[set.pieces.findIndex((p) => p.id === piece.id)];
+  if ('lost' in mine) return <CannotOpen back={back} text={mine.lost} />;
   return (
     <CanvasEditor
       seenAt={seenAt}
       piece={{
-        pieceId: piece.id, isNew: fresh, canReplace: replace, backHref: back, formatLabel: ctx.formatLabel,
         title: fresh ? ctx.title : piece.set_title ?? titleFromSlots(piece.slots) ?? ctx.title,
-        initial: { slots: plan.slots, edits: draft?.edits ?? piece.edits }, saved: { slots: savedSlots, edits: piece.edits },
-        draft: draft ? { version: draft.version, by: draft.updated_by, note: draft.note } : null, plan, slotMeta: ctx.slots,
+        backHref: back, active: piece.id,
+        // Formats that cannot be drawn again stay out (they keep their image in the gallery).
+        boards: boards.filter((b): b is Board => !('lost' in b)),
+        ghosts: set.missing.map((m) => ({ ...m, label: formatLabel(m.format) })),
+        slotMeta: ctx.slotsByFormat,
       }}
     />
   );
+}
+
+// One format as an artboard: its draft if someone was working on it, its fill, what was saved.
+async function openBoard(piece: PieceSource, me: Who): Promise<Board | { lost: string }> {
+  const fresh = isNew(piece);
+  const draft = fresh ? null : await getDraft(piece.id);
+  // Pieces made before Canvas lost inline logos ('[inline image]'): they cannot be drawn again.
+  const lost = Object.entries(draft?.slots ?? piece.slots).filter(([, v]) => v === '[inline image]').map(([k]) => k);
+  if (lost.length) return { lost: `Its ${lost.join(', ')} was sent inline before Canvas existed and was not kept. Ask Claude for a new version with the logo, then open that one.` };
+  // Work in progress (by hand or by Claude) picks up where it was left.
+  const [plan, savedSlots, replace] = await Promise.all([
+    prepareFill({ template: piece.template, format: piece.format, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits }, '/api/template-files'),
+    prepareFill({ template: piece.template, format: piece.format, slots: piece.slots, edits: piece.edits }, '/api/template-files').then((p) => p.slots),
+    canReplace(me, piece),
+  ]);
+  return {
+    ref: piece.id, format: piece.format, label: formatLabel(piece.format), width: piece.width, height: piece.height, isNew: fresh, canReplace: replace,
+    initial: { slots: plan.slots, edits: draft?.edits ?? piece.edits }, saved: { slots: savedSlots, edits: piece.edits }, plan,
+    draft: draft ? { version: draft.version, by: draft.updated_by, note: draft.note } : null,
+  };
 }
 
 function CannotOpen({ back, text }: { back: string; text: string }) {

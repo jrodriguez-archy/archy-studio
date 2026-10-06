@@ -43,6 +43,8 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       inset: r.inset ?? (cs.position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left),
       anchoredRight,
       fontSize: parseFloat(getComputedStyle(el).fontSize),
+      top: rectOf(el).top,
+      height: rectOf(el).height,
       lineHeight: parseFloat(getComputedStyle(el).lineHeight),
       position: cs.position,
     });
@@ -55,6 +57,26 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     baseline.get(role).tol = 0;
     baseline.get(role).tol = overflow(role, r, el);
   }
+  // The design's footprint: how tall the main Content column is with the sample copy, the space the
+  // designer filled. Short copy must not leave it half empty (see balance()).
+  const frame = (() => {
+    const el = (rules.containers ?? []).map((c) => byName(pick(c.node))).find(Boolean) ?? [...root.children].find((c) => c.dataset.name === 'Content');
+    if (!el) return null;
+    const cs = getComputedStyle(el);
+    if (cs.display !== 'flex' || !cs.flexDirection.startsWith('column')) return null;
+    // The area it may fill: down to a bottom margin like its side margin (tall formats keep clear of
+    // the app's bottom bar, ~13% of the height); a fixed-height frame keeps its own height.
+    const R = rectOf(root), b = rectOf(el), fixed = !!el.style.height;
+    const tall = R.height / R.width > 1.6;
+    const margin = Math.max(b.left - R.left, tall ? R.height * 0.13 : 0);
+    // A mirrored frame never passes its own top margin at the bottom (the "mirror" container rule). In a
+    // tall format the top margin is usually room for a mascot or a photo, not a margin: there the bottom
+    // limit is the app's safe zone instead.
+    if (tall && containerTop.has(el)) containerTop.set(el, Math.min(containerTop.get(el), margin));
+    const mirrored = containerTop.has(el) ? R.bottom - containerTop.get(el) : Infinity;
+    const area = fixed ? b.height : Math.max(b.height, Math.min(R.bottom - margin, mirrored) - b.top);
+    return { el, h: b.height, area, used: usedOf(el), fixed };
+  })();
   const sampleText = new Map([...root.querySelectorAll('[data-slot][data-slot-type="text"]')].map((n) => [n.dataset.slot, n.textContent]));
   const containerTol = new Map();
   for (const c of containersOk()) containerTol.set(`${c.node}|${c.reason ?? ''}`, c.overflowPx);
@@ -63,8 +85,11 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
   const touchedParents = [];
   // An empty text slot is removed and the layout closes up; an optional block left with no slot
   // content (a pill with only its dot, a plate with no name or title) is removed whole.
-  for (const [role, value] of Object.entries(values)) {
+  for (let [role, value] of Object.entries(values)) {
     const nodes = root.querySelectorAll(`[data-slot="${role}"]`);
+    // drop: words the design already prints here (a sticker that says BOOTH takes only "#1039").
+    const drop = pick(rules.slots[role]?.drop);
+    if (drop && typeof value === 'string') value = value.replace(new RegExp(drop, 'i'), '').trim();
     if (!nodes.length) continue; // slot not present in this variant
     const empty = value == null || value === '';
     const touched = new Set();
@@ -127,6 +152,17 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       report.removedBlocks = [...(report.removedBlocks ?? []), opt.dataset.optional];
     }
   }
+  // A button whose label was left out goes whole (no arrow on its own).
+  for (const parent of new Set(touchedParents)) {
+    for (let n = parent; n && n !== root; n = n.parentElement) {
+      if (/^(CTA|Button)\b/i.test(n.dataset?.name ?? '') && n.isConnected && !n.textContent.trim()) {
+        touchedParents.push(n.parentElement);
+        n.remove();
+        report.removedBlocks = [...(report.removedBlocks ?? []), n.dataset.name];
+        break;
+      }
+    }
+  }
   // Separators (Ruler / Divider) left at the start, the end or doubled in a stack that lost items go too.
   for (const parent of new Set(touchedParents)) {
     if (!parent?.isConnected) continue;
@@ -144,6 +180,16 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
   }
 
   // ---- Measurement helpers ----
+  // The height a column's content takes (children, gaps, padding), whatever the frame's own height.
+  function flowOf(box) { return [...box.children].filter((c) => getComputedStyle(c).position !== 'absolute' && getComputedStyle(c).display !== 'none'); }
+  function usedOf(box) {
+    const kids = flowOf(box);
+    if (!kids.length) return 0;
+    const cs = getComputedStyle(box);
+    const gap = /space-/.test(cs.justifyContent) ? 0 : parseFloat(cs.rowGap) || 0;
+    return kids.reduce((a, k) => a + k.getBoundingClientRect().height + (k.style.marginTop === 'auto' ? 0 : parseFloat(getComputedStyle(k).marginTop) || 0), 0)
+      + gap * (kids.length - 1) + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  }
   function lines(el) {
     const range = document.createRange();
     range.selectNodeContents(el);
@@ -156,8 +202,9 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     if (!block?.isConnected) return 0;
     const b = rectOf(block), w = rectOf(byName(pick(r.within) ?? '@artboard'));
     let over = 0;
-    const bump = (px, why) => { if (px > over) { over = px; overflow.reason = why; } };
+    const bump = (px, why, box = null) => { if (px > over) { over = px; overflow.reason = why; overflow.box = box; } };
     overflow.reason = null;
+    overflow.box = null;
     if (base.anchoredRight) bump(w.left + base.inset - b.left, 'width');
     else bump(b.right - (w.right - base.inset), 'width');
     if (r.checkBottom !== false && base.position === 'absolute') bump(b.bottom - (w.bottom - base.inset), 'bottom');
@@ -167,7 +214,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       for (const x of base.clear) {
         if (!x.isConnected) continue;
         const xr = rectOf(x);
-        for (const t of tr) if (intersects(t, xr, 24)) bump(Math.min(t.right - xr.left, xr.right - t.left) + 24, `collides with ${x.dataset.name}`);
+        for (const t of tr) if (intersects(t, xr, 24)) bump(Math.min(t.right - xr.left, xr.right - t.left) + 24, `collides with ${x.dataset.name}`, xr);
       }
     }
     for (const a of pick(r.avoid) ?? []) {
@@ -187,8 +234,9 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     for (const c of rules.containers ?? []) {
       const el = byName(pick(c.node));
       const name = typeof c.node === 'string' ? c.node : c.node?.dataset?.name;
-      if (el && el.scrollHeight > el.clientHeight + 0.5) push({ node: name, overflowPx: el.scrollHeight - el.clientHeight });
-      if (el && el.scrollWidth > el.clientWidth + 0.5) push({ node: name, overflowPx: el.scrollWidth - el.clientWidth });
+      // A few px are rounding (line boxes, glyph overhangs), not copy that does not fit.
+      if (el && el.scrollHeight > el.clientHeight + 3) push({ node: name, overflowPx: el.scrollHeight - el.clientHeight });
+      if (el && el.scrollWidth > el.clientWidth + 3) push({ node: name, overflowPx: el.scrollWidth - el.clientWidth });
       // mirror: the block may grow, but keeps at least its top margin at the bottom of the artboard.
       if (el && c.mirror) {
         const r = rectOf(el), a = rectOf(root), margin = containerTop.get(el) ?? 0;
@@ -204,10 +252,15 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     return bad;
   }
 
+  clearTop();
+
   // ---- Fit each text slot ----
-  for (const [role, r] of Object.entries(rules.slots)) {
+  for (const [role, r] of Object.entries(rules.slots)) fitSlot(role, r);
+  settleCollisions();
+
+  function fitSlot(role, r) {
     const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`);
-    if (!el || !el.isConnected || report.slots[role]?.status === 'removed') continue;
+    if (!el || !el.isConnected || report.slots[role]?.status === 'removed') return;
     // Slots sharing this block that are fitted later must not constrain this one (e.g. name + title
     // in the Name Plate): hide them while fitting, they adapt to what is left afterwards.
     const order = Object.keys(rules.slots);
@@ -273,15 +326,30 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
           setScale(s);
           unwrap();
           if (fits()) return { scale: s, wrapped: false, groupWrapped: !!wrapGroup };
+          // A block text that runs into a decoration (a mascot beside it) wraps short of it first.
+          if (isBlockText && overflow(role, r, el) && overflow.box && /^collides/.test(overflow.reason ?? '')) {
+            const left = el.getBoundingClientRect().left, w = Math.floor(overflow.box.left - 24 - left);
+            if (overflow.box.left > left && w > parseFloat(authored.width) * 0.4) {
+              el.style.width = `${w}px`;
+              if (fits()) return { scale: s, wrapped: true, groupWrapped: !!wrapGroup };
+              el.style.width = authored.width;
+            }
+          }
           if (maxLines > 1 && rewrap() && fits()) return { scale: s, wrapped: true, groupWrapped: !!wrapGroup };
         }
       }
       return null;
     };
 
-    const text = el.textContent;
-    const ok = tryFit(text);
-    if (ok) Object.assign(state, ok);
+    let text = el.textContent;
+    let ok = tryFit(text);
+    // Line breaks in the copy are a wish: where this format has fewer lines, they become spaces.
+    if (!ok && /\n/.test(text)) {
+      const soft = text.replace(/\s*\n\s*/g, ' ');
+      const again = tryFit(soft);
+      if (again) { ok = again; text = soft; } else el.textContent = text;
+    }
+    if (ok) { Object.assign(state, ok); if (el.textContent !== text) el.textContent = text; }
     else {
       // Longest prefix that would fit: an exact, measured length limit for this slot here.
       let lo = 0, hi = text.length - 1;
@@ -304,12 +372,204 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     report.slots[role] = state;
   }
 
+  // A text that ran into a decoration beside the column (copy left out above it moved it up next to a
+  // mascot) gets the column moved down by just enough, when the room allows, and is fitted again.
+  function settleCollisions() {
+    if (!frame || !frame.el.isConnected || frame.el.style.top === '') return;
+    const failed = Object.keys(rules.slots).filter((k) => report.slots[k]?.status === 'overflow' && /^collides/.test(report.errors.find((e) => e.slot === k)?.reason ?? ''));
+    if (!failed.length) return;
+    // First: texts above that got shorter keep their designed height, so everything below stays where
+    // the designer put it (next to a sticker or a mascot). The growing headline takes that room back.
+    if (holdHeights(failed)) return;
+    let need = 0, inside = false;
+    for (const role of failed) {
+      const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`), base = baseline.get(role);
+      if (!el || !frame.el.contains(el)) return;
+      const rg = document.createRange(); rg.selectNodeContents(el);
+      const tr = [...rg.getClientRects()].filter((x) => x.width > 0);
+      for (const x of base.clear ?? []) {
+        if (!x.isConnected) continue;
+        const xr = rectOf(x);
+        for (const t of tr) if (intersects(t, xr, 24)) { if (frame.el.contains(x)) inside = true; else need = Math.max(need, xr.bottom + 24 - t.top); }
+      }
+    }
+    if (inside || !need) return;
+    if (getComputedStyle(frame.el).justifyContent === 'center') need *= 2;
+    // Room: an auto-height column may grow down to its area (the bottom margin); a fixed one has its height.
+    if (usedOf(frame.el) + need > (frame.fixed ? frame.h : frame.area) + 0.5) return;
+    const before = frame.el.style.paddingTop;
+    frame.el.style.paddingTop = `${(parseFloat(getComputedStyle(frame.el).paddingTop) || 0) + Math.ceil(need)}px`;
+    const errors = report.errors;
+    report.errors = errors.filter((e) => !failed.includes(e.slot));
+    for (const role of failed) fitSlot(role, rules.slots[role]);
+    // Still not fitting: put things back as they were.
+    if (failed.some((k) => report.slots[k]?.status === 'overflow') || containersOk().length) {
+      frame.el.style.paddingTop = before;
+      report.errors = errors;
+      for (const role of failed) fitSlot(role, rules.slots[role]);
+      report.errors = errors;
+      report.ok = false;
+      return;
+    }
+    report.clearedTop = (report.clearedTop ?? 0) + Math.ceil(need);
+    report.ok = report.errors.length === 0;
+  }
+
+  function holdHeights(failed) {
+    const firstTop = Math.min(...failed.map((k) => rectOf(root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`)).top));
+    const held = [];
+    for (const [k, b] of baseline) {
+      const el = root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`);
+      if (!el?.isConnected || !frame.el.contains(el) || failed.includes(k) || rectOf(el).top >= firstTop) continue;
+      // The copy sits at the bottom of its designed room: the air goes above it, not in the middle.
+      if (rectOf(el).height < b.height - 1) { held.push([el, el.style.minHeight, el.style.alignContent]); el.style.minHeight = `${Math.round(b.height)}px`; el.style.alignContent = 'end'; }
+    }
+    if (!held.length) return false;
+    const errors = report.errors;
+    report.errors = errors.filter((e) => !failed.includes(e.slot));
+    for (const role of failed) fitSlot(role, rules.slots[role]);
+    if (failed.some((k) => report.slots[k]?.status === 'overflow')) {
+      for (const [el, v, a] of held) { el.style.minHeight = v; el.style.alignContent = a; }
+      report.errors = errors;
+      for (const role of failed) fitSlot(role, rules.slots[role]);
+      report.errors = errors;
+      report.ok = false;
+      return false;
+    }
+    report.held = held.map(([el]) => el.dataset.slot);
+    report.ok = report.errors.length === 0;
+    return true;
+  }
+
+  balance();
+
   for (const c of containersOk()) {
     report.ok = false;
     report.errors.push({ code: 'container_overflow', ...c, message: `${c.node} ${c.reason ?? 'overflows'} by ${c.overflowPx}px. Shorten the longest slot inside it.` });
   }
   if (report.errors.length) report.ok = false;
   return report;
+
+  // A detail left out at the top of the column (a kicker pill) pulls the copy up into a decoration it
+  // stayed clear of in the design (a mascot in the corner). The column starts lower instead, by just
+  // enough, when its footprint has the room.
+  function clearTop() {
+    if (!frame || !frame.el.isConnected || frame.el.style.top === '') return;
+    let need = 0;
+    // The column's first text as designed: only what sat above it (a corner mascot) counts.
+    const tops = [...baseline].filter(([k]) => frame.el.contains(root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`) ?? root)).map(([, b]) => b.top);
+    const columnTop = tops.length ? Math.min(...tops) : -Infinity;
+    for (const [role] of Object.entries(rules.slots)) {
+      const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`);
+      const base = baseline.get(role);
+      if (!el?.isConnected || !frame.el.contains(el) || !base?.clear?.length) continue;
+      const rg = document.createRange(); rg.selectNodeContents(el);
+      const tr = [...rg.getClientRects()].filter((x) => x.width > 0);
+      for (const x of base.clear) {
+        if (!x.isConnected || frame.el.contains(x)) continue;
+        const xr = rectOf(x);
+        // Only a decoration that sat above the whole column in the design (not one beside it).
+        if (xr.bottom > columnTop + 1) continue;
+        for (const t of tr) if (intersects(t, xr, 24)) need = Math.max(need, xr.bottom + 24 - t.top);
+      }
+    }
+    if (!need || usedOf(frame.el) + need > frame.h + 0.5) return;
+    // A centred column moves half of what is added on top.
+    if (getComputedStyle(frame.el).justifyContent === 'center') need *= 2;
+    if (usedOf(frame.el) + need > frame.h + 0.5) return;
+    frame.el.style.paddingTop = `${(parseFloat(getComputedStyle(frame.el).paddingTop) || 0) + Math.ceil(need)}px`;
+    report.clearedTop = Math.ceil(need);
+  }
+
+  // ---- Fill the footprint ----
+  // Copy shorter than the sample (or a detail left out) leaves the Content column short and a hole at
+  // the bottom. The design should still look full: the lead text grows (up to 125% of its design size,
+  // within its lines, width and margins) until the column reaches its footprint; whatever is left goes
+  // above the footer (the logo lockup, the CTA), which sits at the bottom where the designer put it.
+  // Frames with a fixed height already spread their content (space-between), so they only grow.
+  function balance() {
+    if (!frame || rules.fill === false || !frame.el.isConnected) return;
+    const opts = rules.fill && typeof rules.fill === 'object' ? rules.fill : {};
+    const box = frame.el;
+    const flow = () => flowOf(box);
+    const used = () => usedOf(box);
+    const target = frame.area;
+    const info = { footprint: Math.round(target), before: Math.round(used()) };
+    report.fill = info;
+    // What the content fills once drawn, for the Inspector (a hand edit that empties it is flagged).
+    const mark = () => { box.dataset.filled = String(Math.round(used())); };
+    mark();
+    // A fixed-height frame that spreads its content (space-between) is already full.
+    // Only when the copy left the column shorter than the designer's own composition: the sample (or
+    // copy as long) stays exactly as designed.
+    if (!target || info.before >= frame.used * 0.95 || info.before >= target * 0.95 || (frame.fixed && /space-/.test(getComputedStyle(box).justifyContent))) return;
+    box.dataset.footprint = String(Math.round(target));
+
+    // 1. The lead text grows: the slot named in rules.fill, else the largest text in the column.
+    const texts = Object.keys(rules.slots)
+      .map((role) => ({ role, el: root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`) }))
+      .filter((x) => x.el?.isConnected && box.contains(x.el) && report.slots[x.role]?.status === 'fit' && !rules.slots[x.role].scaleGroup);
+    const lead = texts.find((x) => x.role === pick(opts.slot)) ?? texts.sort((a, b) => parseFloat(getComputedStyle(b.el).fontSize) - parseFloat(getComputedStyle(a.el).fontSize))[0];
+    if (lead) {
+      const r = rules.slots[lead.role], st = report.slots[lead.role], base = baseline.get(lead.role);
+      const maxScale = pick(opts.maxScale) ?? 1.25;
+      // Nothing else may get worse: every other text keeps fitting, no frame overflows more.
+      const others = Object.keys(rules.slots).filter((k) => k !== lead.role && report.slots[k]?.status === 'fit')
+        .map((k) => [k, root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`)]).filter(([, n]) => n?.isConnected);
+      const spill = () => containersOk().reduce((a, c) => a + c.overflowPx, 0);
+      const before = spill();
+      const othersFit = () => others.every(([k, n]) => overflow(k, rules.slots[k], n) === 0);
+      // It grows on the lines it already has: a word pushed alone onto a new line looks broken.
+      const had = lines(lead.el);
+      // …and never into a badge, mascot or sticker it was clear of (24px apart).
+      const textBoxes = () => { const rg = document.createRange(); rg.selectNodeContents(lead.el); return [...rg.getClientRects()].filter((x) => x.width > 0); };
+      const near = (xs) => xs.filter((x) => { const xr = rectOf(x); return textBoxes().some((t) => intersects(t, xr, 24)); });
+      const loose = [...root.querySelectorAll('[data-node]')].filter((x) => {
+        if (x === root || x.contains(lead.el) || lead.el.contains(x) || getComputedStyle(x).position !== 'absolute') return false;
+        const xr = rectOf(x); return xr.width > 2 && xr.height > 2;
+      });
+      const apart = loose.filter((x) => !near([x]).length);
+      // Those it was already close to: it may not get any closer (overlap with a 24px halo can't grow).
+      const halo = (x) => { const xr = rectOf(x); return textBoxes().reduce((a, t) => a + Math.max(0, Math.min(t.right, xr.right + 24) - Math.max(t.left, xr.left - 24)) * Math.max(0, Math.min(t.bottom, xr.bottom + 24) - Math.max(t.top, xr.top - 24)), 0); };
+      const close = loose.filter((x) => !apart.includes(x)).map((x) => [x, halo(x)]);
+      const at = (k) => { lead.el.style.fontSize = `${(base.fontSize * k).toFixed(2)}px`; lead.el.style.lineHeight = `${Math.round(base.lineHeight * k)}px`; };
+      const ok = () => overflow(lead.role, r, lead.el) === 0 && lines(lead.el) <= had && spill() <= before + 0.5 && othersFit() && used() <= target + 0.5 && !near(apart).length && close.every(([x, h0]) => halo(x) <= h0 + 1);
+      let best = st.scale;
+      for (let k = maxScale; k > st.scale + 0.005; k = +(k - 0.01).toFixed(2)) { at(k); if (ok()) { best = k; break; } }
+      at(best);
+      if (best > st.scale) {
+        Object.assign(st, { scale: best, grown: true, lines: lines(lead.el), fontSize: parseFloat(getComputedStyle(lead.el).fontSize) });
+        info.grew = { slot: lead.role, scale: best };
+      }
+    }
+    // 2. Some of what is still free opens the column's rhythm (its gap, up to 1.5×), the rest goes above
+    // the footer, which sits at the bottom of the area.
+    const kids = flow();
+    const gap = parseFloat(getComputedStyle(box).rowGap) || 0;
+    if (gap && kids.length > 2) {
+      const extra = Math.min(gap * 0.5, ((target - used()) * 0.35) / (kids.length - 1));
+      const spill = () => containersOk().reduce((a, c) => a + c.overflowPx, 0), was = spill();
+      const fitting = Object.keys(rules.slots).filter((k) => report.slots[k]?.status === 'fit')
+        .map((k) => [k, root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`)]).filter(([, n]) => n?.isConnected);
+      if (extra > 1) {
+        const authored = box.style.rowGap;
+        box.style.rowGap = `${Math.round(gap + extra)}px`;
+        if (spill() > was + 0.5 || fitting.some(([k, n]) => overflow(k, rules.slots[k], n) > 0)) box.style.rowGap = authored || `${gap}px`;
+        else info.gap = Math.round(gap + extra);
+      }
+    }
+    const foot = kids.length > 1 ? kids[kids.length - 1] : null;
+    const isFooter = foot && (/Logo|Lockup|Footer|CTA|Button/i.test(foot.dataset.name ?? '') || foot.querySelector('[data-name^="Logo Archy"], [data-name^="Archy Wordmark"]'));
+    // (A fixed-height frame that spreads its content already has its footer at the bottom.)
+    const spread = /space-/.test(getComputedStyle(box).justifyContent);
+    if (!spread && isFooter && used() < target - 1) {
+      if (!frame.fixed) box.style.minHeight = `${Math.round(target)}px`;
+      foot.style.marginTop = 'auto';
+      info.footer = foot.dataset.name;
+    }
+    info.after = Math.round(used());
+    mark();
+  }
 };
 
 // Calibration: characters per line that fit at the design size, using the slot's own default copy
@@ -366,13 +626,14 @@ function withDefaults(root, rules) {
   rules = { ...rules, slots: { ...rules.slots } };
   for (const el of root.querySelectorAll('[data-slot][data-slot-type="text"]')) {
     const role = el.dataset.slot;
-    if (rules.slots[role]) continue;
+    // A rules.json entry that only adds an option (drop, maxScale…) keeps the defaults under it.
+    if (rules.slots[role] && (rules.slots[role].within || rules.slots[role].block)) continue;
     // The box that really holds it: the nearest ancestor with a fixed width (a badge, a pill, a column),
     // else the Content frame, else the artboard.
     let box = el.parentElement;
     while (box && box !== root && !/^\d+(\.\d+)?px$/.test(box.style.width)) box = box.parentElement;
     const content = el.parentElement.closest('[data-name="Content"]');
-    rules.slots[role] = { within: box && box !== root ? box : content ?? '@artboard', maxLines: Math.max(1, lines(el)), minScale: 0.85, auto: true };
+    rules.slots[role] = { within: box && box !== root ? box : content ?? '@artboard', maxLines: Math.max(1, lines(el)), minScale: 0.85, auto: true, ...rules.slots[role] };
   }
   if (!rules.containers) {
     const outer = [...root.children].find((c) => c.dataset.name === 'Content');

@@ -1,6 +1,6 @@
 import 'server-only';
 import { cleanEdits, THEME, type Edits, type Layout, type NodeEdit, type Preset } from './canvas-shared';
-import { loadSource, type PieceSource } from './canvas';
+import { loadSet, loadSource, type PieceSource } from './canvas';
 import { saveEdited } from './canvas-render';
 import { iconMarkup, searchIcons } from './icons';
 import { render, type InspectedComp } from './renderer';
@@ -46,11 +46,13 @@ export async function getCanvas(me: Who, ref?: string) {
   const byId = new Map(d.comps.map((c) => [c.id, c]));
   const depth = (c: InspectedComp): number => (c.parent ? 1 + depth(byId.get(c.parent)!) : 0);
   const lines = d.comps.map((c) => `${'  '.repeat(depth(c))}- ${c.name} [${KIND[c.kind] ?? c.kind} · id ${c.id}]${c.text ? `: "${c.text.replace(/\s+/g, ' ').trim()}"` : ''}${c.layout ? ` (${c.layout})` : ''}${c.slot || c.textSlot ? ' (from the brief)' : ''}${c.hidden ? ' (hidden)' : ''}`);
-  const config = await loadConfig(piece.template);
+  const [config, set] = await Promise.all([loadConfig(piece.template), loadSet(piece)]);
+  const others = set.pieces.filter((p) => p.id !== piece.id);
   return {
     piece, png: d.png,
     text: [
       `Canvas design ${piece.id}: ${config.title}, ${piece.format} ${piece.width}×${piece.height}. Theme: ${edits[THEME]?.preset ?? 'as designed'}.`,
+      ...(others.length ? [`Other formats of this design (same set; each its own canvas id): ${others.map((p) => `${p.format} ${p.id}`).join(', ')}. In Canvas, copy, images, theme and styles follow between synced formats while it is open; otherwise edit each one.`] : []),
       'Components (refer to them by id, e.g. component: "G5O-1"; a name works when it is unique):',
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,

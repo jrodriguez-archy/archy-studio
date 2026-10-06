@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
   Archive02Icon, ArrowTurnBackwardIcon, Copy01Icon, Delete02Icon, Download04Icon, Folder01Icon, FolderExportIcon,
-  Link01Icon, PackageIcon, PencilEdit02Icon, SparklesIcon, ViewIcon,
+  Link01Icon, PackageIcon, PaintBoardIcon, PencilEdit02Icon, SparklesIcon, ViewIcon,
 } from '@hugeicons/core-free-icons';
 import { copy, type Action } from '@/components/action-menu';
 import { ProjectDialog } from '@/components/project-dialog';
@@ -54,7 +55,10 @@ export function useSetActions({ set, projects, canManage, onOpen }: { set: Piece
   const move = (id: string | null, name?: string) => run(() => moveSetAction(set.id, id), id ? `Moved to ${name}` : 'Removed from the project');
   const restore = () => run(() => restoreSetAction(set.id), 'Restored to the gallery');
 
+  const router = useRouter();
   const open: Action[] = onOpen ? [{ label: 'Open', icon: ViewIcon, onSelect: onOpen }] : [];
+  // Canvas opens the lead design with the set's other formats beside it, as artboards.
+  const edit: Action[] = [{ label: 'Edit in Canvas', icon: PaintBoardIcon, onSelect: () => router.push(`/canvas/${set.lead.id}`) }];
   const downloads: Action[] = [
     { label: many ? `Download all (${set.pieces.length})` : 'Download', icon: many ? PackageIcon : Download04Icon, onSelect: () => download(many ? `/api/sets/${set.id}/zip` : set.lead.file) },
     ...(many ? [{ label: 'Download format', icon: Download04Icon, items: set.pieces.map((p) => ({ label: formatLabel(p.format), hint: set.templates.length > 1 ? p.title : `${p.width}×${p.height}`, onSelect: () => download(p.file) })) }] : []),
@@ -70,6 +74,7 @@ export function useSetActions({ set, projects, canManage, onOpen }: { set: Piece
       ]
     : [
         ...open,
+        ...edit,
         ...downloads,
         { separator: true },
         {

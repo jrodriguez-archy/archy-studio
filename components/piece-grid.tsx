@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Download04Icon, PackageIcon, PaintBoardIcon } from '@hugeicons/core-free-icons';
 import { InfoRows, Inspector, StageImage, useInspector } from '@/components/inspector';
@@ -9,6 +10,7 @@ import type { ProjectLink } from '@/components/projects-nav';
 import { ContextActions, MoreActions } from '@/components/action-menu';
 import { useSetActions } from '@/components/set-actions';
 import { StackBadge, StackLayers, stackPad } from '@/components/stack';
+import { useRendersLive } from '@/components/use-renders-live';
 import { canManageSet, formatLabel, humanize, type Piece, type PieceSet } from '@/lib/gallery-shared';
 
 const day = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -24,6 +26,9 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
   const [pick, setPick] = useState<string | null>(null);
   useEffect(() => setPick(null), [openId]);
   const shown = current ? current.pieces.find((p) => p.id === pick) ?? current.lead : null;
+  // New designs, versions and replaced images appear without a reload.
+  const router = useRouter();
+  useRendersLive(() => router.refresh());
 
   return (
     <>

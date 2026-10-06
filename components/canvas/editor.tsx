@@ -319,6 +319,20 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     const b = snap.edits[sg.id]?.box ?? {};
     editLayer(sg.id, { box: { dx: (b.dx ?? 0) + sg.fix.dx, dy: (b.dy ?? 0) + sg.fix.dy } });
   };
+  // Undo the hand edit that caused a suggestion: those fields go back to the design's values.
+  const revert = (sg: Suggestion) => {
+    if (!sg.revert) return;
+    const cur = snapRef.current;
+    const e = structuredClone(cur.edits[sg.revert.id] ?? {}) as Record<string, unknown>;
+    for (const f of sg.revert.fields) {
+      const [k, sub] = f.split('.');
+      if (sub) { const o = e[k] as Record<string, unknown> | undefined; if (o) delete o[sub]; } else delete e[k];
+    }
+    const one = cleanEdits({ [sg.revert.id]: e as NodeEdit });
+    const edits = { ...cur.edits };
+    if (one[sg.revert.id]) edits[sg.revert.id] = one[sg.revert.id]; else delete edits[sg.revert.id];
+    commit({ ...cur, edits });
+  };
   const warnings = suggestions.filter((x) => x.level === 'warn').length;
   const fixable = suggestions.filter((x) => x.fix).length;
   // Fix all: every automatic fix, settled in the page over a few rounds, as one undo step.
@@ -397,7 +411,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           )}
           {tab === 'library' && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
           {tab === 'assets' && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
-          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onFixAll={fixAll} />}
+          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : pieceId} title={title} seenAt={library.mcpSeenAt} />}
         </CanvasPanel>
 
         <main

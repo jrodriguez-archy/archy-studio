@@ -69,4 +69,10 @@ export function cleanEdits(edits: Edits): Edits {
 }
 
 // A design suggestion from the Inspector (components.js __review): never a block.
-export type Suggestion = { id: string; level: 'warn' | 'tip'; title: string; detail: string; fix?: { dx: number; dy: number } };
+export type Suggestion = {
+  id: string; level: 'warn' | 'tip'; title: string; detail: string;
+  /** An exact nudge back into line. */
+  fix?: { dx: number; dy: number };
+  /** Undo the hand edit that caused it (back to the design's value): fields like 'box.width', 'style.color'. */
+  revert?: { id: string; fields: string[]; label: string };
+};

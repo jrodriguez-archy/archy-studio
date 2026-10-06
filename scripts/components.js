@@ -164,6 +164,30 @@
     const touched = new Set(Object.entries(edits ?? {}).filter(([id, e]) => id !== ':theme' && e && Object.keys(e).length).map(([id]) => id));
     const changed = (el) => { for (let n = el; n && n !== r; n = n.parentElement) if (touched.has(idOf(n))) return true; return [...touched].some((id) => el.contains(node(id))); };
     const out = [];
+    // Reverts: undo the hand edit that caused a problem (back to the design's value), for the
+    // suggestions that have no exact nudge. path: 'box.width', 'style.fontSize'…
+    const has = (id, path) => { const [k, f] = path.split('.'); const v = edits?.[id]?.[k]; return f ? v?.[f] != null : v != null; };
+    const revertOn = (el, paths, label) => {
+      for (let n = el; n && n !== r; n = n.parentElement) {
+        const id = idOf(n), fields = id ? paths.filter((p) => has(id, p)) : [];
+        if (fields.length) return { revert: { id, fields, label } };
+      }
+      return {};
+    };
+    // What pushed something that was not edited itself: the closest earlier sibling branch whose size,
+    // type size, layout or copy changed.
+    const SIZE = ['box.width', 'box.height', 'box.scale', 'style.fontSize', 'style.fontWeight', 'layout', 'text'];
+    const pusher = (el) => {
+      for (let n = el; n && n !== r; n = n.parentElement) {
+        for (let sib = n.previousElementSibling; sib; sib = sib.previousElementSibling) {
+          for (const t of [sib, ...sib.querySelectorAll('[data-node]')]) {
+            const id = idOf(t), fields = id ? SIZE.filter((p) => has(id, p)) : [];
+            if (fields.length) return { revert: { id, fields, label: 'Undo what pushed it' } };
+          }
+        }
+      }
+      return {};
+    };
     const inside = (a, b, m = 1) => a.x >= b.x - m && a.y >= b.y - m && a.x + a.w <= b.x + b.w + m && a.y + a.h <= b.y + b.h + m;
     const meet = (a, b) => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
     const pick = (v) => (v && typeof v === 'object' ? v[format] : v);
@@ -221,9 +245,9 @@
       const moved = own && (Math.abs(b.x - b0.x) > 0.5 || Math.abs(b.y - b0.y) > 0.5);
       // Off the piece, or out of the safe area, when the design had it in.
       if (!inside(b, { x: 0, y: 0, w: W, h: H }) && inside(b0, { x: 0, y: 0, w: W, h: H })) {
-        out.push({ id: c.id, level: 'warn', title: `${c.name} is cut off`, detail: own ? 'Part of it falls off the piece.' : 'Another change pushed part of it off the piece.', ...(own ? { fix: { dx: Math.round(Math.min(0, W - b.x - b.w) - Math.min(0, b.x)), dy: Math.round(Math.min(0, H - b.y - b.h) - Math.min(0, b.y)) } } : {}) });
+        out.push({ id: c.id, level: 'warn', title: `${c.name} is cut off`, detail: own ? 'Part of it falls off the piece.' : 'Another change pushed part of it off the piece.', ...(own ? { fix: { dx: Math.round(Math.min(0, W - b.x - b.w) - Math.min(0, b.x)), dy: Math.round(Math.min(0, H - b.y - b.h) - Math.min(0, b.y)) } } : pusher(el)) });
       } else if (safe && !inside(b, safe, 2) && inside(b0, safe, 2) && c.kind !== 'decoration') {
-        out.push({ id: c.id, level: 'warn', title: `${c.name} is outside the safe area`, detail: own ? 'Keep it inside the margins the design uses.' : 'Another change pushed it past the margins.', ...(own ? { fix: { dx: Math.round(Math.min(0, safe.x + safe.w - b.x - b.w) - Math.min(0, b.x - safe.x)), dy: Math.round(Math.min(0, safe.y + safe.h - b.y - b.h) - Math.min(0, b.y - safe.y)) } } : {}) });
+        out.push({ id: c.id, level: 'warn', title: `${c.name} is outside the safe area`, detail: own ? 'Keep it inside the margins the design uses.' : 'Another change pushed it past the margins.', ...(own ? { fix: { dx: Math.round(Math.min(0, safe.x + safe.w - b.x - b.w) - Math.min(0, b.x - safe.x)), dy: Math.round(Math.min(0, safe.y + safe.h - b.y - b.h) - Math.min(0, b.y - safe.y)) } } : pusher(el)) });
       }
       // Almost aligned: an alignment the design had (an edge or centre shared with another component,
       // the safe area or the middle of the piece) is now off by a few px. Only for what moved, and only
@@ -237,13 +261,13 @@
       if (c.kind === 'text') {
         const allowed = Math.max(Number(el.dataset.baseLines) || 1, (c.slot && pick(rules?.slots?.[c.slot]?.maxLines)) || 0);
         const now = lines(el);
-        if (now > allowed) out.push({ id: c.id, level: 'warn', title: `${c.name} runs to ${now} lines`, detail: `The design uses ${allowed}. A wider box or a smaller size keeps it tidy.` });
+        if (now > allowed) out.push({ id: c.id, level: 'warn', title: `${c.name} runs to ${now} lines`, detail: `The design uses ${allowed}. A wider box or a smaller size keeps it tidy.`, ...revertOn(el, ['box.width', 'style.fontSize', 'style.fontWeight'], 'Undo size change') });
         const size = parseFloat(getComputedStyle(el).fontSize), size0 = Number(el.dataset.baseFont) || size;
-        if (size < size0 && size < 18 * (W / 1080)) out.push({ id: c.id, level: 'tip', title: `${c.name} is small to read`, detail: `${Math.round(size)} px; keep text at ${Math.round(18 * (W / 1080))} px or more.` });
+        if (size < size0 && size < 18 * (W / 1080)) out.push({ id: c.id, level: 'tip', title: `${c.name} is small to read`, detail: `${Math.round(size)} px; keep text at ${Math.round(18 * (W / 1080))} px or more.`, ...revertOn(el, ['style.fontSize'], 'Reset size') });
       }
       if (c.kind === 'archy') {
         const k = b.w / b0.w;
-        if (k < 0.6) out.push({ id: c.id, level: 'tip', title: 'The Archy logo is small', detail: `${Math.round(k * 100)}% of its designed size.` });
+        if (k < 0.6) out.push({ id: c.id, level: 'tip', title: 'The Archy logo is small', detail: `${Math.round(k * 100)}% of its designed size.`, revert: { id: c.id, fields: ['box.scale'], label: 'Reset size' } });
       }
     }
 
@@ -275,7 +299,7 @@
       const a0 = baseOf(ea), c0 = baseOf(ec);
       if (meet(boxes.get(a.id), boxes.get(c.id)) > 16 && a0 && c0 && meet(a0, c0) <= 16) {
         const who = changed(ea) ? a : c;
-        out.push({ id: who.id, level: 'warn', title: `${a.name} overlaps ${c.name}`, detail: 'Move one of them so both read clearly.' });
+        out.push({ id: who.id, level: 'warn', title: `${a.name} overlaps ${c.name}`, detail: 'Move one of them so both read clearly.', ...revertOn(node(who.id), ['box.dx', 'box.dy', 'box.width', 'box.height', 'style.fontSize'], 'Move back') });
       }
     }
 
@@ -289,7 +313,7 @@
       const ratio = (l1 + 0.05) / (l2 + 0.05);
       // Only worse than as designed counts (no baseline yet: nothing to compare with).
       const ratio0 = Number(el.dataset.baseContrast);
-      if (ratio0 && ratio < 3 && ratio < ratio0 - 0.2) out.push({ id: c.id, level: 'warn', title: `${c.name} is hard to read`, detail: `Low contrast with what is behind it (${ratio.toFixed(1)}:1). Try another colour or theme.` });
+      if (ratio0 && ratio < 3 && ratio < ratio0 - 0.2) out.push({ id: c.id, level: 'warn', title: `${c.name} is hard to read`, detail: `Low contrast with what is behind it (${ratio.toFixed(1)}:1). Try another colour or theme.`, ...revertOn(el, ['style.color', 'style.backgroundColor'], 'Use the theme colour') });
     }
     return out;
   };

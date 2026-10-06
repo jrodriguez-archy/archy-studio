@@ -38,7 +38,7 @@ Brand rules:
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
-Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon"), call get_canvas to see its components by name, then edit_canvas with the changes. Each edit appears live in their Canvas and they can undo it. Brand colours only, and the Archy logo can only be moved or scaled; follow the Inspector's suggestions when they come from your change. Save with save_canvas only when they ask.`;
+Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. Brand colours only; the Archy logo can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 
@@ -213,7 +213,7 @@ const handler = createMcpHandler(
           piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.'),
           theme: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Redraw the whole design on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground.'),
           changes: z.array(z.object({
-            component: z.string().describe('Component name from get_canvas, e.g. "Headline", "Claim your spot", "Location icon"'),
+            component: z.string().describe('Component id from get_canvas (best, e.g. "G5O-1"), or its name when unique; "Date (text)" picks the text over a group named the same'),
             text: z.string().optional().describe('New copy (US English). For a button, its label.'),
             color: z.string().optional().describe('Text or icon colour: a brand colour name, e.g. "white", "royal-blue-500"'),
             fill: z.string().optional().describe('Fill of a button, tag, line or the background: a brand colour name'),
@@ -230,17 +230,21 @@ const handler = createMcpHandler(
               position: z.enum(['start', 'center', 'end']).optional().describe('Where packed items sit along the group'),
               align: z.enum(['start', 'center', 'end']).optional().describe('How items line up across the group'),
             }).optional().describe('For a group (Header, Details, Content…): how its content is spread'),
-            size: z.object({ width: z.number().optional(), height: z.number().optional() }).optional().describe('New size in px'),
+            size: z.object({ width: z.number().optional(), height: z.number().optional() }).optional().describe('New size in px (a text keeps its height automatic; a narrower width wraps it)'),
+            font_weight: z.number().optional().describe('400, 500, 600 or 700'),
+            opacity: z.number().optional().describe('0 to 1'),
+            reset: z.boolean().optional().describe('Put this component back as designed (drops its hand edits)'),
           })).default([]),
-          note: z.string().optional().describe('One short line the person sees, e.g. "Shorter headline, light theme"'),
+          fix: z.enum(['all']).optional().describe('Apply every exact fix the Inspector suggests (alignment, back inside the piece or the safe area), after your changes'),
+          note: z.string().optional().describe('Optional; the person sees a note written by Studio in English'),
         }),
       },
-      async ({ piece, theme, changes, note }, ctx) => {
+      async ({ piece, theme, changes, fix, note }, ctx) => {
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
-          const out = await editCanvas(me, { piece, theme, changes, note });
-          const tips = out.suggestions.length ? ` The Inspector suggests: ${out.suggestions.join(' | ')}` : '';
+          const out = await editCanvas(me, { piece, theme, changes, fix, note });
+          const tips = out.suggestions.length ? ` The Inspector still suggests: ${out.suggestions.join(' | ')}. Fix the ones your change caused (fix: "all", or your own change).` : ' The Inspector has nothing to flag.';
           return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it.${tips} Save with save_canvas only when they ask.` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };

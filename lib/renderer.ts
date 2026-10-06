@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Browser } from 'playwright-core';
-import type { RenderReport, Suggestion } from './canvas-shared';
+import type { Edits, RenderReport, Suggestion } from './canvas-shared';
 import { MIME, ORIGIN, prepareFill, type RenderInput } from './fill';
 import { ROOT } from './templates';
 
@@ -41,7 +41,7 @@ let componentsJs: string | null = null;
 
 export type { RenderReport };
 
-export async function render({ template, format, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false }: RenderInput) {
+export async function render({ template, format, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false, autofix = false }: RenderInput) {
   const plan = await prepareFill({ template, format, slots: given, fillDefaults, edits });
   const { variant, slots, width, height } = plan;
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
@@ -86,20 +86,28 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
       plan.fill,
     )) as RenderReport;
     // Inspecting needs edits.js even without edits: it keeps the design's baseline for the Inspector.
-    if (Object.keys(edits).length || inspect) {
+    if (Object.keys(edits).length || inspect || autofix) {
       await page.addScriptTag({ content: editsJs });
       // @ts-expect-error __applyEdits is defined by edits.js inside the page
       await page.evaluate(([e, u, i]) => window.__applyEdits(e, u, i), [edits, plan.imageUrls, plan.iconSvgs] as const);
       await page.evaluate(() => document.fonts.ready);
     }
     let inspected: { comps: InspectedComp[]; tokens: Record<string, string>; review: Suggestion[] } | null = null;
-    if (inspect) {
+    let fixed: Edits | null = null;
+    if (inspect || autofix) {
       componentsJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'components.js'), 'utf8');
       await page.addScriptTag({ content: componentsJs });
+    }
+    if (autofix) {
+      // @ts-expect-error __autofix is defined by components.js inside the page
+      fixed = (await page.evaluate(([e, r, f, u, i]) => window.__autofix(e, r, f, u, i), [edits, plan.fill.rules, format, plan.imageUrls, plan.iconSvgs] as const)) as Edits;
+      await page.evaluate(() => document.fonts.ready);
+    }
+    if (inspect) {
       // @ts-expect-error __inspect is defined by components.js inside the page
       const seen = (await page.evaluate(() => window.__inspect())) as { comps: InspectedComp[]; tokens: Record<string, string> };
       // @ts-expect-error __review is defined by components.js inside the page
-      const review = (await page.evaluate(([e, r, f]) => window.__review(e, r, f), [edits, plan.fill.rules, format] as const)) as Suggestion[];
+      const review = (await page.evaluate(([e, r, f]) => window.__review(e, r, f), [fixed ?? edits, plan.fill.rules, format] as const)) as Suggestion[];
       inspected = { ...seen, review };
     }
     mark('fit');
@@ -116,7 +124,7 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
     mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
     mark('screenshot');
-    return { png, report, variant, slots, width, height, timing: t, inspected };
+    return { png, report, variant, slots, width, height, timing: t, inspected, fixed };
   } finally {
     await context.close();
   }

@@ -52,6 +52,10 @@ type Props = {
   onInfo: () => void;
   /** The Inspector's suggestions after each change (same review as the server). */
   onReview: (items: Suggestion[]) => void;
+  /** Claude is working on this design (its status), shown on the artboard like a collaborator. */
+  claude?: string | null;
+  /** Components Claude just changed: they flash. */
+  flash?: string[];
 };
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -66,7 +70,7 @@ type Drag = {
 
 // The design itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
-export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview }, ref) {
+export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview, claude, flash = [] }, ref) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [ready, setReady] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -367,6 +371,17 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
         style={{ width: plan.width, height: plan.height, transform: `scale(${zoom})` }}
       />
       {!ready && <div className="absolute inset-0 animate-pulse bg-foreground/[0.04]" />}
+      {claude && (
+        <>
+          {/* Claude at work: a live frame around the artboard and its name tag, like a collaborator. */}
+          <div className="pointer-events-none absolute -inset-[3px] z-10 rounded-[3px] ring-2 ring-[#0095FF] animate-pulse" />
+          <div className="pointer-events-none absolute -top-8 left-0 z-10 flex items-center gap-1.5 rounded-full bg-[#0095FF] py-1 pr-2.5 pl-1.5 text-[11px] font-medium whitespace-nowrap text-white shadow-[0_4px_12px_-4px_rgba(0,149,255,0.6)]">
+            <span className="flex size-4 items-center justify-center rounded-full bg-white text-[9px] font-bold text-[#D97757]">✳</span>
+            Claude · {claude}
+            <span className="flex gap-0.5">{[0, 1, 2].map((i) => <span key={i} className="size-1 animate-bounce rounded-full bg-white/80" style={{ animationDelay: `${i * 120}ms` }} />)}</span>
+          </div>
+        </>
+      )}
       <div
         className={`absolute inset-0 ${editing || panning ? 'pointer-events-none' : 'cursor-default'}`}
         onPointerDown={onPointerDown}
@@ -399,6 +414,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
             {badge && <span className={`absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums ${outside ? 'bg-[#F2385A]' : 'bg-primary'}`}>{outside ? `${badge}   Outside the safe area` : badge}</span>}
           </div>
         )}
+        {flash.map((id) => { const r = ready ? screen(boxOf(id)) : null; return r && <div key={`f-${id}`} className="pointer-events-none absolute rounded-[2px] bg-[#0095FF]/10 ring-2 ring-[#0095FF] animate-out fade-out-0 duration-[1600ms] fill-mode-forwards" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} />; })}
         {editBox && <div className="pointer-events-none absolute ring-1 ring-primary" style={{ left: editBox.x, top: editBox.y, width: editBox.w, height: editBox.h }} />}
         {marquee && <div className="pointer-events-none absolute border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
         {guides.map((g, i) => (

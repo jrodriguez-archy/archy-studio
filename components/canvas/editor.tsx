@@ -90,6 +90,10 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   const [tokens, setTokens] = useState<Token[]>([]);
   const [report, setReport] = useState<RenderReport | null>(null);
   const [review, setReview] = useState<Suggestion[]>([]);
+  const [claude, setClaude] = useState<string | null>(null);
+  const [flash, setFlash] = useState<{ ids: string[]; at: number } | null>(null);
+  useEffect(() => { if (!claude) return; const t = setTimeout(() => setClaude(null), 90_000); return () => clearTimeout(t); }, [claude]);
+  useEffect(() => { if (!flash) return; const t = setTimeout(() => setFlash(null), 1800); return () => clearTimeout(t); }, [flash]);
   const [selected, setSelected] = useState<string[]>([]);
   const [hover, setHover] = useState<string | null>(null);
   const [, setInfoTick] = useState(0);
@@ -104,6 +108,8 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   // ---- History ----
   const snapRef = useRef(snap);
   snapRef.current = snap;
+  const compsRef = useRef<Comp[]>([]);
+  compsRef.current = comps;
   const pastRef = useRef(past);
   pastRef.current = past;
   const futureRef = useRef(future);
@@ -306,13 +312,21 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
       db.realtime.setAuth(data.session?.access_token ?? null);
       channel = db.channel(`canvas:${pieceId}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=eq.${pieceId}` }, (payload) => {
-          const row = payload.new as { slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null };
+          const row = payload.new as { slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null };
+          // Claude at work on this design: shown on the artboard until its edit lands (or 90 s pass).
+          if (row?.claude_working_at && Date.now() - new Date(row.claude_working_at).getTime() < 90_000) setClaude(row.claude_status ?? 'Working on the design');
+          else if (row && !row.claude_working_at) setClaude(null);
           if (row?.updated_by !== 'claude' || !row.version || row.version <= version.current) return;
           version.current = row.version;
           const next = { slots: row.slots ?? {}, edits: row.edits ?? {} };
+          // What Claude changed flashes on the piece.
+          const prev = snapRef.current;
+          const ids = new Set(Object.keys({ ...prev.edits, ...next.edits }).filter((id) => id !== THEME && JSON.stringify(prev.edits[id]) !== JSON.stringify(next.edits[id])));
+          for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = compsRef.current.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
+          setFlash({ ids: [...ids], at: Date.now() });
           synced.current = JSON.stringify(cleanSnap(next));
           commit(next); // one step: undo takes it back
-          toast(`Claude: ${row.note ?? 'edited the piece'}`, { action: { label: 'Undo', onClick: () => undo() } });
+          toast(`Claude ${row.note ? row.note.charAt(0).toLowerCase() + row.note.slice(1) : 'edited the design'}`, { action: { label: 'Undo', onClick: () => undo() } });
         })
         .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });
     })();
@@ -438,6 +452,8 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           <div className="absolute top-0 left-0" style={{ transform: `translate(${vp.pan.x}px, ${vp.pan.y}px)` }}>
             <Stage
               ref={stage}
+              claude={claude}
+              flash={flash?.ids ?? []}
               plan={plan}
               edits={snap.edits}
               zoom={vp.zoom}

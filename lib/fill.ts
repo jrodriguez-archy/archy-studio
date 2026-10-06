@@ -28,6 +28,8 @@ export type RenderInput = {
   edits?: Edits;
   /** Also describe the piece's components (scripts/components.js), for the Canvas tools of the MCP. */
   inspect?: boolean;
+  /** Apply the Inspector's automatic fixes in the page (several rounds) and return the fixed edits. */
+  autofix?: boolean;
 };
 
 export class MissingRequired extends Error {

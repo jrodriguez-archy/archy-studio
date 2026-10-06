@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.5.1 (2026-10-05)
+
+- When Archy Studio is not signed in, Claude gives the same five steps to connect it (`/mcp`, archy-studio, Sign in, Allow in the browser, come back), in Claude Code, the desktop app and Cowork.
+
 ## archy-studio 0.5.0 (2026-10-05)
 
 - Projects: pieces can be filed into project folders in the Studio gallery, shared with the team or personal. New tools `list_projects` and `create_project`; `render` takes an optional `project`. Claude only files pieces when the requester names a project.

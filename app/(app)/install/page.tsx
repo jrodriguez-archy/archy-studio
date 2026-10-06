@@ -37,9 +37,11 @@ export default function InstallPage() {
         <ol className="space-y-3">
           <Step n={1}>Click <strong className="font-medium text-foreground">+</strong>, then <strong className="font-medium text-foreground">Plugins → Add marketplace</strong>, and enter <CopyText text="jrodriguez-archy/archy-studio" />.</Step>
           <Step n={2}>Install <strong className="font-medium text-foreground">Archy - Studio</strong>.</Step>
-          <Step n={3}>Start a new conversation. The first time, Claude asks you to connect Archy Studio: sign in here and click <strong className="font-medium text-foreground">Allow</strong>.</Step>
-          <Step n={4}>Ask for a piece in your own words. Claude reads the brief, asks once for anything missing and picks the template.</Step>
+          <Step n={3}>Connect your account, once. In a new conversation type <CopyText text="/mcp" /> and send it. Find <strong className="font-medium text-foreground">archy-studio</strong> (it shows <span className="text-foreground/60">needs auth</span>) and click <strong className="font-medium text-foreground">Sign in</strong>.</Step>
+          <Step n={4}>Your browser opens Archy Studio. Sign in with your Archy email and click <strong className="font-medium text-foreground">Allow</strong>. Then go back to Claude.</Step>
+          <Step n={5}>Ask for a piece in your own words. Claude reads the brief, asks once for anything missing and picks the template.</Step>
         </ol>
+        <p className="text-foreground/40">You can also connect it from <strong className="font-medium text-foreground/60">Connectors</strong> in the Claude app. If Claude ever says Archy Studio is not signed in, repeat steps 3 and 4.</p>
       </section>
 
       <section className="mt-10 space-y-3">

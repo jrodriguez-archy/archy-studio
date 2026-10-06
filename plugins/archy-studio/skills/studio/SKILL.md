@@ -33,6 +33,7 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 
 | Symptom | What to do |
 |---|---|
+| Archy Studio is not signed in (the tools need authentication, or ask to sign in) | Only they can sign in. Give these steps, numbered: 1. Type `/mcp` in this conversation and send it. 2. Find **archy-studio** (it shows "needs auth"). 3. Click **Sign in**. 4. The browser opens Archy Studio: sign in with their Archy email and click **Allow**. 5. Come back and say they are done. They can also connect it from **Connectors** in the Claude app. Then check the tools respond and continue with the piece |
 | The Archy Studio tools are missing | Ask them to make sure the **Archy - Studio** plugin is installed and enabled, then start a new conversation |
 | A tool returns an error about the service | Try once more; if it fails again, tell them to send the error to Marketing & Design |
 | The first render is slow (several seconds) | Normal: the renderer is starting up. The next ones are faster |

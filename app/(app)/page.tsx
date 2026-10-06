@@ -2,23 +2,24 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { titleOf } from '@/lib/catalog';
+import { signedUrls, thumbPath } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
-import { signedUrls } from '@/lib/renders';
 import { currentUser } from '@/lib/team';
 
 export const metadata = { title: 'Gallery · Archy Studio' };
 export const dynamic = 'force-dynamic';
 
-type Row = { id: string; template: string; format: string; storage_path: string; width: number; height: number; created_at: string; user_id: string | null; profiles: { email: string; full_name: string | null } | null };
+type Row = { id: string; template: string; format: string; storage_path: string; width: number; height: number; created_at: string; profiles: { email: string; full_name: string | null } | null };
 
 export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ mine?: string }> }) {
   const { mine } = await searchParams;
   const me = await currentUser();
-  let q = supabaseAdmin().from('renders').select('id, template, format, storage_path, width, height, created_at, user_id, profiles(email, full_name)').order('created_at', { ascending: false }).limit(60);
+  let q = supabaseAdmin().from('renders').select('id, template, format, storage_path, width, height, created_at, profiles(email, full_name)').order('created_at', { ascending: false }).limit(60);
   if (mine && me) q = q.eq('user_id', me.id);
-  const { data } = await q;
-  const rows = (data ?? []) as unknown as Row[];
-  const urls = await signedUrls(rows.map((r) => r.storage_path));
+  const rows = ((await q).data ?? []) as unknown as Row[];
+  const [thumbs, files] = await Promise.all([signedUrls(rows.map((r) => thumbPath(r.storage_path))), signedUrls(rows.map((r) => r.storage_path), 60 * 60, true)]);
+  const titles = Object.fromEntries(await Promise.all([...new Set(rows.map((r) => r.template))].map(async (t) => [t, await titleOf(t)])));
 
   return (
     <div className="space-y-6">
@@ -33,23 +34,34 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
         </div>
       </div>
       {rows.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No pieces yet. Ask Claude for one with the Archy Studio plugin.</CardContent></Card>
+        <Card>
+          <CardContent className="space-y-2 py-12 text-center">
+            <p className="font-medium">No pieces yet</p>
+            <p className="text-sm text-muted-foreground">Ask Claude for one with the Archy Studio plugin. <Link href="/install" className="text-primary underline-offset-4 hover:underline">How to install</Link></p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-2 items-start gap-4 md:grid-cols-3 lg:grid-cols-4">
           {rows.map((r) => (
             <Card key={r.id} className="gap-3 overflow-hidden py-0">
-              <a href={urls[r.storage_path]} target="_blank" rel="noreferrer" className="block bg-muted">
+              <div className="bg-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={urls[r.storage_path]} alt={`${r.template} ${r.format}`} loading="lazy" className="w-full object-contain" style={{ aspectRatio: `${r.width} / ${r.height}` }} />
-              </a>
-              <CardContent className="space-y-1 px-3 pb-3">
+                <img src={thumbs[thumbPath(r.storage_path)] ?? files[r.storage_path]} alt={`${titles[r.template]} ${r.format}`} loading="lazy"
+                  className="w-full object-contain" style={{ aspectRatio: `${r.width} / ${r.height}` }} />
+              </div>
+              <CardContent className="space-y-2 px-3 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium">{r.template.replace(/-/g, ' ')}</span>
+                  <span className="truncate text-sm font-medium">{titles[r.template]}</span>
                   <Badge variant="secondary" className="ml-auto capitalize">{r.format}</Badge>
                 </div>
-                <p className="truncate text-xs text-muted-foreground">
-                  {r.profiles?.full_name ?? r.profiles?.email ?? 'Before sign-in'} · {new Date(r.created_at).toLocaleDateString()}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                    {r.profiles?.full_name ?? r.profiles?.email ?? 'Before sign-in'} · {new Date(r.created_at).toLocaleDateString()}
+                  </p>
+                  {files[r.storage_path] && (
+                    <Button size="xs" variant="outline" nativeButton={false} render={<a href={files[r.storage_path]} />}>Download</Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

@@ -8,7 +8,7 @@ const notNeeded = ['./templates/*/reference/**', './templates/*/source/**'];
 /** @type {import('next').NextConfig} */
 export default {
   // Chromium and Playwright stay as runtime node_modules, not bundled.
-  serverExternalPackages: ['@sparticuz/chromium', 'playwright-core'],
-  outputFileTracingIncludes: { '/api/render': renderFiles, '/mcp': renderFiles },
-  outputFileTracingExcludes: { '/api/render': notNeeded, '/mcp': notNeeded },
+  serverExternalPackages: ['@sparticuz/chromium', 'playwright-core', 'sharp'],
+  outputFileTracingIncludes: { '/api/render': renderFiles, '/mcp': renderFiles, '/api/preview/[template]/[format]': renderFiles },
+  outputFileTracingExcludes: { '/api/render': notNeeded, '/mcp': notNeeded, '/api/preview/[template]/[format]': notNeeded },
 };

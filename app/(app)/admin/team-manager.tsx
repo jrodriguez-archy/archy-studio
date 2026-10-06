@@ -53,8 +53,8 @@ export function TeamManager({ team, me }: { team: Member[]; me: string }) {
         </CardContent>
       </Card>
 
-      <Card className="py-0">
-        <Table>
+      <Card className="overflow-x-auto py-0">
+        <Table className="min-w-[560px]">
           <TableHeader>
             <TableRow>
               <TableHead className="pl-4">Email</TableHead>

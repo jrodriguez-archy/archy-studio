@@ -9,6 +9,10 @@
     "app/mcp/route.ts": {
       "memory": 2048,
       "maxDuration": 60
+    },
+    "app/api/preview/[template]/[format]/route.ts": {
+      "memory": 2048,
+      "maxDuration": 60
     }
   }
 }

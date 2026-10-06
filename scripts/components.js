@@ -186,6 +186,33 @@
     const solid = visible.filter((c) => ['text', 'button', 'photo', 'partner', 'archy', 'tag', 'icon'].includes(c.kind));
     const boxes = new Map(visible.map((c) => [c.id, boxOf(node(c.id))]));
 
+    const near = new Map();
+    const nearMiss = (c, el, b, b0) => {
+      let best = null;
+      const art = { x: 0, y: 0, w: W, h: H };
+      const targets = [
+        ...(safe ? [{ name: 'the safe area', now: safe, then: safe }] : []),
+        { name: 'the middle of the piece', now: { x: W / 2, y: H / 2, w: 0, h: 0 }, then: { x: W / 2, y: H / 2, w: 0, h: 0 } },
+        { name: 'the piece', now: art, then: art },
+        ...visible.filter((o) => o.id !== c.id && !el.contains(node(o.id)) && !node(o.id).contains(el))
+          .map((o) => ({ name: o.name, now: boxes.get(o.id), then: baseOf(node(o.id)) })).filter((t) => t.then),
+      ];
+      const edges = (x, axis) => (axis === 'x' ? [x.x, x.x + x.w / 2, x.x + x.w] : [x.y, x.y + x.h / 2, x.y + x.h]);
+      for (const axis of ['x', 'y']) {
+        if (Math.abs(axis === 'x' ? b.x - b0.x : b.y - b0.y) < 0.5) continue; // it did not move this way
+        const p = edges(b, axis), p0 = edges(b0, axis);
+        for (const t of targets) {
+          const q = edges(t.now, axis), q0 = edges(t.then, axis);
+          for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+            if (Math.abs(p0[i] - q0[j]) >= 0.5) continue; // not aligned in the design
+            const d = q[j] - p[i];
+            if (Math.abs(d) >= 1 && Math.abs(d) <= 8 && (!best || Math.abs(d) < Math.abs(best.d))) best = { d, axis, name: t.name };
+          }
+        }
+      }
+      return best;
+    };
+
     for (const c of visible) {
       const el = node(c.id), b = boxes.get(c.id), b0 = baseOf(el);
       if (!b0) continue;
@@ -198,22 +225,12 @@
       } else if (safe && !inside(b, safe, 2) && inside(b0, safe, 2) && c.kind !== 'decoration') {
         out.push({ id: c.id, level: 'warn', title: `${c.name} is outside the safe area`, detail: own ? 'Keep it inside the margins the design uses.' : 'Another change pushed it past the margins.', ...(own ? { fix: { dx: Math.round(Math.min(0, safe.x + safe.w - b.x - b.w) - Math.min(0, b.x - safe.x)), dy: Math.round(Math.min(0, safe.y + safe.h - b.y - b.h) - Math.min(0, b.y - safe.y)) } } : {}) });
       }
-      // Almost lined up with something: a few px off an edge or centre.
+      // Almost aligned: an alignment the design had (an edge or centre shared with another component,
+      // the safe area or the middle of the piece) is now off by a few px. Only for what moved, and only
+      // design alignments, so fixing one never creates another.
       if (moved && c.kind !== 'decoration') {
-        let best = null;
-        const targets = [...(safe ? [{ name: 'the safe area', b: safe }] : []), { name: 'the piece', b: { x: 0, y: 0, w: W, h: H } },
-          ...visible.filter((o) => o.id !== c.id && !el.contains(node(o.id)) && !node(o.id).contains(el)).map((o) => ({ name: o.name, b: boxes.get(o.id) }))];
-        for (const axis of ['x', 'y']) {
-          const p = axis === 'x' ? [b.x, b.x + b.w / 2, b.x + b.w] : [b.y, b.y + b.h / 2, b.y + b.h];
-          for (const t of targets) {
-            const q = axis === 'x' ? [t.b.x, t.b.x + t.b.w / 2, t.b.x + t.b.w] : [t.b.y, t.b.y + t.b.h / 2, t.b.y + t.b.h];
-            for (const a of p) for (const z of q) {
-              const d = z - a;
-              if (Math.abs(d) >= 1 && Math.abs(d) <= 8 && (!best || Math.abs(d) < Math.abs(best.d))) best = { d, axis, name: t.name };
-            }
-          }
-        }
-        if (best) out.push({ id: c.id, level: 'tip', title: `${c.name} is almost aligned`, detail: `${Math.abs(Math.round(best.d))} px off ${best.name}.`, fix: best.axis === 'x' ? { dx: Math.round(best.d), dy: 0 } : { dx: 0, dy: Math.round(best.d) } });
+        const best = nearMiss(c, el, b, b0);
+        if (best) near.set(c.id, best);
       }
       if (!own) continue;
       // Texts: more lines than designed, smaller than readable.
@@ -228,6 +245,27 @@
         const k = b.w / b0.w;
         if (k < 0.6) out.push({ id: c.id, level: 'tip', title: 'The Archy logo is small', detail: `${Math.round(k * 100)}% of its designed size.` });
       }
+    }
+
+    // Report near misses by cause: when every visible item of a group is off by the same amount, the
+    // group moved; one suggestion for the group, fixed by moving the group (its items stay together).
+    const under = (id, gid) => { for (let p = comps.find((y) => y.id === id)?.parent; p; p = comps.find((y) => y.id === p)?.parent) if (p === gid) return true; return false; };
+    const kidsOf = (gid) => visible.filter((x) => under(x.id, gid));
+    const groups = comps.filter((g) => g.kind === 'group' || g.kind === 'tag');
+    const taken = new Set();
+    for (const g of groups) {
+      if (taken.has(g.id)) continue;
+      const kids = kidsOf(g.id);
+      if (kids.length < 2) continue;
+      const first = near.get(kids[0].id);
+      if (!first || !kids.every((k) => { const n = near.get(k.id); return n && n.axis === first.axis && Math.abs(n.d - first.d) < 0.5; })) continue;
+      for (const k of kids) { near.delete(k.id); taken.add(k.id); }
+      for (const sub of groups) if (under(sub.id, g.id)) taken.add(sub.id);
+      near.set(g.id, { ...first, group: g.name });
+    }
+    for (const [id, n] of near) {
+      const c = comps.find((x) => x.id === id);
+      out.push({ id, level: 'tip', title: `${c.name} is ${Math.abs(Math.round(n.d))} px off ${n.name}`, detail: n.group ? 'Its items moved together; this puts them back in line.' : 'It was aligned with it in the design.', fix: n.axis === 'x' ? { dx: Math.round(n.d), dy: 0 } : { dx: 0, dy: Math.round(n.d) } });
     }
 
     // Things that now sit on top of each other but did not in the design.
@@ -254,6 +292,27 @@
       if (ratio0 && ratio < 3 && ratio < ratio0 - 0.2) out.push({ id: c.id, level: 'warn', title: `${c.name} is hard to read`, detail: `Low contrast with what is behind it (${ratio.toFixed(1)}:1). Try another colour or theme.` });
     }
     return out;
+  };
+
+  // Fix all: apply every automatic fix, draw again, review again, until nothing fixable is left (at
+  // most 4 rounds). Returns the edits to keep; the page is left as those edits draw it.
+  window.__autofix = function autofix(edits, rules, format, urls, icons) {
+    const e = JSON.parse(JSON.stringify(edits ?? {}));
+    for (let round = 0; round < 4; round++) {
+      const fixes = window.__review(e, rules, format).filter((x) => x.fix && (x.fix.dx || x.fix.dy));
+      if (!fixes.length) break;
+      const done = new Set();
+      for (const f of fixes) {
+        if (done.has(f.id)) continue;
+        done.add(f.id);
+        const box = { ...(e[f.id]?.box ?? {}) };
+        box.dx = Math.round((box.dx ?? 0) + f.fix.dx);
+        box.dy = Math.round((box.dy ?? 0) + f.fix.dy);
+        e[f.id] = { ...(e[f.id] ?? {}), box };
+      }
+      window.__applyEdits(e, urls, icons);
+    }
+    return e;
   };
 
   // Where "align" puts a component: inside its nearest container that has room (without its padding),

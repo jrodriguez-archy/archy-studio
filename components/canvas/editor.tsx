@@ -320,6 +320,14 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     editLayer(sg.id, { box: { dx: (b.dx ?? 0) + sg.fix.dx, dy: (b.dy ?? 0) + sg.fix.dy } });
   };
   const warnings = suggestions.filter((x) => x.level === 'warn').length;
+  const fixable = suggestions.filter((x) => x.fix).length;
+  // Fix all: every automatic fix, settled in the page over a few rounds, as one undo step.
+  const fixAll = () => {
+    const next = stage.current?.autofix(snapRef.current.edits);
+    if (!next) return;
+    const cur = snapRef.current;
+    commit({ ...cur, edits: cleanEdits(next) });
+  };
 
   const download = () => start(async () => {
     const r = await exportAction(pieceId, snap.slots, snap.edits);
@@ -366,6 +374,10 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
             {suggestions.length} suggestion{suggestions.length > 1 ? 's' : ''}
           </button>
         )}
+        {fixable > 0 && (
+          <button type="button" onClick={fixAll} title="Apply every automatic fix (one undo step)"
+            className="flex h-8 items-center rounded-md px-2.5 text-[12px] font-medium text-primary hover:bg-[#E6F4FF]">Fix all</button>
+        )}
         <button type="button" onClick={download} disabled={busy}
           className="flex h-8 items-center gap-1.5 rounded-md bg-foreground/[0.05] px-3 text-foreground/80 hover:bg-foreground/[0.09] disabled:opacity-50">
           <HugeiconsIcon icon={Download04Icon} className="size-3.5" /> Download
@@ -385,7 +397,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           )}
           {tab === 'library' && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
           {tab === 'assets' && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
-          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} />}
+          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onFixAll={fixAll} />}
         </CanvasPanel>
 
         <main

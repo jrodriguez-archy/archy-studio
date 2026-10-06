@@ -11,6 +11,7 @@ type Win = Window & {
   __fill: (a: unknown) => Promise<RenderReport>;
   __applyEdits: (e: Edits, u: Record<string, string>, i: Record<string, string>) => void;
   __review: (e: Edits, rules: unknown, format: string) => Suggestion[];
+  __autofix: (e: Edits, rules: unknown, format: string, u: Record<string, string>, i: Record<string, string>) => Edits;
   __components: () => { comps: Comp[]; safe: Box };
   __alignBox: (id: string) => Box | null;
 };
@@ -24,6 +25,8 @@ export type StageHandle = {
   rect: (id: string) => Box | null;
   /** The box a component aligns in: its container without padding, or the safe area. */
   alignBox: (id: string) => Box | null;
+  /** The edits with every automatic Inspector fix applied (worked out in the page, several rounds). */
+  autofix: (edits: Edits) => Edits | null;
 };
 
 export type SelectMode = 'replace' | 'toggle';
@@ -97,6 +100,10 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     info: (id) => { const n = el(id); return n ? readInfo(n, live.current.edits[id]?.box?.scale ?? 1) : null; },
     rect: boxOf,
     alignBox: (id) => win()?.__alignBox(id) ?? null,
+    autofix: (e) => {
+      const w = win(), p = live.current.plan;
+      return w?.__autofix ? w.__autofix(e, p.fill.rules, p.format, p.imageUrls, p.iconSvgs) : null;
+    },
   }), [el, boxOf]);
 
   // A new fill (copy, slot image, variant) reloads the page; edits alone are re-applied in place.

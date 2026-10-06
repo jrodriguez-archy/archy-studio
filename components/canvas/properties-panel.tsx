@@ -250,10 +250,10 @@ export function PiecePanel({ pieceId, title, seenAt }: { pieceId?: string; title
     <div className="space-y-5 px-4 py-4 text-[12px]">
       <section className="space-y-2.5">
         <p className="text-[13px] font-medium">Claude</p>
-        <div className={`flex items-start gap-2 rounded-md px-2.5 py-2 ${connected ? 'bg-[#DEF2E6] text-[#11845B]' : 'bg-foreground/[0.04] text-foreground/60'}`}>
-          <span className={`mt-1 size-1.5 shrink-0 rounded-full ${connected ? 'bg-[#05C168]' : 'bg-foreground/30'}`} />
-          <p>{connected ? <>Connected to your Claude · used {ago(seenAt!)}</> : 'Not connected to your Claude yet'}</p>
-        </div>
+        <p className="flex items-center gap-1.5 truncate text-foreground/55">
+          <span className={`size-1.5 shrink-0 rounded-full ${connected ? 'bg-[#05C168]' : 'bg-foreground/25'}`} />
+          {connected ? <>Connected <span className="text-foreground/35">· {ago(seenAt!)}</span></> : 'Not connected yet'}
+        </p>
         {connected ? (
           <button type="button" disabled={!pieceId}
             onClick={() => window.open(`https://claude.ai/new?q=${encodeURIComponent(`On my Archy Studio Canvas piece "${title}" (canvas id ${pieceId}): `)}`, '_blank', 'noopener')}
@@ -281,9 +281,9 @@ export function PiecePanel({ pieceId, title, seenAt }: { pieceId?: string; title
 const ago = (iso: string) => {
   const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
   if (m < 2) return 'just now';
-  if (m < 60) return `${m} min ago`;
+  if (m < 60) return `${m}m ago`;
   const h = Math.round(m / 60);
-  return h < 24 ? `${h} h ago` : `${Math.round(h / 24)} d ago`;
+  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 };
 
 function Tip({ keys, text, more, moreText }: { keys: string[]; text: string; more: string[]; moreText: string }) {

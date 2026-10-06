@@ -22,6 +22,7 @@
     }
   },
   "purpose": "event-cover",
+  "coverOf": "night-out-venue",
   "essential": [
     "headline-1",
     "headline-2",

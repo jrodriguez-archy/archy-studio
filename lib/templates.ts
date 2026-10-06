@@ -61,6 +61,10 @@ export type TemplateConfig = {
   /** Top-level group in the catalog (the Paper master it comes from): events, ads... */
   category?: string;
   purpose?: string;
+  /** The event page cover (1200×900) that goes with this style: another template id. */
+  cover?: string;
+  /** On a cover template: the style it belongs to. */
+  coverOf?: string;
   /** Slots the template cannot go without; anything not listed in optional counts as essential. */
   essential?: string[];
   /** Minor slots that may be left out (value and label go, the layout closes up). */

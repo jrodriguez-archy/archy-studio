@@ -15,11 +15,11 @@ export type NavSection = { label: string; items: NavItem[] };
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const me = await currentUser();
   const sections: NavSection[] = [
-    { label: 'Library', items: [{ href: '/', label: 'Gallery', icon: 'gallery' }, { href: '/templates', label: 'Templates', icon: 'templates' }] },
+    { label: 'Library', items: [{ href: '/', label: 'Gallery', icon: 'gallery' }, { href: '/templates', label: 'Templates', icon: 'templates' }, { href: '/archive', label: 'Archive', icon: 'archive' }] },
     { label: 'Resources', items: [{ href: '/install', label: 'Install', icon: 'install' }] },
     ...(me?.is_admin ? [{ label: 'Admin', items: [{ href: '/admin', label: 'Team', icon: 'team' as const }] }] : []),
   ];
-  const projects: ProjectLink[] = me ? (await listProjects(me).catch(() => [])).map(({ id, name, shared, count }) => ({ id, name, shared, count })) : [];
+  const projects: ProjectLink[] = me ? (await listProjects(me).catch(() => [])).map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id })) : [];
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[240px_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-dvh flex-col border-r border-foreground/[0.06] bg-[#FAFAFA] px-3 py-6 md:flex">
@@ -33,7 +33,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
                 <p className="px-2 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/35">{s.label}</p>
                 {s.items.map((i) => <NavLink key={i.href} href={i.href} icon={i.icon}>{i.label}</NavLink>)}
               </div>
-              {n === 0 && <ProjectsNav projects={projects} />}
+              {n === 0 && <ProjectsNav projects={projects} me={me ? { id: me.id, is_admin: me.is_admin } : undefined} />}
             </Fragment>
           ))}
         </nav>
@@ -43,7 +43,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <SignOutLink />
         </div>
       </aside>
-      <MobileNav sections={sections} projects={projects} email={me?.email ?? ''} />
+      <MobileNav sections={sections} projects={projects} me={me ? { id: me.id, is_admin: me.is_admin } : undefined} email={me?.email ?? ''} />
 
       <main className="min-w-0 px-4 pt-5 pb-16 sm:px-6 md:pt-8 lg:px-10">{children}</main>
     </div>

@@ -34,6 +34,7 @@
     }
   },
   "purpose": "speaker-invite",
+  "cover": "event-cover-speaker",
   "essential": [
     "headline",
     "image-speaker",

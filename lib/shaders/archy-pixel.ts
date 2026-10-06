@@ -14,7 +14,8 @@ export const BLOBS: [number, number, number, number][] = [
 ];
 export const SCALE = 1.08;
 export const ORBIT = 0.1;
-export const TRAIL = 16;
+export const TRAIL = 32;
+export const RIPPLES = 4;
 
 // Same recursion as bayer() in the brand tool, values (v + 0.5) / 64, row-major.
 export const BAYER: number[] = (() => {
@@ -34,6 +35,7 @@ export const TOKENS = {
   white: hex('#FFFFFF'),
   neutralLightest: hex('#EEEEEE'),
   neutralSuperLight: hex('#F7F7F7'),
+  blueTint100: hex('#E6F4FF'),
   blueTint200: hex('#CCEAFF'),
   blueTint300: hex('#66BFFF'),
   skyBlue400: hex('#0095FF'),
@@ -80,13 +82,16 @@ uniform float u_floor;       // minimum field level, so no area stays flat white
 uniform float u_noise;       // 0 = pure Bayer, 1 = pure random threshold (breaks banding into fine grain)
 uniform vec3 u_base;
 uniform vec3 u_front;
-uniform vec3 u_trail[${TRAIL}];  // cursor trail: x, y (CSS px, top-left origin), weight 0..1
+uniform vec4 u_trail[${TRAIL}];  // cursor trail: x, y (CSS px, top-left origin), weight 0..1, age 0..1
 uniform float u_radius;      // CSS px
-uniform float u_glow;        // overall cursor intensity 0..1
-uniform vec3 u_b1;
-uniform vec3 u_b2;
-uniform vec3 u_b3;
-uniform vec3 u_b4;
+uniform float u_intensity;   // peak strength of the blue (1 = solid royal blue at the centre)
+uniform float u_spread;      // how much a point grows as it fades (ink spreading), e.g. 0.35
+uniform float u_wobble;      // organic edge: noise displacement as a fraction of the radius
+uniform vec4 u_ripples[${RIPPLES}];  // click waves: x, y (CSS px), progress 0..1, on (0/1)
+uniform float u_rippleSize;  // CSS px a wave travels
+uniform vec3 u_t1;           // trail: very light blues
+uniform vec3 u_t2;
+uniform vec3 u_t3;
 
 out vec4 fragColor;
 
@@ -105,6 +110,18 @@ float hash(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
   return fract(p.x * p.y);
+}
+
+// Smooth value noise (0..1) for the organic edge of the blue.
+float vnoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
 }
 
 float field(vec2 px, vec2 wh, float t) {
@@ -140,20 +157,42 @@ void main() {
   float idx = clamp(floor(v * u_steps + gthr), 0.0, u_steps);
   vec3 col = mix(u_base, u_front, idx / u_steps);
 
-  // Cursor: same dithering into the blue ramp.
-  float g = 0.0;
+  // Cursor: a ribbon of soft points that melt together, spread as they fade and have a slowly
+  // drifting, noisy edge; dithered into the blue ramp like the ground.
+  vec2 q = center / u_radius;
+  float tt = u_time;
+  vec2 warp = vec2(
+    vnoise(q * 1.3 + vec2(tt * 0.15, 0.0)) + 0.5 * vnoise(q * 2.7 - vec2(0.0, tt * 0.11)),
+    vnoise(q * 1.3 + vec2(17.0, -tt * 0.13)) + 0.5 * vnoise(q * 2.7 + vec2(9.0 + tt * 0.09, 3.0))
+  ) / 1.5 - 0.5;
+  vec2 pos = center + warp * 2.0 * u_wobble * u_radius;
+  float sum = 0.0;
   for (int k = 0; k < ${TRAIL}; k++) {
-    vec3 p = u_trail[k];
-    vec2 dd = center - p.xy;
-    float r = u_radius * (0.55 + 0.45 * p.z);
-    g = max(g, p.z * exp(-dot(dd, dd) / (2.0 * r * r)));
+    vec4 p = u_trail[k];
+    if (p.z <= 0.0) continue;
+    vec2 dd = pos - p.xy;
+    float r = u_radius * (0.42 + 0.3 * p.z) * (1.0 + u_spread * p.w);
+    sum += p.z * exp(-dot(dd, dd) / (2.0 * r * r));
   }
-  g *= u_glow;
-  float b = clamp(floor(g * 4.0 + thr - 0.3), 0.0, 4.0);
-  if (b >= 4.0) col = u_b4;
-  else if (b >= 3.0) col = u_b3;
-  else if (b >= 2.0) col = u_b2;
-  else if (b >= 1.0) col = u_b1;
+  float g = (1.0 - exp(-0.5 * sum)) * u_intensity;
+  // Click: a soft hole that opens in the trail from the click, grows and closes again (same organic edge).
+  float w = 0.0;
+  for (int k = 0; k < ${RIPPLES}; k++) {
+    vec4 rp = u_ripples[k];
+    if (rp.w <= 0.0) continue;
+    float pr = rp.z;
+    float reach = (1.0 - pow(1.0 - pr, 3.0)) * u_rippleSize;   // fast start, slow end
+    float d = length(pos - rp.xy);
+    float fill = 1.0 - smoothstep(reach * 0.55, reach, d);       // soft disc, densest inside the front
+    w = max(w, fill * pow(1.0 - pr, 1.3));
+  }
+
+  // The trail in the light blues, dithered in three steps (tint 100, 200, 300 at the core), minus the hole.
+  float lv = g * (1.0 - clamp(w, 0.0, 1.0));
+  float tl = clamp(floor(lv * 3.0 + thr - 0.3), 0.0, 3.0);
+  if (tl >= 3.0) col = u_t3;
+  else if (tl >= 2.0) col = u_t2;
+  else if (tl >= 1.0) col = u_t1;
 
   fragColor = vec4(col, 1.0);
 }

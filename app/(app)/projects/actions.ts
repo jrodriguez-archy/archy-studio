@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createProject, deleteProject, movePiece, updateProject } from '@/lib/projects';
+import { createProject, deleteProject, updateProject } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 
 type Result<T = undefined> = { ok: true; data?: T } | { ok: false; error: string };
@@ -24,4 +24,3 @@ export async function createProjectAction(name: string, shared: boolean) {
 export async function renameProjectAction(id: string, name: string) { return run((me) => updateProject(me, id, { name })); }
 export async function shareProjectAction(id: string, shared: boolean) { return run((me) => updateProject(me, id, { shared })); }
 export async function deleteProjectAction(id: string) { return run((me) => deleteProject(me, id)); }
-export async function movePieceAction(renderId: string, projectId: string | null) { return run((me) => movePiece(me, renderId, projectId)); }

@@ -11,6 +11,7 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 
 ## Steps
 
+0. **A template ID or a Studio prompt.** When the person gives a template ID (like `booth-icon-list`, copied from the Studio app) or a `/templates?t=` link, use that template directly: skip `match_templates`, call `get_template`, ask once only for missing essential facts, then render. A prompt copied from the gallery ("Make a new version of… Keep it in set <id>") renders in that `set`.
 1. **Read the whole brief first.** List the facts it brings: event name, city, venue, dates, time, booth, photos (city, venue, speaker, person), logos (partner, offer), speaker name, role, company. Facts are things that must come from the requester; headlines and subheads you write from the brief.
 2. **Find the templates that fit.** Call `match_templates` with those facts (and the purpose when clear: booth invite, day-before reminder, hosted evening, speaker invite, event cover, spotlight). It lists the templates that can be made with what there is, best first, and what the others are missing.
 3. **Ask once, well.** In one short message, ask for what would unlock a better template or complete the piece: a city photo, the partner logo, the booth number, the time. Say why in a few words ("with a city photo I can use the photo version"). Never invent facts, names, titles or numbers.
@@ -23,6 +24,8 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 7. **Render.** Call `render` with the template, the slots and the formats they asked for (all formats when they did not say).
    - If a format comes back **not rendered** because the copy does not fit, shorten the copy to the maximum the tool reports, keeping the meaning (`San Francisco Bay Area, CA` → `SF Bay Area, CA`), and render again. Tell them what you shortened. If shortening would change a fact (a name, a title), ask instead.
    - Never deliver a format that was not rendered.
+   - **One brief, one set.** Every render answer ends with `Set: <id>`. Pass that id as `set` to every later render of the same brief (more formats, a retry after shortening copy, another template or option), so the gallery stacks them as one card. A new brief starts without `set`.
+   - **Event page cover.** When the template has a `cover` in `list_templates`, offer the matching event page cover (1200×900, for the Webflow event page) in one line after delivering. If they want it, render it with the same facts and the same `set`.
    - **Projects.** When the requester names a project or campaign ("save it in Chicago Midwinter"), call `list_projects` and pass it to `render` as `project`. If it does not exist, create it with `create_project`: shared with the team unless they say it is only for them. When they do not mention a project, do not ask.
 8. **Deliver.**
    - Show the images.

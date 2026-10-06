@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Folder01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
+import { Archive02Icon, Folder01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
 
-export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon };
+export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon, archive: Archive02Icon };
 export type NavIcon = keyof typeof NAV_ICONS;
 
 const ROW = 'flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] transition-colors';

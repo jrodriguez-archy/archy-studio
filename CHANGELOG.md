@@ -1,5 +1,11 @@
 # Changelog
 
+## archy-studio 0.6.0 (2026-10-06)
+
+- Event page covers belong to their style: `list_templates` shows `cover` (and `cover_of` on covers). After a style with a cover, Claude offers the matching cover and renders it in the same set.
+- Template IDs: a template ID or a Studio template link goes straight to that template (no matching). Prompts copied from the Studio gallery keep the new version in the same set.
+- Sets: everything made from one brief (its formats, retries and options) is one stacked card in the gallery. `render` answers with `Set: <id>` and takes an optional `set`; without it, a retry of the same template and headline within 30 minutes joins the same set. New pieces of a set already in a project join that project.
+
 ## archy-studio 0.5.1 (2026-10-05)
 
 - When Archy Studio is not signed in, Claude gives the same five steps to connect it (`/mcp`, archy-studio, Sign in, Allow in the browser, come back), in Claude Code, the desktop app and Cowork.

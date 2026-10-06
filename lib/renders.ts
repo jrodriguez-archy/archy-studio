@@ -19,6 +19,7 @@ export async function saveRender(input: {
   scale: number;
   source?: 'mcp' | 'app';
   projectId?: string | null;
+  setId?: string | null;
 }): Promise<SavedRender | null> {
   if (!supabaseConfigured()) return null;
   const db = supabaseAdmin();
@@ -34,10 +35,34 @@ export async function saveRender(input: {
   const slots = Object.fromEntries(Object.entries(input.slots).map(([k, v]) => [k, v?.startsWith('data:') ? '[inline image]' : v]));
   const ins = await db.from('renders').insert({
     id, user_id: input.userId, template: input.template, format: input.format, slots,
-    storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp', project_id: input.projectId ?? null,
+    storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp', project_id: input.projectId ?? null, set_id: input.setId ?? null,
   });
   if (ins.error) throw new Error(`Could not record the render: ${ins.error.message}`);
   return { id, path, url: await signedUrl(path) };
+}
+
+// Which set a new piece belongs to. Pieces from one brief share a set (the gallery stacks them).
+// An explicit set from the caller wins (only if it is one of this person's sets); otherwise the latest
+// piece by the same person, same template and same headline fact in the last 30 minutes (a retry or a
+// format added later); otherwise a new set.
+const SET_WINDOW_MS = 30 * 60 * 1000;
+const KEY_SLOTS = ['event-name', 'kicker', 'headline', 'headline-1', 'speaker-name', 'name', 'city'];
+
+export async function resolveSet(input: { userId: string | null; template: string; slots: Record<string, string | null>; requested?: string | null }): Promise<string> {
+  if (!supabaseConfigured()) return randomUUID();
+  const db = supabaseAdmin();
+  if (input.requested && /^[0-9a-f-]{36}$/i.test(input.requested)) {
+    let q = db.from('renders').select('id').eq('set_id', input.requested).limit(1);
+    q = input.userId ? q.eq('user_id', input.userId) : q.is('user_id', null);
+    if ((await q).data?.length) return input.requested;
+  }
+  const since = new Date(Date.now() - SET_WINDOW_MS).toISOString();
+  let q = db.from('renders').select('set_id, slots').eq('template', input.template).is('archived_at', null).gte('created_at', since).order('created_at', { ascending: false }).limit(20);
+  q = input.userId ? q.eq('user_id', input.userId) : q.is('user_id', null);
+  const key = KEY_SLOTS.find((k) => input.slots[k]);
+  const recent = ((await q).data ?? []) as { set_id: string | null; slots: Record<string, string | null> }[];
+  const match = recent.find((r) => r.set_id && (!key || r.slots?.[key] === input.slots[key]));
+  return match?.set_id ?? randomUUID();
 }
 
 export async function signedUrl(path: string, seconds = SIGNED_URL_SECONDS): Promise<string> {

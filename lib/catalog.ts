@@ -13,6 +13,19 @@ export const PURPOSE_LABEL: Record<string, string> = {
   spotlight: 'Person spotlight',
 };
 
+// The catalog's two levels: big categories (where a template comes from) and, inside each, what the
+// piece is for. Add a category here and give its templates that category and purpose in their config.
+export const TAXONOMY: { key: string; label: string; description: string; purposes: string[] }[] = [
+  { key: 'events', label: 'Events', description: 'Trade shows, booths, talks and evenings Archy hosts.', purposes: ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite'] },
+  { key: 'ads', label: 'Ads', description: 'Paid social and person-led ads.', purposes: ['spotlight'] },
+];
+
+// Section titles on the Templates page.
+export const PURPOSE_PLURAL: Record<string, string> = {
+  'booth-invite': 'Booth invites', reminder: 'Day-before reminders', 'hosted-evening': 'Hosted evenings',
+  'speaker-invite': 'Speaker invites', 'event-cover': 'Event page covers', spotlight: 'Spotlights',
+};
+
 export const FACT_LABEL: Record<string, string> = {
   'event-name': 'Event name', city: 'City', venue: 'Venue', date: 'Date', time: 'Time', booth: 'Booth',
   'city-photo': 'City photo', 'venue-photo': 'Venue photo', 'ground-photo': 'City or venue photo', 'guest-photo': 'Guests photo',

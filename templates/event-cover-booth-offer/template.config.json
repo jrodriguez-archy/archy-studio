@@ -22,6 +22,7 @@
     }
   },
   "purpose": "event-cover",
+  "coverOf": "booth-invite-offer",
   "essential": [
     "headline-1",
     "headline-2",

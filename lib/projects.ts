@@ -13,14 +13,14 @@ const clean = (name: string) => name.trim().replace(/\s+/g, ' ').slice(0, 80);
 export async function listProjects(me: Who): Promise<Project[]> {
   const { data } = await supabaseAdmin()
     .from('projects')
-    .select('id, name, shared, owner_id, profiles(full_name, email), renders(count)')
+    .select('id, name, shared, owner_id, profiles(full_name, email), renders(set_id, archived_at)')
     .or(`shared.eq.true,owner_id.eq.${me.id}`)
     .order('name');
-  type Row = { id: string; name: string; shared: boolean; owner_id: string; profiles: { full_name: string | null; email: string } | null; renders: { count: number }[] };
+  type Row = { id: string; name: string; shared: boolean; owner_id: string; profiles: { full_name: string | null; email: string } | null; renders: { set_id: string | null; archived_at: string | null }[] };
   return ((data ?? []) as unknown as Row[]).map((p) => ({
     id: p.id, name: p.name, shared: p.shared, owner_id: p.owner_id,
     owner: p.profiles?.full_name ?? p.profiles?.email ?? null,
-    count: p.renders?.[0]?.count ?? 0,
+    count: new Set((p.renders ?? []).filter((r) => !r.archived_at).map((r) => r.set_id)).size, // live sets, not single formats
   }));
 }
 
@@ -69,16 +69,5 @@ export async function updateProject(me: Who, id: string, patch: { name?: string;
 export async function deleteProject(me: Who, id: string) {
   await owned(me, id);
   const { error } = await supabaseAdmin().from('projects').delete().eq('id', id);
-  if (error) throw new Error(error.message);
-}
-
-// File a piece into a project (or none). People move their own pieces; admins any piece.
-export async function movePiece(me: Who, renderId: string, projectId: string | null) {
-  const db = supabaseAdmin();
-  const { data: piece } = await db.from('renders').select('user_id').eq('id', renderId).maybeSingle();
-  if (!piece) throw new Error('Piece not found.');
-  if (piece.user_id !== me.id && !me.is_admin) throw new Error('You can only organise the pieces you made.');
-  if (projectId && !(await getProject(me, projectId))) throw new Error('Project not found.');
-  const { error } = await db.from('renders').update({ project_id: projectId }).eq('id', renderId);
   if (error) throw new Error(error.message);
 }

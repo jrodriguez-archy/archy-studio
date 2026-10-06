@@ -3,7 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
 import { PageHeader, Pills } from '@/components/app-shell';
 import { PieceGrid } from '@/components/piece-grid';
-import { TYPES, loadPieces } from '@/lib/gallery';
+import { TYPES, groupSets, loadPieces } from '@/lib/gallery';
 import { getProject, listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 import { ProjectActions } from './project-actions';
@@ -22,7 +22,8 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
   const project = await getProject(me, id);
   if (!project) notFound();
   const kind = TYPES.find((t) => t.key === type);
-  const [pieces, projects] = await Promise.all([loadPieces({ projectId: id, formats: kind?.formats }, 200), listProjects(me)]);
+  const [pieces, projects] = await Promise.all([loadPieces({ projectId: id }, 400), listProjects(me)]);
+  const sets = groupSets(pieces, kind?.formats);
   const href = (t?: string) => (t ? `/projects/${id}?type=${t}` : `/projects/${id}`);
   const canEdit = project.owner_id === me.id || me.is_admin;
 
@@ -30,7 +31,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
     <>
       <PageHeader
         title={project.name}
-        description={`${project.count} ${project.count === 1 ? 'piece' : 'pieces'}${project.owner_id === me.id ? '' : ` · Created by ${project.owner}`}`}
+        description={`${project.count} ${project.count === 1 ? 'set' : 'sets'}${project.owner_id === me.id ? '' : ` · Created by ${project.owner}`}`}
         aside={
           <div className="flex items-center gap-2">
             <span className="inline-flex h-6 items-center gap-1.5 rounded-[4px] bg-foreground/[0.04] px-2 text-[12px] text-foreground/60">
@@ -44,7 +45,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
         <Pills items={[{ href: href(), label: 'All types', active: !kind }, ...TYPES.map((t) => ({ href: href(t.key), label: t.label, active: kind?.key === t.key }))]} />
       </PageHeader>
 
-      {pieces.length === 0 ? (
+      {sets.length === 0 ? (
         <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
           <p className="font-medium">{kind ? `No ${kind.label.toLowerCase()} pieces here` : 'This project is empty'}</p>
           <p className="mx-auto mt-1 max-w-sm text-muted-foreground">
@@ -52,7 +53,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
           </p>
         </div>
       ) : (
-        <PieceGrid pieces={pieces} projects={projects} me={me} showProject={false} />
+        <PieceGrid sets={sets} projects={projects} me={me} showProject={false} />
       )}
     </>
   );

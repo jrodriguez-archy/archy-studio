@@ -1,101 +1,161 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Download04Icon } from '@hugeicons/core-free-icons';
+import { Download04Icon, PackageIcon } from '@hugeicons/core-free-icons';
 import { InfoRows, Inspector, StageImage, useInspector } from '@/components/inspector';
-import { PieceMenu } from '@/components/piece-menu';
 import type { ProjectLink } from '@/components/projects-nav';
-import { formatLabel, humanize, type Piece } from '@/lib/gallery-shared';
+import { ContextActions, MoreActions } from '@/components/action-menu';
+import { useSetActions } from '@/components/set-actions';
+import { StackBadge, StackLayers, stackPad } from '@/components/stack';
+import { canManageSet, formatLabel, humanize, type Piece, type PieceSet } from '@/lib/gallery-shared';
 
 const day = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 const when = (d: string) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+const formatsOf = (s: PieceSet) => [...new Set(s.pieces.map((p) => formatLabel(p.format)))].join(', ');
 
-// Masonry of finished pieces. A click opens the piece in place; hover shows download and, for
-// pieces you can organise, the project menu.
-export function PieceGrid({ pieces, projects, me, showProject = true }: { pieces: Piece[]; projects: ProjectLink[]; me: { id: string; is_admin: boolean }; showProject?: boolean }) {
+// Masonry of sets: everything made from one brief is one stacked card. A click opens the set in place
+// with all its formats; right-click (or the ··· button) has every action for the set.
+export function PieceGrid({ sets, projects, me, showProject = true }: { sets: PieceSet[]; projects: ProjectLink[]; me: { id: string; is_admin: boolean }; showProject?: boolean }) {
   const names = Object.fromEntries(projects.map((p) => [p.id, p.name]));
-  const { openId, open, close, step } = useInspector('piece', pieces.map((p) => p.id));
-  const current = pieces.find((p) => p.id === openId);
-  const canMove = (r: Piece) => r.user_id === me.id || me.is_admin;
+  const { openId, open, close, step } = useInspector('set', sets.map((s) => s.id));
+  const current = sets.find((s) => s.id === openId);
+  const [pick, setPick] = useState<string | null>(null);
+  useEffect(() => setPick(null), [openId]);
+  const shown = current ? current.pieces.find((p) => p.id === pick) ?? current.lead : null;
 
   return (
     <>
-      <div className="columns-2 gap-3 md:columns-3 xl:columns-4">
-        {pieces.map((r) => {
-          const project = r.project_id ? names[r.project_id] : undefined; // a teammate's personal folder stays hidden
-          return (
-            <figure key={r.id} className="group mb-3 break-inside-avoid">
-              <div className="relative overflow-hidden rounded-lg bg-foreground/[0.04] ring-1 ring-foreground/[0.06]">
-                <button type="button" onClick={() => open(r.id)} className="block w-full cursor-zoom-in" aria-label={`Open ${r.title} ${formatLabel(r.format)}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={r.thumb} alt="" loading="lazy" className="block w-full" style={{ aspectRatio: `${r.width} / ${r.height}` }} />
-                </button>
-                <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 max-lg:opacity-100">
-                  {canMove(r) && <PieceMenu pieceId={r.id} projectId={r.project_id} projects={projects} />}
-                  {r.file && (
-                    <a href={r.file} aria-label="Download PNG" title="Download PNG"
-                      className="flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur">
-                      <HugeiconsIcon icon={Download04Icon} className="size-3.5" />
-                    </a>
-                  )}
-                </div>
-              </div>
-              <figcaption className="mt-1.5 px-0.5 text-[13px]">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="truncate">{r.title}</span>
-                  <span className="shrink-0 text-foreground/40">{formatLabel(r.format)}</span>
-                </div>
-                <div className="truncate text-foreground/40">
-                  {r.author} · {day(r.created_at)}
-                  {showProject && project && <> · {project}</>}
-                </div>
-              </figcaption>
-            </figure>
-          );
-        })}
+      <div className="columns-2 gap-4 md:columns-3 xl:columns-4">
+        {sets.map((s) => (
+          <SetCard key={s.id} set={s} projects={projects} canManage={canManageSet(s, me, projects)} project={showProject && s.project_id ? names[s.project_id] : undefined} onOpen={() => open(s.id)} />
+        ))}
       </div>
 
-      {current && (
+      {current && shown && (
         <Inspector
-          eyebrow={formatLabel(current.format)}
+          eyebrow={`${current.templates.length > 1 ? `${current.templates.length} templates` : current.lead.title} · ${current.pieces.length} format${current.pieces.length > 1 ? 's' : ''}`}
           title={current.title}
           onClose={close}
           onStep={step}
-          stage={<StageImage src={current.file} placeholder={current.thumb} alt={`${current.title} ${formatLabel(current.format)}`} width={current.width} height={current.height} />}
-          info={<PieceInfo piece={current} project={current.project_id ? names[current.project_id] : undefined} projects={projects} canMove={canMove(current)} />}
+          stage={
+            <div className="flex h-full w-full flex-col items-center gap-5" onClick={(e) => e.target === e.currentTarget && close()}>
+              <div className="flex min-h-0 w-full flex-1 items-center justify-center" onClick={(e) => e.target === e.currentTarget && close()}>
+                <StageImage src={shown.file} placeholder={shown.thumb} alt={`${shown.title} ${formatLabel(shown.format)}`} width={shown.width} height={shown.height} />
+              </div>
+              {current.pieces.length > 1 && <Strip set={current} shown={shown} onPick={setPick} />}
+            </div>
+          }
+          info={<SetInfo set={current} shown={shown} project={current.project_id ? names[current.project_id] : undefined} projects={projects} canManage={canManageSet(current, me, projects)} />}
         />
       )}
     </>
   );
 }
 
-function PieceInfo({ piece, project, projects, canMove }: { piece: Piece; project?: string; projects: ProjectLink[]; canMove: boolean }) {
-  // The copy that went on the piece; images and logos are listed as provided, links are not shown.
-  const copy = Object.entries(piece.slots).filter(([, v]) => v);
+function SetCard({ set: s, projects, canManage, project, onOpen }: { set: PieceSet; projects: ProjectLink[]; canManage: boolean; project?: string; onOpen: () => void }) {
+  const { actions, dialogs } = useSetActions({ set: s, projects, canManage, onOpen });
+  const r = s.lead;
+  const n = s.pieces.length;
+  return (
+    <figure className={`group mb-4 break-inside-avoid ${stackPad(n)}`}>
+      <ContextActions actions={actions} className="relative block">
+        <StackLayers n={n} />
+        <div className="relative overflow-hidden rounded-lg bg-foreground/[0.04] ring-1 ring-foreground/[0.06]">
+          <button type="button" onClick={onOpen} className="block w-full cursor-zoom-in" aria-label={`Open ${s.title}, ${n} format${n > 1 ? 's' : ''}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={r.thumb} alt="" loading="lazy" className={`block w-full ${s.archived_at ? 'opacity-60 grayscale' : ''}`} style={{ aspectRatio: `${r.width} / ${r.height}` }} />
+          </button>
+          <StackBadge n={n} />
+          <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 max-lg:opacity-100">
+            <a href={n > 1 ? `/api/sets/${s.id}/zip` : r.file} aria-label={n > 1 ? 'Download all formats' : 'Download PNG'} title={n > 1 ? 'Download all formats' : 'Download PNG'}
+              className="flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur">
+              <HugeiconsIcon icon={Download04Icon} className="size-3.5" />
+            </a>
+            <MoreActions actions={actions} />
+          </div>
+        </div>
+      </ContextActions>
+      <figcaption className="mt-1.5 px-0.5 text-[13px]">
+        <div className="truncate">{s.title}</div>
+        <div className="truncate text-foreground/40">{s.templates.length > 1 ? `${s.templates.length} templates` : r.title} · {formatsOf(s)}</div>
+        <div className="truncate text-foreground/40">
+          {s.author} · {day(s.archived_at ?? s.created_at)}{s.archived_at ? ' · archived' : ''}
+          {project && <> · {project}</>}
+        </div>
+      </figcaption>
+      {dialogs}
+    </figure>
+  );
+}
+
+// Thumbnails of every format in the set, to switch the one on the stage.
+function Strip({ set, shown, onPick }: { set: PieceSet; shown: Piece; onPick: (id: string) => void }) {
+  return (
+    <div className="flex max-w-full shrink-0 items-end gap-2 overflow-x-auto rounded-xl bg-background/70 p-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-foreground/[0.06] backdrop-blur [scrollbar-width:none]">
+      {set.pieces.map((p) => (
+        <button key={p.id} type="button" onClick={() => onPick(p.id)} title={`${p.title} · ${formatLabel(p.format)}`}
+          className={`flex shrink-0 flex-col items-center gap-1 rounded-md p-1 transition-colors ${p.id === shown.id ? 'bg-[#E6F4FF]' : 'hover:bg-foreground/[0.05]'}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={p.thumb} alt="" className="h-12 w-auto rounded-[2px] ring-1 ring-foreground/[0.08]" style={{ aspectRatio: `${p.width} / ${p.height}` }} />
+          <span className={`text-[11px] ${p.id === shown.id ? 'font-medium text-primary' : 'text-foreground/50'}`}>{formatLabel(p.format)}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SetInfo({ set, shown, project, projects, canManage }: { set: PieceSet; shown: Piece; project?: string; projects: ProjectLink[]; canManage: boolean }) {
+  const { actions, dialogs } = useSetActions({ set, projects, canManage });
+  // The copy of the brief (from the format on stage); images and logos are listed as provided, links are not shown.
+  const copy = Object.entries(shown.slots).filter(([, v]) => v);
   const rank = (k: string) => { const i = ['kicker', 'headline', 'subhead', 'speaker', 'name', 'role', 'company', 'city', 'venue', 'date', 'time', 'booth'].findIndex((p) => k.startsWith(p)); return i < 0 ? 99 : i; };
   const text = copy.filter(([, v]) => !/^(https?:|asset:|data:|\[inline image\])/.test(v!)).sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b));
   const media = copy.filter(([, v]) => /^(https?:|asset:|data:|\[inline image\])/.test(v!)).map(([k]) => humanize(k.replace(/^(image|logo)-/, '')));
+  const many = set.pieces.length > 1;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-1.5 [&>*]:justify-center">
-        {piece.file && (
-          <a href={piece.file} className="flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90">
-            <HugeiconsIcon icon={Download04Icon} className="size-3.5" /> Download
+      <div className={`grid gap-1.5 [&>*]:justify-center ${many ? 'grid-cols-2' : 'grid-cols-2'}`}>
+        {many ? (
+          <a href={`/api/sets/${set.id}/zip`} className="col-span-2 flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90">
+            <HugeiconsIcon icon={PackageIcon} className="size-3.5" /> Download all ({set.pieces.length})
+          </a>
+        ) : null}
+        {shown.file && (
+          <a href={shown.file} className={`flex h-8 items-center gap-1.5 rounded-md px-3 text-[13px] transition-colors ${many ? 'bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.09]' : 'bg-primary font-medium text-primary-foreground hover:opacity-90'}`}>
+            <HugeiconsIcon icon={Download04Icon} className="size-3.5" /> {many ? formatLabel(shown.format) : 'Download'}
           </a>
         )}
-        {canMove && <PieceMenu pieceId={piece.id} projectId={piece.project_id} projects={projects} variant="button" />}
+        <MoreActions actions={actions} label="More" className="flex h-8 items-center justify-center gap-1.5 rounded-md bg-foreground/[0.05] px-3 text-[13px] text-foreground/80 transition-colors outline-none hover:bg-foreground/[0.09]" />
       </div>
+      {dialogs}
+
+      <section>
+        <p className="pb-1.5 text-foreground/40">Formats</p>
+        <InfoRows
+          rows={set.pieces.map((p) => [
+            formatLabel(p.format),
+            <span key={p.id} className="flex items-center justify-end gap-2">
+              <span className="text-foreground/50">{p.width}×{p.height}{set.templates.length > 1 ? ` · ${p.title}` : ''}</span>
+              {p.file && (
+                <a href={p.file} aria-label={`Download ${formatLabel(p.format)}`} title="Download PNG" className="text-foreground/40 transition-colors hover:text-foreground">
+                  <HugeiconsIcon icon={Download04Icon} className="size-3.5" />
+                </a>
+              )}
+            </span>,
+          ])}
+        />
+      </section>
 
       <InfoRows
         rows={[
-          ['Template', <Link key="t" href={`/templates?t=${piece.template}`} className="underline decoration-foreground/20 underline-offset-4 hover:decoration-foreground">{piece.title}</Link>],
-          ['Format', `${formatLabel(piece.format)} · ${piece.width}×${piece.height}`],
-          ['File', `PNG @${piece.scale}x · ${piece.width * piece.scale}×${piece.height * piece.scale}`],
+          ['Template', set.templates.length > 1 ? `${set.templates.length} templates` : <Link key="t" href={`/templates?t=${set.lead.template}`} className="underline decoration-foreground/20 underline-offset-4 hover:decoration-foreground">{set.lead.title}</Link>],
+          ['File', `PNG @${shown.scale}x`],
           ['Project', project ?? '—'],
-          ['Made by', piece.author],
-          ['Created', when(piece.created_at)],
+          ['Made by', set.author],
+          ['Created', when(set.created_at)],
         ]}
       />
 

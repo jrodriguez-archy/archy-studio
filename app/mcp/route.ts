@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { MissingRequired, render } from '@/lib/renderer';
 import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
 import { createProject, findProject, listProjects } from '@/lib/projects';
-import { saveRender } from '@/lib/renders';
+import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
 import { listTemplates, loadConfig, loadLibrary, loadManifest } from '@/lib/templates';
@@ -13,6 +13,8 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const INSTRUCTIONS = `Archy Studio: Archy marketing templates. Turn a brief ("we have booth #1211 at the Chicago Midwinter Meeting, Feb 18 to 20") into finished PNGs built from Archy's approved Paper templates.
+
+Template ID given: when the requester names a template ID (e.g. "booth-icon-list", copied from the Studio app) or a /templates?t=<id> link, use that template directly: skip match_templates, call get_template, ask once only for its missing essential facts, then render. A prompt that says "Keep it in set <id>" renders with that set.
 
 Brief first, then the best template:
 1. Read the whole brief and list the facts it brings (event name, city, venue, date, time, booth, photos, logos, speaker...). Use the fact names of match_templates.
@@ -23,7 +25,11 @@ Brief first, then the best template:
 6. If copy does not fit, the format is refused with the exact maximum: shorten keeping the requester's wording, then render again. Never deliver a refused render.
 7. Show the images, give the download links, and say in one line which template you chose and why, and what was left out.
 
+Event page covers: a template with a cover (list_templates shows it) has a matching event page cover (1200×900, the Webflow event page thumbnail). After making that style, offer the cover in one short line; never force it. If they want it, render the cover template with the same facts and the same set, so it stacks with the social formats.
+
 Projects: pieces can be filed into project folders in the Studio gallery (one project per piece). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
+
+Sets: every render answer ends with "Set: <id>". All pieces from one brief (more formats, retries after shortening copy, other templates or options) belong together: pass that id as set to every later render of the same brief. A new brief starts without set.
 
 Brand rules:
 - All copy on the piece is in US English, even when the conversation is not.
@@ -51,6 +57,8 @@ const handler = createMcpHandler(
             template: m.id,
             title: c.title,
             category: c.category,
+            cover: c.cover,
+            cover_of: c.coverOf,
             description: c.description,
             use_when: c.useWhen,
             not_when: c.notWhen,
@@ -183,10 +191,11 @@ const handler = createMcpHandler(
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"]. Default: all.'),
           slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" or an https URL to a cutout PNG. Leave out (or null) what you do not have.'),
           project: z.string().optional().describe('Project to file the pieces in (name or id from list_projects). Only when the requester mentions one.'),
+          set: z.string().optional().describe('Set id returned by an earlier render of the same brief. Pass it for every later render of that brief (other formats, retries, other templates or options) so the gallery stacks them together.'),
         }),
         annotations: { readOnlyHint: true, openWorldHint: false },
       },
-      async ({ template, formats, slots, project }, ctx) => {
+      async ({ template, formats, slots, project, set }, ctx) => {
         let projectId: string | null = null;
         if (project) {
           const me = await whoIs(ctx);
@@ -196,6 +205,12 @@ const handler = createMcpHandler(
         }
         const m = await loadManifest(template);
         const wanted = formats?.length ? formats : Object.keys(m.formats);
+        const setId = await resolveSet({ userId: userIdOf(ctx), template, slots, requested: set });
+        // New pieces of a set that is already filed in a project join that project.
+        if (!projectId && supabaseConfigured()) {
+          const { data } = await supabaseAdmin().from('renders').select('project_id').eq('set_id', setId).not('project_id', 'is', null).limit(1);
+          projectId = (data?.[0]?.project_id as string | undefined) ?? null;
+        }
         const origin = publicOrigin(ctx);
         const content: Content[] = [];
         const refused: string[] = [];
@@ -225,7 +240,7 @@ const handler = createMcpHandler(
           let download: string;
           const saved = supabaseConfigured()
             ? await render({ template, format, slots, scale: 2 }).then((hi) => saveRender({
-                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId,
+                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId, setId,
               }))
             : null;
           if (saved) download = saved.url;
@@ -253,12 +268,13 @@ const handler = createMcpHandler(
         if (refused.length) {
           content.push({ type: 'text', text: `Not rendered, the copy does not fit. Shorten and render again:\n${refused.join('\n')}` });
         }
+        content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the pieces stay together in the gallery).` });
         return { isError: refused.length === wanted.length, content };
       },
     );
   },
   {
-    serverInfo: { name: 'archy-studio', version: '0.5.0' },
+    serverInfo: { name: 'archy-studio', version: '0.6.0' },
     instructions: INSTRUCTIONS,
   },
 );

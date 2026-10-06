@@ -34,6 +34,7 @@
     }
   },
   "purpose": "booth-invite",
+  "cover": "event-cover-booth-offer",
   "essential": [
     "headline",
     "city",

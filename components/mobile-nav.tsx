@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import type { NavSection } from '@/components/app-shell';
 
-export function MobileNav({ sections, projects, email }: { sections: NavSection[]; projects: ProjectLink[]; email: string }) {
+export function MobileNav({ sections, projects, me, email }: { sections: NavSection[]; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
@@ -38,7 +38,7 @@ export function MobileNav({ sections, projects, email }: { sections: NavSection[
                   <p className="px-2 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/35">{s.label}</p>
                   {s.items.map((i) => <NavLink key={i.href} href={i.href} icon={i.icon} onNavigate={close}>{i.label}</NavLink>)}
                 </div>
-                {n === 0 && <ProjectsNav projects={projects} onNavigate={close} />}
+                {n === 0 && <ProjectsNav projects={projects} me={me} onNavigate={close} />}
               </Fragment>
             ))}
             <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">

@@ -4,17 +4,33 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Add01Icon, LockIcon } from '@hugeicons/core-free-icons';
+import { Add01Icon, Delete02Icon, Link01Icon, LockIcon, PencilEdit02Icon, ViewIcon } from '@hugeicons/core-free-icons';
+import { ContextActions, copy, type Action } from '@/components/action-menu';
 import { NavLink } from '@/components/nav-link';
 import { ProjectDialog } from '@/components/project-dialog';
-import { createProjectAction } from '@/app/(app)/projects/actions';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { createProjectAction, deleteProjectAction, renameProjectAction, shareProjectAction } from '@/app/(app)/projects/actions';
 
-export type ProjectLink = { id: string; name: string; shared: boolean; count: number };
+export type ProjectLink = { id: string; name: string; shared: boolean; count: number; owner_id?: string };
 
 // Sidebar section: the projects this person can see (team ones and their own), and a + to make one.
-export function ProjectsNav({ projects, onNavigate }: { projects: ProjectLink[]; onNavigate?: () => void }) {
+export function ProjectsNav({ projects, me, onNavigate }: { projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; onNavigate?: () => void }) {
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<ProjectLink | null>(null);
+  const [deleting, setDeleting] = useState<ProjectLink | null>(null);
   const router = useRouter();
+  const canEdit = (p: ProjectLink) => !!me && (me.is_admin || p.owner_id === me.id);
+  // Right-click on a project: open, edit (name and who sees it), copy link, delete. Editing is for its owner and admins.
+  const actions = (p: ProjectLink): Action[] => [
+    { label: 'Open', icon: ViewIcon, onSelect: () => { onNavigate?.(); router.push(`/projects/${p.id}`); } },
+    { label: 'Edit project…', icon: PencilEdit02Icon, disabled: !canEdit(p), onSelect: () => setEditing(p) },
+    { label: 'Copy link', icon: Link01Icon, onSelect: async () => { (await copy(`${location.origin}/projects/${p.id}`)) && toast.success('Link copied'); } },
+    { separator: true },
+    { label: 'Delete project…', icon: Delete02Icon, destructive: true, disabled: !canEdit(p), onSelect: () => setDeleting(p) },
+  ];
   return (
     <div className="space-y-0.5">
       <div className="flex items-center justify-between pr-1 pb-1 pl-2">
@@ -30,7 +46,8 @@ export function ProjectsNav({ projects, onNavigate }: { projects: ProjectLink[];
         </button>
       )}
       {projects.map((p) => (
-        <NavLink key={p.id} href={`/projects/${p.id}`} icon="project" onNavigate={onNavigate}
+        <ContextActions key={p.id} actions={actions(p)} className="block">
+        <NavLink href={`/projects/${p.id}`} icon="project" onNavigate={onNavigate}
           trailing={
             <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-foreground/35">
               {!p.shared && <HugeiconsIcon icon={LockIcon} className="size-3" strokeWidth={1.8} aria-label="Only you" />}
@@ -39,7 +56,39 @@ export function ProjectsNav({ projects, onNavigate }: { projects: ProjectLink[];
           }>
           {p.name}
         </NavLink>
+        </ContextActions>
       ))}
+      <ProjectDialog
+        open={!!editing}
+        onOpenChange={(o) => !o && setEditing(null)}
+        title="Edit project"
+        action="Save"
+        initial={editing ? { name: editing.name, shared: editing.shared } : undefined}
+        onSubmit={async (name, shared) => {
+          if (!editing) return false;
+          if (name.trim() !== editing.name) { const r = await renameProjectAction(editing.id, name); if (!r.ok) { toast.error(r.error); return false; } }
+          if (shared !== editing.shared) { const r = await shareProjectAction(editing.id, shared); if (!r.ok) { toast.error(r.error); return false; } }
+          return true;
+        }}
+      />
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{deleting?.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>The project goes away. Its pieces stay in the gallery, without a project.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={async () => {
+              if (!deleting) return;
+              const r = await deleteProjectAction(deleting.id);
+              if (!r.ok) { toast.error(r.error); return; }
+              toast.success('Project deleted');
+              if (location.pathname === `/projects/${deleting.id}`) router.push('/');
+            }}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <ProjectDialog
         open={open}
         onOpenChange={setOpen}

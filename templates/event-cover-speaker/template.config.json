@@ -22,6 +22,7 @@
     }
   },
   "purpose": "event-cover",
+  "coverOf": "speaker-invite",
   "essential": [
     "headline-1",
     "headline-2",

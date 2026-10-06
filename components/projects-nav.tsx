@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Add01Icon, Delete02Icon, Link01Icon, LockIcon, PencilEdit02Icon, ViewIcon } from '@hugeicons/core-free-icons';
+import { Add01Icon, Delete02Icon, FolderAddIcon, Link01Icon, LockIcon, PencilEdit02Icon, ViewIcon } from '@hugeicons/core-free-icons';
 import { ContextActions, copy, type Action } from '@/components/action-menu';
 import { NavLink } from '@/components/nav-link';
+import { useSidebar } from '@/components/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ProjectDialog } from '@/components/project-dialog';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -31,8 +33,21 @@ export function ProjectsNav({ projects, me, onNavigate }: { projects: ProjectLin
     { separator: true },
     { label: 'Delete project…', icon: Delete02Icon, destructive: true, disabled: !canEdit(p), onSelect: () => setDeleting(p) },
   ];
+  const { collapsed } = useSidebar();
   return (
     <div className="space-y-0.5">
+      {collapsed ? (
+        <>
+          <div className="mx-2 mb-3 h-px bg-foreground/[0.07]" aria-hidden />
+          <Tooltip>
+            <TooltipTrigger render={<button type="button" onClick={() => setOpen(true)} aria-label="New project" />}
+              className="flex h-8 w-full items-center justify-center rounded-md text-foreground/45 transition-colors hover:bg-foreground/[0.04] hover:text-foreground">
+              <HugeiconsIcon icon={FolderAddIcon} className="size-4" strokeWidth={1.6} />
+            </TooltipTrigger>
+            <TooltipContent side="right">New project</TooltipContent>
+          </Tooltip>
+        </>
+      ) : (
       <div className="flex items-center justify-between pr-1 pb-1 pl-2">
         <p className="text-[11px] font-medium tracking-[0.02em] text-foreground/35">Projects</p>
         <button type="button" onClick={() => setOpen(true)} aria-label="New project" title="New project"
@@ -40,7 +55,8 @@ export function ProjectsNav({ projects, me, onNavigate }: { projects: ProjectLin
           <HugeiconsIcon icon={Add01Icon} className="size-3.5" strokeWidth={1.8} />
         </button>
       </div>
-      {projects.length === 0 && (
+      )}
+      {projects.length === 0 && !collapsed && (
         <button type="button" onClick={() => setOpen(true)} className="flex h-8 w-full items-center px-2 text-[13px] text-foreground/40 hover:text-foreground">
           New project
         </button>

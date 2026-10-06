@@ -23,7 +23,7 @@ Brief first, then the best template:
 4. With the answers, call match_templates again and pick the best eligible template (offer two when they are equally good). If none is eligible, say what is missing; never force a template.
 5. get_template for its slots and limits, then render. Each template has essential content (always filled) and minor optional details: an optional detail you do not have is left out with its label (no time: the date stays alone).
 6. If copy does not fit, the format is refused with the exact maximum: shorten keeping the requester's wording, then render again. Never deliver a refused render.
-7. Show the images, give the download links, and say in one line which template you chose and why, and what was left out.
+7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, and what was left out.
 
 Event page covers: a template with a cover (list_templates shows it) has a matching event page cover (1200×900, the Webflow event page thumbnail). After making that style, offer the cover in one short line; never force it. If they want it, render the cover template with the same facts and the same set, so it stacks with the social formats.
 
@@ -240,7 +240,7 @@ const handler = createMcpHandler(
           let download: string;
           const saved = supabaseConfigured()
             ? await render({ template, format, slots, scale: 2 }).then((hi) => saveRender({
-                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId, setId,
+                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId, setId, variant: hi.variant,
               }))
             : null;
           if (saved) download = saved.url;
@@ -262,7 +262,7 @@ const handler = createMcpHandler(
           content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
           content.push({
             type: 'text',
-            text: `${m.formats[format].label}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}`,
+            text: `${m.formats[format].label}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
           });
         }
         if (refused.length) {

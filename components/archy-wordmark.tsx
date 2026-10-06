@@ -1,7 +1,8 @@
-// Archy wordmark, path data taken verbatim from the Paper templates.
-export function ArchyWordmark({ className }: { className?: string }) {
+// Archy wordmark, path data taken verbatim from the Paper templates. `mark` shows only the "A"
+// (the collapsed sidebar): the viewBox crops the other letters.
+export function ArchyWordmark({ className, mark = false }: { className?: string; mark?: boolean }) {
   return (
-    <svg viewBox="0 5 252 98" className={className} fill="currentColor" role="img" aria-label="Archy">
+    <svg viewBox={mark ? '0 5 63 98' : '0 5 252 98'} className={className} fill="currentColor" role="img" aria-label="Archy">
       <g transform="translate(0 21.752)">
         <path d="M81.301 51.629C81.301 51.629 69.056 51.629 69.056 51.629 69.056 51.629 69.056 23.733 69.056 23.733 69.056 11.492 78.938 1.531 91.085 1.531 91.085 1.531 94.726 1.531 94.726 1.531 94.726 1.531 94.726 13.873 94.726 13.873 94.726 13.873 91.085 13.873 91.085 13.873 85.688 13.873 81.301 18.296 81.301 23.733 81.301 23.733 81.301 51.629 81.301 51.629Z" />
         <path d="M173.905 4.314C169.558 4.314 165.48 5.526 161.948 7.639 161.948 7.639 161.948-16.752 161.948-16.752 161.948-16.752 149.682-16.752 149.682-16.752 149.682-16.752 149.682 51.629 149.682 51.629 149.682 51.629 161.948 51.629 161.948 51.629 161.948 51.629 161.948 29.727 161.948 29.727 161.948 22.533 167.315 16.678 173.905 16.678 180.496 16.678 185.862 22.533 185.862 29.727 185.862 29.727 185.862 51.629 185.862 51.629 185.862 51.629 198.13 51.629 198.13 51.629 198.13 51.629 198.13 29.727 198.13 29.727 198.13 15.717 187.264 4.317 173.905 4.317 173.905 4.317 173.905 4.314 173.905 4.314Z" />

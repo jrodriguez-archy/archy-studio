@@ -30,6 +30,7 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 8. **Deliver.**
    - Show the images.
    - Save the high-resolution files: when you can run commands, download each `Download (2x PNG)` link into the working folder as `<template>-<format>.png` (for example with `curl -L -o ae-spotlight-post.png "<link>"`). Otherwise give them the links.
+   - Give the **Edit in Canvas** link of each format: there they can fix copy, colours, images or sizes by hand and download again, without a new render.
    - Say in one line which template you chose and why, what was left out, and offer to redo it when they get the missing facts or photos.
 
 ## When something fails

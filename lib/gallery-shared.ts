@@ -4,7 +4,7 @@ export type Piece = {
   id: string; set_id: string; template: string; title: string; format: string; width: number; height: number; scale: number;
   slots: Record<string, string | null>; created_at: string;
   user_id: string | null; author: string; project_id: string | null; thumb?: string; file?: string;
-  set_title?: string | null; archived_at?: string | null;
+  set_title?: string | null; archived_at?: string | null; edited_at?: string | null;
 };
 
 // Everything made from one brief: its formats, retries and options, shown as one stacked card.
@@ -33,6 +33,13 @@ export const humanize = (k: string) => (k.charAt(0).toUpperCase() + k.slice(1)).
 // "CHICAGO MIDWINTER MEETING 2027" → "Chicago Midwinter Meeting 2027"; other text unchanged.
 const tidy = (s: string) => (s === s.toUpperCase() ? s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : s);
 
+// A set's name from its brief: the event, the person or the headline.
+export function titleFromSlots(s: Record<string, string | null>): string | null {
+  const headline = [s.headline, s['headline-1'] && s['headline-2'] ? `${s['headline-1']} ${s['headline-2']}` : s['headline-1']].find((h) => h && h.length <= 60);
+  const name = s['event-name'] || s.kicker || s['speaker-name'] || s.name || headline || s.city;
+  return name ? tidy(name.replace(/\s+/g, ' ').trim()) : null;
+}
+
 // Group pieces (newest first) into sets, newest set first. Inside a set: by template, then format order.
 // With a type filter, only sets that have that type are kept and that format leads the card.
 export function groupSets(pieces: Piece[], leadFormats?: string[]): PieceSet[] {
@@ -47,12 +54,9 @@ export function groupSets(pieces: Piece[], leadFormats?: string[]): PieceSet[] {
     const seen = new Set<string>();
     const unique = sorted.filter((p) => { const k = `${p.template}:${p.format}`; if (seen.has(k)) return false; seen.add(k); return true; });
     const lead = (leadFormats && unique.find((p) => leadFormats.includes(p.format))) || unique[0];
-    const s = lead.slots;
-    const headline = [s.headline, s['headline-1'] && s['headline-2'] ? `${s['headline-1']} ${s['headline-2']}` : s['headline-1']].find((h) => h && h.length <= 60);
-    const name = s['event-name'] || s.kicker || s['speaker-name'] || s.name || headline || s.city;
     sets.push({
       id, pieces: unique, lead, templates,
-      title: list.find((p) => p.set_title)?.set_title ?? (name ? tidy(name.replace(/\s+/g, ' ').trim()) : lead.title),
+      title: list.find((p) => p.set_title)?.set_title ?? titleFromSlots(lead.slots) ?? lead.title,
       created_at: list.reduce((m, p) => (p.created_at > m ? p.created_at : m), list[0].created_at),
       author: lead.author, user_id: list.every((p) => p.user_id === lead.user_id) ? lead.user_id : null, project_id: list.find((p) => p.project_id)?.project_id ?? null,
       archived_at: list.find((p) => p.archived_at)?.archived_at ?? null,

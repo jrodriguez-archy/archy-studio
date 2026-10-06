@@ -1,52 +1,33 @@
-import { Fragment } from 'react';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { BrandLockup } from '@/components/brand-lockup';
 import { MobileNav } from '@/components/mobile-nav';
-import { NavLink, SignOutLink, type NavIcon } from '@/components/nav-link';
-import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
+import type { NavIcon } from '@/components/nav-link';
+import type { ProjectLink } from '@/components/projects-nav';
+import { ShellFrame, Sidebar } from '@/components/sidebar';
 import { listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 
 export type NavItem = { href: string; label: string; icon: NavIcon };
 export type NavSection = { label: string; items: NavItem[] };
 
-// Left rail on a faint grey layer (the login's card-on-ground idea): Studio lockup, icon nav with the
-// active page lifted onto white, account at the bottom.
+// The app: left rail (components/sidebar.tsx) and the page.
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const me = await currentUser();
   const sections: NavSection[] = [
     { label: 'Library', items: [{ href: '/', label: 'Gallery', icon: 'gallery' }, { href: '/templates', label: 'Templates', icon: 'templates' }, { href: '/archive', label: 'Archive', icon: 'archive' }] },
+    { label: 'Create', items: [{ href: '/canvas', label: 'Canvas', icon: 'canvas' }] },
     { label: 'Resources', items: [{ href: '/install', label: 'Install', icon: 'install' }] },
     ...(me?.is_admin ? [{ label: 'Admin', items: [{ href: '/admin', label: 'Team', icon: 'team' as const }] }] : []),
   ];
   const projects: ProjectLink[] = me ? (await listProjects(me).catch(() => [])).map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id })) : [];
+  const who = me ? { id: me.id, is_admin: me.is_admin } : undefined;
+  const collapsed = (await cookies()).get('sidebar')?.value === 'collapsed';
   return (
-    <div className="min-h-dvh md:grid md:grid-cols-[240px_minmax(0,1fr)]">
-      <aside className="sticky top-0 hidden h-dvh flex-col border-r border-foreground/[0.06] bg-[#FAFAFA] px-3 py-6 md:flex">
-        <Link href="/" className="px-2" aria-label="Archy Studio">
-          <BrandLockup size="sm" label={false} />
-        </Link>
-        <nav className="-mx-3 mt-6 min-h-0 flex-1 space-y-5 overflow-y-auto px-3 pb-4 [scrollbar-width:thin]">
-          {sections.map((s, n) => (
-            <Fragment key={s.label}>
-              <div className="space-y-0.5">
-                <p className="px-2 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/35">{s.label}</p>
-                {s.items.map((i) => <NavLink key={i.href} href={i.href} icon={i.icon}>{i.label}</NavLink>)}
-              </div>
-              {n === 0 && <ProjectsNav projects={projects} me={me ? { id: me.id, is_admin: me.is_admin } : undefined} />}
-            </Fragment>
-          ))}
-        </nav>
-        <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
-          <p className="truncate px-2 pb-1 text-[11px] text-foreground/35">{me?.email}</p>
-          <NavLink href="/account" icon="account">Account</NavLink>
-          <SignOutLink />
-        </div>
-      </aside>
-      <MobileNav sections={sections} projects={projects} me={me ? { id: me.id, is_admin: me.is_admin } : undefined} email={me?.email ?? ''} />
-
-      <main className="min-w-0 px-4 pt-5 pb-16 sm:px-6 md:pt-8 lg:px-10">{children}</main>
-    </div>
+    <ShellFrame initialCollapsed={collapsed} sidebar={<Sidebar sections={sections} projects={projects} me={who} email={me?.email ?? ''} />}>
+      <MobileNav sections={sections} projects={projects} me={who} email={me?.email ?? ''} />
+      {/* Full-screen tools (Canvas) mark themselves data-fullbleed and take the whole content area. */}
+      <main className="min-w-0 px-4 pt-5 pb-16 sm:px-6 md:pt-8 lg:px-10 has-[[data-fullbleed]]:p-0">{children}</main>
+    </ShellFrame>
   );
 }
 

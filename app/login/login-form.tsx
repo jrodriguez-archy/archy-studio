@@ -52,17 +52,29 @@ export function LoginForm({ next }: { next: string }) {
   }
 
   const title = step === 'create-password' ? 'Create your password' : 'Sign in';
-  const description =
-    step === 'email' ? 'Use your @archy.com email.' :
-    step === 'sign-in' ? email.trim().toLowerCase() :
-    'First time here: choose a password of at least 10 characters.';
+
+  function changeEmail() {
+    setStep('email');
+    setPassword('');
+    setConfirm('');
+    setError('');
+  }
 
   return (
     <div className="space-y-4 text-[13px]">
       {step !== 'email' && (
-        <div>
+        <div className="space-y-1">
           <p className="font-medium">{title}</p>
-          <p className="text-muted-foreground">{description}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="min-w-0 truncate text-muted-foreground">{email.trim().toLowerCase()}</span>
+            <span className="text-muted-foreground/50">·</span>
+            <button type="button" onClick={changeEmail} className="shrink-0 font-medium text-foreground underline-offset-4 hover:underline">
+              Change
+            </button>
+          </div>
+          {step === 'create-password' && (
+            <p className="pt-1 text-muted-foreground">First time here: choose a password of at least 10 characters.</p>
+          )}
         </div>
       )}
         <form onSubmit={submit} className="space-y-3">
@@ -91,12 +103,9 @@ export function LoginForm({ next }: { next: string }) {
           <Button type="submit" size="lg" className="w-full" disabled={busy}>
             {busy ? 'One moment…' : step === 'email' ? 'Continue' : step === 'sign-in' ? 'Sign in' : 'Create password and sign in'}
           </Button>
-          {step !== 'email' && (
-            <Button type="button" variant="ghost" size="lg" className="w-full text-foreground/60" onClick={() => { setStep('email'); setPassword(''); setConfirm(''); setError(''); }}>
-              Use another email
-            </Button>
+          {step === 'sign-in' && (
+            <p className="pt-1 text-center text-[12px] text-muted-foreground">Forgot your password? Ask an admin to reset it.</p>
           )}
-          {step === 'sign-in' && <p className="text-muted-foreground">Forgot it? Ask an admin to reset your password.</p>}
         </form>
     </div>
   );

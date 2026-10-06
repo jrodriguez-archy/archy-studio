@@ -64,7 +64,7 @@ export function Inspector({ eyebrow, title, info, stage, onClose, onStep }: {
   }, [onClose, onStep]);
 
   return (
-    <div className="fixed inset-0 z-[45] flex flex-col animate-in fade-in-0 duration-150 md:left-[240px] md:flex-row" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[45] flex flex-col animate-in fade-in-0 duration-150 md:left-(--sidebar-w) md:flex-row" role="dialog" aria-modal="true">
       <aside className="order-2 flex min-h-0 flex-col border-foreground/[0.06] bg-background md:order-1 md:w-[320px] md:shrink-0 md:border-r max-md:max-h-[55dvh] max-md:border-t">
         <div className="flex items-center justify-between px-5 pt-4">
           <IconButton label="Close" icon={Cancel01Icon} onClick={onClose} />

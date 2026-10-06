@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
+import type { Edits } from './canvas-shared';
 import { supabaseAdmin, supabaseConfigured } from './supabase/admin';
 
 const BUCKET = 'renders';
@@ -8,6 +9,8 @@ const SIGNED_URL_SECONDS = 60 * 60 * 24 * 7; // download links last a week
 export type SavedRender = { id: string; path: string; url: string };
 
 // Store a finished piece (2x PNG) in the shared gallery and return a signed download URL.
+// The record keeps the full source (template, format, slots, Canvas edits), so the piece can be
+// opened in Canvas and rendered again.
 export async function saveRender(input: {
   userId: string | null;
   template: string;
@@ -20,25 +23,78 @@ export async function saveRender(input: {
   source?: 'mcp' | 'app';
   projectId?: string | null;
   setId?: string | null;
+  setTitle?: string | null;
+  variant?: string | null;
+  edits?: Edits;
+  parentId?: string | null;
 }): Promise<SavedRender | null> {
   if (!supabaseConfigured()) return null;
   const db = supabaseAdmin();
   const id = randomUUID();
   const day = new Date().toISOString().slice(0, 10);
   const path = `${day}/${input.template}/${input.format}-${id}.png`;
-  const up = await db.storage.from(BUCKET).upload(path, input.png, { contentType: 'image/png', upsert: false });
-  if (up.error) throw new Error(`Could not store the render: ${up.error.message}`);
-  // Light WebP for the gallery grid; the PNG stays the download.
-  const thumb = await sharp(input.png).resize({ width: 640, withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
-  await db.storage.from(BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/webp', upsert: true });
-  // Only real images go in the record; data URLs (inline logos) are dropped to keep rows small.
-  const slots = Object.fromEntries(Object.entries(input.slots).map(([k, v]) => [k, v?.startsWith('data:') ? '[inline image]' : v]));
+  await storeFiles(path, input.png, false);
   const ins = await db.from('renders').insert({
-    id, user_id: input.userId, template: input.template, format: input.format, slots,
+    id, user_id: input.userId, template: input.template, format: input.format, slots: await keepInlineImages(input.userId, input.slots),
     storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp', project_id: input.projectId ?? null, set_id: input.setId ?? null,
+    set_title: input.setTitle ?? null, variant: input.variant ?? null, edits: input.edits ?? {}, parent_id: input.parentId ?? null, edited_at: input.parentId ? new Date().toISOString() : null,
   });
   if (ins.error) throw new Error(`Could not record the render: ${ins.error.message}`);
   return { id, path, url: await signedUrl(path) };
+}
+
+// Canvas "replace the original": the new PNG goes over the old file and the record takes the new source.
+export async function replaceRender(input: { id: string; storagePath: string; slots: Record<string, string | null>; edits: Edits; variant: string | null; png: Buffer; userId: string }): Promise<SavedRender> {
+  await storeFiles(input.storagePath, input.png, true);
+  const { error } = await supabaseAdmin().from('renders').update({
+    slots: await keepInlineImages(input.userId, input.slots), edits: input.edits, variant: input.variant, edited_at: new Date().toISOString(),
+  }).eq('id', input.id);
+  if (error) throw new Error(`Could not update the piece: ${error.message}`);
+  return { id: input.id, path: input.storagePath, url: await signedUrl(input.storagePath) };
+}
+
+async function storeFiles(path: string, png: Buffer, upsert: boolean) {
+  const db = supabaseAdmin();
+  const up = await db.storage.from(BUCKET).upload(path, png, { contentType: 'image/png', upsert });
+  if (up.error) throw new Error(`Could not store the render: ${up.error.message}`);
+  // Light WebP for the gallery grid; the PNG stays the download.
+  const thumb = await sharp(png).resize({ width: 640, withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
+  await db.storage.from(BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/webp', upsert: true });
+}
+
+// Inline images (a partner logo sent as a data URL) move to the uploads bucket, so the record stays
+// small and the piece can still be opened in Canvas.
+async function keepInlineImages(userId: string | null, slots: Record<string, string | null>) {
+  const out: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(slots)) {
+    const m = v?.match(/^data:(image\/[\w.+-]+);base64,(.*)$/);
+    out[k] = m ? await storeUpload(userId, Buffer.from(m[2], 'base64'), m[1]) : v;
+  }
+  return out;
+}
+
+const UPLOAD_TYPES: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/svg+xml': 'svg' };
+export const MAX_UPLOAD = 8_000_000;
+
+// An image someone brings (Canvas upload, inline logo). Returns its slot value: upload:<path>.
+export async function storeUpload(userId: string | null, body: Buffer, type: string): Promise<string> {
+  const ext = UPLOAD_TYPES[type];
+  if (!ext) throw new Error('Use a PNG, JPG, WebP or SVG image.');
+  if (body.length > MAX_UPLOAD) throw new Error('The image is larger than 8 MB.');
+  const path = `${userId ?? 'studio'}/${randomUUID()}.${ext}`;
+  const { error } = await supabaseAdmin().storage.from('uploads').upload(path, body, { contentType: type, upsert: false });
+  if (error) throw new Error(`Could not store the image: ${error.message}`);
+  return `upload:${path}`;
+}
+
+// A one-off export from Canvas (downloaded, not saved to the gallery).
+export async function storeExport(png: Buffer, name: string): Promise<string> {
+  const path = `exports/${randomUUID()}.png`;
+  const { error } = await supabaseAdmin().storage.from(BUCKET).upload(path, png, { contentType: 'image/png' });
+  if (error) throw new Error(`Could not prepare the download: ${error.message}`);
+  const { data, error: se } = await supabaseAdmin().storage.from(BUCKET).createSignedUrl(path, 60 * 60, { download: name });
+  if (se || !data) throw new Error(`Could not sign the download link: ${se?.message}`);
+  return data.signedUrl;
 }
 
 // Which set a new piece belongs to. Pieces from one brief share a set (the gallery stacks them).

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Download04Icon, PackageIcon } from '@hugeicons/core-free-icons';
+import { Download04Icon, PackageIcon, PaintBoardIcon } from '@hugeicons/core-free-icons';
 import { InfoRows, Inspector, StageImage, useInspector } from '@/components/inspector';
 import type { ProjectLink } from '@/components/projects-nav';
 import { ContextActions, MoreActions } from '@/components/action-menu';
@@ -112,8 +112,8 @@ function SetInfo({ set, shown, project, projects, canManage }: { set: PieceSet; 
   // The copy of the brief (from the format on stage); images and logos are listed as provided, links are not shown.
   const copy = Object.entries(shown.slots).filter(([, v]) => v);
   const rank = (k: string) => { const i = ['kicker', 'headline', 'subhead', 'speaker', 'name', 'role', 'company', 'city', 'venue', 'date', 'time', 'booth'].findIndex((p) => k.startsWith(p)); return i < 0 ? 99 : i; };
-  const text = copy.filter(([, v]) => !/^(https?:|asset:|data:|\[inline image\])/.test(v!)).sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b));
-  const media = copy.filter(([, v]) => /^(https?:|asset:|data:|\[inline image\])/.test(v!)).map(([k]) => humanize(k.replace(/^(image|logo)-/, '')));
+  const text = copy.filter(([, v]) => !/^(https?:|asset:|upload:|data:|\[inline image\])/.test(v!)).sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b));
+  const media = copy.filter(([, v]) => /^(https?:|asset:|upload:|data:|\[inline image\])/.test(v!)).map(([k]) => humanize(k.replace(/^(image|logo)-/, '')));
   const many = set.pieces.length > 1;
 
   return (
@@ -130,6 +130,9 @@ function SetInfo({ set, shown, project, projects, canManage }: { set: PieceSet; 
           </a>
         )}
         <MoreActions actions={actions} label="More" className="flex h-8 items-center justify-center gap-1.5 rounded-md bg-foreground/[0.05] px-3 text-[13px] text-foreground/80 transition-colors outline-none hover:bg-foreground/[0.09]" />
+        <Link href={`/canvas/${shown.id}`} className="col-span-2 flex h-8 items-center gap-1.5 rounded-md bg-foreground/[0.05] px-3 text-[13px] text-foreground/80 transition-colors hover:bg-foreground/[0.09]">
+          <HugeiconsIcon icon={PaintBoardIcon} className="size-3.5" /> Edit in Canvas{many ? ` · ${formatLabel(shown.format)}` : ''}
+        </Link>
       </div>
       {dialogs}
 

@@ -1,6 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Browser } from 'playwright-core';
+import type { Edits, FillPlan, RenderReport } from './canvas-shared';
+import { iconMarkup } from './icons';
+import { supabaseAdmin } from './supabase/admin';
 import { ROOT, loadConfig, loadLibrary, loadManifest, loadRules } from './templates';
 
 // Template files are served to the page from disk under a fake origin, so relative URLs
@@ -34,6 +37,7 @@ async function getBrowser(): Promise<Browser> {
 }
 
 let fitJs: string | null = null;
+let editsJs: string | null = null;
 
 export type RenderInput = {
   template: string;
@@ -42,6 +46,8 @@ export type RenderInput = {
   scale?: number;
   /** Previews only: slots not given keep the template's sample copy. */
   fillDefaults?: boolean;
+  /** Hand edits from Canvas, applied after the fill. */
+  edits?: Edits;
 };
 
 export class MissingRequired extends Error {
@@ -50,14 +56,12 @@ export class MissingRequired extends Error {
   }
 }
 
-export type RenderReport = {
-  format: string;
-  ok: boolean;
-  slots: Record<string, { status: string; scale?: number; wrapped?: boolean; groupWrapped?: boolean; lines?: number; fontSize?: number }>;
-  errors: { slot?: string; node?: string; code: string; message?: string; maxLength?: number; reason?: string }[];
-};
+export type { RenderReport };
 
-export async function render({ template, format, slots: given, scale = 1, fillDefaults = false }: RenderInput) {
+// Everything decided before the page opens: slot values (given, sample or derived), the variant, the
+// fit rules and limits, and every image resolved to a URL under `origin`. The renderer and the Canvas
+// editor share it, so both draw the same piece.
+export async function prepareFill({ template, format, slots: given, fillDefaults = false, edits = {} }: Omit<RenderInput, 'scale'>, origin = ORIGIN): Promise<FillPlan> {
   const manifest = await loadManifest(template);
   const config = await loadConfig(template);
   if (!manifest.formats[format]) throw new Error(`Template ${template} has no format "${format}". Formats: ${Object.keys(manifest.formats).join(', ')}`);
@@ -89,12 +93,39 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
   if (variant && rules.variants?.[variant]?.slots) {
     for (const [k, o] of Object.entries(rules.variants[variant].slots)) rules.slots[k] = { ...(rules.slots[k] as object), ...o };
   }
+  const values: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(slots)) {
+    const type = manifest.slots[k].type;
+    values[k] = !v ? v : type === 'logo' ? await resolveLogo(template, v, origin) : type === 'image' ? await resolveImage(template, v, origin) : v;
+  }
+  const limitKey = variant ? `${format}--${variant}` : format;
+  const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));
+  const imageUrls: Record<string, string> = {};
+  const iconSvgs: Record<string, string> = {};
+  for (const e of Object.values(edits)) {
+    if (e.image && !imageUrls[e.image]) imageUrls[e.image] = await resolveImage(template, e.image, origin);
+    if (e.icon && !iconSvgs[e.icon]) {
+      const svg = await iconMarkup(e.icon);
+      if (!svg) throw new Error(`Unknown icon: ${e.icon}`);
+      iconSvgs[e.icon] = svg;
+    }
+  }
+  return {
+    template, format, variant, slots, html: `templates/${template}/${f.html}`, width: f.width, height: f.height,
+    fill: { format, formats: Object.keys(manifest.formats), values, rules, limits }, imageUrls, iconSvgs,
+  };
+}
+
+export async function render({ template, format, slots: given, scale = 1, fillDefaults = false, edits = {} }: RenderInput) {
+  const plan = await prepareFill({ template, format, slots: given, fillDefaults, edits });
+  const { variant, slots, width, height } = plan;
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
+  editsJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'edits.js'), 'utf8');
 
   const t: Record<string, number> = {};
   let t0 = Date.now();
   const mark = (k: string) => { t[k] = Date.now() - t0; t0 = Date.now(); };
-  const contextOptions = { viewport: { width: f.width, height: f.height }, deviceScaleFactor: Math.min(Math.max(scale, 1), 3) };
+  const contextOptions = { viewport: { width, height }, deviceScaleFactor: Math.min(Math.max(scale, 1), 3) };
   let browser = await getBrowser();
   // A warm instance can hold a dead browser: if it does not answer quickly, start a fresh one.
   let context = await withTimeout(browser.newContext(contextOptions), 5000).catch(() => null);
@@ -119,23 +150,21 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
         await route.fulfill({ status: 404 });
       }
     });
-    await page.goto(`${ORIGIN}/templates/${template}/${f.html}`, { waitUntil: 'load' });
+    await page.goto(`${ORIGIN}/${plan.html}`, { waitUntil: 'load' });
     mark('load');
     await page.addScriptTag({ content: fitJs });
     await page.evaluate(() => document.fonts.ready);
 
-    const values: Record<string, string | null> = {};
-    for (const [k, v] of Object.entries(slots)) {
-      const type = manifest.slots[k].type;
-      values[k] = !v ? v : type === 'logo' ? await resolveLogo(template, v) : type === 'image' ? await resolveImage(template, v) : v;
-    }
-    const limitKey = variant ? `${format}--${variant}` : format;
-    const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));
     const report = (await page.evaluate(
       // @ts-expect-error __fill is defined by fit.js inside the page
       (a) => window.__fill(a),
-      { format, formats: Object.keys(manifest.formats), values, rules, limits },
+      plan.fill,
     )) as RenderReport;
+    if (Object.keys(edits).length) {
+      await page.addScriptTag({ content: editsJs });
+      // @ts-expect-error __applyEdits is defined by edits.js inside the page
+      await page.evaluate(([e, u, i]) => window.__applyEdits(e, u, i), [edits, plan.imageUrls, plan.iconSvgs] as const);
+    }
     mark('fit');
 
     await page.evaluate(async () => {
@@ -150,7 +179,7 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
     mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
     mark('screenshot');
-    return { png, report, variant, slots, width: f.width, height: f.height, timing: t };
+    return { png, report, variant, slots, width, height, timing: t };
   } finally {
     await context.close();
   }
@@ -160,14 +189,17 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([p, new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))]);
 }
 
-// Image slot values: `asset:<id>` from the approved library, an https URL, or a path inside the template.
+// Image values: `asset:<id>` from the approved library, `upload:<path>` (brought in by someone, kept in
+// the uploads bucket), an https URL, or a path inside the template. `origin` is where the page reads the
+// repo files: the renderer's fake origin, or /api/template-files for the Canvas editor.
 // Logos are inlined as data URLs so the page can use them as a CSS mask (no cross-origin limits).
-async function resolveLogo(template: string, v: string): Promise<string> {
+async function resolveLogo(template: string, v: string, origin = ORIGIN): Promise<string> {
   if (v.startsWith('data:image/')) return v;
-  const src = await resolveImage(template, v);
-  if (src.startsWith(ORIGIN)) {
-    const rel = decodeURIComponent(new URL(src).pathname).replace(/^\/+/, '');
+  const src = await resolveImage(template, v, origin);
+  if (src.startsWith(`${origin}/`)) {
+    const rel = decodeURIComponent(src.slice(origin.length + 1));
     const file = path.resolve(ROOT, rel);
+    if (!file.startsWith(ROOT + path.sep)) throw new Error(`Unknown logo: ${v}`);
     const body = await fs.readFile(file);
     return `data:${MIME[path.extname(file)] ?? 'image/png'};base64,${body.toString('base64')}`;
   }
@@ -179,14 +211,19 @@ async function resolveLogo(template: string, v: string): Promise<string> {
   return `data:${type};base64,${buf.toString('base64')}`;
 }
 
-async function resolveImage(template: string, v: string): Promise<string> {
+async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
   if (v.startsWith('asset:')) {
     const asset = (await loadLibrary()).find((a) => a.id === v.slice(6));
     if (!asset) throw new Error(`Unknown asset: ${v.slice(6)}. Use list_assets to see the approved ones.`);
-    return `${ORIGIN}/library/${asset.file}`;
+    return `${origin}/library/${asset.file}`;
+  }
+  if (v.startsWith('upload:')) {
+    const { data, error } = await supabaseAdmin().storage.from('uploads').createSignedUrl(v.slice(7), 60 * 60);
+    if (error || !data) throw new Error(`Could not open the image ${v}: ${error?.message}`);
+    return data.signedUrl;
   }
   if (/^https:\/\//.test(v)) return v;
-  return `${ORIGIN}/templates/${template}/${v}`;
+  return `${origin}/templates/${template}/${v}`;
 }
 
 // Slots can be absent from some formats (an OG without the venue line).

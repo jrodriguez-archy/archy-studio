@@ -290,19 +290,36 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const nodeId = c?.kind === 'text' ? c.id : c?.kind === 'button' ? c.textId : undefined;
     if (!c || !nodeId) return;
     const n = el(nodeId)!;
+    const d = doc()!;
     onSelect([c.id], 'replace');
+    onHover(null);
     setEditing(nodeId);
+    // Typing in place should feel like a design tool: no browser focus ring, a soft text highlight,
+    // and the caret where the double-click landed (not everything selected).
+    if (!d.getElementById('canvas-editing')) {
+      const st = d.createElement('style');
+      st.id = 'canvas-editing';
+      st.textContent = '[data-canvas-editing]{outline:none!important}[data-canvas-editing]::selection{background:rgba(1,61,245,.22)}';
+      d.head.appendChild(st);
+    }
+    n.dataset.canvasEditing = '';
+    n.style.caretColor = getComputedStyle(n).color;
     n.contentEditable = 'plaintext-only';
-    n.focus();
-    const range = doc()!.createRange();
-    range.selectNodeContents(n);
+    n.focus({ preventScroll: true });
+    const { x, y } = local(e);
+    const range = d.caretRangeFromPoint?.(x, y) ?? null;
     const sel = win()!.getSelection()!;
     sel.removeAllRanges();
-    sel.addRange(range);
+    if (range && n.contains(range.startContainer)) sel.addRange(range);
+    else { const end = d.createRange(); end.selectNodeContents(n); end.collapse(false); sel.addRange(end); }
+    const onInput = () => redraw();
     const done = (save: boolean) => {
       n.removeEventListener('blur', onBlur);
       n.removeEventListener('keydown', onKey);
+      n.removeEventListener('input', onInput);
       n.removeAttribute('contenteditable');
+      delete n.dataset.canvasEditing;
+      n.style.removeProperty('caret-color');
       setEditing(null);
       if (!save || !onText(nodeId, n.textContent ?? '')) setNonce((x) => x + 1);
     };
@@ -314,6 +331,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     };
     n.addEventListener('blur', onBlur);
     n.addEventListener('keydown', onKey);
+    n.addEventListener('input', onInput);
   };
 
   const sel = ready ? selected.filter((id) => kindOf(id) !== 'background').map((id) => ({ id, r: screen(boxOf(id)) })).filter((s) => s.r) as { id: string; r: Rect }[] : [];
@@ -326,7 +344,9 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const ctxComp = ready && !drag.current ? parentOf(comps, hover) : null;
   const ctx = ctxComp && !selected.includes(ctxComp.id) ? screen(boxOf(ctxComp.id)) : null;
   const handles: readonly Handle[] = logo ? ['nw', 'ne', 'se', 'sw'] : HANDLES;
-  const frameBox = (single ?? (group ? { r: group } : null))?.r;
+  // While typing, one thin frame around the text being edited, nothing else.
+  const frameBox = editing ? null : (single ?? (group ? { r: group } : null))?.r;
+  const editBox = editing && ready ? screen(boxOf(editing)) : null;
   const safeR = screen(safe);
 
   return (
@@ -370,6 +390,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
             {badge && <span className={`absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums ${outside ? 'bg-[#F2385A]' : 'bg-primary'}`}>{outside ? `${badge}   Outside the safe area` : badge}</span>}
           </div>
         )}
+        {editBox && <div className="pointer-events-none absolute ring-1 ring-primary" style={{ left: editBox.x, top: editBox.y, width: editBox.w, height: editBox.h }} />}
         {marquee && <div className="pointer-events-none absolute border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
         {guides.map((g, i) => (
           <div key={i} className="pointer-events-none absolute bg-[#F2385A]"

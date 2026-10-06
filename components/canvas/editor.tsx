@@ -9,7 +9,13 @@ import {
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { exportAction, prepareAction, saveAction, saveDraftAction } from '@/app/(app)/canvas/actions';
+import { libraryAction, prepareAction, saveDraftAction } from '@/app/(app)/canvas/actions';
+
+// Export and save render with Chromium in their own route (/api/canvas), not in this page's function.
+async function canvasCall(body: Record<string, unknown>): Promise<{ ok: true; id?: string; url: string } | { ok: false; error: string }> {
+  const res = await fetch('/api/canvas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  return res.json().catch(() => ({ ok: false, error: `The server did not answer (${res.status}).` }));
+}
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { CanvasLibrary } from '@/lib/canvas';
 import { THEME, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
@@ -38,7 +44,15 @@ const luminance = (hex: string) => { const n = parseInt(hex.slice(1), 16); retur
 // pannable, zoomable viewport, the selection's properties on the right. Copy and slot images change the
 // brief (the fit rules still apply); everything else is a hand edit kept with the piece. Save renders it
 // again with the same engine as Claude's pieces.
-export function CanvasEditor({ piece, library }: { piece?: PieceProps; library: CanvasLibrary }) {
+export function CanvasEditor({ piece, library: given = null, seenAt = null }: { piece?: PieceProps; library?: CanvasLibrary | null; seenAt?: string | null }) {
+  // With a piece, the panel's library (templates, pieces, images) loads after the piece is on screen.
+  const [library, setLibrary] = useState<CanvasLibrary | null>(given);
+  useEffect(() => {
+    if (given) return;
+    let gone = false;
+    libraryAction().then((l) => { if (!gone && l) setLibrary(l); }).catch(() => {});
+    return () => { gone = true; };
+  }, [given]);
   const [tab, setTab] = useState<PanelTab>(piece ? 'layers' : 'library');
   if (!piece) {
     return (
@@ -46,7 +60,7 @@ export function CanvasEditor({ piece, library }: { piece?: PieceProps; library: 
         <header className="flex h-12 shrink-0 items-center border-b border-foreground/[0.06] bg-background px-4"><p className="font-medium">Canvas</p></header>
         <div className="flex min-h-0 flex-1">
           <CanvasPanel tab={tab === 'layers' ? 'library' : tab} onTab={setTab}>
-            {tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a piece and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
+            {!library ? <PanelLoading /> : tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a piece and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
           </CanvasPanel>
           <main className="flex flex-1 items-center justify-center p-8">
             <div className="max-w-sm text-center">
@@ -58,10 +72,10 @@ export function CanvasEditor({ piece, library }: { piece?: PieceProps; library: 
       </div>
     );
   }
-  return <Editor key={piece.pieceId} {...piece} library={library} tab={tab} setTab={setTab} />;
+  return <Editor key={piece.pieceId} {...piece} library={library} seenAt={library?.mcpSeenAt ?? seenAt} tab={tab} setTab={setTab} />;
 }
 
-function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, initial, saved: savedSnap, draft, plan: firstPlan, slotMeta, library, tab, setTab }: PieceProps & { library: CanvasLibrary; tab: PanelTab; setTab: (t: PanelTab) => void }) {
+function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, initial, saved: savedSnap, draft, plan: firstPlan, slotMeta, library, seenAt, tab, setTab }: PieceProps & { library: CanvasLibrary | null; seenAt: string | null; tab: PanelTab; setTab: (t: PanelTab) => void }) {
   const router = useRouter();
   const [snap, setSnap] = useState<Snap>(initial);
   const [past, setPast] = useState<Snap[]>([]);
@@ -344,13 +358,13 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   };
 
   const download = () => start(async () => {
-    const r = await exportAction(pieceId, snap.slots, snap.edits);
+    const r = await canvasCall({ action: 'export', id: pieceId, slots: snap.slots, edits: snap.edits });
     if (!r.ok) { toast.error(r.error); return; }
     window.location.href = r.url;
   });
 
   const save = (mode: 'version' | 'replace') => start(async () => {
-    const r = await saveAction(pieceId, snap.slots, snap.edits, mode);
+    const r = await canvasCall({ action: 'save', id: pieceId, slots: snap.slots, edits: snap.edits, mode });
     if (!r.ok) { toast.error(r.error); return; }
     setSaving(false);
     setSaved(snap);
@@ -364,7 +378,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     if (!imageTarget) return;
     if (imageTarget.slot) setSlot(imageTarget.slot, value); else editLayer(imageTarget.id, { image: value });
   };
-  const pickerImages = library.images.map((a) => ({ id: a.value.slice(6), title: a.title, kind: a.kind, url: a.url }));
+  const pickerImages = (library?.images ?? []).map((a) => ({ id: a.value.slice(6), title: a.title, kind: a.kind, url: a.url }));
   const pct = Math.round(vp.zoom * 100);
 
   return (
@@ -409,9 +423,10 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               onSelect={(id, add) => select([id], add ? 'toggle' : 'replace')}
               onToggle={(id) => editLayer(id, { hidden: !snap.edits[id]?.hidden })} />
           )}
-          {tab === 'library' && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
-          {tab === 'assets' && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
-          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : pieceId} title={title} seenAt={library.mcpSeenAt} />}
+          {(tab === 'library' || tab === 'assets') && !library && <PanelLoading />}
+          {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : pieceId} confirmLeave={confirmLeave} />}
+          {tab === 'assets' && library && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
+          {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : pieceId} title={title} seenAt={seenAt} />}
         </CanvasPanel>
 
         <main
@@ -483,7 +498,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               onAlign={(a) => align(a)}
             />
           ) : (
-            <PiecePanel pieceId={isNew ? undefined : pieceId} title={title} seenAt={library.mcpSeenAt} />
+            <PiecePanel pieceId={isNew ? undefined : pieceId} title={title} seenAt={seenAt} />
           )}
         </aside>
       </div>
@@ -501,6 +516,14 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
           {busy && <p className="text-foreground/50">Rendering the piece…</p>}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function PanelLoading() {
+  return (
+    <div className="grid grid-cols-2 gap-2 px-3 py-2">
+      {Array.from({ length: 6 }, (_, i) => <div key={i} className="aspect-square animate-pulse rounded-md bg-foreground/[0.05]" />)}
     </div>
   );
 }

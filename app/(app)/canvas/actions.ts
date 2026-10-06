@@ -1,11 +1,13 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { exportEdited, isNew, loadSource, saveEdited } from '@/lib/canvas';
-import { clearDraft, saveDraft } from '@/lib/canvas-claude';
+import { canvasLibrary, isNew, loadSource } from '@/lib/canvas';
 import type { Edits, FillPlan } from '@/lib/canvas-shared';
-import { MissingRequired, prepareFill } from '@/lib/renderer';
+import { saveDraft } from '@/lib/drafts';
+import { MissingRequired, prepareFill } from '@/lib/fill';
 import { currentUser } from '@/lib/team';
+
+// Light Canvas actions (no browser): the fill for the editor, the draft, the panel's library. Export
+// and save render with Chromium and live in /api/canvas, so this page's function stays small.
 
 type Result<T> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -31,23 +33,17 @@ export async function prepareAction(id: string, slots: Record<string, string | n
   });
 }
 
-export async function exportAction(id: string, slots: Record<string, string | null>, edits: Edits) {
-  return run(id, async (_me, piece) => ({ url: await exportEdited(piece, slots, edits) }));
-}
-
-export async function saveAction(id: string, slots: Record<string, string | null>, edits: Edits, mode: 'version' | 'replace') {
-  return run(id, async (me, piece) => {
-    const saved = await saveEdited(me, piece, slots, edits, mode);
-    if (!isNew(piece)) await clearDraft(piece.id);
-    revalidatePath('/', 'layout');
-    return { id: saved.id, url: saved.url };
-  });
-}
-
 // The work in progress, kept as people edit so Claude (through the MCP) works on what they see.
 export async function saveDraftAction(id: string, slots: Record<string, string | null>, edits: Edits) {
   return run(id, async (me, piece) => {
     if (isNew(piece)) return { version: 0 };
     return { version: await saveDraft({ pieceId: piece.id, userId: me.id, slots, edits, by: 'app' }) };
   });
+}
+
+// The panel's library (templates, pieces, images, uploads), loaded after the piece is on screen.
+export async function libraryAction() {
+  const me = await currentUser();
+  if (!me) return null;
+  return canvasLibrary(me);
 }

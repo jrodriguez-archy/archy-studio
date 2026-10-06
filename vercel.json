@@ -14,7 +14,7 @@
       "memory": 2048,
       "maxDuration": 60
     },
-    "app/(app)/canvas/[id]/page.tsx": {
+    "app/api/canvas/route.ts": {
       "memory": 2048,
       "maxDuration": 60
     }

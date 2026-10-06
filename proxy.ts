@@ -32,5 +32,6 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|fonts/|textures/).*)'],
+  // Template files for Canvas are static brand assets served from the CDN: no session check.
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|fonts/|textures/|api/template-files/).*)'],
 };

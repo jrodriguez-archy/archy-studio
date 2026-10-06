@@ -3,8 +3,8 @@ const renderFiles = [
   './templates/**/*', './fonts/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js',
   './node_modules/@sparticuz/chromium/bin/**', './node_modules/playwright-core/**',
 ];
-// Routes that render or read template files (Canvas renders from its page's server actions).
-const rendering = ['/api/render', '/mcp', '/api/preview/[template]/[format]', '/api/template-files/[...path]', '/canvas/[id]'];
+// Routes that render with Chromium (Canvas export and save go through /api/canvas).
+const rendering = ['/api/render', '/mcp', '/api/preview/[template]/[format]', '/api/canvas'];
 const notNeeded = ['./templates/*/reference/**', './templates/*/source/**'];
 
 /** @type {import('next').NextConfig} */

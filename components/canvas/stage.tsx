@@ -17,6 +17,7 @@ type Win = Window & {
 };
 
 const scripts: Record<string, Promise<string>> = {};
+let loads = 0;
 const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}`).then((r) => r.text()));
 
 export type StageHandle = {
@@ -136,7 +137,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     };
     const onLoad = () => { load().catch((e) => console.error('Canvas could not draw the piece', e)); };
     f.addEventListener('load', onLoad);
-    f.src = `/api/template-files/${plan.html}?t=${Date.now()}`;
+    // A new query each load makes the iframe reload; the file itself comes from the CDN and the browser cache.
+    f.src = `/api/template-files/${plan.html}?load=${++loads}`;
     return () => { stale = true; f.removeEventListener('load', onLoad); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fillKey, nonce, redraw]);

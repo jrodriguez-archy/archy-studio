@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CanvasEditor } from '@/components/canvas/editor';
-import { canReplace, canvasLibrary, editorContext, isNew, loadSource } from '@/lib/canvas';
+import { canReplace, editorContext, isNew, loadSource } from '@/lib/canvas';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 import { titleFromSlots } from '@/lib/gallery-shared';
-import { getDraft } from '@/lib/canvas-claude';
-import { prepareFill } from '@/lib/renderer';
+import { getDraft } from '@/lib/drafts';
+import { prepareFill } from '@/lib/fill';
 
-// A piece (or a new one from a template) in Canvas, with the panel's library.
+// A piece (or a new one from a template) in Canvas. The panel's library loads afterwards, in the browser.
 export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: { id: string; is_admin: boolean } }) {
   const piece = await loadSource(pieceRef);
   if (!piece) notFound();
@@ -24,15 +25,15 @@ export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: { id: 
       prepareFill({ template: piece.template, format: piece.format, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits }, '/api/template-files'),
       prepareFill({ template: piece.template, format: piece.format, slots: piece.slots, edits: piece.edits }, '/api/template-files').then((p) => p.slots),
       canReplace(me, piece),
-      canvasLibrary(me),
+      supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle().then((r) => (r.data?.mcp_seen_at as string | null | undefined) ?? null),
     ]);
   } catch (e) {
     return <CannotOpen back={back} text={(e as Error).message} />;
   }
-  const [ctx, plan, savedSlots, replace, library] = ready;
+  const [ctx, plan, savedSlots, replace, seenAt] = ready;
   return (
     <CanvasEditor
-      library={library}
+      seenAt={seenAt}
       piece={{
         pieceId: piece.id, isNew: fresh, canReplace: replace, backHref: back, formatLabel: ctx.formatLabel,
         title: fresh ? ctx.title : piece.set_title ?? titleFromSlots(piece.slots) ?? ctx.title,

@@ -124,6 +124,15 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     probe.remove();
   }
 
+  // How many lines each text takes as designed (before any hand edit), for __checkEdits.
+  for (const el of root.querySelectorAll('[data-node]')) {
+    if (!('baseLines' in el.dataset) && !isSvg(el) && !el.children.length && el.textContent.trim()) {
+      el.dataset.baseLines = String(lineCount(el));
+      // What the design itself already spills (glyph overhangs, tight boxes) is not an error later.
+      el.dataset.baseOver = `${Math.max(0, el.scrollWidth - el.clientWidth)},${Math.max(0, el.scrollHeight - el.clientHeight)}`;
+    }
+  }
+
   // ---- Layer edits ----
   for (const [id, e] of Object.entries(edits ?? {})) {
     if (id === ':theme') continue;
@@ -176,6 +185,13 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     if (e.hidden) s.display = 'none';
   }
 
+  function lineCount(el) {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    const tops = [...r.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top));
+    return new Set(tops.map((t) => Math.round(t / 4))).size || 1;
+  }
+
   function toHex(c) {
     if (!c) return null;
     if (/^#[0-9a-f]{6}$/i.test(c)) return c.toUpperCase();
@@ -183,4 +199,39 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     const m = c.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
     return m ? ('#' + [m[1], m[2], m[3]].map((x) => Number(x).toString(16).padStart(2, '0')).join('')).toUpperCase() : null;
   }
+};
+
+// After the hand edits: a text a resize, a smaller box, a bigger size or a layout change has affected
+// must still fit, as fit.js makes sure for the copy. Same check in the editor and on the server, so a
+// piece that does not fit is never saved.
+window.__checkEdits = function checkEdits(edits, rules, format) {
+  const root = document.querySelector('body > [data-node]');
+  const R = root.getBoundingClientRect();
+  const touched = Object.entries(edits ?? {}).filter(([id, e]) => id !== ':theme' && e && (e.box || e.style?.fontSize || e.style?.fontWeight || e.layout || e.text != null));
+  if (!touched.length) return [];
+  const nodes = touched.map(([id]) => root.querySelector(`[data-node="${CSS.escape(id)}"]`)).filter(Boolean);
+  const errors = [];
+  const pick = (v) => (v && typeof v === 'object' ? v[format] : v);
+  const lines = (el) => {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    return new Set([...r.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 4))).size || 1;
+  };
+  const name = (el) => {
+    const slot = el.dataset.slot;
+    const t = slot ? slot.replace(/-/g, ' ') : el.textContent.trim().replace(/\s+/g, ' ').slice(0, 24);
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+  for (const el of root.querySelectorAll('[data-node]')) {
+    if (el.namespaceURI === 'http://www.w3.org/2000/svg' || el.children.length || !el.textContent.trim()) continue;
+    if (getComputedStyle(el).display === 'none' || !nodes.some((n) => n === el || n.contains(el) || el.contains(n))) continue;
+    const slot = el.dataset.slot;
+    const allowed = Math.max(Number(el.dataset.baseLines) || 1, (slot && pick(rules?.slots?.[slot]?.maxLines)) || 0);
+    const now = lines(el);
+    const b = el.getBoundingClientRect();
+    if (now > allowed) errors.push({ node: el.dataset.node, slot, code: 'edit-lines', message: `${name(el)} now takes ${now} lines; the design allows ${allowed}. Widen its box or make the text smaller.` });
+    else if ((() => { const [w0, h0] = (el.dataset.baseOver ?? '0,0').split(',').map(Number); return el.scrollWidth - el.clientWidth > w0 + 2 || el.scrollHeight - el.clientHeight > h0 + 2; })()) errors.push({ node: el.dataset.node, slot, code: 'edit-overflow', message: `${name(el)} no longer fits its box. Make the box bigger or the text smaller.` });
+    else if (b.left < R.left - 1 || b.top < R.top - 1 || b.right > R.right + 1 || b.bottom > R.bottom + 1) errors.push({ node: el.dataset.node, slot, code: 'edit-outside', message: `${name(el)} goes off the piece.` });
+  }
+  return errors;
 };

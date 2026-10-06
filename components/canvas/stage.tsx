@@ -10,6 +10,7 @@ import { componentAt, innermostAt, readInfo, readTokens, readUsedColors, within,
 type Win = Window & {
   __fill: (a: unknown) => Promise<RenderReport>;
   __applyEdits: (e: Edits, u: Record<string, string>, i: Record<string, string>) => void;
+  __checkEdits: (e: Edits, rules: unknown, format: string) => RenderReport['errors'];
   __components: () => { comps: Comp[]; safe: Box };
   __alignBox: (id: string) => Box | null;
 };
@@ -45,6 +46,8 @@ type Props = {
   /** Typed in place. False when refused: the page is drawn again as it was. */
   onText: (nodeId: string, text: string) => boolean;
   onInfo: () => void;
+  /** What no longer fits after the hand edits (same check as the server). */
+  onCheck: (errors: RenderReport['errors']) => void;
 };
 
 type Rect = { x: number; y: number; w: number; h: number };
@@ -59,7 +62,7 @@ type Drag = {
 
 // The piece itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
-export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo }, ref) {
+export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onCheck }, ref) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [ready, setReady] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -70,8 +73,12 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const [, setTick] = useState(0);
   const [nonce, setNonce] = useState(0);
   const redraw = useCallback(() => setTick((t) => t + 1), []);
-  const live = useRef({ edits, plan, onReady, onInfo });
-  live.current = { edits, plan, onReady, onInfo };
+  const live = useRef({ edits, plan, onReady, onInfo, onCheck });
+  live.current = { edits, plan, onReady, onInfo, onCheck };
+  const check = useCallback(() => {
+    const w = frame.current?.contentWindow as Win | null;
+    if (w?.__checkEdits) live.current.onCheck(w.__checkEdits(live.current.edits, live.current.plan.fill.rules, live.current.plan.format));
+  }, []);
   const drag = useRef<Drag | null>(null);
 
   const doc = () => frame.current?.contentDocument ?? null;
@@ -118,6 +125,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       await d.fonts.ready;
       setReady(true);
       live.current.onReady({ comps, safe, tokens, used, report });
+      check();
       redraw();
     };
     const onLoad = () => { load().catch((e) => console.error('Canvas could not draw the piece', e)); };
@@ -130,9 +138,12 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   useEffect(() => {
     if (!ready) return;
     win()?.__applyEdits(edits, plan.imageUrls, plan.iconSvgs);
+    // While dragging, check once the layout settles (the next frame).
+    const raf = requestAnimationFrame(check);
     redraw();
     live.current.onInfo();
-  }, [edits, plan.imageUrls, plan.iconSvgs, ready, redraw]);
+    return () => cancelAnimationFrame(raf);
+  }, [edits, plan.imageUrls, plan.iconSvgs, ready, redraw, check]);
 
   const screen = (b: Box | null): Rect | null => b && { x: b.x * zoom, y: b.y * zoom, w: b.w * zoom, h: b.h * zoom };
   const union = (bs: Box[]): Box => {

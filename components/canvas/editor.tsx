@@ -76,6 +76,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
   const [used, setUsed] = useState<string[]>([]);
   const [tokens, setTokens] = useState<Token[]>([]);
   const [report, setReport] = useState<RenderReport | null>(null);
+  const [editErrors, setEditErrors] = useState<RenderReport['errors']>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [hover, setHover] = useState<string | null>(null);
   const [, setInfoTick] = useState(0);
@@ -309,7 +310,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
     return () => { gone = true; if (channel) db.removeChannel(channel); };
   }, [pieceId, isNew, commit, undo]);
 
-  const blocked = planError ?? (report && !report.ok ? report.errors.map((e) => e.message ?? e.code).join(' ') : null);
+  const blocked = planError ?? (report && !report.ok ? report.errors.map((e) => e.message ?? e.code).join(' ') : editErrors.length ? editErrors.map((e) => e.message ?? e.code).join(' ') : null);
 
   const download = () => start(async () => {
     const r = await exportAction(pieceId, snap.slots, snap.edits);
@@ -394,6 +395,7 @@ function Editor({ pieceId, title, formatLabel, backHref, canReplace, isNew, init
               onEdit={editMany}
               onText={typed}
               onInfo={refreshInfo}
+              onCheck={setEditErrors}
             />
           </div>
 

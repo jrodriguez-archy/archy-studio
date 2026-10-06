@@ -173,6 +173,10 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
       await page.addScriptTag({ content: editsJs });
       // @ts-expect-error __applyEdits is defined by edits.js inside the page
       await page.evaluate(([e, u, i]) => window.__applyEdits(e, u, i), [edits, plan.imageUrls, plan.iconSvgs] as const);
+      await page.evaluate(() => document.fonts.ready);
+      // @ts-expect-error __checkEdits is defined by edits.js inside the page
+      const extra = (await page.evaluate(([e, r, f]) => window.__checkEdits(e, r, f), [edits, plan.fill.rules, format] as const)) as RenderReport['errors'];
+      if (extra.length) { report.ok = false; report.errors.push(...extra); }
     }
     let inspected: { comps: InspectedComp[]; tokens: Record<string, string> } | null = null;
     if (inspect) {

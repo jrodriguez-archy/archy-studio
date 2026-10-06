@@ -10,7 +10,7 @@ import type { ProjectLink } from '@/components/projects-nav';
 import { createProjectAction, movePieceAction } from '@/app/(app)/projects/actions';
 
 // "Move to project" on a gallery piece: pick a folder, take it out, or create one and file it there.
-export function PieceMenu({ pieceId, projectId, projects }: { pieceId: string; projectId: string | null; projects: ProjectLink[] }) {
+export function PieceMenu({ pieceId, projectId, projects, variant = 'icon' }: { pieceId: string; projectId: string | null; projects: ProjectLink[]; variant?: 'icon' | 'button' }) {
   const [creating, setCreating] = useState(false);
   const [, start] = useTransition();
   const move = (id: string | null, name?: string) =>
@@ -24,8 +24,11 @@ export function PieceMenu({ pieceId, projectId, projects }: { pieceId: string; p
     <>
       <DropdownMenu>
         <DropdownMenuTrigger aria-label="Move to project" title="Move to project"
-          className="flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur outline-none">
+          className={variant === 'icon'
+            ? 'flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur outline-none'
+            : 'flex h-8 items-center gap-1.5 rounded-md bg-foreground/[0.05] px-3 text-[13px] text-foreground/80 transition-colors outline-none hover:bg-foreground/[0.09]'}>
           <HugeiconsIcon icon={FolderExportIcon} className="size-3.5" />
+          {variant === 'button' && 'Move'}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 text-[13px]">
           <DropdownMenuGroup>

@@ -56,7 +56,8 @@ export async function replaceRender(input: { id: string; storagePath: string; sl
   return { id: input.id, path, url: await signedUrl(path) };
 }
 
-async function storeFiles(path: string, png: Buffer, upsert: boolean) {
+// The PNG and its light WebP thumbnail (also used by Template review).
+export async function storeFiles(path: string, png: Buffer, upsert: boolean) {
   const db = supabaseAdmin();
   const up = await db.storage.from(BUCKET).upload(path, png, { contentType: 'image/png', upsert });
   if (up.error) throw new Error(`Could not store the render: ${up.error.message}`);

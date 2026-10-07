@@ -1,5 +1,5 @@
-// Template QA: every template × format drawn with its sample copy, with short copy (the lead text at
-// about half, optional details left out) and with long copy (the lead text at its limit). Reports how
+// Template QA: every template × format drawn with realistic, short and long copy (the cases of
+// Template review). Reports how
 // much of the design's footprint the content fills, what grew, what does not fit and what the Inspector
 // says, and keeps the PNGs, so a template that looks wrong with real copy is caught before people see it.
 //
@@ -8,32 +8,17 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { catalog } from '../lib/catalog';
 import { render } from '../lib/renderer';
-
-type Case = 'sample' | 'short' | 'long';
+import { casesFor } from './review-cases';
 
 async function main() {
   const [outDir = path.join(process.cwd(), '.qa'), ...only] = process.argv.slice(2);
   await mkdir(outDir, { recursive: true });
   const items = (await catalog()).filter((i) => !only.length || only.includes(i.manifest.id));
   const rows: string[] = [];
-  for (const { manifest, config } of items) {
-    const optional = new Set(config.optional ?? []);
+  for (const [index, { manifest, config }] of items.entries()) {
     for (const format of Object.keys(manifest.formats)) {
-      // The lead text: the largest type of this format.
-      const texts = Object.entries(manifest.slots).filter(([, s]) => s.type === 'text');
-      const size = (k: string) => parseFloat(String((manifest.slots[k] as { perFormat?: Record<string, { fontSize?: string }> }).perFormat?.[format]?.fontSize ?? 0));
-      const lead = texts.map(([k]) => k).sort((a, b) => size(b) - size(a))[0];
-      const sample = manifest.slots[lead]?.default ?? '';
-      const words = sample.split(/\s+/);
-      const cases: Record<Case, Record<string, string | null>> = {
-        sample: {},
-        short: {
-          ...Object.fromEntries([...optional].map((k) => [k, null])),
-          ...(lead ? { [lead]: words.slice(0, Math.max(2, Math.ceil(words.length / 2))).join(' ') } : {}),
-        },
-        long: lead ? { [lead]: sample.length < 60 ? `${sample} ${words.slice(0, 2).join(' ')}` : sample } : {},
-      };
-      for (const [name, slots] of Object.entries(cases) as [Case, Record<string, string | null>][]) {
+      // The same realistic cases as Template review (scripts/review-cases.ts).
+      for (const { case: name, slots } of await casesFor(manifest, config, format, { index })) {
         try {
           const out = await render({ template: manifest.id, format, slots, fillDefaults: true, inspect: true });
           const f = out.report.fill;

@@ -17,7 +17,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     { label: 'Library', items: [{ href: '/', label: 'Gallery', icon: 'gallery' }, { href: '/templates', label: 'Templates', icon: 'templates' }, { href: '/archive', label: 'Archive', icon: 'archive' }] },
     { label: 'Create', items: [{ href: '/canvas', label: 'Canvas', icon: 'canvas' }] },
     { label: 'Resources', items: [{ href: '/install', label: 'Install', icon: 'install' }] },
-    ...(me?.is_admin ? [{ label: 'Admin', items: [{ href: '/admin', label: 'Team', icon: 'team' as const }] }] : []),
+    ...(me?.is_admin ? [{ label: 'Admin', items: [{ href: '/admin', label: 'Team', icon: 'team' as const }, { href: '/admin/review', label: 'Template review', icon: 'review' as const }] }] : []),
   ];
   const projects: ProjectLink[] = me ? (await listProjects(me).catch(() => [])).map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id })) : [];
   const who = me ? { id: me.id, is_admin: me.is_admin } : undefined;

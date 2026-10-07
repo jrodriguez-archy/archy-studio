@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSidebar } from '@/components/sidebar';
-import { Archive02Icon, Folder01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PaintBoardIcon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
+import { Archive02Icon, CheckListIcon, Folder01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PaintBoardIcon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
 
-export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon, archive: Archive02Icon, canvas: PaintBoardIcon };
+export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon, archive: Archive02Icon, canvas: PaintBoardIcon, review: CheckListIcon };
 export type NavIcon = keyof typeof NAV_ICONS;
 
 const ROW = 'flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] transition-colors';
@@ -25,7 +25,8 @@ function Collapsed({ label, children }: { label: React.ReactNode; children: Reac
 export function NavLink({ href, icon, children, trailing, onNavigate }: { href: string; icon: NavIcon; children: React.ReactNode; trailing?: React.ReactNode; onNavigate?: () => void }) {
   const path = usePathname();
   const { collapsed } = useSidebar();
-  const active = href === '/' ? path === '/' : path === href || path.startsWith(`${href}/`);
+  // Section roots that have pages below them in the nav (Admin → Team) are active only on themselves.
+  const active = href === '/' || href === '/admin' ? path === href : path === href || path.startsWith(`${href}/`);
   if (collapsed) {
     return (
       <Collapsed label={children}>

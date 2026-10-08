@@ -1,5 +1,13 @@
 # Changelog
 
+## archy-studio 0.7.0 (2026-10-08)
+
+- Canvas tools: `get_canvas`, `edit_canvas` and `save_canvas` let Claude edit, live, the design open in Studio's Canvas (copy, colours, theme, icons, images, sizes, layout, `fix: "all"` for the Inspector's fixes), as the designer: it fixes what its change causes instead of asking the person to do it by hand.
+- Every render answer gives an **Edit in Canvas** link for each format.
+- `get_canvas` lists the other formats of the design; in Canvas they stay in sync (copy, images, theme and styles).
+- Short copy needs no padding: designs fill their room by themselves. Copy that does not fit is rewritten shorter with the same facts, never cut; dates in house style (`Jan 28 – 30, 2027`).
+- "Design" instead of "piece" wherever people read it.
+
 ## archy-studio 0.6.0 (2026-10-06)
 
 - Event page covers belong to their style: `list_templates` shows `cover` (and `cover_of` on covers). After a style with a cover, Claude offers the matching cover and renders it in the same set.

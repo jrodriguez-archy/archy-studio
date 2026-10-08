@@ -14,6 +14,236 @@
       "label": "Stories 1080×1920"
     }
   },
+  "designs": {
+    "meet-name": {
+      "label": "Meet Name"
+    },
+    "the-arch": {
+      "label": "The Arch"
+    },
+    "grid-card": {
+      "label": "Grid Card"
+    },
+    "mosaic": {
+      "label": "Mosaic"
+    },
+    "forum": {
+      "label": "Forum"
+    }
+  },
+  "themes": {
+    "white": {
+      "label": "White"
+    },
+    "royal": {
+      "label": "Royal Blue"
+    },
+    "navy": {
+      "label": "Navy"
+    }
+  },
+  "default": {
+    "design": "meet-name",
+    "theme": "white"
+  },
+  "combos": {
+    "meet-name--royal": {
+      "design": "meet-name",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "nodeId": "4NX-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4PD-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "meet-name--navy": {
+      "design": "meet-name",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "nodeId": "4QV-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4SB-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "the-arch--white": {
+      "design": "the-arch",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "nodeId": "4TT-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4VD-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "the-arch--royal": {
+      "design": "the-arch",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "nodeId": "4B6-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4CQ-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "the-arch--navy": {
+      "design": "the-arch",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "nodeId": "4WY-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4YI-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "grid-card--white": {
+      "design": "grid-card",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "nodeId": "503-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "51P-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "grid-card--royal": {
+      "design": "grid-card",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "nodeId": "53D-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "54Z-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "grid-card--navy": {
+      "design": "grid-card",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "nodeId": "4EB-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4FX-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "mosaic--white": {
+      "design": "mosaic",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "nodeId": "56N-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "587-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "mosaic--royal": {
+      "design": "mosaic",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "nodeId": "4HL-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4J5-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "mosaic--navy": {
+      "design": "mosaic",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "nodeId": "59S-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "5BC-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "forum--white": {
+      "design": "forum",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "nodeId": "4KQ-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "4MB-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "forum--royal": {
+      "design": "forum",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "nodeId": "5CX-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "5EI-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "forum--navy": {
+      "design": "forum",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "nodeId": "5G4-0",
+          "label": "Post 1080×1080"
+        },
+        "stories": {
+          "nodeId": "5HP-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
   "paperPage": "Templates",
   "useWhen": "A person is the message: an AE, a speaker or a team member introduced by first name, with a demo or meeting CTA.",
   "notWhen": "The ad sells a product claim, or announces an event booth.",

@@ -3,7 +3,7 @@
   "nodes": {
     "45A-0": {
       "id": "45A-0",
-      "name": "TPL · AE Spotlight · Post 1080×1080",
+      "name": "TPL · AE Spotlight · Meet Name · White · Post 1080×1080",
       "component": "Frame",
       "visible": true,
       "text": null,
@@ -297,7 +297,7 @@
       "name": "slot-text-ae-location",
       "component": "Text",
       "visible": true,
-      "text": "FORNEY, TX",
+      "text": "Forney, TX",
       "children": []
     }
   },
@@ -381,7 +381,7 @@
       "lineHeight": "116px",
       "width": "max-content",
       "whiteSpace": "pre",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-light-text)"
     },
@@ -391,7 +391,7 @@
       "lineHeight": "116px",
       "width": "max-content",
       "whiteSpace": "pre",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-royal-blue-500)"
     },
@@ -401,7 +401,7 @@
       "letterSpacing": "-0.01em",
       "width": "100%",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 500,
       "color": "var(--color-light-text)"
     },
@@ -529,7 +529,7 @@
       "letterSpacing": "-0.01em",
       "width": "max-content",
       "whiteSpace": "pre",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-light-text)"
     },

@@ -232,14 +232,23 @@ function pick(o, keys) {
 }
 
 // ---------- main ----------
-// Each format of the base template, plus each variant (e.g. "no-photo") as `<format>--<variant>`.
+// Each format of the base template, plus each variant (e.g. "no-photo") as `<format>--<variant>`, plus
+// each design × theme combo the requester can choose (`<format>--<design>--<theme>`). The base formats
+// are the default combo.
 const manifest = { id: config.id, title: config.title, description: config.description, formats: {}, variants: {}, slots: {}, optionals: {} };
 const jobs = Object.entries(config.formats).map(([format, f]) => ({ key: format, format, variant: null, ...f }));
 for (const [variant, v] of Object.entries(config.variants ?? {})) {
   manifest.variants[variant] = { label: v.label, when: v.when, formats: {} };
   for (const [format, f] of Object.entries(v.formats)) jobs.push({ key: `${format}--${variant}`, format, variant, ...f });
 }
-for (const { key, format, variant, nodeId, label } of jobs) {
+if (config.combos) {
+  Object.assign(manifest, { designs: config.designs, themes: config.themes, default: config.default, combos: {} });
+  for (const [combo, c] of Object.entries(config.combos)) {
+    manifest.combos[combo] = { design: c.design, theme: c.theme, formats: {} };
+    for (const [format, f] of Object.entries(c.formats)) jobs.push({ key: `${format}--${combo}`, format, combo, ...f });
+  }
+}
+for (const { key, format, variant, combo, nodeId, label } of jobs) {
   const srcFile = path.join(dir, 'source', `${key}.json`);
   let d;
   if (offline) d = JSON.parse(await fs.readFile(srcFile, 'utf8'));
@@ -250,6 +259,7 @@ for (const { key, format, variant, nodeId, label } of jobs) {
   const r = await build(key, label, d);
   const entry = { label, width: r.width, height: r.height, html: `${key}.html` };
   if (variant) manifest.variants[variant].formats[format] = entry;
+  else if (combo) manifest.combos[combo].formats[format] = entry;
   else manifest.formats[format] = entry;
   for (const [role, s] of Object.entries(r.slots)) {
     manifest.slots[role] ??= { type: s.type, default: s.default, perFormat: {} };

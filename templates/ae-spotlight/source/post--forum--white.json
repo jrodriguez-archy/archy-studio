@@ -1,0 +1,656 @@
+{
+  "rootId": "4KQ-0",
+  "nodes": {
+    "4KQ-0": {
+      "id": "4KQ-0",
+      "name": "TPL · AE Spotlight · Forum · White · Post 1080×1080",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4M8-0",
+        "4M7-0",
+        "4M6-0",
+        "4KU-0",
+        "4KR-0"
+      ]
+    },
+    "4M8-0": {
+      "id": "4M8-0",
+      "name": "Photo Panel · Half · Gradient Ice",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4MA-0",
+        "4M9-0"
+      ]
+    },
+    "4MA-0": {
+      "id": "4MA-0",
+      "name": "slot-image-ae",
+      "component": "Rectangle",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4M9-0": {
+      "id": "4M9-0",
+      "name": "Pixel Dissolve",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4M7-0": {
+      "id": "4M7-0",
+      "name": "Ruler V 64",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4M6-0": {
+      "id": "4M6-0",
+      "name": "Ruler H Divider",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4KU-0": {
+      "id": "4KU-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LS-0",
+        "4L0-0",
+        "4KV-0"
+      ]
+    },
+    "4LS-0": {
+      "id": "4LS-0",
+      "name": "Top",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LZ-0",
+        "4LT-0"
+      ]
+    },
+    "4LZ-0": {
+      "id": "4LZ-0",
+      "name": "Archy Wordmark",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4LT-0": {
+      "id": "4LT-0",
+      "name": "Headline",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LY-0",
+        "4LW-0",
+        "4LV-0",
+        "4LU-0"
+      ]
+    },
+    "4LY-0": {
+      "id": "4LY-0",
+      "name": "Line 1",
+      "component": "Text",
+      "visible": true,
+      "text": "Meet your",
+      "children": []
+    },
+    "4LW-0": {
+      "id": "4LW-0",
+      "name": "Line 2 · Indent",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LX-0"
+      ]
+    },
+    "4LX-0": {
+      "id": "4LX-0",
+      "name": "local Archy",
+      "component": "Text",
+      "visible": true,
+      "text": "local Archy",
+      "children": []
+    },
+    "4LV-0": {
+      "id": "4LV-0",
+      "name": "Line 3",
+      "component": "Text",
+      "visible": true,
+      "text": "platform",
+      "children": []
+    },
+    "4LU-0": {
+      "id": "4LU-0",
+      "name": "Line 4",
+      "component": "Text",
+      "visible": true,
+      "text": "expert.",
+      "children": []
+    },
+    "4L0-0": {
+      "id": "4L0-0",
+      "name": "Info",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LP-0",
+        "4L1-0"
+      ]
+    },
+    "4LP-0": {
+      "id": "4LP-0",
+      "name": "Name",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LR-0",
+        "4LQ-0"
+      ]
+    },
+    "4LR-0": {
+      "id": "4LR-0",
+      "name": "slot-text-ae-name",
+      "component": "Text",
+      "visible": true,
+      "text": "John Hickmott",
+      "children": []
+    },
+    "4LQ-0": {
+      "id": "4LQ-0",
+      "name": "slot-text-ae-title",
+      "component": "Text",
+      "visible": true,
+      "text": "Sr. Account Executive",
+      "children": []
+    },
+    "4L1-0": {
+      "id": "4L1-0",
+      "name": "Benefits",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LI-0",
+        "4LH-0",
+        "4LC-0",
+        "4LB-0",
+        "4L2-0"
+      ]
+    },
+    "4LI-0": {
+      "id": "4LI-0",
+      "name": "Benefit · Calendar",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LK-0",
+        "4LJ-0"
+      ]
+    },
+    "4LK-0": {
+      "id": "4LK-0",
+      "name": "Icon · Calendar",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4LJ-0": {
+      "id": "4LJ-0",
+      "name": "Copy",
+      "component": "Text",
+      "visible": true,
+      "text": "See how Archy fits your practice",
+      "children": []
+    },
+    "4LH-0": {
+      "id": "4LH-0",
+      "name": "Ruler",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4LC-0": {
+      "id": "4LC-0",
+      "name": "Benefit · Settings",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4LE-0",
+        "4LD-0"
+      ]
+    },
+    "4LE-0": {
+      "id": "4LE-0",
+      "name": "Icon · Settings",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4LD-0": {
+      "id": "4LD-0",
+      "name": "Copy",
+      "component": "Text",
+      "visible": true,
+      "text": "Get your questions answered",
+      "children": []
+    },
+    "4LB-0": {
+      "id": "4LB-0",
+      "name": "Ruler",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4L2-0": {
+      "id": "4L2-0",
+      "name": "Benefit · People",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4L4-0",
+        "4L3-0"
+      ]
+    },
+    "4L4-0": {
+      "id": "4L4-0",
+      "name": "Icon · User Group",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4L3-0": {
+      "id": "4L3-0",
+      "name": "Copy",
+      "component": "Text",
+      "visible": true,
+      "text": "A real human on your side",
+      "children": []
+    },
+    "4KV-0": {
+      "id": "4KV-0",
+      "name": "CTA",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4KZ-0",
+        "4KW-0"
+      ]
+    },
+    "4KZ-0": {
+      "id": "4KZ-0",
+      "name": "Label",
+      "component": "Text",
+      "visible": true,
+      "text": "Schedule a Demo",
+      "children": []
+    },
+    "4KW-0": {
+      "id": "4KW-0",
+      "name": "Icon · Arrow Right",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4KR-0": {
+      "id": "4KR-0",
+      "name": "optional-ae-location",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "4KT-0",
+        "4KS-0"
+      ]
+    },
+    "4KT-0": {
+      "id": "4KT-0",
+      "name": "Dot",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "4KS-0": {
+      "id": "4KS-0",
+      "name": "slot-text-ae-location",
+      "component": "Text",
+      "visible": true,
+      "text": "Forney, TX",
+      "children": []
+    }
+  },
+  "styles": {
+    "4KQ-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1080px",
+      "left": "0px",
+      "top": "8320px",
+      "position": "absolute",
+      "backgroundColor": "var(--color-white)"
+    },
+    "4M8-0": {
+      "position": "absolute",
+      "left": "640px",
+      "top": "0px",
+      "width": "440px",
+      "height": "1080px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "padding": "32px",
+      "overflow": "clip",
+      "backgroundColor": "var(--color-blue-tint-100)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/2TS544YXPNPKDK58D0RX7ATB2K.png)",
+      "backgroundSize": "100% 100%",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat"
+    },
+    "4MA-0": {
+      "width": "850px",
+      "height": "1137px",
+      "left": -205,
+      "position": "absolute",
+      "top": 120,
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/01M3D77CMZYQ847ZDQD6TGEZPD.png)",
+      "backgroundSize": "contain",
+      "backgroundPosition": "50% bottom",
+      "backgroundRepeat": "no-repeat"
+    },
+    "4M9-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "0px",
+      "width": "440px",
+      "height": "1080px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/5FKTYM9PRAQ7RAENMNZGSM5WD8.png)",
+      "backgroundSize": "100% 100%",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat"
+    },
+    "4M7-0": {
+      "position": "absolute",
+      "left": "64px",
+      "top": "0px",
+      "width": "2px",
+      "height": "1080px",
+      "backgroundColor": "var(--color-light-border)"
+    },
+    "4M6-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": 526,
+      "width": "640px",
+      "height": "2px",
+      "backgroundColor": "var(--color-light-border)"
+    },
+    "4KU-0": {
+      "position": "absolute",
+      "left": "104px",
+      "top": "72px",
+      "width": "500px",
+      "height": "936px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "start"
+    },
+    "4LS-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": 28,
+      "width": "100%"
+    },
+    "4LZ-0": {
+      "height": "70px",
+      "width": "180px",
+      "flexShrink": "0"
+    },
+    "4LT-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%"
+    },
+    "4LY-0": {
+      "fontSize": "76px",
+      "letterSpacing": "-0.025em",
+      "lineHeight": "81px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-light-text)"
+    },
+    "4LW-0": {},
+    "4LX-0": {
+      "fontSize": "76px",
+      "letterSpacing": "-0.025em",
+      "lineHeight": "81px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-royal-blue-500)"
+    },
+    "4LV-0": {
+      "fontSize": "76px",
+      "letterSpacing": "-0.025em",
+      "lineHeight": "81px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-light-text)"
+    },
+    "4LU-0": {
+      "fontSize": "76px",
+      "letterSpacing": "-0.025em",
+      "lineHeight": "81px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-light-text)"
+    },
+    "4L0-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": 40,
+      "width": "100%"
+    },
+    "4LP-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "6px"
+    },
+    "4LR-0": {
+      "fontSize": "40px",
+      "lineHeight": "46px",
+      "letterSpacing": "-0.01em",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-light-text)"
+    },
+    "4LQ-0": {
+      "fontSize": "28px",
+      "lineHeight": "34px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-sky-blue-400)"
+    },
+    "4L1-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%"
+    },
+    "4LI-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "gap": "20px",
+      "paddingBottom": "18px"
+    },
+    "4LK-0": {
+      "width": "36px",
+      "height": "36px",
+      "flexShrink": "0"
+    },
+    "4LJ-0": {
+      "fontSize": "28px",
+      "lineHeight": "36px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-light-text)"
+    },
+    "4LH-0": {
+      "width": "100%",
+      "height": "2px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-light-border)"
+    },
+    "4LC-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "gap": "20px",
+      "paddingBlock": "18px"
+    },
+    "4LE-0": {
+      "width": "36px",
+      "height": "36px",
+      "flexShrink": "0"
+    },
+    "4LD-0": {
+      "fontSize": "28px",
+      "lineHeight": "36px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-light-text)"
+    },
+    "4LB-0": {
+      "width": "100%",
+      "height": "2px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-light-border)"
+    },
+    "4L2-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "gap": "20px",
+      "paddingTop": "18px"
+    },
+    "4L4-0": {
+      "width": "36px",
+      "height": "36px",
+      "flexShrink": "0"
+    },
+    "4L3-0": {
+      "fontSize": "28px",
+      "lineHeight": "36px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-light-text)"
+    },
+    "4KV-0": {
+      "position": "relative",
+      "left": "0px",
+      "top": "0px",
+      "display": "flex",
+      "alignItems": "center",
+      "borderRadius": "16px",
+      "gap": "16px",
+      "paddingBlock": "20px",
+      "paddingInline": "32px",
+      "backgroundColor": "var(--color-royal-blue-500)"
+    },
+    "4KZ-0": {
+      "fontSize": "30px",
+      "lineHeight": "36px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-white)"
+    },
+    "4KW-0": {
+      "height": "28px",
+      "width": "28px",
+      "flexShrink": "0"
+    },
+    "4KR-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "10px",
+      "paddingInline": "20px",
+      "borderRadius": "999px",
+      "gap": "10px",
+      "position": "absolute",
+      "right": "72px",
+      "top": "85px",
+      "backgroundColor": "var(--color-royal-blue-500)"
+    },
+    "4KT-0": {
+      "width": "10px",
+      "height": "10px",
+      "flexShrink": "0",
+      "borderRadius": "999px",
+      "backgroundColor": "var(--color-blue-tint-200)"
+    },
+    "4KS-0": {
+      "fontSize": "20px",
+      "lineHeight": "24px",
+      "letterSpacing": "0.06em",
+      "width": "max-content",
+      "textTransform": "uppercase",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    }
+  },
+  "svgs": {
+    "4LZ-0": "(\n    <svg width=\"396\" height=\"154\" viewBox=\"0 5 252 98\" xmlns=\"http://www.w3.org/2000/svg\" style={{ height: '70px', width: '180px', flexShrink: '0' }}>\n      <g transform=\"translate(0 21.752)\">\n        <path d=\"M81.301 51.629C81.301 51.629 69.056 51.629 69.056 51.629 69.056 51.629 69.056 23.733 69.056 23.733 69.056 11.492 78.938 1.531 91.085 1.531 91.085 1.531 94.726 1.531 94.726 1.531 94.726 1.531 94.726 13.873 94.726 13.873 94.726 13.873 91.085 13.873 91.085 13.873 85.688 13.873 81.301 18.296 81.301 23.733 81.301 23.733 81.301 51.629 81.301 51.629Z\" fill=\"var(--color-royal-blue-500)\" />\n        <path d=\"M173.905 4.314C169.558 4.314 165.48 5.526 161.948 7.639 161.948 7.639 161.948-16.752 161.948-16.752 161.948-16.752 149.682-16.752 149.682-16.752 149.682-16.752 149.682 51.629 149.682 51.629 149.682 51.629 161.948 51.629 161.948 51.629 161.948 51.629 161.948 29.727 161.948 29.727 161.948 22.533 167.315 16.678 173.905 16.678 180.496 16.678 185.862 22.533 185.862 29.727 185.862 29.727 185.862 51.629 185.862 51.629 185.862 51.629 198.13 51.629 198.13 51.629 198.13 51.629 198.13 29.727 198.13 29.727 198.13 15.717 187.264 4.317 173.905 4.317 173.905 4.317 173.905 4.314 173.905 4.314Z\" fill=\"var(--color-royal-blue-500)\" />\n        <path d=\"M239.734 7.748C239.734 7.748 239.734 27.015 239.734 27.015 239.734 34.482 234.367 40.554 227.776 40.554 221.185 40.554 215.819 34.482 215.819 27.015 215.819 27.015 215.819 7.748 215.819 7.748 215.819 7.748 203.552 7.748 203.552 7.748 203.552 7.748 203.552 27.015 203.552 27.015 203.552 41.293 214.418 52.91 227.776 52.91 232.124 52.91 236.202 51.672 239.734 49.52 239.734 49.52 239.734 55.856 239.734 55.856 239.734 63.045 234.367 68.896 227.776 68.896 221.185 68.896 215.819 63.05 215.819 55.856 215.819 55.856 203.552 55.856 203.552 55.856 203.552 69.858 214.418 81.248 227.776 81.248 241.134 81.248 252 69.858 252 55.856 252 55.856 252 7.748 252 7.748 252 7.748 239.734 7.748 239.734 7.748Z\" fill=\"var(--color-royal-blue-500)\" />\n        <path d=\"M120.418 40.305C113.428 40.305 107.737 34.308 107.737 26.942 107.737 19.574 113.428 13.577 120.418 13.577 125.88 13.577 130.549 17.239 132.328 22.358 132.328 22.358 144.982 22.358 144.982 22.358 142.88 10.324 132.667 1.166 120.418 1.166 106.649 1.166 95.449 12.729 95.449 26.945 95.449 41.163 106.649 52.726 120.418 52.726 132.667 52.726 142.88 43.567 144.982 31.534 144.982 31.534 132.328 31.534 132.328 31.534 130.549 36.653 125.88 40.315 120.418 40.315 120.418 40.315 120.418 40.305 120.418 40.305Z\" fill=\"var(--color-royal-blue-500)\" />\n        <path d=\"M12.283 47.429C12.283 36.978 20.72 28.478 31.093 28.478 41.466 28.478 49.903 36.978 49.903 47.429 49.903 47.429 49.903 51.629 49.903 51.629 49.903 51.629 62.186 51.629 62.186 51.629 62.186 51.629 62.186 14.569 62.186 14.569 62.186 9.389 60.905 4.249 58.474-0.285 53.027-10.441 42.538-16.752 31.088-16.752 30.508-16.752 29.923-16.735 29.342-16.704 18.848-16.115 9.439-10.281 4.165-1.096 3.808-0.476 3.468 0.166 3.154 0.811 1.063 5.12 0 9.749 0 14.569 0 14.569 0 51.629 0 51.629 0 51.629 12.283 51.629 12.283 51.629 12.283 51.629 12.283 47.429 12.283 47.429ZM12.283 14.569C12.283 11.647 12.924 8.851 14.185 6.251 14.375 5.861 14.581 5.471 14.796 5.098 17.988-0.463 23.684-3.996 30.026-4.351 30.379-4.373 30.74-4.382 31.093-4.382 38.02-4.382 44.366-0.563 47.662 5.588 49.129 8.327 49.903 11.43 49.903 14.569 49.903 14.569 49.903 22.509 49.903 22.509 44.676 18.496 38.158 16.108 31.093 16.108 24.029 16.108 17.51 18.496 12.283 22.509 12.283 22.509 12.283 14.569 12.283 14.569Z\" fill=\"var(--color-royal-blue-500)\" />\n      </g>\n    </svg>\n  )",
+    "4LK-0": "(\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" style={{ width: '36px', height: '36px', flexShrink: '0' }}>\n      <path d=\"M16 2V6M8 2V6\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 4H11C7.229 4 5.343 4 4.172 5.172C3 6.343 3 8.229 3 12V14C3 17.771 3 19.657 4.172 20.828C5.343 22 7.229 22 11 22H13C16.771 22 18.657 22 19.828 20.828C21 19.657 21 17.771 21 14V12C21 8.229 21 6.343 19.828 5.172C18.657 4 16.771 4 13 4Z\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M3 10H21\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M12.126 14H12.001M12.126 18H12.001M7.625 14H7.5M7.625 18H7.5M16.625 14H16.5M12.251 14C12.251 14.138 12.139 14.25 12.001 14.25C11.863 14.25 11.751 14.138 11.751 14C11.751 13.862 11.863 13.75 12.001 13.75C12.139 13.75 12.251 13.862 12.251 14ZM12.251 18C12.251 18.138 12.139 18.25 12.001 18.25C11.863 18.25 11.751 18.138 11.751 18C11.751 17.862 11.863 17.75 12.001 17.75C12.139 17.75 12.251 17.862 12.251 18ZM7.75 14C7.75 14.138 7.638 14.25 7.5 14.25C7.362 14.25 7.25 14.138 7.25 14C7.25 13.862 7.362 13.75 7.5 13.75C7.638 13.75 7.75 13.862 7.75 14ZM7.75 18C7.75 18.138 7.638 18.25 7.5 18.25C7.362 18.25 7.25 18.138 7.25 18C7.25 17.862 7.362 17.75 7.5 17.75C7.638 17.75 7.75 17.862 7.75 18ZM16.75 14C16.75 14.138 16.638 14.25 16.5 14.25C16.362 14.25 16.25 14.138 16.25 14C16.25 13.862 16.362 13.75 16.5 13.75C16.638 13.75 16.75 13.862 16.75 14Z\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )",
+    "4LE-0": "(\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" style={{ width: '36px', height: '36px', flexShrink: '0' }}>\n      <path d=\"M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M21.011 14.097C21.533 13.956 21.794 13.885 21.897 13.751C22 13.616 22 13.4 22 12.967V11.033C22 10.6 22 10.384 21.897 10.249C21.794 10.115 21.533 10.044 21.011 9.904C19.061 9.378 17.84 7.339 18.343 5.401C18.482 4.868 18.551 4.602 18.485 4.445C18.419 4.289 18.229 4.181 17.85 3.966L16.125 2.987C15.753 2.775 15.567 2.67 15.4 2.692C15.233 2.715 15.044 2.903 14.667 3.279C13.208 4.734 10.794 4.734 9.334 3.279C8.957 2.903 8.769 2.715 8.602 2.692C8.435 2.67 8.249 2.775 7.877 2.987L6.152 3.966C5.773 4.181 5.583 4.289 5.517 4.445C5.451 4.601 5.52 4.868 5.658 5.401C6.161 7.338 4.94 9.378 2.989 9.904C2.467 10.044 2.206 10.115 2.103 10.249C2 10.384 2 10.6 2 11.033V12.967C2 13.4 2 13.616 2.103 13.751C2.206 13.885 2.467 13.956 2.989 14.097C4.939 14.623 6.16 16.662 5.657 18.599C5.518 19.132 5.449 19.398 5.515 19.555C5.581 19.711 5.771 19.819 6.15 20.034L7.875 21.013C8.247 21.225 8.433 21.33 8.6 21.308C8.767 21.285 8.956 21.097 9.333 20.721C10.793 19.264 13.209 19.264 14.669 20.721C15.046 21.097 15.234 21.285 15.401 21.308C15.568 21.33 15.754 21.225 16.127 21.013L17.851 20.034C18.231 19.819 18.42 19.711 18.486 19.555C18.552 19.398 18.483 19.132 18.345 18.599C17.841 16.662 19.061 14.623 21.011 14.097Z\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )",
+    "4L4-0": "(\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 24 24\" style={{ width: '36px', height: '36px', flexShrink: '0' }}>\n      <path d=\"M18.5 20.5C18.266 17.569 15.842 15.248 12.808 15.052L11.999 15C11.711 15.008 11.442 15.018 11.188 15.03C8.181 15.172 5.73 17.597 5.5 20.5\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M15.249 9.25C15.249 11.045 13.794 12.5 11.999 12.5C10.205 12.5 8.75 11.045 8.75 9.25C8.75 7.455 10.205 6 11.999 6C13.794 6 15.249 7.455 15.249 9.25Z\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M5.502 8.5C5.179 7.995 4.992 7.394 4.992 6.75C4.992 4.955 6.447 3.5 8.242 3.5C8.688 3.5 9.113 3.59 9.499 3.752\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M18.496 8.5C18.82 7.995 19.007 7.394 19.007 6.75C19.007 4.955 17.552 3.5 15.757 3.5C15.311 3.5 14.886 3.59 14.499 3.752\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M22.001 18C21.821 15.737 20 13.5 18 13\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M1.999 18C2.179 15.737 4 13.5 6 13\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"1.5\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )",
+    "4KW-0": "(\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" style={{ height: '28px', width: '28px', flexShrink: '0' }}>\n      <path d=\"M18.5 12L5 12\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 18C13 18 19 13.581 19 12C19 10.419 13 6 13 6\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

@@ -56,7 +56,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     baseline.set(role, {
       clear,
       // Absolutely placed blocks keep a mirrored margin; in-flow text just stays inside its container.
-      inset: r.inset ?? (cs.position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left),
+      inset: pick(r.inset) ?? (cs.position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left),
       anchoredRight,
       fontSize: parseFloat(getComputedStyle(el).fontSize),
       top: rectOf(el).top,
@@ -976,7 +976,7 @@ window.__calibrate = function calibrate({ format, formats, rules }) {
     const b = block.getBoundingClientRect();
     const t = el.getBoundingClientRect();
     const anchoredRight = block.style.right !== '' && block.style.left === '';
-    const inset = r.inset ?? (getComputedStyle(block).position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left);
+    const inset = pick(r.inset) ?? (getComputedStyle(block).position !== 'absolute' ? 0 : anchoredRight ? w.right - b.right : b.left - w.left);
     // Room the text itself can take = its width + free space up to the bounds.
     // Absolutely placed blocks grow away from their anchor; in-flow blocks (centred or not) can take
     // the whole bounds minus the margins.

@@ -27,6 +27,90 @@
         },
         "stories": {
           "nodes": 2
+        },
+        "post--meet-name--royal": {
+          "nodes": 1
+        },
+        "stories--meet-name--royal": {
+          "nodes": 2
+        },
+        "post--meet-name--navy": {
+          "nodes": 1
+        },
+        "stories--meet-name--navy": {
+          "nodes": 2
+        },
+        "post--the-arch--white": {
+          "nodes": 1
+        },
+        "stories--the-arch--white": {
+          "nodes": 2
+        },
+        "post--the-arch--royal": {
+          "nodes": 1
+        },
+        "stories--the-arch--royal": {
+          "nodes": 2
+        },
+        "post--the-arch--navy": {
+          "nodes": 1
+        },
+        "stories--the-arch--navy": {
+          "nodes": 2
+        },
+        "post--grid-card--white": {
+          "nodes": 1
+        },
+        "stories--grid-card--white": {
+          "nodes": 2
+        },
+        "post--grid-card--royal": {
+          "nodes": 1
+        },
+        "stories--grid-card--royal": {
+          "nodes": 2
+        },
+        "post--grid-card--navy": {
+          "nodes": 1
+        },
+        "stories--grid-card--navy": {
+          "nodes": 2
+        },
+        "post--mosaic--white": {
+          "nodes": 1
+        },
+        "stories--mosaic--white": {
+          "nodes": 2
+        },
+        "post--mosaic--royal": {
+          "nodes": 1
+        },
+        "stories--mosaic--royal": {
+          "nodes": 2
+        },
+        "post--mosaic--navy": {
+          "nodes": 1
+        },
+        "stories--mosaic--navy": {
+          "nodes": 2
+        },
+        "post--forum--white": {
+          "nodes": 1
+        },
+        "stories--forum--white": {
+          "nodes": 2
+        },
+        "post--forum--royal": {
+          "nodes": 1
+        },
+        "stories--forum--royal": {
+          "nodes": 2
+        },
+        "post--forum--navy": {
+          "nodes": 1
+        },
+        "stories--forum--navy": {
+          "nodes": 2
         }
       }
     },
@@ -35,14 +119,42 @@
       "default": "John.",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "124px",
           "fontWeight": 600,
           "lineHeight": "116px",
           "letterSpacing": "-0.03em"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "166px",
+          "fontWeight": 600,
+          "lineHeight": "156px",
+          "letterSpacing": "-0.03em"
+        },
+        "post--meet-name--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "124px",
+          "fontWeight": 600,
+          "lineHeight": "116px",
+          "letterSpacing": "-0.03em"
+        },
+        "stories--meet-name--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "166px",
+          "fontWeight": 600,
+          "lineHeight": "156px",
+          "letterSpacing": "-0.03em"
+        },
+        "post--meet-name--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "124px",
+          "fontWeight": 600,
+          "lineHeight": "116px",
+          "letterSpacing": "-0.03em"
+        },
+        "stories--meet-name--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "166px",
           "fontWeight": 600,
           "lineHeight": "156px",
@@ -67,6 +179,42 @@
             "min": 116
           },
           "roomPx": 870
+        },
+        "post--meet-name--royal": {
+          "maxCharsPerLine": 7,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 124,
+            "min": 87
+          },
+          "roomPx": 495
+        },
+        "stories--meet-name--royal": {
+          "maxCharsPerLine": 10,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 166,
+            "min": 116
+          },
+          "roomPx": 870
+        },
+        "post--meet-name--navy": {
+          "maxCharsPerLine": 7,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 124,
+            "min": 87
+          },
+          "roomPx": 495
+        },
+        "stories--meet-name--navy": {
+          "maxCharsPerLine": 10,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 166,
+            "min": 116
+          },
+          "roomPx": 870
         }
       }
     },
@@ -75,17 +223,213 @@
       "default": "John Hickmott",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "32px",
           "fontWeight": 600,
           "lineHeight": "38px",
           "letterSpacing": "-0.01em"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "42px",
           "fontWeight": 600,
           "lineHeight": "48px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--meet-name--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 600,
+          "lineHeight": "38px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--meet-name--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "42px",
+          "fontWeight": 600,
+          "lineHeight": "48px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--meet-name--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 600,
+          "lineHeight": "38px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--meet-name--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "42px",
+          "fontWeight": 600,
+          "lineHeight": "48px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--the-arch--white": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 600,
+          "lineHeight": "38px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--the-arch--white": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "42px",
+          "fontWeight": 600,
+          "lineHeight": "48px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--the-arch--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 600,
+          "lineHeight": "38px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--the-arch--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "42px",
+          "fontWeight": 600,
+          "lineHeight": "48px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--the-arch--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 600,
+          "lineHeight": "38px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--the-arch--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "42px",
+          "fontWeight": 600,
+          "lineHeight": "48px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--grid-card--white": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "50px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--grid-card--white": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "50px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--grid-card--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "50px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--grid-card--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "50px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--grid-card--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "50px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--grid-card--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "50px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--mosaic--white": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--mosaic--white": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--mosaic--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--mosaic--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--mosaic--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--mosaic--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--forum--white": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--forum--white": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--forum--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--forum--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--forum--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--forum--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "46px",
           "letterSpacing": "-0.01em"
         }
       },
@@ -107,6 +451,258 @@
             "min": 36
           },
           "roomPx": 786
+        },
+        "post--meet-name--royal": {
+          "maxCharsPerLine": 18,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 305
+        },
+        "stories--meet-name--royal": {
+          "maxCharsPerLine": 35,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 42,
+            "min": 36
+          },
+          "roomPx": 786
+        },
+        "post--meet-name--navy": {
+          "maxCharsPerLine": 18,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 305
+        },
+        "stories--meet-name--navy": {
+          "maxCharsPerLine": 35,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 42,
+            "min": 36
+          },
+          "roomPx": 786
+        },
+        "post--the-arch--white": {
+          "maxCharsPerLine": 15,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 259
+        },
+        "stories--the-arch--white": {
+          "maxCharsPerLine": 18,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 42,
+            "min": 36
+          },
+          "roomPx": 411
+        },
+        "post--the-arch--royal": {
+          "maxCharsPerLine": 15,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 259
+        },
+        "stories--the-arch--royal": {
+          "maxCharsPerLine": 18,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 42,
+            "min": 36
+          },
+          "roomPx": 411
+        },
+        "post--the-arch--navy": {
+          "maxCharsPerLine": 15,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 259
+        },
+        "stories--the-arch--navy": {
+          "maxCharsPerLine": 18,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 42,
+            "min": 36
+          },
+          "roomPx": 411
+        },
+        "post--grid-card--white": {
+          "maxCharsPerLine": 19,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 442
+        },
+        "stories--grid-card--white": {
+          "maxCharsPerLine": 15,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 359
+        },
+        "post--grid-card--royal": {
+          "maxCharsPerLine": 19,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 442
+        },
+        "stories--grid-card--royal": {
+          "maxCharsPerLine": 15,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 359
+        },
+        "post--grid-card--navy": {
+          "maxCharsPerLine": 19,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 442
+        },
+        "stories--grid-card--navy": {
+          "maxCharsPerLine": 15,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 359
+        },
+        "post--mosaic--white": {
+          "maxCharsPerLine": 18,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 378
+        },
+        "stories--mosaic--white": {
+          "maxCharsPerLine": 25,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 535
+        },
+        "post--mosaic--royal": {
+          "maxCharsPerLine": 18,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 378
+        },
+        "stories--mosaic--royal": {
+          "maxCharsPerLine": 25,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 535
+        },
+        "post--mosaic--navy": {
+          "maxCharsPerLine": 18,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 378
+        },
+        "stories--mosaic--navy": {
+          "maxCharsPerLine": 25,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 535
+        },
+        "post--forum--white": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 500
+        },
+        "stories--forum--white": {
+          "maxCharsPerLine": 42,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 870
+        },
+        "post--forum--royal": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 500
+        },
+        "stories--forum--royal": {
+          "maxCharsPerLine": 42,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 870
+        },
+        "post--forum--navy": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 500
+        },
+        "stories--forum--navy": {
+          "maxCharsPerLine": 42,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 870
         }
       }
     },
@@ -121,6 +717,174 @@
           "lineHeight": "28px"
         },
         "stories": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--meet-name--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": 500,
+          "lineHeight": "28px"
+        },
+        "stories--meet-name--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--meet-name--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": 500,
+          "lineHeight": "28px"
+        },
+        "stories--meet-name--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--the-arch--white": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": 500,
+          "lineHeight": "28px"
+        },
+        "stories--the-arch--white": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--the-arch--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": 500,
+          "lineHeight": "28px"
+        },
+        "stories--the-arch--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--the-arch--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": 500,
+          "lineHeight": "28px"
+        },
+        "stories--the-arch--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--grid-card--white": {
+          "fontFamily": "\"Inter-Regular\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 400,
+          "lineHeight": "38px"
+        },
+        "stories--grid-card--white": {
+          "fontFamily": "\"Inter-Regular\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 400,
+          "lineHeight": "38px"
+        },
+        "post--grid-card--royal": {
+          "fontFamily": "\"Inter-Regular\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 400,
+          "lineHeight": "38px"
+        },
+        "stories--grid-card--royal": {
+          "fontFamily": "\"Inter-Regular\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 400,
+          "lineHeight": "38px"
+        },
+        "post--grid-card--navy": {
+          "fontFamily": "\"Inter-Regular\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 400,
+          "lineHeight": "38px"
+        },
+        "stories--grid-card--navy": {
+          "fontFamily": "\"Inter-Regular\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": 400,
+          "lineHeight": "38px"
+        },
+        "post--mosaic--white": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 500,
+          "lineHeight": "32px"
+        },
+        "stories--mosaic--white": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 500,
+          "lineHeight": "32px"
+        },
+        "post--mosaic--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 500,
+          "lineHeight": "32px"
+        },
+        "stories--mosaic--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 500,
+          "lineHeight": "32px"
+        },
+        "post--mosaic--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 500,
+          "lineHeight": "32px"
+        },
+        "stories--mosaic--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 500,
+          "lineHeight": "32px"
+        },
+        "post--forum--white": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "stories--forum--white": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--forum--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "stories--forum--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "post--forum--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 500,
+          "lineHeight": "34px"
+        },
+        "stories--forum--navy": {
           "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
           "fontSize": "28px",
           "fontWeight": 500,
@@ -145,12 +909,264 @@
             "min": 24
           },
           "roomPx": 794
+        },
+        "post--meet-name--royal": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 318
+        },
+        "stories--meet-name--royal": {
+          "maxCharsPerLine": 57,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 794
+        },
+        "post--meet-name--navy": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 318
+        },
+        "stories--meet-name--navy": {
+          "maxCharsPerLine": 57,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 794
+        },
+        "post--the-arch--white": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 272
+        },
+        "stories--the-arch--white": {
+          "maxCharsPerLine": 30,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 419
+        },
+        "post--the-arch--royal": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 272
+        },
+        "stories--the-arch--royal": {
+          "maxCharsPerLine": 30,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 419
+        },
+        "post--the-arch--navy": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 272
+        },
+        "stories--the-arch--navy": {
+          "maxCharsPerLine": 30,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 419
+        },
+        "post--grid-card--white": {
+          "maxCharsPerLine": 30,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 476
+        },
+        "stories--grid-card--white": {
+          "maxCharsPerLine": 25,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 393
+        },
+        "post--grid-card--royal": {
+          "maxCharsPerLine": 30,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 476
+        },
+        "stories--grid-card--royal": {
+          "maxCharsPerLine": 25,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 393
+        },
+        "post--grid-card--navy": {
+          "maxCharsPerLine": 30,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 476
+        },
+        "stories--grid-card--navy": {
+          "maxCharsPerLine": 25,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 393
+        },
+        "post--mosaic--white": {
+          "maxCharsPerLine": 29,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 378
+        },
+        "stories--mosaic--white": {
+          "maxCharsPerLine": 41,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 535
+        },
+        "post--mosaic--royal": {
+          "maxCharsPerLine": 29,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 378
+        },
+        "stories--mosaic--royal": {
+          "maxCharsPerLine": 41,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 535
+        },
+        "post--mosaic--navy": {
+          "maxCharsPerLine": 29,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 378
+        },
+        "stories--mosaic--navy": {
+          "maxCharsPerLine": 41,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 535
+        },
+        "post--forum--white": {
+          "maxCharsPerLine": 35,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 500
+        },
+        "stories--forum--white": {
+          "maxCharsPerLine": 62,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 870
+        },
+        "post--forum--royal": {
+          "maxCharsPerLine": 35,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 500
+        },
+        "stories--forum--royal": {
+          "maxCharsPerLine": 62,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 870
+        },
+        "post--forum--navy": {
+          "maxCharsPerLine": 35,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 500
+        },
+        "stories--forum--navy": {
+          "maxCharsPerLine": 62,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 870
         }
       }
     },
     "ae-location": {
       "type": "text",
-      "default": "FORNEY, TX",
+      "default": "Forney, TX",
       "perFormat": {
         "post": {
           "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
@@ -160,6 +1176,202 @@
           "letterSpacing": "0.06em"
         },
         "stories": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--meet-name--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--meet-name--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--meet-name--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--meet-name--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--the-arch--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--the-arch--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--the-arch--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--the-arch--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--the-arch--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--the-arch--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--grid-card--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--grid-card--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--grid-card--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--grid-card--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--grid-card--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--grid-card--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--mosaic--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--mosaic--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--mosaic--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--mosaic--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--mosaic--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--mosaic--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--forum--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--forum--white": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--forum--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--forum--royal": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": 600,
+          "lineHeight": "30px",
+          "letterSpacing": "0.06em"
+        },
+        "post--forum--navy": {
+          "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "20px",
+          "fontWeight": 600,
+          "lineHeight": "24px",
+          "letterSpacing": "0.06em"
+        },
+        "stories--forum--navy": {
           "fontFamily": "\"Inter-Regular_SemiBold\", \"Inter\", system-ui, sans-serif",
           "fontSize": "26px",
           "fontWeight": 600,
@@ -185,6 +1397,258 @@
             "min": 22
           },
           "roomPx": 793
+        },
+        "post--meet-name--royal": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 266
+        },
+        "stories--meet-name--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--meet-name--navy": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 266
+        },
+        "stories--meet-name--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--the-arch--white": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--the-arch--white": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--the-arch--royal": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--the-arch--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--the-arch--navy": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--the-arch--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--grid-card--white": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 808
+        },
+        "stories--grid-card--white": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 791
+        },
+        "post--grid-card--royal": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 808
+        },
+        "stories--grid-card--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 791
+        },
+        "post--grid-card--navy": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 808
+        },
+        "stories--grid-card--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 791
+        },
+        "post--mosaic--white": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--mosaic--white": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--mosaic--royal": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--mosaic--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--mosaic--navy": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--mosaic--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--forum--white": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--forum--white": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--forum--royal": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--forum--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
+        },
+        "post--forum--navy": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 20,
+            "min": 17
+          },
+          "roomPx": 876
+        },
+        "stories--forum--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 793
         }
       }
     }
@@ -200,6 +1664,292 @@
       "contains": [
         "ae-location"
       ]
+    }
+  },
+  "designs": {
+    "meet-name": {
+      "label": "Meet Name"
+    },
+    "the-arch": {
+      "label": "The Arch"
+    },
+    "grid-card": {
+      "label": "Grid Card"
+    },
+    "mosaic": {
+      "label": "Mosaic"
+    },
+    "forum": {
+      "label": "Forum"
+    }
+  },
+  "themes": {
+    "white": {
+      "label": "White"
+    },
+    "royal": {
+      "label": "Royal Blue"
+    },
+    "navy": {
+      "label": "Navy"
+    }
+  },
+  "default": {
+    "design": "meet-name",
+    "theme": "white"
+  },
+  "combos": {
+    "meet-name--royal": {
+      "design": "meet-name",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--meet-name--royal.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--meet-name--royal.html"
+        }
+      }
+    },
+    "meet-name--navy": {
+      "design": "meet-name",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--meet-name--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--meet-name--navy.html"
+        }
+      }
+    },
+    "the-arch--white": {
+      "design": "the-arch",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--the-arch--white.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--the-arch--white.html"
+        }
+      }
+    },
+    "the-arch--royal": {
+      "design": "the-arch",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--the-arch--royal.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--the-arch--royal.html"
+        }
+      }
+    },
+    "the-arch--navy": {
+      "design": "the-arch",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--the-arch--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--the-arch--navy.html"
+        }
+      }
+    },
+    "grid-card--white": {
+      "design": "grid-card",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--grid-card--white.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--grid-card--white.html"
+        }
+      }
+    },
+    "grid-card--royal": {
+      "design": "grid-card",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--grid-card--royal.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--grid-card--royal.html"
+        }
+      }
+    },
+    "grid-card--navy": {
+      "design": "grid-card",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--grid-card--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--grid-card--navy.html"
+        }
+      }
+    },
+    "mosaic--white": {
+      "design": "mosaic",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--mosaic--white.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--mosaic--white.html"
+        }
+      }
+    },
+    "mosaic--royal": {
+      "design": "mosaic",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--mosaic--royal.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--mosaic--royal.html"
+        }
+      }
+    },
+    "mosaic--navy": {
+      "design": "mosaic",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--mosaic--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--mosaic--navy.html"
+        }
+      }
+    },
+    "forum--white": {
+      "design": "forum",
+      "theme": "white",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--forum--white.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--forum--white.html"
+        }
+      }
+    },
+    "forum--royal": {
+      "design": "forum",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--forum--royal.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--forum--royal.html"
+        }
+      }
+    },
+    "forum--navy": {
+      "design": "forum",
+      "theme": "navy",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "post--forum--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--forum--navy.html"
+        }
+      }
     }
   }
 }

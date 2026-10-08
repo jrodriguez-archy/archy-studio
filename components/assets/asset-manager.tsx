@@ -24,8 +24,9 @@ export function AssetManager({ assets, folders, designs }: { assets: Lists; fold
   const lib = useAssetLibrary({ assets, folders, start: 'all', onUseInDesign: setUsing });
   const [focus, setFocus] = useState<string | null>(null);
   const focused = focus ? lib.find(focus) : null;
-  // A result made from the image open on the right takes its place there.
-  useEffect(() => { if (lib.lastMade && focus) setFocus(lib.lastMade.id); }, [lib.lastMade]); // eslint-disable-line react-hooks/exhaustive-deps
+  // A result made from the image open on the right takes its place there; a removed image closes it.
+  useEffect(() => { if (lib.lastMade && focus && lib.lastMade.from === focus) setFocus(lib.lastMade.asset.id); }, [lib.lastMade]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (focus && !focused) setFocus(null); }, [focus, focused]);
   const input = useRef<HTMLInputElement>(null);
   // Files dragged in from the desktop: the whole page takes them (or a folder, for that folder).
   const [filesOver, setFilesOver] = useState(false);
@@ -35,6 +36,7 @@ export function AssetManager({ assets, folders, designs }: { assets: Lists; fold
     <div className="-mt-1 flex min-h-[calc(100dvh-7rem)] flex-col text-[13px]"
       onDragOver={(e) => { if (hasFiles(e)) { e.preventDefault(); setFilesOver(true); } }}
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setFilesOver(false); }}
+      onDropCapture={() => setFilesOver(false)} // also when a folder takes the files
       onDrop={(e) => { if (!hasFiles(e)) return; e.preventDefault(); setFilesOver(false); lib.uploadMany([...e.dataTransfer.files]); }}
       onKeyDown={(e) => { if (e.key === 'Escape' && lib.picked.length) lib.setPicked([]); }}>
       <div className="mb-5 flex items-center gap-3">
@@ -88,7 +90,7 @@ export function AssetManager({ assets, folders, designs }: { assets: Lists; fold
 
           {filesOver && (
             <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-[#E6F4FF]/80 text-[15px] font-medium text-primary">
-              Drop to upload{lib.here ? ` to ${lib.here.name}` : ''}
+              Drop to upload{lib.landing && lib.here ? ` to ${lib.here.name}` : ''}
             </div>
           )}
         </section>
@@ -97,7 +99,7 @@ export function AssetManager({ assets, folders, designs }: { assets: Lists; fold
       </div>
 
       {lib.dialogs}
-      <UseInDesign asset={using} designs={designs} onClose={() => setUsing(null)} onPick={(d) => { const a = using!; setUsing(null); router.push(`/canvas/${d.id}?asset=${a.id}`); }} />
+      <UseInDesign asset={using} designs={designs} onClose={() => setUsing(null)} onPick={(d) => { const a = using!; setUsing(null); router.push(`/canvas/${d.id}?asset=${a.id}${a.folderId ? `&folder=${a.folderId}` : ''}`); }} />
     </div>
   );
 }

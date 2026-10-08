@@ -55,6 +55,8 @@ const GAP = 120; // between artboards, in design px
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });
+// Key order ignored: a draft read back from the database (jsonb) compares equal to the one sent.
+const canon = (v: unknown) => JSON.stringify(v, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => (a < b ? -1 : 1))) : x));
 const luminance = (hex: string) => { const n = parseInt(hex.slice(1), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
 const planKeyOf = (s: Snap) => JSON.stringify([s.slots, Object.values(s.edits).flatMap((e) => [e.image, e.icon]).filter(Boolean).sort()]);
 
@@ -73,7 +75,9 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   useEffect(() => { if (!given) reload(); }, [given, reload]);
   useRendersLive(reload);
   // ?asset=<id> (Assets page → "Use in a design"): Assets open, that image pointed at.
-  const pointAsset = useSearchParams().get('asset');
+  const params = useSearchParams();
+  const pointAsset = params.get('asset');
+  const pointFolder = params.get('folder');
   const [tab, setTab] = useState<PanelTab>(pointAsset ? 'assets' : piece ? 'layers' : 'library');
   if (!piece) {
     return (
@@ -95,13 +99,14 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   }
   return (
     <Editor key={piece.boards.map((b) => b.ref).join()} {...piece} library={library} updating={updating} onSaved={(ids) => setUpdating(ids)}
-      seenAt={library?.mcpSeenAt ?? seenAt} tab={tab} setTab={setTab} pointAsset={pointAsset} />
+      seenAt={library?.mcpSeenAt ?? seenAt} tab={tab} setTab={setTab} pointAsset={pointAsset} pointFolder={pointFolder} />
   );
 }
 
-function Editor({ title, backHref, active: firstActive, boards: firstBoards, ghosts: firstGhosts, slotMeta: slotMetaOf, library, updating, onSaved, seenAt, tab, setTab, pointAsset }: EditorProps & {
+function Editor({ title, backHref, active: firstActive, boards: firstBoards, ghosts: firstGhosts, slotMeta: slotMetaOf, library, updating, onSaved, seenAt, tab, setTab, pointAsset, pointFolder }: EditorProps & {
   library: CanvasLibrary | null; updating: string[]; onSaved: (ids: string[]) => void; seenAt: string | null; tab: PanelTab; setTab: (t: PanelTab) => void;
   pointAsset?: string | null;
+  pointFolder?: string | null;
 }) {
   const router = useRouter();
   // ---- The artboards: one document of snaps (one per format), one history for all of them ----
@@ -470,22 +475,25 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   }, [changed]);
   const confirmLeave = () => !changed || window.confirm('Leave without saving your changes?');
 
-  // ---- Live with Claude: each saved format's draft is kept as people edit; Claude's edits arrive over Realtime ----
+  // ---- Live with Claude: each saved format's draft is kept as people edit; Claude's edits (and the same
+  // design's edits in another tab or by a teammate) arrive over Realtime ----
   const saved = boards.filter((b) => !b.isNew);
   const savedIds = saved.map((b) => b.ref).join();
   const versions = useRef<Record<string, number>>(Object.fromEntries(firstBoards.map((b) => [b.ref, b.draft?.version ?? 0])));
-  const drafted = useRef<Record<string, string>>(Object.fromEntries(firstBoards.map((b) => [b.ref, JSON.stringify(cleanSnap(b.initial))])));
+  const drafted = useRef<Record<string, string>>(Object.fromEntries(firstBoards.map((b) => [b.ref, canon(cleanSnap(b.initial))])));
+  const sent = useRef<Record<string, string[]>>({}); // this tab's recent drafts: their echo is not news
   useEffect(() => {
     const d = firstBoards.find((b) => b.ref === firstActive)?.draft;
     if (d) toast(d.by === 'claude' ? `Claude’s changes are here: ${d.note ?? 'edited by Claude'}` : 'Your unsaved changes are back.');
   }, [firstBoards, firstActive]);
   useEffect(() => {
-    const due = boards.filter((b) => !b.isNew && JSON.stringify(cleanSnap(doc[b.ref])) !== drafted.current[b.ref]);
+    const due = boards.filter((b) => !b.isNew && canon(cleanSnap(doc[b.ref])) !== drafted.current[b.ref]);
     if (!due.length) return;
     const t = setTimeout(() => {
       for (const b of due) {
         const s = docRef.current[b.ref];
-        drafted.current[b.ref] = JSON.stringify(cleanSnap(s));
+        drafted.current[b.ref] = canon(cleanSnap(s));
+        sent.current[b.ref] = [...(sent.current[b.ref] ?? []).slice(-19), drafted.current[b.ref]];
         saveDraftAction(b.ref, s.slots, s.edits).then((r) => { if (r.ok) versions.current[b.ref] = Math.max(versions.current[b.ref] ?? 0, r.version); }).catch(() => {});
       }
     }, 800);
@@ -503,29 +511,45 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       db.realtime.setAuth(data.session?.access_token ?? null);
       channel = db.channel(`canvas:${savedIds}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=in.(${savedIds})` }, (payload) => {
+          // Saved (the draft is gone): its next draft starts again at version 1.
+          if (payload.eventType === 'DELETE') { const gone = (payload.old as { piece_id?: string })?.piece_id; if (gone) versions.current[gone] = 0; return; }
           const row = payload.new as { piece_id?: string; slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null };
           const ref = row?.piece_id;
           if (!ref || !docRef.current[ref]) return;
           // Claude at work on this design: shown on its artboard until its edit lands (or 90 s pass).
           if (row.claude_working_at && Date.now() - new Date(row.claude_working_at).getTime() < 90_000) setClaude({ ref, status: row.claude_status ?? 'Working on the design' });
           else if (!row.claude_working_at) setClaude((c) => (c?.ref === ref ? null : c));
-          if (row.updated_by !== 'claude' || !row.version || row.version <= (versions.current[ref] ?? 0)) return;
+          // Equal versions are let through: two saves at once can share one, and the later echo is what was kept.
+          if (!row.version || row.version < (versions.current[ref] ?? 0)) return;
           versions.current[ref] = row.version;
           const next = { slots: row.slots ?? {}, edits: row.edits ?? {} };
+          const key = canon(cleanSnap(next));
+          if (key === canon(cleanSnap(docRef.current[ref]))) return;
+          if (row.updated_by !== 'claude') {
+            // Edited in another tab (or by a teammate): this tab follows. Its own echo is skipped, unless
+            // another draft came in since (then the echo is what the database kept). Not an undo step:
+            // each format arrives on its own, and undoing one would split synced formats.
+            if (sent.current[ref]?.includes(key)) return;
+            sent.current[ref] = [];
+            drafted.current[ref] = key;
+            setDoc({ ...docRef.current, [ref]: next });
+            toast('Updated from another tab.', { id: 'draft-elsewhere' });
+            return;
+          }
           // What Claude changed flashes on the piece.
           const prev = docRef.current[ref];
           const comps = metaRef.current[ref]?.comps ?? [];
           const ids = new Set(Object.keys({ ...prev.edits, ...next.edits }).filter((id) => id !== RECOLOR && JSON.stringify(prev.edits[id]) !== JSON.stringify(next.edits[id])));
           for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = comps.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
           setFlash({ ref, ids: [...ids], at: Date.now() });
-          drafted.current[ref] = JSON.stringify(cleanSnap(next));
+          drafted.current[ref] = key;
           commitTo(ref, next); // one step: undo takes it back; synced formats follow
           toast(`Claude ${row.note ? row.note.charAt(0).toLowerCase() + row.note.slice(1) : 'edited the design'}`, { action: { label: 'Undo', onClick: () => undo() } });
         })
         .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });
     })();
     return () => { gone = true; if (channel) db.removeChannel(channel); };
-  }, [savedIds, commitTo, undo]);
+  }, [savedIds, commitTo, undo, setDoc]);
 
   // The Inspector: its review of the edits, plus copy from the brief the template could not fit.
   // Nothing here blocks Save or Download.
@@ -679,7 +703,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           )}
           {(tab === 'library' || tab === 'assets') && !library && <PanelLoading />}
           {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : board.ref} updating={updating} confirmLeave={confirmLeave} />}
-          {tab === 'assets' && library && <AssetsTab assets={library.assets} folders={library.folders} target={imageTarget?.id ?? null} onPick={placeImage} highlight={pointAsset} />}
+          {tab === 'assets' && library && <AssetsTab assets={library.assets} folders={library.folders} target={imageTarget?.id ?? null} onPick={placeImage} highlight={pointAsset} highlightFolder={pointFolder} />}
           {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />}
         </CanvasPanel>
 

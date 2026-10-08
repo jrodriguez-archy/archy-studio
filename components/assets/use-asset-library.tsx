@@ -174,20 +174,20 @@ export function useAssetLibrary({ assets, folders: baseFolders, target = null, o
   const [viewerJob, setViewerJob] = useState<string | null>(null);
   const viewerJobRef = useRef<string | null>(null);
   const followJob = (key: string | null) => { viewerJobRef.current = key; setViewerJob(key); };
-  // The newest result of a job, for whoever wants to show it (the page's detail panel).
-  const [lastMade, setLastMade] = useState<Asset | null>(null);
+  // The newest result of a job and the image it was made from, for whoever shows it (the page's detail panel).
+  const [lastMade, setLastMade] = useState<{ asset: Asset; from: string | null } | null>(null);
   // Where new things land: the folder open (in "All images" or a search: no folder).
   const landing = folder && folder !== 'all' && !found ? folder : null;
 
   // `into`: the folder the result lands in (its placeholder shows there only).
-  const job = async (label: string, run: () => Promise<Asset>, into: string | null = landing) => {
+  const job = async (label: string, run: () => Promise<Asset>, into: string | null = landing, from: string | null = null) => {
     const key = Math.random().toString(36).slice(2);
     setWorking((w) => [{ key, label, folder: into }, ...w]);
     if (fromViewer.current) { fromViewer.current = false; followJob(key); } else setWhose('mine');
     try {
       const a = await run();
       add(a);
-      setLastMade(a);
+      setLastMade({ asset: a, from });
       if (viewerJobRef.current === key) { followJob(null); setViewing(a.id); }
     } catch (e) {
       if (viewerJobRef.current === key) followJob(null);
@@ -238,7 +238,7 @@ export function useAssetLibrary({ assets, folders: baseFolders, target = null, o
     body.set('name', `${a.name} · ${label}`);
     if (a.folderId) body.set('folder', a.folderId);
     return send(body);
-  }, a.folderId);
+  }, a.folderId, a.id);
   const tones: Tone[] = ['royal', 'navy'];
   const label = (t: Tone) => (t === 'royal' ? 'Royal' : 'Navy');
 
@@ -246,7 +246,7 @@ export function useAssetLibrary({ assets, folders: baseFolders, target = null, o
     ...(inViewer ? [] : [{ label: 'View large', icon: ZoomInAreaIcon, onSelect: () => setViewing(a.id) }]),
     ...(target ? [{ label: 'Use in the design', icon: ImageUploadIcon, onSelect: () => onPick(a.value) }, { separator: true } as const] : []),
     ...(onUseInDesign ? [{ label: 'Use in a design…', icon: PaintBoardIcon, onSelect: () => onUseInDesign(a) }, { separator: true } as const] : []),
-    { label: 'Remove background', icon: Scissor01Icon, onSelect: () => job(`${a.name} · cutout`, () => post(`/api/assets/${a.id}/cutout`), a.folderId) },
+    { label: 'Remove background', icon: Scissor01Icon, onSelect: () => job(`${a.name} · cutout`, () => post(`/api/assets/${a.id}/cutout`), a.folderId, a.id) },
     { label: 'Pixel tone', icon: GridIcon, items: tones.map((t) => ({ label: label(t), onSelect: () => effect(a, `pixel tone ${label(t).toLowerCase()}`, (s) => pixelTone(s, t)) })) },
     { label: 'Pixel dissolve', icon: DashboardSquare01Icon, items: tones.map((t) => ({ label: label(t), onSelect: () => effect(a, `pixel dissolve ${label(t).toLowerCase()}`, (s) => pixelDissolve(s, t)) })) },
     { label: 'Pixel background…', icon: UserIcon, onSelect: () => setPixelBg(a) },
@@ -285,7 +285,7 @@ export function useAssetLibrary({ assets, folders: baseFolders, target = null, o
       <AiDialog state={ai} onClose={() => setAi(null)} onRun={(prompt, ratio) => {
         const from = ai?.from ?? null;
         setAi(null);
-        job(from ? `${from.name} · edited` : prompt, () => post('/api/assets/generate', { prompt, ratio, from: from?.id, ...(from ? {} : { folder: landing }) }), from ? from.folderId : landing);
+        job(from ? `${from.name} · edited` : prompt, () => post('/api/assets/generate', { prompt, ratio, from: from?.id, ...(from ? {} : { folder: landing }) }), from ? from.folderId : landing, from?.id ?? null);
       }} />
       <PixelBackgroundDialog asset={pixelBg} onClose={() => setPixelBg(null)} onSave={(palette, size) => {
         const a = pixelBg!;

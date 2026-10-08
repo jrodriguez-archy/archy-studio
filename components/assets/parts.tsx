@@ -58,12 +58,19 @@ export function AssetTile({ lib, a, onOpen, selected }: { lib: AssetLibrary; a: 
   );
 }
 
-// A drop target for images (a folder, or "out of any folder").
+// A drop target for images (a folder, or "out of any folder"): images moved there, or files from the
+// desktop uploaded there.
 export function dropProps(lib: AssetLibrary, key: string, to: string | null) {
+  const takes = (e: React.DragEvent) => e.dataTransfer.types.includes(DRAG) || e.dataTransfer.types.includes('Files');
   return {
-    onDragOver: (e: React.DragEvent) => { if (e.dataTransfer.types.includes(DRAG)) { e.preventDefault(); lib.setDropOn(key); } },
+    onDragOver: (e: React.DragEvent) => { if (takes(e)) { e.preventDefault(); lib.setDropOn(key); } },
     onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) lib.setDropOn(null); },
-    onDrop: (e: React.DragEvent) => { if (!e.dataTransfer.types.includes(DRAG)) return; e.preventDefault(); lib.setDropOn(null); lib.move(dropped(e), to); },
+    onDrop: (e: React.DragEvent) => {
+      if (!takes(e)) return;
+      e.preventDefault(); e.stopPropagation(); lib.setDropOn(null);
+      if (e.dataTransfer.types.includes(DRAG)) lib.move(dropped(e), to);
+      else lib.uploadMany([...e.dataTransfer.files], to);
+    },
   };
 }
 

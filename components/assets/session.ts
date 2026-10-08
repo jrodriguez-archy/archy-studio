@@ -32,7 +32,10 @@ export function withSession(base: Lists): Lists {
   };
   return { mine: fix([...session.added, ...base.mine]), team: fix([...session.added, ...base.team]) };
 }
+let countedOn: Folder[] | null = null;
 export function foldersWithSession(base: Folder[]): Folder[] {
+  // Fresh counts from the server already hold this session's moves and uploads.
+  if (base && base !== countedOn) { if (countedOn) session.counts.clear(); countedOn = base; }
   const seen = new Set<string>();
   // Folders made here that the server now lists come from the server (so a removal elsewhere shows).
   session.folders = session.folders.filter((f) => !(base ?? []).some((b) => b.id === f.id));

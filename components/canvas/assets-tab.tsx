@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AiMagicIcon, ArrowLeft01Icon, FolderAddIcon, ImageUploadIcon, InformationCircleIcon } from '@hugeicons/core-free-icons';
 import { MoreActions } from '@/components/action-menu';
@@ -14,19 +14,33 @@ export { withSession } from '@/components/assets/session';
 
 // Assets in Canvas: the team's library (the same as the Assets page), narrow. Click an image to place it
 // in the selected photo or logo (or, with nothing selected, to see what can be done with it).
-// `highlight`: an image to point at (opened from the Assets page with "Use in a design").
-export function AssetsTab({ assets, folders, target, onPick, highlight }: { assets: Lists; folders: Folder[]; target: string | null; onPick: (value: string) => void; highlight?: string | null }) {
+// `highlight`: an image to point at (opened from the Assets page with "Use in a design"), in `highlightFolder`.
+const pointedAt = new Set<string>(); // pointed at once per visit, not each time the tab opens again
+export function AssetsTab({ assets, folders, target, onPick, highlight, highlightFolder }: { assets: Lists; folders: Folder[]; target: string | null; onPick: (value: string) => void; highlight?: string | null; highlightFolder?: string | null }) {
   const lib = useAssetLibrary({ assets, folders, target, onPick });
   const input = useRef<HTMLInputElement>(null);
   const root = useRef<HTMLDivElement>(null);
-  // The image to use: its folder opens, and it is scrolled to and outlined for a moment.
-  const pointed = highlight ? lib.find(highlight) : null;
-  useEffect(() => { if (pointed?.folderId) lib.setFolder(pointed.folderId); else if (pointed) lib.setWhose('team'); }, [pointed?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The image to use: its folder opens (its images come from the server, older ones too), on the side
+  // whose it is, and it is scrolled to and outlined for a moment.
+  const [glow, setGlow] = useState(highlight && !pointedAt.has(highlight) ? highlight : null);
+  useEffect(() => { if (glow && highlightFolder) lib.setFolder(highlightFolder); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const pointed = glow ? lib.find(glow) : null;
   useEffect(() => {
-    if (!highlight) return;
-    const t = setTimeout(() => root.current?.querySelector(`[data-asset="${highlight}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+    if (!pointed) return;
+    if (pointed.folderId && lib.folder !== pointed.folderId) lib.setFolder(pointed.folderId);
+    lib.setWhose(lib.mineIds.has(pointed.id) ? 'mine' : 'team');
+  }, [pointed?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!glow) return;
+    const t = setTimeout(() => root.current?.querySelector(`[data-asset="${glow}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
     return () => clearTimeout(t);
-  }, [highlight, lib.folder]);
+  }, [glow, lib.folder, lib.whose]);
+  useEffect(() => {
+    if (!glow) return;
+    pointedAt.add(glow);
+    const t = setTimeout(() => setGlow(null), 4000);
+    return () => clearTimeout(t);
+  }, [glow]);
 
   return (
     <div ref={root} className="space-y-3 pb-4 text-[12px]" onKeyDown={(e) => { if (e.key === 'Escape' && lib.picked.length) { e.stopPropagation(); lib.setPicked([]); } }}>
@@ -93,7 +107,7 @@ export function AssetsTab({ assets, folders, target, onPick, highlight }: { asse
         <div className="grid grid-cols-2 gap-x-2 gap-y-3 px-3">
           <WorkingTiles lib={lib} />
           {lib.list.map((a) => (
-            <div key={a.id} data-asset={a.id} className={`min-w-0 rounded-md ${highlight === a.id ? 'animate-pulse ring-2 ring-[#FF2BD6] ring-offset-2' : ''}`}>
+            <div key={a.id} data-asset={a.id} className={`min-w-0 rounded-md ${glow === a.id ? 'animate-pulse ring-2 ring-[#FF2BD6] ring-offset-2' : ''}`}>
               <AssetTile lib={lib} a={a} />
             </div>
           ))}

@@ -49,7 +49,10 @@ const sameJson = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.
 /** The target with what changed in the source (from `prev` to `next`). Without keys only the slots and the theme follow. */
 export function follow(prev: Snap, next: Snap, target: Snap, src?: Keys, dst?: Keys): Snap {
   const slots = { ...target.slots };
-  for (const [k, v] of Object.entries(next.slots)) if (k in slots && (prev.slots[k] ?? null) !== (v ?? null)) slots[k] = v ?? null;
+  for (const k of Object.keys(slots)) {
+    const was = carried(prev.slots, k, slots[k]), now = carried(next.slots, k, slots[k]);
+    if (now !== undefined && (was ?? null) !== (now ?? null)) slots[k] = now ?? null;
+  }
   const edits = { ...target.edits };
   if (!sameJson(prev.edits[RECOLOR], next.edits[RECOLOR])) {
     if (next.edits[RECOLOR]) edits[RECOLOR] = next.edits[RECOLOR]; else delete edits[RECOLOR];
@@ -71,7 +74,7 @@ export function follow(prev: Snap, next: Snap, target: Snap, src?: Keys, dst?: K
 /** The target made to match the source in everything shared (a format just added, or synced again). */
 export function match(source: Snap, target: Snap, src: Keys, dst: Keys): Snap {
   const slots = { ...target.slots };
-  for (const k of Object.keys(slots)) if (k in source.slots) slots[k] = source.slots[k] ?? null;
+  for (const k of Object.keys(slots)) { const v = carried(source.slots, k, slots[k]); if (v !== undefined) slots[k] = v ?? null; }
   const edits: Edits = {};
   for (const [id, e] of Object.entries(target.edits)) if (id !== RECOLOR) edits[id] = withShared(e, {});
   if (source.edits[RECOLOR]) edits[RECOLOR] = source.edits[RECOLOR];
@@ -85,4 +88,40 @@ export function match(source: Snap, target: Snap, src: Keys, dst: Keys): Snap {
     edits[to] = withShared(edits[to], shared(e, a && b ? b / a : 1, b));
   }
   return { slots, edits: cleanEdits(edits) };
+}
+
+// An event and its page cover are one set: the cover splits the event's headline over two lines
+// (headline-1, headline-2) and may print "Booth" with the number. What one says, the other says in
+// its own shape. Returns the value for `key` from `from` (undefined: nothing to carry).
+export function carried(from: Record<string, string | null>, key: string, own?: string | null): string | null | undefined {
+  if (key in from) return key === 'booth' ? boothLike(from[key], own) : from[key];
+  if (key === 'headline' && ('headline-1' in from || 'headline-2' in from)) return [from['headline-1'], from['headline-2']].filter(Boolean).join('\n') || null;
+  if ((key === 'headline-1' || key === 'headline-2') && 'headline' in from) return splitHeadline(from.headline)[key === 'headline-1' ? 0 : 1];
+  return undefined;
+}
+
+// "#1039" where the design prints "Booth #1039", and the other way round.
+function boothLike(v: string | null, own?: string | null) {
+  if (!v || own == null) return v;
+  const bare = v.replace(/^booth\s*/i, '');
+  if (/^booth\b/i.test(own.trim())) return `Booth ${bare}`;
+  return /^#/.test(own.trim()) ? bare : v;
+}
+
+// Two lines from one headline: its own break, else after a phrase ("Lead with Purpose,", "30 Dallas
+// dentists."), else after a lead-in ("Meet Archy at"), else at the space nearest the middle.
+export function splitHeadline(v: string | null): [string | null, string | null] {
+  if (!v) return [null, null];
+  const lines = v.split('\n').map((l) => l.trim()).filter(Boolean);
+  if (lines.length > 1) return [lines[0], lines.slice(1).join(' ')];
+  const one = v.trim();
+  const inMiddle = (i: number) => i > one.length * 0.2 && i < one.length * 0.8;
+  const phrase = [...one.matchAll(/[,.:;!?](?=\s)/g)].find((m) => inMiddle(m.index!));
+  if (phrase) return [one.slice(0, phrase.index! + 1), one.slice(phrase.index! + 2).trim()];
+  const lead = [...one.matchAll(/\b(?:at|to|for|with|in)(?=\s)/gi)].find((m) => inMiddle(m.index!));
+  if (lead) return [one.slice(0, lead.index! + lead[0].length), one.slice(lead.index! + lead[0].length + 1).trim()];
+  const spaces = [...one.matchAll(/\s/g)].map((m) => m.index!);
+  if (!spaces.length) return [one, null];
+  const at = spaces.reduce((a, b) => (Math.abs(b - one.length / 2) < Math.abs(a - one.length / 2) ? b : a));
+  return [one.slice(0, at), one.slice(at + 1)];
 }

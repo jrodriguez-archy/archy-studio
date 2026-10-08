@@ -10,7 +10,7 @@ import type { CanvasLibrary } from '@/lib/canvas';
 
 export type PanelTab = 'layers' | 'library' | 'assets' | 'inspector';
 const TABS: { key: PanelTab; label: string; icon: typeof Layers01Icon }[] = [
-  { key: 'layers', label: 'Layers', icon: Layers01Icon },
+  { key: 'layers', label: 'Content', icon: Layers01Icon },
   { key: 'library', label: 'Library', icon: LibraryIcon },
   { key: 'assets', label: 'Assets', icon: Image01Icon },
   { key: 'inspector', label: 'Inspector', icon: SearchVisualIcon },
@@ -56,16 +56,15 @@ function Segmented<T extends string>({ value, items, onChange }: { value: T; ite
 // Library: start from a template (it opens with its sample copy) or open a piece already made.
 export function LibraryTab({ library, current, updating = [], confirmLeave }: { library: CanvasLibrary; current?: string; updating?: string[]; confirmLeave: () => boolean }) {
   const router = useRouter();
-  const [view, setView] = useState<'designs' | 'templates'>(current ? 'designs' : 'templates');
+  const [view, setView] = useState<'designs' | 'templates'>('designs');
   const [whose, setWhose] = useState<'mine' | 'team'>('mine');
   // Design and theme chosen per template (templates that offer several); the default otherwise.
   const [combos, setCombos] = useState<Record<string, { design: string; theme: string }>>({});
   const go = (href: string) => { if (confirmLeave()) router.push(href); };
   const pieces = whose === 'mine' ? library.mine : library.team;
-  // Event page covers get their own shelf, closed until wanted.
-  const catOf = (t: CanvasLibrary['templates'][number]) => (t.cover ? 'covers' : t.category);
-  const cats = [...new Set(library.templates.map(catOf))].sort((a, b) => (a === 'covers' ? 1 : b === 'covers' ? -1 : 0));
-  const [closed, setClosed] = useState<string[]>(['covers']);
+  const catOf = (t: CanvasLibrary['templates'][number]) => t.category;
+  const cats = [...new Set(library.templates.map(catOf))];
+  const [closed, setClosed] = useState<string[]>([]);
   // Read after mount (the server has no storage), so the first paint matches.
   useEffect(() => { try { const v = localStorage.getItem(CLOSED_KEY); if (v) setClosed(JSON.parse(v)); } catch {} }, []);
   const toggle = (c: string) => setClosed((cur) => {
@@ -75,7 +74,7 @@ export function LibraryTab({ library, current, updating = [], confirmLeave }: { 
   });
   return (
     <div className="pb-4 text-[12px]">
-      <Segmented value={view} items={[['templates', 'Templates'], ['designs', 'Designs']]} onChange={setView} />
+      <Segmented value={view} items={[['designs', 'Designs'], ['templates', 'Templates']]} onChange={setView} />
       {view === 'designs' ? (
         <>
           <div className="flex gap-3 px-3 pb-2">
@@ -121,15 +120,15 @@ export function LibraryTab({ library, current, updating = [], confirmLeave }: { 
                     const set = (k: 'design' | 'theme', v: string) => setCombos((m) => ({ ...m, [t.id]: { ...c!, [k]: v } }));
                     return (
                     <div key={t.id} className="flex items-center gap-2.5 rounded-md p-1.5 hover:bg-foreground/[0.03]">
-                      <button type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${t.formats[0].key}${q}`)} className="size-12 shrink-0 self-start overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
+                      <button type="button" onClick={() => go(`/canvas/new?template=${t.formats[0].template}&format=${t.formats[0].key}${q}`)} className="size-12 shrink-0 self-start overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={(c && t.comboSrcs[`${t.formats[0].key}--${c.design}--${c.theme}`]) || t.formats[0].src} alt="" loading="lazy" className="size-full object-cover object-top" />
                       </button>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{t.title.replace(/^Event Cover · /, '')}</p>
+                        <p className="truncate font-medium">{t.title}</p>
                         <div className="mt-1 flex gap-1 overflow-x-auto [scrollbar-width:none]">
                           {t.formats.map((f) => (
-                            <button key={f.key} type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${f.key}${q}`)} title={`${f.width}×${f.height}`}
+                            <button key={f.key} type="button" onClick={() => go(`/canvas/new?template=${f.template}&format=${f.key}${f.template === t.id ? q : ''}`)} title={`${f.width}×${f.height}`}
                               className="h-5 shrink-0 rounded-[3px] bg-foreground/[0.05] px-1.5 text-[11px] text-foreground/70 hover:bg-[#E6F4FF] hover:text-primary">{f.label}</button>
                           ))}
                         </div>

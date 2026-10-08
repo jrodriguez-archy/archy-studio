@@ -20,10 +20,11 @@ async function canvasCall<T = { url: string }>(body: Record<string, unknown>): P
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { CanvasLibrary } from '@/lib/canvas';
 import { RECOLOR, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
-import { follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
+import { carried, follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
 import { BoardLabel, GhostBoard } from './artboards';
 import { AssetsTab, CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
 import { InspectorTab } from './inspector-tab';
+import { ContentPanel } from './content-panel';
 import { LayersPanel } from './layers-panel';
 import { merge, within, type Box, type Comp, type Token } from './model';
 import { MultiPanel, PiecePanel, PropertiesPanel, type Align, type SlotMeta } from './properties-panel';
@@ -246,6 +247,35 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     commit({ ...s, slots: { ...s.slots, [name]: value } });
   }, [commit, cur]);
 
+  // Simple by default (made for people who are not designers); every layer and designer control is one
+  // click away, and the choice is remembered.
+  const [allLayers, setAllLayers] = useStored('canvas.allLayers');
+  const [advanced, setAdvanced] = useStored('canvas.advanced');
+  // Copy or images from the brief that are not optional are essential: they can be edited, never hidden.
+  // A group or tag holding one of them (the booth tag around the booth number) is essential too.
+  const essential = useCallback((id: string) => {
+    const own = (x: string) => {
+      const c = comps.find((y) => y.id === x);
+      const slot = c?.slot ?? c?.textSlot;
+      return c?.kind === 'archy' || (!!slot && !!slotMeta[slot] && !slotMeta[slot].optional);
+    };
+    return own(id) || within(comps, id).some(own);
+  }, [comps, slotMeta]);
+  const hideMany = useCallback((ids: string[], hidden = true) => {
+    const ok = hidden ? ids.filter((id) => !essential(id)) : ids;
+    if (ok.length < ids.length) toast('This is essential to the design: edit it instead of hiding it.');
+    if (ok.length) editMany(Object.fromEntries(ok.map((id) => [id, { hidden }])));
+  }, [editMany, essential]);
+  // An optional detail left out empties its slot (the design closes up); brought back, it gets its copy again.
+  const leftOut = useRef<Record<string, string>>({});
+  const toggleSlot = useCallback((slot: string) => {
+    const v = cur().slots[slot];
+    if (v) { leftOut.current[slot] = v; setSlot(slot, null); return; }
+    const back = leftOut.current[slot] ?? board.saved.slots[slot] ?? board.initial.slots[slot];
+    if (back) setSlot(slot, back);
+    else toast('Click it and write its copy on the right.');
+  }, [cur, setSlot, board]);
+
   const select = useCallback((ids: string[], mode: SelectMode) => {
     setSelected((now) => {
       if (mode === 'replace') return ids;
@@ -277,9 +307,10 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     let d = { ...docRef.current };
     const added: Board[] = [];
     for (const g of list) {
+      // What the designs already say (an event's headline becomes its cover's two lines), else the sample.
       const slots = Object.fromEntries(Object.entries(g.defaults).map(([k, v]) => {
-        const had = [src, ...Object.values(d)].find((s) => k in s.slots);
-        return [k, had ? had.slots[k] ?? null : v];
+        for (const s of [src, ...Object.values(d)]) { const c = carried(s.slots, k, v); if (c !== undefined) return [k, c ?? null]; }
+        return [k, v];
       }));
       const initial: Snap = { slots, edits: src.edits[RECOLOR] ? { [RECOLOR]: src.edits[RECOLOR] } : {} };
       d = { ...d, [g.ref]: initial };
@@ -394,7 +425,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (t?.closest('input, textarea, [contenteditable], [role=dialog], [role=menu]')) return;
+      if (t?.closest?.('input, textarea, [contenteditable], [role=dialog], [role=menu]')) return;
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
@@ -411,12 +442,12 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
         editMany(Object.fromEntries(ids.map((id) => { const b = cur().edits[id]?.box ?? {}; return [id, { box: { dx: (b.dx ?? 0) + d[0], dy: (b.dy ?? 0) + d[1] } }]; })));
       } else if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
-        editMany(Object.fromEntries(ids.filter((id) => comps.find((c) => c.id === id)?.kind !== 'archy').map((id) => [id, { hidden: true }])));
+        hideMany(ids);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [comps, selected, undo, redo, editMany, vp, cur]);
+  }, [comps, selected, undo, redo, editMany, hideMany, vp, cur]);
 
   useEffect(() => {
     if (!changed) return;
@@ -610,10 +641,18 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
 
       <div className="flex min-h-0 flex-1">
         <CanvasPanel tab={tab} onTab={setTab} badges={{ inspector: warnings + otherWarnings }}>
-          {tab === 'layers' && (
-            <LayersPanel comps={comps} edits={snap.edits} selected={selected} hover={hover} onHover={setHover}
-              onSelect={(id, add) => select([id], add ? 'toggle' : 'replace')}
-              onToggle={(id) => editLayer(id, { hidden: !snap.edits[id]?.hidden })} />
+          {tab === 'layers' && !allLayers && (
+            <ContentPanel comps={comps} edits={snap.edits} slots={snap.slots} slotMeta={slotMeta} previews={plan?.fill.values ?? {}} preset={piece.preset}
+              selected={selected} hover={hover} onHover={setHover} onSelect={(id) => select([id], 'replace')}
+              onSlotToggle={toggleSlot} onSlot={setSlot} onHide={(id) => hideMany([id], !snap.edits[id]?.hidden)} onPreset={setPreset} onAdvanced={() => setAllLayers(true)} />
+          )}
+          {tab === 'layers' && allLayers && (
+            <>
+              <button type="button" onClick={() => setAllLayers(false)} className="mx-3 mt-1 text-[12px] text-foreground/50 hover:text-foreground">← Simple view</button>
+              <LayersPanel comps={comps} edits={snap.edits} selected={selected} hover={hover} onHover={setHover}
+                onSelect={(id, add) => select([id], add ? 'toggle' : 'replace')}
+                onToggle={(id) => hideMany([id], !snap.edits[id]?.hidden)} />
+            </>
           )}
           {(tab === 'library' || tab === 'assets') && !library && <PanelLoading />}
           {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : board.ref} updating={updating} confirmLeave={confirmLeave} />}
@@ -703,7 +742,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
         <aside className="w-[280px] shrink-0 overflow-y-auto border-l border-foreground/[0.06] bg-background [scrollbar-width:thin] max-lg:hidden">
           {selected.length > 1 ? (
             <MultiPanel count={selected.length} onAlign={(a, to) => align(a, to)} onReset={() => resetIds(selected)}
-              onHide={() => editMany(Object.fromEntries(selected.filter((id) => comps.find((c) => c.id === id)?.kind !== 'archy').map((id) => [id, { hidden: true }])))} />
+              onHide={() => hideMany(selected)} />
           ) : one && plan ? (
             <PropertiesPanel
               key={`${board.ref}:${one.id}`}
@@ -722,6 +761,10 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
               onSlot={setSlot}
               onReset={() => resetIds([one.id])}
               onAlign={(a) => align(a)}
+              essential={essential(one.id)}
+              designFontSize={meta[board.ref]?.keys?.[one.id]?.fontSize}
+              advanced={advanced}
+              onAdvanced={setAdvanced}
             />
           ) : (
             <PiecePanel pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />
@@ -774,4 +817,11 @@ function SaveOption({ title, text, onClick, disabled, primary }: { title: string
       <p className="mt-0.5 text-foreground/50">{text}</p>
     </button>
   );
+}
+
+// A yes/no preference kept in this browser (the page works the same without storage).
+function useStored(key: string): [boolean, (v: boolean) => void] {
+  const [v, setV] = useState(false);
+  useEffect(() => { try { setV(localStorage.getItem(key) === '1'); } catch {} }, [key]);
+  return [v, (next: boolean) => { setV(next); try { localStorage.setItem(key, next ? '1' : '0'); } catch {} }];
 }

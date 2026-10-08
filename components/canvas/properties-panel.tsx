@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   AlignBottomIcon, AlignHorizontalCenterIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, AlignVerticalCenterIcon,
-  ArrowRight01Icon, ArrowTurnBackwardIcon, ArrowUpRight01Icon, Delete02Icon, ImageUploadIcon, LockIcon, Tick02Icon, ViewIcon, ViewOffSlashIcon,
+  ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon, ArrowTurnBackwardIcon, ArrowUp01Icon, ArrowUpRight01Icon, Delete02Icon, ImageUploadIcon, LockIcon, Tick02Icon, ViewIcon, ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -43,17 +43,28 @@ type Props = {
   onSlot: (name: string, value: string | null) => void;
   onReset: () => void;
   onAlign: (a: Align) => void;
+  /** Essential to the design (copy or image from the brief that is not optional): it cannot be hidden. */
+  essential?: boolean;
+  /** The text's size as the design draws it: the simple Size moves within 85–125% of it. */
+  designFontSize?: number;
+  /** Designer controls (X, Y, W, H, opacity, layout, every weight) instead of the simple ones. */
+  advanced: boolean;
+  onAdvanced: (on: boolean) => void;
 };
+
+const NUDGE = 8;
 
 // Right column: what the selected component lets you change, inside the brand (palette colours, the
 // template's weights, sizes within the slot's limits).
-export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign }: Props) {
+export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign, essential, designFontSize, advanced, onAdvanced }: Props) {
   const edit = edits[comp.id];
   const box = edit?.box ?? {};
   const me = info(comp.id);
   const edited = [comp.id, comp.textId, comp.iconId].some((id) => id && edits[id] && Object.keys(edits[id]).length);
   const slot = comp.slot ? { value: slots[comp.slot] ?? null, meta: slotMeta[comp.slot], preview: previews[comp.slot] ?? null } : null;
   const movable = comp.kind !== 'background';
+  const nudge = (dx: number, dy: number) => onEdit(comp.id, { box: { dx: (box.dx ?? 0) + dx, dy: (box.dy ?? 0) + dy } });
+  const more = <AdvancedToggle on={advanced} onChange={onAdvanced} />;
 
   if (comp.kind === 'archy') {
     return (
@@ -63,15 +74,20 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
           <p>The drawing and its colour are the brand’s. You can move it and scale it; it turns white or Archy blue with the recolor.</p>
         </div>
         <Section title="Position">
-          <AlignRow alignIn={alignIn} onAlign={onAlign} />
-          <div className="grid grid-cols-2 gap-2">
-            <NumberField label="X" value={box.dx ?? 0} onChange={(v, c) => onEdit(comp.id, { box: { dx: v } }, c)} />
-            <NumberField label="Y" value={box.dy ?? 0} onChange={(v, c) => onEdit(comp.id, { box: { dy: v } }, c)} />
-          </div>
+          {advanced ? (
+            <>
+              <AlignRow alignIn={alignIn} onAlign={onAlign} />
+              <div className="grid grid-cols-2 gap-2">
+                <NumberField label="X" value={box.dx ?? 0} onChange={(v, c) => onEdit(comp.id, { box: { dx: v } }, c)} />
+                <NumberField label="Y" value={box.dy ?? 0} onChange={(v, c) => onEdit(comp.id, { box: { dy: v } }, c)} />
+              </div>
+            </>
+          ) : <MoveRow onNudge={nudge} onCenter={() => onAlign('center')} />}
           <Row label="Scale">
             <SliderField value={Math.round((box.scale ?? 1) * 100)} min={30} max={300} suffix="%" onChange={(v, commit) => onEdit(comp.id, { box: { scale: v / 100 } }, commit)} />
           </Row>
         </Section>
+        {more}
       </Panel>
     );
   }
@@ -79,7 +95,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
   return (
     <Panel comp={comp} onReset={edited ? onReset : undefined}>
       {comp.kind === 'text' && me && (
-        <TextControls id={comp.id} info={me} edit={edit} tokens={tokens} slot={slot}
+        <TextControls id={comp.id} info={me} edit={edit} tokens={tokens} slot={slot} advanced={advanced} designFontSize={designFontSize}
           onText={(t) => (comp.slot ? onSlot(comp.slot, t) : onEdit(comp.id, { text: t }))} onEdit={(e, c) => onEdit(comp.id, e, c)} />
       )}
 
@@ -158,11 +174,18 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
         </Section>
       )}
 
-      {me?.layout && (comp.kind === 'group' || comp.kind === 'tag' || comp.kind === 'button') && (
+      {advanced && me?.layout && (comp.kind === 'group' || comp.kind === 'tag' || comp.kind === 'button') && (
         <LayoutControls layout={me.layout} onEdit={(l, c) => onEdit(comp.id, { layout: l }, c)} />
       )}
 
-      {movable && me && (
+      {movable && me && !advanced && (
+        <Section title="Position">
+          <MoveRow onNudge={nudge} onCenter={() => onAlign('center')} />
+          {!essential && <Toggle hidden={!!edit?.hidden} label={KIND_LABEL[comp.kind].toLowerCase()} onToggle={() => onEdit(comp.id, { hidden: !edit?.hidden })} />}
+        </Section>
+      )}
+
+      {movable && me && advanced && (
         <Section title="Position">
           <AlignRow alignIn={alignIn} onAlign={onAlign} />
           <div className="grid grid-cols-2 gap-2">
@@ -184,14 +207,43 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
           <Row label="Opacity">
             <SliderField value={Math.round((edit?.style?.opacity ?? me.opacity) * 100)} min={0} max={100} suffix="%" onChange={(v, commit) => onEdit(comp.id, { style: { opacity: v / 100 } }, commit)} />
           </Row>
-          <Toggle hidden={!!edit?.hidden} label={KIND_LABEL[comp.kind].toLowerCase()} onToggle={() => onEdit(comp.id, { hidden: !edit?.hidden })} />
+          {!essential && <Toggle hidden={!!edit?.hidden} label={KIND_LABEL[comp.kind].toLowerCase()} onToggle={() => onEdit(comp.id, { hidden: !edit?.hidden })} />}
         </Section>
       )}
+      {comp.kind !== 'background' && more}
     </Panel>
   );
 }
 
-const PRESETS: [Preset, string, React.CSSProperties][] = [
+// Move without numbers: a step at a time, or centred in its container.
+function MoveRow({ onNudge, onCenter }: { onNudge: (dx: number, dy: number) => void; onCenter: () => void }) {
+  const arrows = [[ArrowLeft01Icon, -NUDGE, 0, 'left'], [ArrowUp01Icon, 0, -NUDGE, 'up'], [ArrowDown01Icon, 0, NUDGE, 'down'], [ArrowRight01Icon, NUDGE, 0, 'right']] as const;
+  return (
+    <div className="space-y-1.5">
+      <div className="grid grid-cols-[repeat(4,minmax(0,1fr))_auto] gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5">
+        {arrows.map(([icon, dx, dy, name]) => (
+          <button key={name} type="button" aria-label={`Move ${name}`} title={`Move ${name}`} onClick={() => onNudge(dx, dy)}
+            className="flex h-6 items-center justify-center rounded-[4px] text-foreground/60 hover:bg-background hover:text-foreground hover:shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">
+            <HugeiconsIcon icon={icon} className="size-3.5" strokeWidth={1.8} />
+          </button>
+        ))}
+        <button type="button" onClick={onCenter} className="h-6 rounded-[4px] px-2 text-foreground/70 hover:bg-background hover:text-foreground hover:shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">Center</button>
+      </div>
+      <p className="text-[11px] text-foreground/40">Or drag it on the design. It stays inside the safe area.</p>
+    </div>
+  );
+}
+
+function AdvancedToggle({ on, onChange }: { on: boolean; onChange: (on: boolean) => void }) {
+  return (
+    <button type="button" onClick={() => onChange(!on)} className="flex w-full items-center gap-1 border-t border-foreground/[0.06] pt-3 text-left text-[12px] text-foreground/45 hover:text-foreground">
+      <HugeiconsIcon icon={on ? ArrowDown01Icon : ArrowRight01Icon} className="size-3" strokeWidth={2} />
+      {on ? 'Simple controls' : 'Advanced (X, Y, W, H, layout)'}
+    </button>
+  );
+}
+
+export const PRESETS: [Preset, string, React.CSSProperties][] = [
   ['dark', 'Dark', { background: 'linear-gradient(180deg, #000484, #00004E 55%)', color: '#fff' }],
   ['blue', 'Blue', { background: '#013DF5', color: '#fff' }],
   ['sky', 'Sky', { background: '#0095FF', color: '#fff' }],
@@ -300,8 +352,8 @@ function Panel({ comp, onReset, children }: { comp: Comp; onReset?: () => void; 
           <p className="text-foreground/40">{KIND_LABEL[comp.kind]}{comp.slot || comp.textSlot ? ' · from the brief' : ''}</p>
         </div>
         {onReset && (
-          <button type="button" onClick={onReset} title="Undo every change on this component" className="flex h-6 shrink-0 items-center gap-1 rounded-md bg-foreground/[0.05] px-2 text-foreground/60 hover:bg-foreground/[0.09] hover:text-foreground">
-            <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-3" /> Reset
+          <button type="button" onClick={onReset} title="Undo every change on this part" className="flex h-6 shrink-0 items-center gap-1 rounded-md bg-foreground/[0.05] px-2 text-foreground/60 hover:bg-foreground/[0.09] hover:text-foreground">
+            <HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-3" /> Back to the design
           </button>
         )}
       </div>
@@ -310,27 +362,47 @@ function Panel({ comp, onReset, children }: { comp: Comp; onReset?: () => void; 
   );
 }
 
-function TextControls({ info, edit, tokens, slot, onText, onEdit }: {
+function TextControls({ info, edit, tokens, slot, advanced, designFontSize, onText, onEdit }: {
   id: string; info: LayerInfo; edit?: NodeEdit; tokens: Token[]; slot: { value: string | null; meta?: SlotMeta } | null;
+  advanced: boolean; designFontSize?: number;
   onText: (t: string) => void; onEdit: (e: NodeEdit, commit?: boolean) => void;
 }) {
+  const weights = advanced ? WEIGHTS : WEIGHTS.filter(([w]) => w === 400 || w === 700);
   return (
     <Section title="Text">
       <TextField value={slot ? slot.value ?? '' : edit?.text ?? info.text} onCommit={onText} optional={!slot || slot.meta?.optional} />
       <Row label="Size">
-        <NumberField label="Aa" value={edit?.style?.fontSize ?? info.fontSize} suffix="px" min={8} max={400} onChange={(v, c) => onEdit({ style: { fontSize: v } }, c)} />
+        {advanced || !designFontSize ? (
+          <NumberField label="Aa" value={edit?.style?.fontSize ?? info.fontSize} suffix="px" min={8} max={400} onChange={(v, c) => onEdit({ style: { fontSize: v } }, c)} />
+        ) : (
+          <SizeStepper base={designFontSize} value={edit?.style?.fontSize ?? designFontSize} onChange={(px) => onEdit({ style: { fontSize: px } })} />
+        )}
       </Row>
       <Row label="Weight">
-        <div className="grid grid-cols-4 gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5">
-          {WEIGHTS.map(([w, label]) => (
+        <div className={`grid gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5 ${advanced ? 'grid-cols-4' : 'grid-cols-2'}`}>
+          {weights.map(([w, label]) => (
             <button key={w} type="button" title={label} onClick={() => onEdit({ style: { fontWeight: w } })}
-              className={`h-6 rounded-[4px] text-[11px] ${(edit?.style?.fontWeight ?? info.fontWeight) === w ? 'bg-background font-medium shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/55 hover:text-foreground'}`}
-              style={{ fontWeight: w }}>Aa</button>
+              className={`h-6 rounded-[4px] text-[11px] ${(advanced ? (edit?.style?.fontWeight ?? info.fontWeight) === w : (edit?.style?.fontWeight ?? info.fontWeight) >= 600 === (w === 700)) ? 'bg-background font-medium shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/55 hover:text-foreground'}`}
+              style={{ fontWeight: w }}>{advanced ? 'Aa' : label}</button>
           ))}
         </div>
       </Row>
       <Row label="Colour"><ColorField tokens={tokens} current={info.color} onPick={(v) => onEdit({ style: { color: v } })} /></Row>
     </Section>
+  );
+}
+
+// Size without pixels: smaller or bigger than the design, from 85% to 125% (the brand's range), in 5% steps.
+function SizeStepper({ base, value, onChange }: { base: number; value: number; onChange: (px: number | undefined) => void }) {
+  const pct = Math.round((value / base) * 20) * 5;
+  const set = (p: number) => { const c = Math.min(125, Math.max(85, p)); onChange(c === 100 ? undefined : Math.round((base * c) / 100)); };
+  const btn = 'flex size-6 items-center justify-center rounded-[4px] text-[14px] text-foreground/60 hover:bg-background hover:text-foreground hover:shadow-[0_0_0_1px_rgba(0,0,0,0.06)] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:shadow-none';
+  return (
+    <div className="flex items-center gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5">
+      <button type="button" aria-label="Smaller" title="Smaller" disabled={pct <= 85} onClick={() => set(pct - 5)} className={btn}>−</button>
+      <button type="button" title="As designed" onClick={() => set(100)} className="h-6 flex-1 rounded-[4px] text-center tabular-nums hover:bg-background">{pct === 100 ? 'As designed' : `${pct}%`}</button>
+      <button type="button" aria-label="Bigger" title="Bigger" disabled={pct >= 125} onClick={() => set(pct + 5)} className={btn}>+</button>
+    </div>
   );
 }
 

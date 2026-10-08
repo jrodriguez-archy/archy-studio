@@ -6,7 +6,7 @@ import type { Edits } from './canvas-shared';
 import { loadPieces } from './gallery';
 import { formatLabel, groupSets } from './gallery-shared';
 import { supabaseAdmin } from './supabase/admin';
-import { comboFormats, loadConfig, loadLibrary, loadManifest, resolveCombo, type Manifest } from './templates';
+import { comboFormats, loadConfig, loadLibrary, loadManifest, resolveCombo, type Manifest, type TemplateConfig } from './templates';
 
 // Canvas: open a finished piece from its source (template + format + slots + edits), change it by hand
 // and render it again with the same engine. Anyone on the team can open a piece and save a new version
@@ -60,33 +60,46 @@ export const loadSource = cache(async (ref: string): Promise<PieceSource | null>
 
 export const isNew = (piece: PieceSource) => piece.id.startsWith('new:');
 
-// The formats of a design, as artboards: the newest design of each format of the same template in its
-// set (the piece itself for its own format), and the template's formats the set does not have yet.
+// An event template and its page cover are one design family: the cover is one more format of the
+// event (as in Paper), though it is its own template. The event first, then its cover.
+export async function familyOf(template: string): Promise<string[]> {
+  const config = await loadConfig(template).catch(() => null);
+  if (config?.cover) return [template, config.cover];
+  if (config?.coverOf) return [config.coverOf, template];
+  return [template];
+}
+
+// The formats of a design, as artboards: the newest design of each format of its family in its set
+// (the piece itself for its own format), and the formats the set does not have yet.
 export async function loadSet(piece: PieceSource) {
-  const manifest = await loadManifest(piece.template);
-  const files = filesOf(manifest, piece);
-  const order = Object.keys(files);
+  const family = await familyOf(piece.template);
+  const manifests = Object.fromEntries(await Promise.all(family.map(async (t) => [t, await loadManifest(t)] as const)));
+  // The piece's own template in its design × theme; the rest of the family (event or cover) as designed.
+  const files = Object.fromEntries(family.map((t) => [t, filesOf(manifests[t], t === piece.template ? piece : { design: null, theme: null })]));
+  const order = family.flatMap((t) => Object.keys(files[t]).map((f) => `${t}:${f}`));
+  const slotOf = (p: { template: string; format: string }) => `${p.template}:${p.format}`;
   let siblings: PieceSource[] = [];
   if (!isNew(piece) && piece.set_id) {
     const { data } = await supabaseAdmin().from('renders')
       .select(`${COLUMNS}, created_at`)
-      .eq('set_id', piece.set_id).eq('template', piece.template).is('archived_at', null)
+      .eq('set_id', piece.set_id).in('template', family).is('archived_at', null)
       .order('created_at', { ascending: false });
     const seen = new Set([piece.format]);
-    const mine = comboKey(manifest, piece);
+    const mine = comboKey(manifests[piece.template], piece);
     for (const r of data ?? []) {
-      // Only the formats of the same design and theme (a set can hold options in several).
-      if (seen.has(r.format) || !files[r.format] || comboKey(manifest, r) !== mine) continue;
+      // Only the formats of the same design and theme (a set can hold options in several); one design
+      // per format (an event format and the cover never share a key).
+      if (seen.has(r.format) || !files[r.template]?.[r.format] || (r.template === piece.template && comboKey(manifests[r.template], r) !== mine)) continue;
       seen.add(r.format);
       siblings.push({ ...(r as PieceSource), slots: r.slots ?? {}, edits: r.edits ?? {} });
     }
   }
-  siblings = [piece, ...siblings].sort((a, b) => order.indexOf(a.format) - order.indexOf(b.format));
+  siblings = [piece, ...siblings].sort((a, b) => order.indexOf(slotOf(a)) - order.indexOf(slotOf(b)));
   const have = new Set(siblings.map((p) => p.format));
-  const missing = order.filter((f) => !have.has(f)).map((f) => ({
-    ref: newRef(piece.template, f, piece.design, piece.theme), format: f, width: files[f].width, height: files[f].height,
-    defaults: Object.fromEntries(Object.entries(manifest.slots).map(([k, v]) => [k, v.default])) as Record<string, string | null>,
-  }));
+  const missing = family.flatMap((t) => Object.entries(files[t]).filter(([f]) => !have.has(f)).map(([f, fm]) => ({
+    ref: t === piece.template ? newRef(t, f, piece.design, piece.theme) : newRef(t, f), format: f, width: fm.width, height: fm.height,
+    defaults: Object.fromEntries(Object.entries(manifests[t].slots).map(([k, v]) => [k, v.default])) as Record<string, string | null>,
+  })));
   return { pieces: siblings, missing };
 }
 
@@ -103,16 +116,27 @@ export async function canReplace(me: Who, piece: PieceSource) {
 export type SlotInfo = { type: 'text' | 'image' | 'logo'; optional: boolean; fontSize?: { min: number; max: number } };
 
 export async function editorContext(piece: PieceSource) {
-  const [manifest, config, library, title] = await Promise.all([loadManifest(piece.template), loadConfig(piece.template), loadLibrary(), titleOf(piece.template)]);
-  const optional = new Set(config.optional ?? []);
-  const combo = resolveCombo(manifest, piece.design, piece.theme);
-  const slotsOf = (format: string): Record<string, SlotInfo> => Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, {
-    type: s.type, optional: optional.has(k), fontSize: s.limits?.[combo?.key ? `${format}--${combo.key}` : format]?.fontSize,
-  }]));
+  const family = await familyOf(piece.template);
+  const [library, title, ...members] = await Promise.all([loadLibrary(), titleOf(family[0]),
+    ...family.map(async (t) => {
+      const manifest = await loadManifest(t);
+      return { manifest, config: await loadConfig(t), combo: resolveCombo(manifest, t === piece.template ? piece.design : null, t === piece.template ? piece.theme : null) };
+    })]);
+  type Member = { manifest: Manifest; config: TemplateConfig; combo: ReturnType<typeof resolveCombo> };
+  const slotsOf = (m: Member, format: string): Record<string, SlotInfo> => {
+    const optional = new Set(m.config.optional ?? []);
+    // Only the slots this format draws (a slot with per-format styles exists in those formats only).
+    const inFormat = (s: { perFormat?: Record<string, unknown> }) => !s.perFormat || format in s.perFormat;
+    return Object.fromEntries(Object.entries(m.manifest.slots).filter(([, s]) => inFormat(s as { perFormat?: Record<string, unknown> }))
+      .map(([k, s]) => [k, { type: s.type, optional: optional.has(k), fontSize: s.limits?.[m.combo?.key ? `${format}--${m.combo.key}` : format]?.fontSize }]));
+  };
+  const own = members[family.indexOf(piece.template)] as Member;
+  const combo = own.combo;
+  const manifest = own.manifest;
   return {
-    title, formatLabel: formatLabel(piece.format), slots: slotsOf(piece.format),
-    /** The same, for every format of the template (each artboard). */
-    slotsByFormat: Object.fromEntries(Object.keys(comboFormats(manifest, combo)).map((f) => [f, slotsOf(f)])),
+    title, formatLabel: formatLabel(piece.format), slots: slotsOf(own, piece.format),
+    /** The same, for every format of the design family (each artboard, the event cover included). */
+    slotsByFormat: Object.fromEntries((members as Member[]).flatMap((m) => Object.keys(comboFormats(m.manifest, m.combo)).map((f) => [f, slotsOf(m, f)]))),
     /** The design and theme drawn, with the labels to show (null on single-design templates). */
     combo: combo ? { design: combo.design, theme: combo.theme, designLabel: manifest.designs![combo.design].label, themeLabel: manifest.themes![combo.theme].label } : null,
     library: library.map((a) => ({ id: a.id, title: a.title, kind: a.kind, url: `/api/template-files/library/${a.file}` })),
@@ -127,12 +151,15 @@ export async function canvasLibrary(me: Who) {
     supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle(),
   ]);
   const srcs = await previewSrcs(items);
+  const byId = Object.fromEntries(items.map((i) => [i.manifest.id, i]));
   const card = (p: Awaited<ReturnType<typeof loadPieces>>[number], title: string) => ({ id: p.id, title, format: formatLabel(p.format), thumb: p.thumb ?? null, width: p.width, height: p.height, author: p.author });
   const pieces = (list: Awaited<ReturnType<typeof loadPieces>>) => groupSets(list).flatMap((s) => s.pieces.map((p) => card(p, s.title)));
   return {
-    templates: items.map((i) => ({
-      id: i.manifest.id, title: i.config.title, category: i.config.category ?? 'other', purpose: i.config.purpose ?? null, cover: !!i.config.coverOf,
-      formats: Object.entries(i.manifest.formats).map(([key, f]) => ({ key, label: formatLabel(key), width: f.width, height: f.height, src: srcs[`${i.manifest.id}/${key}`] })),
+    // An event page cover is one more format of its event (as in Paper), not a template of its own.
+    templates: items.filter((i) => !(i.config.coverOf && byId[i.config.coverOf])).map((i) => ({
+      id: i.manifest.id, title: i.config.title, category: i.config.category ?? 'other', purpose: i.config.purpose ?? null,
+      formats: [i, ...(i.config.cover && byId[i.config.cover] ? [byId[i.config.cover]] : [])].flatMap((m) => Object.entries(m.manifest.formats)
+        .map(([key, f]) => ({ key, template: m.manifest.id, label: formatLabel(key), width: f.width, height: f.height, src: srcs[`${m.manifest.id}/${key}`] }))),
       // Designs and themes to start from (default first), on templates that offer several.
       designs: i.manifest.default ? Object.entries(i.manifest.designs ?? {}).map(([key, d]) => ({ key, label: d.label })).sort((a, b) => Number(b.key === i.manifest.default!.design) - Number(a.key === i.manifest.default!.design)) : null,
       themes: i.manifest.default ? Object.entries(i.manifest.themes ?? {}).map(([key, t]) => ({ key, label: t.label })).sort((a, b) => Number(b.key === i.manifest.default!.theme) - Number(a.key === i.manifest.default!.theme)) : null,

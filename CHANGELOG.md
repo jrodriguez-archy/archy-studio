@@ -1,5 +1,14 @@
 # Changelog
 
+## archy-studio 0.8.0 (2026-10-08)
+
+- Designs and themes: the AE Spotlight comes in five designs (Meet Name, The Arch, Grid Card, Mosaic, Forum) and three themes (White, Royal Blue, Navy), 30 artboards from the `Master - Ads` file. `render`, `get_template` and the render API take an optional `design` and `theme`; the default is Meet Name in White, so nothing changes for designs made before.
+- `list_templates` lists each template's designs and themes; `get_template` gives the limits of the design and theme asked for and marks slots that only some designs have (`only_in_designs`).
+- Designs remember their design and theme: Canvas, sets, the gallery stack and set downloads keep options in other designs apart.
+- Studio app: design and theme pickers in the template inspector (preview, copied prompt and Start in Canvas follow them), a design × theme grid on the template page, and pickers in Canvas's Library.
+- Canvas: the whole-design recolour is now `recolor` in `edit_canvas` (it was `theme`), so it is not confused with a template's themes.
+- AE Spotlight: the location pill's length limit is its real room (about 20 characters in Post, 29 in Stories).
+
 ## archy-studio 0.7.0 (2026-10-08)
 
 - Canvas tools: `get_canvas`, `edit_canvas` and `save_canvas` let Claude edit, live, the design open in Studio's Canvas (copy, colours, theme, icons, images, sizes, layout, `fix: "all"` for the Inspector's fixes), as the designer: it fixes what its change causes instead of asking the person to do it by hand.

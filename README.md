@@ -30,13 +30,15 @@ npm i && npx playwright install chromium
 node scripts/sync.mjs templates/ae-spotlight            # read Paper (desktop app open) → post.html, stories.html, manifest.json
 node scripts/render.mjs templates/ae-spotlight --calibrate   # measured limits → manifest.json
 node scripts/render.mjs templates/ae-spotlight --case cases/long.json   # → out/long-post.png + .json report
+node scripts/render.mjs templates/ae-spotlight --case cases/long.json --design the-arch --theme navy   # one design × theme
+node scripts/render.mjs templates/ae-spotlight --case cases/long.json --combos all   # every design × theme
 python3 scripts/to-srgb.py templates/ae-spotlight/reference/post.png templates/ae-spotlight/reference/post.srgb.png
 node scripts/compare.mjs out/original-post.png templates/ae-spotlight/reference/post.srgb.png
 ```
 
 ## Files per template
-- `template.config.json`: Paper file and artboard per format (written by hand).
-- `rules.json`: fit behaviour designed by hand (bounds, maxLines, minScale, collisions).
+- `template.config.json`: Paper file and artboard per format (written by hand). A template with several designs and themes adds `designs`, `themes`, `default` and `combos` (`<design>--<theme>` → artboard per format); `formats` is the default combo. Files of a combo are `<format>--<design>--<theme>.html`.
+- `rules.json`: fit behaviour designed by hand (bounds, maxLines, minScale, collisions, `inset` per format). `designs.<design>` replaces the slot rules (and containers) it names for that design; themes share their design's rules.
 - `source/*.json`: raw Paper reads (sync rebuilds offline with `--offline`).
 - `manifest.json`: generated slots, defaults, styles and measured limits.
 

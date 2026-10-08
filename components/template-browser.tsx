@@ -19,7 +19,8 @@ export type TemplateCard = {
   lead?: string;
   /** Template id of the event page cover that goes with this style. */
   coverId?: string;
-  slots: { key: string; type: 'text' | 'image' | 'logo'; optional: boolean }[];
+  /** `designs`: the designs that have the slot, when only some do. */
+  slots: { key: string; type: 'text' | 'image' | 'logo'; optional: boolean; designs?: string[] }[];
   /** Designs (layouts) and themes (colour treatments), on templates that offer several; the first is the default. */
   designs?: { key: string; label: string }[];
   themes?: { key: string; label: string }[];
@@ -193,7 +194,7 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
 
               <section>
                 <p className="pb-1.5 text-foreground/40">Slots</p>
-                <InfoRows rows={current.slots.map((s) => [s.key, <span key={s.key} className={s.optional ? 'text-foreground/40' : ''}>{s.type === 'text' ? 'Text' : s.type === 'logo' ? 'Logo' : 'Image'} · {s.optional ? 'Optional' : 'Essential'}</span>])} />
+                <InfoRows rows={current.slots.filter((s) => !s.designs || !pick || s.designs.includes(pick.design)).map((s) => [s.key, <span key={s.key} className={s.optional ? 'text-foreground/40' : ''}>{s.type === 'text' ? 'Text' : s.type === 'logo' ? 'Logo' : 'Image'} · {s.optional ? 'Optional' : 'Essential'}</span>])} />
               </section>
 
               <button type="button" onClick={() => copied('Prompt')(templatePrompt(current, pick))} className="flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90">

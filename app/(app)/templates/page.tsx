@@ -92,7 +92,14 @@ function toCard(srcs: Record<string, string>, { manifest, config, formats, needs
     useWhen: config.useWhen, notWhen: config.notWhen,
     needs: needs.map((n) => FACT_LABEL[n] ?? n), extras: extras.map((n) => FACT_LABEL[n] ?? n),
     formats: [...own, ...extra], lead, coverId: cover?.manifest.id,
-    slots: Object.entries(manifest.slots).map(([key, s]) => ({ key, type: s.type, optional: optional.has(key) })),
+    slots: Object.entries(manifest.slots).map(([key, s]) => {
+      // Designs that have this slot (a design's files are its default theme's, or the base formats).
+      const has = manifest.default && Object.keys(manifest.designs ?? {}).filter((d) => {
+        const combo = d === manifest.default!.design ? null : Object.keys(manifest.combos ?? {}).find((c) => c.startsWith(`${d}--`));
+        return Object.keys(manifest.formats).some((f) => (combo ? `${f}--${combo}` : f) in (s.perFormat ?? {}));
+      });
+      return { key, type: s.type, optional: optional.has(key), designs: has && has.length < Object.keys(manifest.designs ?? {}).length ? has : undefined };
+    }),
     // The default design and theme first.
     ...(manifest.default ? {
       comboSrcs: Object.fromEntries(Object.entries(srcs).filter(([k]) => k.startsWith(`${manifest.id}/`) && k.includes('--')).map(([k, v]) => [k.slice(manifest.id.length + 1), v])),

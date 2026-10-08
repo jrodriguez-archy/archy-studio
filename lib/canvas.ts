@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { catalog, titleOf } from './catalog';
 import type { Edits } from './canvas-shared';
 import { loadPieces } from './gallery';
@@ -22,7 +23,8 @@ export type PieceSource = {
 // drawn with the template's sample copy; saving it makes a new piece and set).
 export const newRef = (template: string, format: string) => `new:${template}:${format}`;
 
-export async function loadSource(ref: string): Promise<PieceSource | null> {
+// Once per request (the page title and the page both ask).
+export const loadSource = cache(async (ref: string): Promise<PieceSource | null> => {
   const fresh = ref.match(/^new:([a-z0-9-]+):([a-z]+)$/);
   if (fresh) {
     const [, template, format] = fresh;
@@ -39,7 +41,7 @@ export async function loadSource(ref: string): Promise<PieceSource | null> {
     .eq('id', id).maybeSingle();
   if (!data) return null;
   return { ...(data as PieceSource), slots: data.slots ?? {}, edits: data.edits ?? {} };
-}
+});
 
 export const isNew = (piece: PieceSource) => piece.id.startsWith('new:');
 

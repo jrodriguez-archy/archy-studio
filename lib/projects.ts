@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { supabaseAdmin } from './supabase/admin';
 
 // Projects organise pieces like folders. Shared projects are visible to the whole team; personal ones
@@ -10,17 +11,24 @@ type Who = { id: string; is_admin: boolean };
 
 const clean = (name: string) => name.trim().replace(/\s+/g, ' ').slice(0, 80);
 
-export async function listProjects(me: Who): Promise<Project[]> {
-  const { data } = await supabaseAdmin()
-    .from('projects')
-    .select('id, name, shared, owner_id, profiles(full_name, email), renders(set_id, archived_at)')
-    .or(`shared.eq.true,owner_id.eq.${me.id}`)
-    .order('name');
-  type Row = { id: string; name: string; shared: boolean; owner_id: string; profiles: { full_name: string | null; email: string } | null; renders: { set_id: string | null; archived_at: string | null }[] };
-  return ((data ?? []) as unknown as Row[]).map((p) => ({
+// Once per request, however many parts of the page ask (layout, page, menus).
+export const listProjects = (me: Who) => projectsOf(me.id);
+const projectsOf = cache(loadProjects);
+
+async function loadProjects(meId: string): Promise<Project[]> {
+  const db = supabaseAdmin();
+  const [{ data }, { data: counts }] = await Promise.all([
+    db.from('projects').select('id, name, shared, owner_id, profiles(full_name, email)').or(`shared.eq.true,owner_id.eq.${meId}`).order('name'),
+    // Live sets per project, counted in the database (not single formats, not archived).
+    db.rpc('project_set_counts'),
+  ]);
+  type Row = { id: string; name: string; shared: boolean; owner_id: string; profiles: { full_name: string | null; email: string } | null };
+  const rows = (data ?? []) as unknown as Row[];
+  const sets = new Map(((counts ?? []) as { project_id: string; sets: number }[]).map((c) => [c.project_id, Number(c.sets)]));
+  return rows.map((p) => ({
     id: p.id, name: p.name, shared: p.shared, owner_id: p.owner_id,
     owner: p.profiles?.full_name ?? p.profiles?.email ?? null,
-    count: new Set((p.renders ?? []).filter((r) => !r.archived_at).map((r) => r.set_id)).size, // live sets, not single formats
+    count: sets.get(p.id) ?? 0,
   }));
 }
 
@@ -43,7 +51,7 @@ export async function createProject(me: Who, name: string, shared: boolean): Pro
   if (same) return same; // one name, one folder
   const { data, error } = await supabaseAdmin().from('projects').insert({ name: n, shared, owner_id: me.id }).select('id').single();
   if (error || !data) throw new Error(error?.message ?? 'Could not create the project.');
-  return (await getProject(me, data.id))!;
+  return (await loadProjects(me.id)).find((p) => p.id === data.id)!; // fresh: the cached list is from before
 }
 
 async function owned(me: Who, id: string) {

@@ -1,27 +1,23 @@
-import { createHash } from 'node:crypto';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { render } from '@/lib/renderer';
-import { previewUrl } from '@/lib/renders';
-import { ROOT } from '@/lib/templates';
+import { previewKey } from '@/lib/previews';
+import { previewPath, publicUrl } from '@/lib/images';
+import { supabaseConfigured } from '@/lib/supabase/admin';
 
-export const runtime = 'nodejs';
-export const maxDuration = 60;
+// Catalog preview: the template format with its sample copy. A light route (no Chromium): it points the
+// browser to the stored image, and only when that image does not exist yet sends it to the route that
+// renders it once. The redirect itself is cached, so a second visit does not even reach the server.
+// Previews this server already saw stored (a stored preview never changes: a new version has a new key).
+const stored = new Set<string>();
 
-// Catalog preview: the template format with its sample copy. Rendered once per template version
-// (manifest hash) and kept in Storage; this route redirects to the stored image.
 export async function GET(_req: Request, { params }: { params: Promise<{ template: string; format: string }> }) {
   const { template, format } = await params;
-  if (!/^[a-z0-9-]+$/.test(template) || !/^[a-z]+$/.test(format)) return new Response('Not found', { status: 404 });
-  let manifest: string;
-  try {
-    manifest = await fs.readFile(path.join(ROOT, 'templates', template, 'manifest.json'), 'utf8');
-  } catch {
-    return new Response('Not found', { status: 404 });
+  const key = await previewKey(template, format);
+  if (!key) return new Response('Not found', { status: 404 });
+  if (!supabaseConfigured()) return new Response('Previews need Supabase', { status: 503 });
+  const url = publicUrl(previewPath(key));
+  if (!stored.has(key)) {
+    const head = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
+    if (head?.ok) stored.add(key);
   }
-  if (!(format in (JSON.parse(manifest).formats ?? {}))) return new Response('Not found', { status: 404 });
-  const version = createHash('sha1').update(manifest).digest('hex').slice(0, 10);
-  const url = await previewUrl(`${template}/${format}-${version}`, async () => (await render({ template, format, slots: {}, fillDefaults: true })).png);
-  if (!url) return new Response('Previews need Supabase', { status: 503 });
-  return Response.redirect(url, 302);
+  if (!stored.has(key)) return Response.redirect(new URL(`/api/preview-render/${template}/${format}`, _req.url), 302);
+  return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800' } });
 }

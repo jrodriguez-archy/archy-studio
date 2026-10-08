@@ -54,14 +54,16 @@ async function openBoard(piece: PieceSource, me: Who): Promise<Board | { lost: s
   const lost = Object.entries(draft?.slots ?? piece.slots).filter(([, v]) => v === '[inline image]').map(([k]) => k);
   if (lost.length) return { lost: `Its ${lost.join(', ')} was sent inline before Canvas existed and was not kept. Ask Claude for a new version with the logo, then open that one.` };
   // Work in progress (by hand or by Claude) picks up where it was left.
+  // Without a draft, what is open is what was saved: one fill for both.
+  const fill = (slots: PieceSource['slots'], edits: PieceSource['edits']) => prepareFill({ template: piece.template, format: piece.format, slots, edits }, '/api/template-files');
   const [plan, savedSlots, replace] = await Promise.all([
-    prepareFill({ template: piece.template, format: piece.format, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits }, '/api/template-files'),
-    prepareFill({ template: piece.template, format: piece.format, slots: piece.slots, edits: piece.edits }, '/api/template-files').then((p) => p.slots),
+    draft ? fill(draft.slots, draft.edits) : fill(piece.slots, piece.edits),
+    draft ? fill(piece.slots, piece.edits).then((p) => p.slots) : null,
     canReplace(me, piece),
   ]);
   return {
     ref: piece.id, format: piece.format, label: formatLabel(piece.format), width: piece.width, height: piece.height, isNew: fresh, canReplace: replace,
-    initial: { slots: plan.slots, edits: draft?.edits ?? piece.edits }, saved: { slots: savedSlots, edits: piece.edits }, plan,
+    initial: { slots: plan.slots, edits: draft?.edits ?? piece.edits }, saved: { slots: savedSlots ?? plan.slots, edits: piece.edits }, plan,
     draft: draft ? { version: draft.version, by: draft.updated_by, note: draft.note } : null,
   };
 }

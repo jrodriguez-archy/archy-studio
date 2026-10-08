@@ -1,9 +1,13 @@
 import { randomUUID } from 'node:crypto';
-import sharp from 'sharp';
 import type { Edits } from './canvas-shared';
+import { PUBLIC, largePath, previewPath, publicUrl, removeImages, thumbPath } from './images';
 import { supabaseAdmin, supabaseConfigured } from './supabase/admin';
 
+export { fileLink, largePath, largeUrl, previewPath, publicUrl, removeImages, thumbPath, thumbUrl } from './images';
+
 const BUCKET = 'renders';
+const YEAR = '31536000';
+const sharpLib = async () => (await import('sharp')).default;
 const SIGNED_URL_SECONDS = 60 * 60 * 24 * 7; // download links last a week
 
 export type SavedRender = { id: string; path: string; url: string };
@@ -53,6 +57,7 @@ export async function replaceRender(input: { id: string; storagePath: string; sl
   }).eq('id', input.id);
   if (error) throw new Error(`Could not update the design: ${error.message}`);
   await supabaseAdmin().storage.from(BUCKET).remove([input.storagePath, thumbPath(input.storagePath)]).catch(() => {});
+  await removeImages([input.storagePath]);
   return { id: input.id, path, url: await signedUrl(path) };
 }
 
@@ -61,10 +66,23 @@ export async function storeFiles(path: string, png: Buffer, upsert: boolean) {
   const db = supabaseAdmin();
   const up = await db.storage.from(BUCKET).upload(path, png, { contentType: 'image/png', upsert });
   if (up.error) throw new Error(`Could not store the render: ${up.error.message}`);
-  // Light WebP for the gallery grid; the PNG stays the download.
-  const thumb = await sharp(png).resize({ width: 640, withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
-  await db.storage.from(BUCKET).upload(thumbPath(path), thumb, { contentType: 'image/webp', upsert: true });
+  await storeImages(path, png);
 }
+
+// The light WebPs people see: 640px for the grid, 1600px for the large view. The PNG stays the download.
+export async function storeImages(path: string, png: Buffer) {
+  const sharp = await sharpLib();
+  const db = supabaseAdmin().storage.from(PUBLIC);
+  const [thumb, large] = await Promise.all([
+    sharp(png).resize({ width: 640, withoutEnlargement: true }).webp({ quality: 82 }).toBuffer(),
+    sharp(png).resize({ width: 1600, withoutEnlargement: true }).webp({ quality: 86 }).toBuffer(),
+  ]);
+  await Promise.all([
+    db.upload(thumbPath(path), thumb, { contentType: 'image/webp', upsert: true, cacheControl: YEAR }),
+    db.upload(largePath(path), large, { contentType: 'image/webp', upsert: true, cacheControl: YEAR }),
+  ]);
+}
+
 
 // Inline images (a partner logo sent as a data URL) move to the uploads bucket, so the record stays
 // small and the piece can still be opened in Canvas.
@@ -138,17 +156,19 @@ export async function signedUrls(paths: string[], seconds = 60 * 60, download = 
   return Object.fromEntries((data ?? []).filter((d) => d.path && d.signedUrl).map((d) => [d.path as string, d.signedUrl as string]));
 }
 
-export const thumbPath = (path: string) => path.replace(/\.png$/, '.thumb.webp');
 
-// Catalog previews: each template format rendered once with its sample copy, kept in Storage.
+// Catalog previews: each template format rendered once with its sample copy, kept in the public bucket
+// (the key carries the manifest's hash, so a changed template gets a new file and a new link).
+export async function previewExists(key: string) {
+  const [dir, name] = [previewPath(key).replace(/\/[^/]+$/, ''), previewPath(key).split('/').pop()!];
+  const { data } = await supabaseAdmin().storage.from(PUBLIC).list(dir, { search: name, limit: 1 });
+  return !!data?.some((f) => f.name === name);
+}
 export async function previewUrl(key: string, make: () => Promise<Buffer>): Promise<string | null> {
   if (!supabaseConfigured()) return null;
-  const db = supabaseAdmin();
-  const path = `previews/${key}.webp`;
-  const signed = await db.storage.from(BUCKET).createSignedUrl(path, 60 * 60 * 24);
-  if (signed.data?.signedUrl) return signed.data.signedUrl;
+  if (await previewExists(key)) return publicUrl(previewPath(key));
+  const sharp = await sharpLib();
   const webp = await sharp(await make()).resize({ width: 900, withoutEnlargement: true }).webp({ quality: 85 }).toBuffer();
-  await db.storage.from(BUCKET).upload(path, webp, { contentType: 'image/webp', upsert: true });
-  const again = await db.storage.from(BUCKET).createSignedUrl(path, 60 * 60 * 24);
-  return again.data?.signedUrl ?? null;
+  await supabaseAdmin().storage.from(PUBLIC).upload(previewPath(key), webp, { contentType: 'image/webp', upsert: true, cacheControl: YEAR });
+  return publicUrl(previewPath(key));
 }

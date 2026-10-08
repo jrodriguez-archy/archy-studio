@@ -1,5 +1,6 @@
 import 'server-only';
 import { randomBytes } from 'node:crypto';
+import { cache } from 'react';
 import { supabaseAdmin } from './supabase/admin';
 import { supabaseServer } from './supabase/server';
 
@@ -43,14 +44,15 @@ export async function createPassword(rawEmail: string, password: string) {
   await db.from('profiles').update({ password_set: true }).eq('email', email);
 }
 
-export async function currentUser() {
+// Once per request (layout and page both ask).
+export const currentUser = cache(async () => {
   const supabase = await supabaseServer();
   const { data } = await supabase.auth.getClaims();
   const id = data?.claims?.sub;
   if (!id) return null;
   const { data: profile } = await supabaseAdmin().from('profiles').select('id, email, full_name, is_admin').eq('id', id).maybeSingle();
   return profile as { id: string; email: string; full_name: string | null; is_admin: boolean } | null;
-}
+});
 
 async function requireAdmin() {
   const me = await currentUser();

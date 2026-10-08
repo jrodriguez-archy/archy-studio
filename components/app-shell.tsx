@@ -19,9 +19,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     { label: 'Resources', items: [{ href: '/install', label: 'Install', icon: 'install' }] },
     ...(me?.is_admin ? [{ label: 'Admin', items: [{ href: '/admin', label: 'Team', icon: 'team' as const }, { href: '/admin/review', label: 'Template review', icon: 'review' as const }] }] : []),
   ];
-  const projects: ProjectLink[] = me ? (await listProjects(me).catch(() => [])).map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id })) : [];
+  const [list, jar] = await Promise.all([me ? listProjects(me).catch(() => []) : [], cookies()]);
+  const projects: ProjectLink[] = list.map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id }));
   const who = me ? { id: me.id, is_admin: me.is_admin } : undefined;
-  const collapsed = (await cookies()).get('sidebar')?.value === 'collapsed';
+  const collapsed = jar.get('sidebar')?.value === 'collapsed';
   return (
     <ShellFrame initialCollapsed={collapsed} sidebar={<Sidebar sections={sections} projects={projects} me={who} email={me?.email ?? ''} />}>
       <MobileNav sections={sections} projects={projects} me={who} email={me?.email ?? ''} />

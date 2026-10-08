@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
-import { PieceGrid } from '@/components/piece-grid';
-import { TYPES, groupSets, loadPieces } from '@/lib/gallery';
+import { GalleryFeed } from '@/components/gallery-feed';
+import { TYPES, loadPieces } from '@/lib/gallery';
 import { listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 
@@ -17,7 +17,6 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
     loadPieces({ userId: mine ? me.id : undefined }),
     listProjects(me).catch(() => []),
   ]);
-  const sets = groupSets(pieces, kind?.formats);
 
   const href = (p: { all?: boolean; type?: string }) => {
     const s = new URLSearchParams();
@@ -46,14 +45,15 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
         </div>
       </PageHeader>
 
-      {sets.length === 0 ? (
-        <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
-          <p className="font-medium">{mine ? 'You have no designs yet' : 'Nothing here yet'}</p>
-          <p className="mt-1 text-muted-foreground">Ask Claude for a design with the Archy Studio plugin. <Link href="/install" className="text-foreground underline underline-offset-4">Install it</Link></p>
-        </div>
-      ) : (
-        <PieceGrid sets={sets} projects={projects} me={me} />
-      )}
+      <GalleryFeed
+        initial={pieces} filter={{ userId: mine ? me.id : undefined }} leadFormats={kind?.formats} projects={projects} me={me}
+        empty={
+      <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
+        <p className="font-medium">{mine ? 'You have no designs yet' : 'Nothing here yet'}</p>
+        <p className="mt-1 text-muted-foreground">Ask Claude for a design with the Archy Studio plugin. <Link href="/install" className="text-foreground underline underline-offset-4">Install it</Link></p>
+      </div>
+        }
+      />
     </>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Download04Icon, PackageIcon, PaintBoardIcon } from '@hugeicons/core-free-icons';
 import { InfoRows, Inspector, StageImage, useInspector } from '@/components/inspector';
@@ -10,7 +9,6 @@ import type { ProjectLink } from '@/components/projects-nav';
 import { ContextActions, MoreActions } from '@/components/action-menu';
 import { useSetActions } from '@/components/set-actions';
 import { StackBadge, StackLayers, stackPad } from '@/components/stack';
-import { useRendersLive } from '@/components/use-renders-live';
 import { canManageSet, formatLabel, humanize, type Piece, type PieceSet } from '@/lib/gallery-shared';
 
 const day = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -26,15 +24,12 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
   const [pick, setPick] = useState<string | null>(null);
   useEffect(() => setPick(null), [openId]);
   const shown = current ? current.pieces.find((p) => p.id === pick) ?? current.lead : null;
-  // New designs, versions and replaced images appear without a reload.
-  const router = useRouter();
-  useRendersLive(() => router.refresh());
 
   return (
     <>
       <div className="columns-2 gap-4 md:columns-3 xl:columns-4">
-        {sets.map((s) => (
-          <SetCard key={s.id} set={s} projects={projects} canManage={canManageSet(s, me, projects)} project={showProject && s.project_id ? names[s.project_id] : undefined} onOpen={() => open(s.id)} />
+        {sets.map((s, i) => (
+          <SetCard key={s.id} set={s} eager={i < 8} projects={projects} canManage={canManageSet(s, me, projects)} project={showProject && s.project_id ? names[s.project_id] : undefined} onOpen={() => open(s.id)} />
         ))}
       </div>
 
@@ -47,7 +42,7 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
           stage={
             <div className="flex h-full w-full flex-col items-center gap-5" onClick={(e) => e.target === e.currentTarget && close()}>
               <div className="flex min-h-0 w-full flex-1 items-center justify-center" onClick={(e) => e.target === e.currentTarget && close()}>
-                <StageImage src={shown.file} placeholder={shown.thumb} alt={`${shown.title} ${formatLabel(shown.format)}`} width={shown.width} height={shown.height} />
+                <StageImage src={shown.large ?? shown.thumb} placeholder={shown.thumb} alt={`${shown.title} ${formatLabel(shown.format)}`} width={shown.width} height={shown.height} />
               </div>
               {current.pieces.length > 1 && <Strip set={current} shown={shown} onPick={setPick} />}
             </div>
@@ -59,7 +54,7 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
   );
 }
 
-function SetCard({ set: s, projects, canManage, project, onOpen }: { set: PieceSet; projects: ProjectLink[]; canManage: boolean; project?: string; onOpen: () => void }) {
+function SetCard({ set: s, eager, projects, canManage, project, onOpen }: { set: PieceSet; eager: boolean; projects: ProjectLink[]; canManage: boolean; project?: string; onOpen: () => void }) {
   const { actions, dialogs } = useSetActions({ set: s, projects, canManage, onOpen });
   const r = s.lead;
   const n = s.pieces.length;
@@ -70,7 +65,7 @@ function SetCard({ set: s, projects, canManage, project, onOpen }: { set: PieceS
         <div className="relative overflow-hidden rounded-lg bg-foreground/[0.04] ring-1 ring-foreground/[0.06]">
           <button type="button" onClick={onOpen} className="block w-full cursor-zoom-in" aria-label={`Open ${s.title}, ${n} format${n > 1 ? 's' : ''}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={r.thumb} alt="" loading="lazy" className={`block w-full ${s.archived_at ? 'opacity-60 grayscale' : ''}`} style={{ aspectRatio: `${r.width} / ${r.height}` }} />
+            <img src={r.thumb} alt="" width={r.width} height={r.height} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" className={`block h-auto w-full ${s.archived_at ? 'opacity-60 grayscale' : ''}`} style={{ aspectRatio: `${r.width} / ${r.height}` }} />
           </button>
           <StackBadge n={n} />
           <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 max-lg:opacity-100">
@@ -104,7 +99,7 @@ function Strip({ set, shown, onPick }: { set: PieceSet; shown: Piece; onPick: (i
         <button key={p.id} type="button" onClick={() => onPick(p.id)} title={`${p.title} · ${formatLabel(p.format)}`}
           className={`flex shrink-0 flex-col items-center gap-1 rounded-md p-1 transition-colors ${p.id === shown.id ? 'bg-[#E6F4FF]' : 'hover:bg-foreground/[0.05]'}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={p.thumb} alt="" className="h-12 w-auto rounded-[2px] ring-1 ring-foreground/[0.08]" style={{ aspectRatio: `${p.width} / ${p.height}` }} />
+          <img src={p.thumb} alt="" decoding="async" className="h-12 w-auto rounded-[2px] ring-1 ring-foreground/[0.08]" style={{ aspectRatio: `${p.width} / ${p.height}` }} />
           <span className={`text-[11px] ${p.id === shown.id ? 'font-medium text-primary' : 'text-foreground/50'}`}>{formatLabel(p.format)}</span>
         </button>
       ))}

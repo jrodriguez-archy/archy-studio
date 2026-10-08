@@ -42,8 +42,7 @@ export class MissingRequired extends Error {
 // fit rules and limits, and every image resolved to a URL under `origin`. The renderer and the Canvas
 // editor share it, so both draw the same piece.
 export async function prepareFill({ template, format, slots: given, fillDefaults = false, edits = {} }: Omit<RenderInput, 'scale'>, origin = ORIGIN): Promise<FillPlan> {
-  const manifest = await loadManifest(template);
-  const config = await loadConfig(template);
+  const [manifest, config] = await Promise.all([loadManifest(template), loadConfig(template)]);
   if (!manifest.formats[format]) throw new Error(`Template ${template} has no format "${format}". Formats: ${Object.keys(manifest.formats).join(', ')}`);
   const unknown = Object.keys(given).filter((k) => !manifest.slots[k]);
   if (unknown.length) throw new Error(`Unknown slots: ${unknown.join(', ')}. Slots: ${Object.keys(manifest.slots).join(', ')}`);
@@ -73,23 +72,25 @@ export async function prepareFill({ template, format, slots: given, fillDefaults
   if (variant && rules.variants?.[variant]?.slots) {
     for (const [k, o] of Object.entries(rules.variants[variant].slots)) rules.slots[k] = { ...(rules.slots[k] as object), ...o };
   }
-  const values: Record<string, string | null> = {};
-  for (const [k, v] of Object.entries(slots)) {
+  // Images and logos resolve together (signed links, remote logos), not one after another.
+  const values: Record<string, string | null> = Object.fromEntries(await Promise.all(Object.entries(slots).map(async ([k, v]) => {
     const type = manifest.slots[k].type;
-    values[k] = !v ? v : type === 'logo' ? await resolveLogo(template, v, origin) : type === 'image' ? await resolveImage(template, v, origin) : v;
-  }
+    return [k, !v ? v : type === 'logo' ? await resolveLogo(template, v, origin) : type === 'image' ? await resolveImage(template, v, origin) : v];
+  })));
   const limitKey = variant ? `${format}--${variant}` : format;
   const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));
   const imageUrls: Record<string, string> = {};
   const iconSvgs: Record<string, string> = {};
-  for (const e of Object.values(edits)) {
-    if (e.image && !imageUrls[e.image]) imageUrls[e.image] = await resolveImage(template, e.image, origin);
-    if (e.icon && !iconSvgs[e.icon]) {
-      const svg = await iconMarkup(e.icon);
-      if (!svg) throw new Error(`Unknown icon: ${e.icon}`);
-      iconSvgs[e.icon] = svg;
-    }
-  }
+  const images = [...new Set(Object.values(edits).map((e) => e.image).filter(Boolean) as string[])];
+  const icons = [...new Set(Object.values(edits).map((e) => e.icon).filter(Boolean) as string[])];
+  await Promise.all([
+    ...images.map(async (i) => { imageUrls[i] = await resolveImage(template, i, origin); }),
+    ...icons.map(async (i) => {
+      const svg = await iconMarkup(i);
+      if (!svg) throw new Error(`Unknown icon: ${i}`);
+      iconSvgs[i] = svg;
+    }),
+  ]);
   return {
     template, format, variant, slots, html: `templates/${template}/${f.html}`, width: f.width, height: f.height,
     fill: { format, formats: Object.keys(manifest.formats), values, rules, limits }, imageUrls, iconSvgs,
@@ -110,13 +111,20 @@ async function resolveLogo(template: string, v: string, origin = ORIGIN): Promis
     const body = await fs.readFile(file);
     return `data:${MIME[path.extname(file)] ?? 'image/png'};base64,${body.toString('base64')}`;
   }
+  // A partner logo from the web is fetched once per server instance (Canvas opens every format with it).
+  const known = remoteLogos.get(src);
+  if (known) return known;
   const res = await fetch(src, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' } });
   if (!res.ok) throw new Error(`Could not load the logo at ${v} (${res.status})`);
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length > 5_000_000) throw new Error(`The logo at ${v} is larger than 5 MB`);
   const type = res.headers.get('content-type')?.split(';')[0] || 'image/png';
-  return `data:${type};base64,${buf.toString('base64')}`;
+  const data = `data:${type};base64,${buf.toString('base64')}`;
+  if (remoteLogos.size > 50) remoteLogos.delete(remoteLogos.keys().next().value!);
+  remoteLogos.set(src, data);
+  return data;
 }
+const remoteLogos = new Map<string, string>();
 
 async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
   if (v.startsWith('asset:')) {

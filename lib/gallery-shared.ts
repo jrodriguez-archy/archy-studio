@@ -3,11 +3,15 @@
 export type Piece = {
   id: string; set_id: string; template: string; title: string; format: string; width: number; height: number; scale: number;
   slots: Record<string, string | null>; created_at: string;
-  user_id: string | null; author: string; project_id: string | null; thumb?: string; file?: string;
+  user_id: string | null; author: string; project_id: string | null; thumb?: string; large?: string; file?: string;
   set_title?: string | null; archived_at?: string | null; edited_at?: string | null;
 };
 
 // Everything made from one brief: its formats, retries and options, shown as one stacked card.
+export type PieceFilter = { userId?: string; projectId?: string; formats?: string[]; archived?: boolean };
+// A gallery view shows the newest PAGE designs first; older ones load as the person scrolls.
+export const PAGE = 120;
+
 export type PieceSet = {
   id: string; title: string; pieces: Piece[]; lead: Piece; templates: string[];
   created_at: string; author: string; user_id: string | null; project_id: string | null;

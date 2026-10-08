@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
 import { PageHeader, Pills } from '@/components/app-shell';
-import { PieceGrid } from '@/components/piece-grid';
-import { TYPES, groupSets, loadPieces } from '@/lib/gallery';
+import { GalleryFeed } from '@/components/gallery-feed';
+import { TYPES, loadPieces } from '@/lib/gallery';
 import { getProject, listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 import { ProjectActions } from './project-actions';
@@ -19,11 +19,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function ProjectPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ type?: string }> }) {
   const [{ id }, { type }] = await Promise.all([params, searchParams]);
   const me = (await currentUser())!;
-  const project = await getProject(me, id);
+  const [project, pieces, projects] = await Promise.all([getProject(me, id), loadPieces({ projectId: id }), listProjects(me)]);
   if (!project) notFound();
   const kind = TYPES.find((t) => t.key === type);
-  const [pieces, projects] = await Promise.all([loadPieces({ projectId: id }, 400), listProjects(me)]);
-  const sets = groupSets(pieces, kind?.formats);
   const href = (t?: string) => (t ? `/projects/${id}?type=${t}` : `/projects/${id}`);
   const canEdit = project.owner_id === me.id || me.is_admin;
 
@@ -45,16 +43,17 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
         <Pills items={[{ href: href(), label: 'All types', active: !kind }, ...TYPES.map((t) => ({ href: href(t.key), label: t.label, active: kind?.key === t.key }))]} />
       </PageHeader>
 
-      {sets.length === 0 ? (
-        <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
-          <p className="font-medium">{kind ? `No ${kind.label.toLowerCase()} designs here` : 'This project is empty'}</p>
-          <p className="mx-auto mt-1 max-w-sm text-muted-foreground">
-            Move designs here from the gallery, or ask Claude to save new ones to “{project.name}”.
-          </p>
-        </div>
-      ) : (
-        <PieceGrid sets={sets} projects={projects} me={me} showProject={false} />
-      )}
+      <GalleryFeed
+        initial={pieces} filter={{ projectId: id }} leadFormats={kind?.formats} projects={projects} me={me} showProject={false}
+        empty={
+      <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
+        <p className="font-medium">{kind ? `No ${kind.label.toLowerCase()} designs here` : 'This project is empty'}</p>
+        <p className="mx-auto mt-1 max-w-sm text-muted-foreground">
+          Move designs here from the gallery, or ask Claude to save new ones to “{project.name}”.
+        </p>
+      </div>
+        }
+      />
     </>
   );
 }

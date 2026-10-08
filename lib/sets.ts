@@ -1,5 +1,5 @@
 import 'server-only';
-import { thumbPath } from './renders';
+import { removeImages, thumbPath } from './images';
 import { supabaseAdmin } from './supabase/admin';
 import { getProject } from './projects';
 
@@ -66,6 +66,7 @@ export async function deleteSet(me: Who, setId: string) {
   const paths = rows.flatMap((r) => [r.storage_path, thumbPath(r.storage_path)]);
   const { error: se } = await db.storage.from('renders').remove(paths);
   if (se) throw new Error(`Could not delete the files: ${se.message}`);
+  await removeImages(rows.map((r) => r.storage_path));
   const { error } = await db.from('renders').delete().eq('set_id', setId);
   if (error) throw new Error(error.message);
 }

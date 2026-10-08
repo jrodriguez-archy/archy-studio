@@ -28,7 +28,7 @@ async function run<T>(id: string, fn: (me: { id: string; is_admin: boolean }, pi
 export async function prepareAction(id: string, slots: Record<string, string | null>, edits: Edits) {
   return run(id, async (_me, piece) => {
     const given = Object.fromEntries(Object.keys(piece.slots).map((k) => [k, slots[k] ?? null]));
-    const plan: FillPlan = await prepareFill({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots: given, edits }, '/api/template-files');
+    const plan: FillPlan = await prepareFill({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots: given, edits }, '/api/template-files');
     return { plan };
   });
 }

@@ -1,5 +1,10 @@
 # Changelog
 
+## archy-studio 0.9.0 (2026-10-08)
+
+- Copy that does not fit gets options instead of a plain refusal: **shorter copy** (with the exact maximum) or **smaller text**, a preview of the same copy with the type reduced to fit (down to 70%, never under 14px). The requester chooses; `render` takes `smaller_text: true` for the second, and the design remembers it (Canvas and later renders keep the smaller text).
+- Template QA and review rounds go through every design and theme of templates that offer several; Template review names them ("Post · The Arch, Navy").
+
 ## archy-studio 0.8.0 (2026-10-08)
 
 - Designs and themes: the AE Spotlight comes in five designs (Meet Name, The Arch, Grid Card, Mosaic, Forum) and three themes (White, Royal Blue, Navy), 30 artboards from the `Master - Ads` file. `render`, `get_template` and the render API take an optional `design` and `theme`; the default is Meet Name in White, so nothing changes for designs made before.

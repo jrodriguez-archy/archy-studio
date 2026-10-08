@@ -360,7 +360,10 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     later.forEach((n) => { n.dataset.prevDisplay = n.style.display; n.style.display = 'none'; });
     const base = baseline.get(role);
     const maxLines = pick(r.maxLines) ?? 1;
-    const minScale = pick(r.minScale) ?? 0.85;
+    // "Smaller text" (rules.shrinkTo, chosen by the requester when copy does not fit): the type may go
+    // further down, to that scale, but never under 14px.
+    const designMin = pick(r.minScale) ?? 0.85;
+    const minScale = rules.shrinkTo ? Math.min(designMin, Math.max(rules.shrinkTo, 14 / (base?.fontSize || 14))) : designMin;
     // Containers: this slot may not make them worse than they are with its sample copy, so one long
     // slot is reported once instead of blocking every slot after it.
     const keyOf = (c) => `${c.node}|${c.reason ?? ''}`;

@@ -23,7 +23,7 @@ Brief first, then the best template:
 3. Ask once, in one short message, for what would unlock a better template or is missing (a city photo, the partner logo, the time...). Never invent facts.
 4. With the answers, call match_templates again and pick the best eligible template (offer two when they are equally good). If none is eligible, say what is missing; never force a template.
 5. get_template for its slots and limits, then render. Each template has essential content (always filled) and minor optional details: an optional detail you do not have is left out with its label (no time: the date stays alone).
-6. If copy does not fit, the format is refused with the exact maximum: shorten keeping the requester's wording, then render again. Never deliver a refused render. Short copy needs no padding: the design fills its room by itself (the headline grows up to 125%, the logo stays at the bottom), so never add words just to fill space.
+6. If copy does not fit, the format is not delivered and the answer brings two options: shorter copy (with the exact maximum) and, when it works, smaller text (a preview, down to 70%). Show both and let the requester choose; offer a shorter version written by you (same facts, their wording). If they choose smaller text, render again with smaller_text: true. Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline grows up to 125%, the logo stays at the bottom), so never add words just to fill space.
 7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, and what was left out.
 
 Designs and themes: some templates (list_templates shows designs and themes) come in several designs (layouts) and themes (White, Royal Blue, Navy grounds) with the same slots. Use the default unless the requester asks for one or for options; to offer options, render two or three different designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits, and some slots exist only in some designs (only_in_designs). Changing the design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
@@ -299,19 +299,20 @@ const handler = createMcpHandler(
       'render',
       {
         title: 'Render a design',
-        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts; without a photo the no-photo version is used. Copy that does not fit is refused with the exact maximum so it can be shortened.',
+        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts; without a photo the no-photo version is used. Copy that does not fit is not delivered: the answer gives two options, shorter copy (with the exact maximum) or smaller text (a preview at down to 70%), for the requester to choose.',
         inputSchema: z.object({
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"]. Default: all.'),
           design: z.string().optional().describe('Design id, on templates that offer several (list_templates), e.g. "the-arch". Default: the template\'s default design.'),
           theme: z.string().optional().describe('Theme id, on templates that offer several (list_templates), e.g. "navy". Default: the template\'s default theme.'),
+          smaller_text: z.boolean().optional().describe('Only when the requester chose "smaller text" after a render said the copy does not fit: the copy keeps its wording and may shrink to 70% (never under 14px).'),
           slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" or an https URL to a cutout PNG. Leave out (or null) what you do not have.'),
           project: z.string().optional().describe('Project to file the designs in (name or id from list_projects). Only when the requester mentions one.'),
           set: z.string().optional().describe('Set id returned by an earlier render of the same brief. Pass it for every later render of that brief (other formats, retries, other templates or options) so the gallery stacks them together.'),
         }),
         annotations: { readOnlyHint: true, openWorldHint: false },
       },
-      async ({ template, formats, design, theme, slots, project, set }, ctx) => {
+      async ({ template, formats, design, theme, slots, project, set, smaller_text: smallerText = false }, ctx) => {
         let projectId: string | null = null;
         if (project) {
           const me = await whoIs(ctx);
@@ -333,10 +334,12 @@ const handler = createMcpHandler(
         const origin = publicOrigin(ctx);
         const content: Content[] = [];
         const refused: string[] = [];
+        // Formats whose copy fits in smaller text (offered as an option).
+        const smallerOption: string[] = [];
         for (const format of wanted) {
           let out;
           try {
-            out = await render({ template, format, design, theme, slots });
+            out = await render({ template, format, design, theme, slots, smallerText });
           } catch (e) {
             if (e instanceof MissingRequired) {
               const have = await factsFromSlots(template, slots);
@@ -352,25 +355,37 @@ const handler = createMcpHandler(
           const { png, report, variant, slots: used } = out;
           if (!report.ok) {
             refused.push(`${format}: ` + report.errors.map((e) => `${e.slot ?? e.node}: ${e.message}`).join(' | '));
+            // The other option: the same copy in smaller text. A preview only (not saved): the requester
+            // chooses, and "smaller text" renders again with smaller_text.
+            if (!smallerText) {
+              const small = await render({ template, format, design, theme, slots, smallerText: true }).catch(() => null);
+              if (small?.report.ok) {
+                const shrunk = Object.entries(small.report.slots).filter(([, x]) => x.scale && x.scale < 1).map(([k, x]) => `${k} at ${Math.round(x.scale! * 100)}%`);
+                content.push({ type: 'image', data: small.png.toString('base64'), mimeType: 'image/png' });
+                content.push({ type: 'text', text: `${files[format]?.label ?? format}: the copy does not fit at the normal size. Option "smaller text" (preview above, not saved): it fits as written with ${shrunk.join(', ') || 'the type reduced'}.` });
+                smallerOption.push(format);
+              }
+            }
             continue;
           }
           // The 2x file goes to the shared gallery (Supabase) and the link is a signed download.
           // Without Supabase configured, the link re-renders the same piece (every decision explicit).
           let download: string;
           const saved = supabaseConfigured()
-            ? await render({ template, format, design, theme, slots, scale: 2 }).then((hi) => saveRender({
+            ? await render({ template, format, design, theme, slots, smallerText, scale: 2 }).then((hi) => saveRender({
                 userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId, setId, variant: hi.variant,
-                design: hi.design, theme: hi.theme,
+                design: hi.design, theme: hi.theme, smallerText,
               }))
             : null;
           if (saved) download = saved.url;
           else {
-            const q = new URLSearchParams({ template, format, scale: '2', ...(combo ? { design: combo.design, theme: combo.theme } : {}) });
+            const q = new URLSearchParams({ template, format, scale: '2', ...(combo ? { design: combo.design, theme: combo.theme } : {}), ...(smallerText ? { smaller_text: '1' } : {}) });
             for (const [k, v] of Object.entries(used)) q.set(`slot.${k}`, v ?? '');
             download = `${origin}/api/render?${q.toString()}`;
           }
           const notes: string[] = [];
           if (combo) notes.push(`${m.designs![combo.design].label} design, ${m.themes![combo.theme].label} theme`);
+          if (smallerText) notes.push('smaller text, as chosen');
           if (variant) notes.push(`${m.variants?.[variant]?.label ?? variant} version`);
           const derived = Object.entries(used).filter(([k, v]) => v && !slots[k] && m.slots[k].type === 'text').map(([k, v]) => `${k} "${v}" (derived)`);
           if (derived.length) notes.push(...derived);
@@ -387,10 +402,16 @@ const handler = createMcpHandler(
           });
         }
         if (refused.length) {
-          content.push({ type: 'text', text: `Not rendered, the copy does not fit. Shorten and render again:\n${refused.join('\n')}` });
+          content.push({ type: 'text', text: [
+            'Not rendered: the copy does not fit at the normal size. Give the requester the options and let them choose (never pick for them):',
+            `- Shorter copy: rewrite it within the maximum, same facts, and render again.\n${refused.join('\n')}`,
+            smallerOption.length
+              ? `- Smaller text (${smallerOption.join(', ')}): keeps the copy as written; the preview is above. If they choose it, render again with smaller_text: true.`
+              : '- Smaller text does not make it fit either: only shorter copy works here.',
+          ].join('\n') });
         }
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the designs stay together in the gallery).` });
-        return { isError: refused.length === wanted.length, content };
+        return { isError: refused.length === wanted.length && !smallerOption.length, content };
       },
     );
   },

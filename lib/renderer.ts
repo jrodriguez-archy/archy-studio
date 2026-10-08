@@ -41,8 +41,8 @@ let componentsJs: string | null = null;
 
 export type { RenderReport };
 
-export async function render({ template, format, design, theme, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false, autofix = false }: RenderInput) {
-  const plan = await prepareFill({ template, format, design, theme, slots: given, fillDefaults, edits });
+export async function render({ template, format, design, theme, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false, autofix = false, smallerText = false }: RenderInput) {
+  const plan = await prepareFill({ template, format, design, theme, slots: given, fillDefaults, edits, smallerText });
   const { variant, slots, width, height } = plan;
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
   editsJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'edits.js'), 'utf8');

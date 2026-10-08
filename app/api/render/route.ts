@@ -8,7 +8,7 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   if (!body?.template || !body?.format) return Response.json({ error: 'template and format are required' }, { status: 400 });
-  return respond({ template: body.template, format: body.format, design: body.design, theme: body.theme, slots: body.slots ?? {}, scale: body.scale }, new URL(req.url));
+  return respond({ template: body.template, format: body.format, design: body.design, theme: body.theme, smallerText: !!body.smaller_text, slots: body.slots ?? {}, scale: body.scale }, new URL(req.url));
 }
 
 export async function GET(req: Request) {
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   for (const [k, v] of url.searchParams) if (k.startsWith('slot.')) slots[k.slice(5)] = v === '' ? null : v;
   // No slot params at all = a preview of the template with its sample copy.
   const fillDefaults = Object.keys(slots).length === 0;
-  return respond({ template, format, design: url.searchParams.get('design'), theme: url.searchParams.get('theme'), slots, scale: Number(url.searchParams.get('scale') ?? 1), fillDefaults }, url);
+  return respond({ template, format, design: url.searchParams.get('design'), theme: url.searchParams.get('theme'), smallerText: url.searchParams.get('smaller_text') === '1', slots, scale: Number(url.searchParams.get('scale') ?? 1), fillDefaults }, url);
 }
 
 async function respond(input: Parameters<typeof render>[0], url: URL) {

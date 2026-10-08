@@ -18,6 +18,8 @@ export type PieceSource = {
   id: string; template: string; format: string; slots: Record<string, string | null>; edits: Edits;
   /** Design and theme of templates that offer several (null: the template's default). */
   design: string | null; theme: string | null;
+  /** Copy kept as written in smaller text (down to 70%) instead of shortened. */
+  smaller_text?: boolean;
   set_id: string | null; set_title: string | null; project_id: string | null; user_id: string | null; storage_path: string;
   width: number; height: number;
 };
@@ -35,7 +37,7 @@ const filesOf = (manifest: Manifest, piece: { design: string | null; theme: stri
 const comboKey = (manifest: Manifest, p: { design: string | null; theme: string | null }) =>
   manifest.default ? `${p.design || manifest.default.design}--${p.theme || manifest.default.theme}` : '';
 
-const COLUMNS = 'id, template, format, slots, edits, design, theme, set_id, set_title, project_id, user_id, storage_path, width, height';
+const COLUMNS = 'id, template, format, slots, edits, design, theme, smaller_text, set_id, set_title, project_id, user_id, storage_path, width, height';
 
 // Once per request (the page title and the page both ask).
 export const loadSource = cache(async (ref: string): Promise<PieceSource | null> => {

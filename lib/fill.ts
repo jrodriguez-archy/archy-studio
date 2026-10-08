@@ -27,6 +27,8 @@ export type RenderInput = {
   scale?: number;
   /** Previews only: slots not given keep the template's sample copy. */
   fillDefaults?: boolean;
+  /** The requester chose "smaller text": copy that does not fit may shrink to 70% (never under 14px). */
+  smallerText?: boolean;
   /** Hand edits from Canvas, applied after the fill. */
   edits?: Edits;
   /** Also describe the piece's components (scripts/components.js), for the Canvas tools of the MCP. */
@@ -34,6 +36,9 @@ export type RenderInput = {
   /** Apply the Inspector's automatic fixes in the page (several rounds) and return the fixed edits. */
   autofix?: boolean;
 };
+
+// How far "smaller text" lets copy shrink (the design's own floor is usually 85%).
+export const SMALLER_TEXT = 0.7;
 
 export class MissingRequired extends Error {
   constructor(public slots: string[]) {
@@ -44,7 +49,7 @@ export class MissingRequired extends Error {
 // Everything decided before the page opens: slot values (given, sample or derived), the variant, the
 // fit rules and limits, and every image resolved to a URL under `origin`. The renderer and the Canvas
 // editor share it, so both draw the same piece.
-export async function prepareFill({ template, format, design, theme, slots: given, fillDefaults = false, edits = {} }: Omit<RenderInput, 'scale'>, origin = ORIGIN): Promise<FillPlan> {
+export async function prepareFill({ template, format, design, theme, slots: given, fillDefaults = false, edits = {}, smallerText = false }: Omit<RenderInput, 'scale'>, origin = ORIGIN): Promise<FillPlan> {
   const [manifest, config] = await Promise.all([loadManifest(template), loadConfig(template)]);
   const combo = resolveCombo(manifest, design, theme);
   const files = comboFormats(manifest, combo);
@@ -77,6 +82,7 @@ export async function prepareFill({ template, format, design, theme, slots: give
   if (!f) throw new Error(`Template ${template} variant ${variant} has no format "${format}"`);
 
   const rules = await loadRules(template, manifest);
+  if (smallerText) rules.shrinkTo = SMALLER_TEXT;
   if (variant && rules.variants?.[variant]?.slots) {
     for (const [k, o] of Object.entries(rules.variants[variant].slots)) rules.slots[k] = { ...(rules.slots[k] as object), ...o };
   }

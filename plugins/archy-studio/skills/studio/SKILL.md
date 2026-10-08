@@ -25,7 +25,10 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
    - Short copy needs no padding: the design fills its room by itself (the headline grows, the logo stays at the bottom). Never add words just to fill space.
    - Dates in house style, short: `Jan 28 – 30, 2027` (abbreviated month, no weekday, the month once when it repeats). Use the full form only when the brief asks for it and it fits.
 7. **Render.** Call `render` with the template, the slots, the formats they asked for (all formats when they did not say) and the `design` and `theme` when not the default.
-   - If a format comes back **not rendered** because the copy does not fit, rewrite it shorter within the maximum the tool reports, with the same facts (`San Francisco Bay Area, CA` → `SF Bay Area, CA`), and render again. Never cut a phrase or a name in the middle. Tell them what you shortened. If shortening would change a fact (a name, a title), ask instead.
+   - If a format comes back **not rendered** because the copy does not fit, give them the choice, in one short message:
+     - **Shorter copy**: your rewrite within the maximum the tool reports, same facts (`San Francisco Bay Area, CA` → `SF Bay Area, CA`). Never cut a phrase or a name in the middle.
+     - **Smaller text**: when the answer includes its preview, show it and say how much the text shrank ("the name at 81%"). It keeps their wording.
+     Render what they choose: the shorter copy, or the same copy with `smaller_text: true`. When smaller text does not fit either, only shorter copy works: say so, and ask before changing a fact (a name, a title).
    - Never deliver a format that was not rendered.
    - **One brief, one set.** Every render answer ends with `Set: <id>`. Pass that id as `set` to every later render of the same brief (more formats, a retry after shortening copy, another template or option), so the gallery stacks them as one card. A new brief starts without `set`.
    - **Event page cover.** When the template has a `cover` in `list_templates`, offer the matching event page cover (1200×900, for the Webflow event page) in one line after delivering. If they want it, render it with the same facts and the same `set`.

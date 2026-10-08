@@ -32,7 +32,7 @@ async function findPiece(me: Who, ref?: string): Promise<{ piece: PieceSource; d
 }
 
 async function describe(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
-  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots, edits, inspect: true });
+  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots, edits, inspect: true });
   return { png: out.png, report: out.report, comps: out.inspected!.comps, tokens: out.inspected!.tokens, review: out.inspected!.review };
 }
 
@@ -176,7 +176,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
   }
   // fix: 'all' runs the Inspector's own fixes in the page (several rounds), like Fix all in Canvas.
   if (input.fix === 'all') await working('Fixing the Inspector’s suggestions');
-  const after = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots, edits: cleanEdits(edits), inspect: true, autofix: input.fix === 'all' });
+  const after = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots, edits: cleanEdits(edits), inspect: true, autofix: input.fix === 'all' });
   const final = after.fixed ? after.fixed : edits;
   const fixedCount = after.fixed ? Object.keys(after.fixed).filter((id) => JSON.stringify(after.fixed![id]) !== JSON.stringify(edits[id])).length : 0;
   const tips = after.inspected?.review ?? [];
@@ -196,7 +196,7 @@ export async function saveCanvas(me: Who, ref?: string) {
 
 export async function downloadCanvas(me: Who, ref?: string) {
   const { piece, draft } = await findPiece(me, ref);
-  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits, scale: 2 });
+  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits, scale: 2 });
   return storeExport(out.png, `${piece.template}-${piece.format}.png`);
 }
 

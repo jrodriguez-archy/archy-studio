@@ -30,6 +30,7 @@ export async function saveRender(input: {
   setTitle?: string | null;
   variant?: string | null;
   design?: string | null;
+  smallerText?: boolean;
   theme?: string | null;
   edits?: Edits;
   parentId?: string | null;
@@ -43,7 +44,7 @@ export async function saveRender(input: {
   const ins = await db.from('renders').insert({
     id, user_id: input.userId, template: input.template, format: input.format, slots: await keepInlineImages(input.userId, input.slots),
     storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp', project_id: input.projectId ?? null, set_id: input.setId ?? null,
-    set_title: input.setTitle ?? null, variant: input.variant ?? null, design: input.design ?? null, theme: input.theme ?? null, edits: input.edits ?? {}, parent_id: input.parentId ?? null, edited_at: input.parentId ? new Date().toISOString() : null,
+    set_title: input.setTitle ?? null, variant: input.variant ?? null, design: input.design ?? null, theme: input.theme ?? null, smaller_text: input.smallerText ?? false, edits: input.edits ?? {}, parent_id: input.parentId ?? null, edited_at: input.parentId ? new Date().toISOString() : null,
   });
   if (ins.error) throw new Error(`Could not record the render: ${ins.error.message}`);
   return { id, path, url: await signedUrl(path) };

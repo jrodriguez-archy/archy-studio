@@ -1,5 +1,5 @@
 import 'server-only';
-import { cleanEdits, THEME, type Edits, type Layout, type NodeEdit, type Preset } from './canvas-shared';
+import { cleanEdits, RECOLOR, type Edits, type Layout, type NodeEdit, type Preset } from './canvas-shared';
 import { loadSet, loadSource, type PieceSource } from './canvas';
 import { saveEdited } from './canvas-render';
 import { iconMarkup, searchIcons } from './icons';
@@ -7,7 +7,7 @@ import { render, type InspectedComp } from './renderer';
 import { storeExport } from './renders';
 import { supabaseAdmin } from './supabase/admin';
 import { clearDraft, getDraft, markClaude, saveDraft, type Draft } from './drafts';
-import { loadConfig } from './templates';
+import { loadConfig, loadManifest } from './templates';
 
 export { clearDraft, getDraft, saveDraft };
 
@@ -32,7 +32,7 @@ async function findPiece(me: Who, ref?: string): Promise<{ piece: PieceSource; d
 }
 
 async function describe(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
-  const out = await render({ template: piece.template, format: piece.format, slots, edits, inspect: true });
+  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots, edits, inspect: true });
   return { png: out.png, report: out.report, comps: out.inspected!.comps, tokens: out.inspected!.tokens, review: out.inspected!.review };
 }
 
@@ -46,18 +46,19 @@ export async function getCanvas(me: Who, ref?: string) {
   const byId = new Map(d.comps.map((c) => [c.id, c]));
   const depth = (c: InspectedComp): number => (c.parent ? 1 + depth(byId.get(c.parent)!) : 0);
   const lines = d.comps.map((c) => `${'  '.repeat(depth(c))}- ${c.name} [${KIND[c.kind] ?? c.kind} · id ${c.id}]${c.text ? `: "${c.text.replace(/\s+/g, ' ').trim()}"` : ''}${c.layout ? ` (${c.layout})` : ''}${c.slot || c.textSlot ? ' (from the brief)' : ''}${c.hidden ? ' (hidden)' : ''}`);
-  const [config, set] = await Promise.all([loadConfig(piece.template), loadSet(piece)]);
+  const [config, set, manifest] = await Promise.all([loadConfig(piece.template), loadSet(piece), loadManifest(piece.template)]);
   const others = set.pieces.filter((p) => p.id !== piece.id);
   return {
     piece, png: d.png,
     text: [
-      `Canvas design ${piece.id}: ${config.title}, ${piece.format} ${piece.width}×${piece.height}. Theme: ${edits[THEME]?.preset ?? 'as designed'}.`,
-      ...(others.length ? [`Other formats of this design (same set; each its own canvas id): ${others.map((p) => `${p.format} ${p.id}`).join(', ')}. In Canvas, copy, images, theme and styles follow between synced formats while it is open; otherwise edit each one.`] : []),
+      `Canvas design ${piece.id}: ${config.title}${comboLine(manifest, piece)}, ${piece.format} ${piece.width}×${piece.height}. Recolour: ${edits[RECOLOR]?.preset ?? 'none (as designed)'}.`,
+      ...(others.length ? [`Other formats of this design (same set; each its own canvas id): ${others.map((p) => `${p.format} ${p.id}`).join(', ')}. In Canvas, copy, images, recolour and styles follow between synced formats while it is open; otherwise edit each one.`] : []),
       'Components (refer to them by id, e.g. component: "G5O-1"; a name works when it is unique):',
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,
       ...(d.review.length ? ['Inspector suggestions (fix them yourself: edit_canvas with fix: "all", or your own change):', ...d.review.map((t) => `- ${t.title}: ${t.detail} [id ${t.id}]`)] : []),
-      'Themes: dark, blue, sky, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
+      'Recolour presets: dark, blue, sky, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
+      ...(manifest.default ? [`This template also comes in other designs (${Object.keys(manifest.designs ?? {}).join(', ')}) and themes (${Object.keys(manifest.themes ?? {}).join(', ')}): those are drawn by render with design/theme, not by a recolour.`] : []),
     ].join('\n'),
   };
 }
@@ -83,7 +84,7 @@ export type CanvasChange = {
   reset?: boolean;
 };
 
-export async function editCanvas(me: Who, input: { piece?: string; changes: CanvasChange[]; theme?: Preset; fix?: 'all'; note?: string }) {
+export async function editCanvas(me: Who, input: { piece?: string; changes: CanvasChange[]; recolor?: Preset; fix?: 'all'; note?: string }) {
   const { piece, draft } = await findPiece(me, input.piece);
   const slots = { ...(draft?.slots ?? piece.slots) };
   const edits: Edits = structuredClone(draft?.edits ?? piece.edits);
@@ -97,7 +98,7 @@ export async function editCanvas(me: Who, input: { piece?: string; changes: Canv
   }
 }
 
-async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, string | null>, edits: Edits, input: { changes: CanvasChange[]; theme?: Preset; fix?: 'all' }, working: (s: string | null) => Promise<void>) {
+async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, string | null>, edits: Edits, input: { changes: CanvasChange[]; recolor?: Preset; fix?: 'all' }, working: (s: string | null) => Promise<void>) {
   const before = await describe(piece, slots, edits);
   const tokens = before.tokens;
   const edit = (id: string, e: NodeEdit) => {
@@ -127,7 +128,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
   const done: string[] = [];
   const touched = (input.changes ?? []).map((ch) => find(ch.component).name);
   if (touched.length) await working(`Editing ${[...new Set(touched)].slice(0, 3).join(', ')}`);
-  if (input.theme) { edit(THEME, { preset: input.theme }); done.push(`the ${input.theme} theme`); }
+  if (input.recolor) { edit(RECOLOR, { preset: input.recolor }); done.push(`the ${input.recolor} recolour`); }
   for (const ch of input.changes ?? []) {
     const c = find(ch.component);
     if (ch.reset) {
@@ -175,7 +176,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
   }
   // fix: 'all' runs the Inspector's own fixes in the page (several rounds), like Fix all in Canvas.
   if (input.fix === 'all') await working('Fixing the Inspector’s suggestions');
-  const after = await render({ template: piece.template, format: piece.format, slots, edits: cleanEdits(edits), inspect: true, autofix: input.fix === 'all' });
+  const after = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots, edits: cleanEdits(edits), inspect: true, autofix: input.fix === 'all' });
   const final = after.fixed ? after.fixed : edits;
   const fixedCount = after.fixed ? Object.keys(after.fixed).filter((id) => JSON.stringify(after.fixed![id]) !== JSON.stringify(edits[id])).length : 0;
   const tips = after.inspected?.review ?? [];
@@ -195,8 +196,15 @@ export async function saveCanvas(me: Who, ref?: string) {
 
 export async function downloadCanvas(me: Who, ref?: string) {
   const { piece, draft } = await findPiece(me, ref);
-  const out = await render({ template: piece.template, format: piece.format, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits, scale: 2 });
+  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits, scale: 2 });
   return storeExport(out.png, `${piece.template}-${piece.format}.png`);
 }
 
 const list = (xs: string[]) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+
+// "The Arch · Navy" on templates that offer several designs and themes.
+function comboLine(manifest: Awaited<ReturnType<typeof loadManifest>>, piece: PieceSource) {
+  if (!manifest.default) return '';
+  const d = piece.design || manifest.default.design, t = piece.theme || manifest.default.theme;
+  return ` (design ${d}, theme ${t})`;
+}

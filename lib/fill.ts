@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { Edits, FillPlan } from './canvas-shared';
 import { iconMarkup } from './icons';
 import { supabaseAdmin } from './supabase/admin';
-import { ROOT, loadConfig, loadLibrary, loadManifest, loadRules } from './templates';
+import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo } from './templates';
 
 // Deciding a piece before any page is opened: slot values, variant, fit rules, resolved images and
 // icons. No browser here, so pages and actions that only need the fill stay light (the renderer, with
@@ -20,6 +20,9 @@ export const MIME: Record<string, string> = {
 export type RenderInput = {
   template: string;
   format: string;
+  /** The design and theme to draw (templates that offer them); each defaults to the template's default. */
+  design?: string | null;
+  theme?: string | null;
   slots: Record<string, string | null>;
   scale?: number;
   /** Previews only: slots not given keep the template's sample copy. */
@@ -41,9 +44,13 @@ export class MissingRequired extends Error {
 // Everything decided before the page opens: slot values (given, sample or derived), the variant, the
 // fit rules and limits, and every image resolved to a URL under `origin`. The renderer and the Canvas
 // editor share it, so both draw the same piece.
-export async function prepareFill({ template, format, slots: given, fillDefaults = false, edits = {} }: Omit<RenderInput, 'scale'>, origin = ORIGIN): Promise<FillPlan> {
+export async function prepareFill({ template, format, design, theme, slots: given, fillDefaults = false, edits = {} }: Omit<RenderInput, 'scale'>, origin = ORIGIN): Promise<FillPlan> {
   const [manifest, config] = await Promise.all([loadManifest(template), loadConfig(template)]);
-  if (!manifest.formats[format]) throw new Error(`Template ${template} has no format "${format}". Formats: ${Object.keys(manifest.formats).join(', ')}`);
+  const combo = resolveCombo(manifest, design, theme);
+  const files = comboFormats(manifest, combo);
+  if (!files[format]) throw new Error(`Template ${template} has no format "${format}". Formats: ${Object.keys(files).join(', ')}`);
+  // Files of this format and combo are keyed `<format>--<design>--<theme>` (just `<format>` for the default).
+  const fileKey = combo?.key ? `${format}--${combo.key}` : format;
   const unknown = Object.keys(given).filter((k) => !manifest.slots[k]);
   if (unknown.length) throw new Error(`Unknown slots: ${unknown.join(', ')}. Slots: ${Object.keys(manifest.slots).join(', ')}`);
 
@@ -59,25 +66,31 @@ export async function prepareFill({ template, format, slots: given, fillDefaults
   }
   // Everything not marked optional is essential: a template never goes out half empty.
   const optional = new Set(config.optional ?? []);
-  const missingEssential = Object.keys(manifest.slots).filter((k) => !optional.has(k) && !slots[k] && slotInFormat(manifest, k, format));
+  const missingEssential = Object.keys(manifest.slots).filter((k) => !optional.has(k) && !slots[k] && slotInFormat(manifest, k, fileKey));
   if (missingEssential.length && !fillDefaults) throw new MissingRequired(missingEssential);
 
   // Variant: the first one whose condition matches (e.g. no photo → "no-photo").
-  const variant = Object.entries(manifest.variants ?? {}).find(([, v]) => (v.when?.empty ?? []).every((k) => !slots[k]))?.[0] ?? null;
+  // A chosen design × theme has no automatic variants.
+  const variant = combo?.key ? null : Object.entries(manifest.variants ?? {}).find(([, v]) => (v.when?.empty ?? []).every((k) => !slots[k]))?.[0] ?? null;
 
-  const f = variant ? manifest.variants![variant].formats[format] : manifest.formats[format];
+  const f = combo?.key ? files[format] : variant ? manifest.variants![variant].formats[format] : manifest.formats[format];
   if (!f) throw new Error(`Template ${template} variant ${variant} has no format "${format}"`);
 
   const rules = await loadRules(template, manifest);
   if (variant && rules.variants?.[variant]?.slots) {
     for (const [k, o] of Object.entries(rules.variants[variant].slots)) rules.slots[k] = { ...(rules.slots[k] as object), ...o };
   }
+  const byDesign = combo && rules.designs?.[combo.design];
+  if (byDesign) {
+    Object.assign(rules.slots, byDesign.slots ?? {});
+    if (byDesign.containers) rules.containers = byDesign.containers;
+  }
   // Images and logos resolve together (signed links, remote logos), not one after another.
   const values: Record<string, string | null> = Object.fromEntries(await Promise.all(Object.entries(slots).map(async ([k, v]) => {
     const type = manifest.slots[k].type;
     return [k, !v ? v : type === 'logo' ? await resolveLogo(template, v, origin) : type === 'image' ? await resolveImage(template, v, origin) : v];
   })));
-  const limitKey = variant ? `${format}--${variant}` : format;
+  const limitKey = combo?.key ? fileKey : variant ? `${format}--${variant}` : format;
   const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));
   const imageUrls: Record<string, string> = {};
   const iconSvgs: Record<string, string> = {};
@@ -92,7 +105,7 @@ export async function prepareFill({ template, format, slots: given, fillDefaults
     }),
   ]);
   return {
-    template, format, variant, slots, html: `templates/${template}/${f.html}`, width: f.width, height: f.height,
+    template, format, design: combo?.design ?? null, theme: combo?.theme ?? null, variant, slots, html: `templates/${template}/${f.html}`, width: f.width, height: f.height,
     fill: { format, formats: Object.keys(manifest.formats), values, rules, limits }, imageUrls, iconSvgs,
   };
 }

@@ -9,9 +9,11 @@ export const maxDuration = 60;
 // scripts/warm-previews.ts makes them all after a deploy, so people rarely land here.
 export async function GET(_req: Request, { params }: { params: Promise<{ template: string; format: string }> }) {
   const { template, format } = await params;
-  const key = await previewKey(template, format);
+  const q = new URL(_req.url).searchParams;
+  const design = q.get('design'), theme = q.get('theme');
+  const key = await previewKey(template, format, design, theme);
   if (!key) return new Response('Not found', { status: 404 });
-  const url = await previewUrl(key, async () => (await render({ template, format, slots: {}, fillDefaults: true })).png);
+  const url = await previewUrl(key, async () => (await render({ template, format, design, theme, slots: {}, fillDefaults: true })).png);
   if (!url) return new Response('Previews need Supabase', { status: 503 });
   return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': 'public, max-age=60' } });
 }

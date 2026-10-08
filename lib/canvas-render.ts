@@ -13,7 +13,7 @@ type Who = { id: string; is_admin: boolean };
 // Render the edited piece at 2x. Copy that does not fit is refused, as in the MCP.
 async function renderEdited(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
   // Nothing blocks a save: the Inspector suggests, the person decides.
-  return render({ template: piece.template, format: piece.format, slots: pick(piece, slots), edits: cleanEdits(edits), scale: 2 });
+  return render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots: pick(piece, slots), edits: cleanEdits(edits), scale: 2 });
 }
 
 // Only the slots the template has (the client cannot add others).
@@ -23,7 +23,7 @@ function pick(piece: PieceSource, slots: Record<string, string | null>) {
 
 export async function exportEdited(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
   const out = await renderEdited(piece, slots, edits);
-  return storeExport(out.png, `${piece.template}-${piece.format}.png`);
+  return storeExport(out.png, `${[piece.template, piece.design, piece.theme, piece.format].filter(Boolean).join('-')}.png`);
 }
 
 // A new design joins `set` when given (a format added to an existing set); otherwise it starts its own.
@@ -36,7 +36,7 @@ export async function saveEdited(me: Who, piece: PieceSource, slots: Record<stri
     // A piece started from a template: its own set (like a brief made with Claude), or a format added to one.
     const saved = await saveRender({
       userId: me.id, template: piece.template, format: piece.format, slots: out.slots, png: out.png, width: out.width, height: out.height, scale: 2,
-      source: 'app', setId: set?.id ?? randomUUID(), projectId: set?.projectId ?? null, setTitle: set?.title ?? null, variant: out.variant, edits: clean,
+      source: 'app', setId: set?.id ?? randomUUID(), projectId: set?.projectId ?? null, setTitle: set?.title ?? null, variant: out.variant, design: out.design, theme: out.theme, edits: clean,
     });
     if (!saved) throw new Error('Saving needs the gallery (Supabase) configured.');
     return saved;
@@ -47,7 +47,7 @@ export async function saveEdited(me: Who, piece: PieceSource, slots: Record<stri
   }
   const saved = await saveRender({
     userId: me.id, template: piece.template, format: piece.format, slots: out.slots, png: out.png, width: out.width, height: out.height, scale: 2,
-    source: 'app', projectId: piece.project_id, setId: piece.set_id ?? piece.id, setTitle: piece.set_title, variant: out.variant, edits: clean, parentId: piece.id,
+    source: 'app', projectId: piece.project_id, setId: piece.set_id ?? piece.id, setTitle: piece.set_title, variant: out.variant, design: out.design, theme: out.theme, edits: clean, parentId: piece.id,
   });
   if (!saved) throw new Error('Saving needs the gallery (Supabase) configured.');
   return saved;

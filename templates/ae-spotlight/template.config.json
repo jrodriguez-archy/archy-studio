@@ -2,7 +2,7 @@
   "id": "ae-spotlight",
   "title": "AE Spotlight",
   "category": "ads",
-  "description": "Person-led ad that introduces one Account Executive (or any team member) to local dental practices by first name, with three benefits and a demo CTA.",
+  "description": "Person-led ad that introduces one Account Executive (or any team member) to local dental practices, with three benefits and a demo CTA. Five designs (Meet Name, The Arch, Grid Card, Mosaic, Forum) in three themes (White, Royal Blue, Navy).",
   "paperFileId": "01M4697421B4576AVJ6RKSRGE3",
   "formats": {
     "post": {
@@ -245,11 +245,12 @@
     }
   },
   "paperPage": "Templates",
-  "useWhen": "A person is the message: an AE, a speaker or a team member introduced by first name, with a demo or meeting CTA.",
+  "useWhen": "A person is the message: an AE, a speaker or a team member, with a demo or meeting CTA.",
   "notWhen": "The ad sells a product claim, or announces an event booth.",
   "guidance": [
-    "ae-first-name: first name followed by a period (\"Sarah.\"). \"Meet\" is fixed and scales with the name. If only the full name is given, the first name is derived from it.",
-    "ae-name and ae-title share the name plate. Leave either out when unknown; the plate closes up, and disappears when both are missing.",
+    "Designs: meet-name (default) puts the first name in the headline (\"Meet Sarah.\"); the-arch, grid-card, mosaic and forum use the fixed headline \"Meet your local Archy platform expert\" and show the full name and title. Themes: white (default), royal, navy. Use the default unless the requester asks for another or for options; for options, render two or three designs in the same set.",
+    "ae-first-name (Meet Name only): first name followed by a period (\"Sarah.\"). \"Meet\" is fixed and scales with the name. If only the full name is given, the first name is derived from it.",
+    "ae-name and ae-title: in Meet Name and The Arch they share a white plate (leave either out when unknown; the plate closes up, and disappears when both are missing); in Grid Card, Mosaic and Forum they sit in the layout on one line each.",
     "ae-location: city and state (\"Austin, TX\"), set uppercase by the design. Leave it out when unknown and the pill disappears.",
     "image-ae: the person's real photo as a cutout (transparent PNG), head and shoulders. Required: this template has no version without a photo yet. Never use another person's photo or generate one."
   ],

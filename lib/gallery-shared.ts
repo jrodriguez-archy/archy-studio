@@ -5,6 +5,8 @@ export type Piece = {
   slots: Record<string, string | null>; created_at: string;
   user_id: string | null; author: string; project_id: string | null; thumb?: string; large?: string; file?: string;
   set_title?: string | null; archived_at?: string | null; edited_at?: string | null;
+  /** Design and theme, on templates that offer several (null: the default). */
+  design?: string | null; theme?: string | null;
 };
 
 // Everything made from one brief: its formats, retries and options, shown as one stacked card.
@@ -54,9 +56,10 @@ export function groupSets(pieces: Piece[], leadFormats?: string[]): PieceSet[] {
     if (leadFormats && !list.some((p) => leadFormats.includes(p.format))) continue;
     const templates = [...new Set(list.map((p) => p.template))];
     const sorted = [...list].sort((a, b) => templates.indexOf(a.template) - templates.indexOf(b.template) || rankFormat(a.format) - rankFormat(b.format) || b.created_at.localeCompare(a.created_at));
-    // One piece per template+format: the newest (a retry replaces the earlier render in the stack).
+    // One piece per template+design+theme+format: the newest (a retry replaces the earlier render in the
+    // stack; options in other designs or themes stay).
     const seen = new Set<string>();
-    const unique = sorted.filter((p) => { const k = `${p.template}:${p.format}`; if (seen.has(k)) return false; seen.add(k); return true; });
+    const unique = sorted.filter((p) => { const k = `${p.template}:${p.design ?? ''}:${p.theme ?? ''}:${p.format}`; if (seen.has(k)) return false; seen.add(k); return true; });
     const lead = (leadFormats && unique.find((p) => leadFormats.includes(p.format))) || unique[0];
     sets.push({
       id, pieces: unique, lead, templates,

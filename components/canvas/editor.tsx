@@ -19,7 +19,7 @@ async function canvasCall<T = { url: string }>(body: Record<string, unknown>): P
 }
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { CanvasLibrary } from '@/lib/canvas';
-import { THEME, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
+import { RECOLOR, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import { follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
 import { BoardLabel, GhostBoard } from './artboards';
 import { AssetsTab, CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
@@ -57,7 +57,7 @@ const planKeyOf = (s: Snap) => JSON.stringify([s.slots, Object.values(s.edits).f
 
 // Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the design's
 // formats side by side as artboards in a pannable, zoomable viewport, the selection's properties on the
-// right. One artboard is edited at a time; what is shared (copy, images, theme, styles) follows to the
+// right. One artboard is edited at a time; what is shared (copy, images, recolor, styles) follows to the
 // formats kept in sync. Save renders every changed format again with the same engine as Claude's designs.
 export function CanvasEditor({ piece, library: given = null, seenAt = null }: { piece?: EditorProps; library?: CanvasLibrary | null; seenAt?: string | null }) {
   // With a piece, the panel's library (templates, pieces, images) loads after the piece is on screen,
@@ -269,7 +269,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     setSelected(pick ? [pick] : []);
   };
 
-  // Add a format: made from the one being edited (copy, images, theme and styles), kept in sync.
+  // Add a format: made from the one being edited (copy, images, recolor and styles), kept in sync.
   const addFormats = (list: Ghost[]) => {
     if (!list.length) return;
     const from = activeRef.current;
@@ -281,7 +281,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
         const had = [src, ...Object.values(d)].find((s) => k in s.slots);
         return [k, had ? had.slots[k] ?? null : v];
       }));
-      const initial: Snap = { slots, edits: src.edits[THEME] ? { [THEME]: src.edits[THEME] } : {} };
+      const initial: Snap = { slots, edits: src.edits[RECOLOR] ? { [RECOLOR]: src.edits[RECOLOR] } : {} };
       d = { ...d, [g.ref]: initial };
       toMatch.current[g.ref] = from;
       added.push({ ref: g.ref, format: g.format, label: g.label, width: g.width, height: g.height, isNew: true, canReplace: false, initial, saved: initial });
@@ -346,22 +346,22 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     editMany(changes);
   };
 
-  const piece = snap.edits[THEME] ?? {};
+  const piece = snap.edits[RECOLOR] ?? {};
   const setPreset = (p: Preset) => {
-    // A theme replaces any loose background colour, so the piece stays coherent.
+    // A recolor replaces any loose background colour, so the piece stays coherent.
     const bg = comps.find((c) => c.kind === 'background')?.id;
-    const changes: Record<string, NodeEdit> = { [THEME]: { preset: p } };
+    const changes: Record<string, NodeEdit> = { [RECOLOR]: { preset: p } };
     if (bg && snap.edits[bg]?.style?.backgroundColor) changes[bg] = { style: { backgroundColor: undefined } };
     editMany(changes);
   };
-  // A background picked by hand moves the theme along when it crosses from dark to light (or back).
+  // A background picked by hand moves the recolor along when it crosses from dark to light (or back).
   const pickBackground = (id: string, value: string) => {
     const hex = tokens.find((t) => t.value === value)?.hex;
     const changes: Record<string, NodeEdit> = { [id]: { style: { backgroundColor: value } } };
     if (hex) {
       const l = luminance(hex);
       const want: Preset = hex === '#FFFFFF' || hex === '#F7F7F7' ? 'light' : l > 0.6 ? 'ice' : hex === '#0095FF' || hex === '#66BFFF' ? 'sky' : hex === '#013DF5' || hex === '#0000C9' ? 'blue' : 'dark';
-      if (want !== (piece.preset ?? null)) changes[THEME] = { preset: want };
+      if (want !== (piece.preset ?? null)) changes[RECOLOR] = { preset: want };
     }
     editMany(changes);
   };
@@ -471,7 +471,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           // What Claude changed flashes on the piece.
           const prev = docRef.current[ref];
           const comps = metaRef.current[ref]?.comps ?? [];
-          const ids = new Set(Object.keys({ ...prev.edits, ...next.edits }).filter((id) => id !== THEME && JSON.stringify(prev.edits[id]) !== JSON.stringify(next.edits[id])));
+          const ids = new Set(Object.keys({ ...prev.edits, ...next.edits }).filter((id) => id !== RECOLOR && JSON.stringify(prev.edits[id]) !== JSON.stringify(next.edits[id])));
           for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = comps.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
           setFlash({ ref, ids: [...ids], at: Date.now() });
           drafted.current[ref] = JSON.stringify(cleanSnap(next));

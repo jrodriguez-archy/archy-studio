@@ -8,7 +8,7 @@
 //   short      short copy and no optional details (another event)
 //   long       the longest plausible copy (another event; review-round trims it to the template's limit)
 //   theme:*    the realistic case on each Canvas theme (main format only)
-import { THEME, type Edits, type Preset } from '../lib/canvas-shared';
+import { RECOLOR, type Edits, type Preset } from '../lib/canvas-shared';
 import type { Manifest, TemplateConfig } from '../lib/templates';
 
 export type ReviewCase = { case: string; slots: Record<string, string | null>; edits: Edits };
@@ -158,7 +158,7 @@ export async function casesFor(manifest: Manifest, config: TemplateConfig, forma
     { case: 'short', slots: build(pool.short, true), edits: {} },
     { case: 'long', slots: build(pool.long, false), edits: {} },
   ];
-  if (opts.themes) for (const p of THEMES) out.push({ case: `theme:${p}`, slots: realistic, edits: { [THEME]: { preset: p } } });
+  if (opts.themes) for (const p of THEMES) out.push({ case: `theme:${p}`, slots: realistic, edits: { [RECOLOR]: { preset: p } } });
   return out;
 }
 

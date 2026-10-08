@@ -55,7 +55,7 @@ async function openBoard(piece: PieceSource, me: Who): Promise<Board | { lost: s
   if (lost.length) return { lost: `Its ${lost.join(', ')} was sent inline before Canvas existed and was not kept. Ask Claude for a new version with the logo, then open that one.` };
   // Work in progress (by hand or by Claude) picks up where it was left.
   // Without a draft, what is open is what was saved: one fill for both.
-  const fill = (slots: PieceSource['slots'], edits: PieceSource['edits']) => prepareFill({ template: piece.template, format: piece.format, slots, edits }, '/api/template-files');
+  const fill = (slots: PieceSource['slots'], edits: PieceSource['edits']) => prepareFill({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, slots, edits }, '/api/template-files');
   const [plan, savedSlots, replace] = await Promise.all([
     draft ? fill(draft.slots, draft.edits) : fill(piece.slots, piece.edits),
     draft ? fill(piece.slots, piece.edits).then((p) => p.slots) : null,

@@ -1,4 +1,4 @@
-import { THEME, cleanEdits, type Edits, type NodeEdit } from './canvas-shared';
+import { RECOLOR, cleanEdits, type Edits, type NodeEdit } from './canvas-shared';
 
 // The formats of a design kept in step (Canvas artboards). Each format is its own page with its own
 // layer ids; layers are matched by key (components.js __keys: the slot, or the path of layer names).
@@ -51,13 +51,13 @@ export function follow(prev: Snap, next: Snap, target: Snap, src?: Keys, dst?: K
   const slots = { ...target.slots };
   for (const [k, v] of Object.entries(next.slots)) if (k in slots && (prev.slots[k] ?? null) !== (v ?? null)) slots[k] = v ?? null;
   const edits = { ...target.edits };
-  if (!sameJson(prev.edits[THEME], next.edits[THEME])) {
-    if (next.edits[THEME]) edits[THEME] = next.edits[THEME]; else delete edits[THEME];
+  if (!sameJson(prev.edits[RECOLOR], next.edits[RECOLOR])) {
+    if (next.edits[RECOLOR]) edits[RECOLOR] = next.edits[RECOLOR]; else delete edits[RECOLOR];
   }
   if (src && dst) {
     const there = byKey(dst);
     for (const id of new Set([...Object.keys(prev.edits), ...Object.keys(next.edits)])) {
-      if (id === THEME || sameJson(shared(prev.edits[id]), shared(next.edits[id]))) continue;
+      if (id === RECOLOR || sameJson(shared(prev.edits[id]), shared(next.edits[id]))) continue;
       const key: string | undefined = src[id]?.key;
       const to: string | undefined = key ? there[key] : undefined;
       if (!to) continue;
@@ -73,11 +73,11 @@ export function match(source: Snap, target: Snap, src: Keys, dst: Keys): Snap {
   const slots = { ...target.slots };
   for (const k of Object.keys(slots)) if (k in source.slots) slots[k] = source.slots[k] ?? null;
   const edits: Edits = {};
-  for (const [id, e] of Object.entries(target.edits)) if (id !== THEME) edits[id] = withShared(e, {});
-  if (source.edits[THEME]) edits[THEME] = source.edits[THEME];
+  for (const [id, e] of Object.entries(target.edits)) if (id !== RECOLOR) edits[id] = withShared(e, {});
+  if (source.edits[RECOLOR]) edits[RECOLOR] = source.edits[RECOLOR];
   const there = byKey(dst);
   for (const [id, e] of Object.entries(source.edits)) {
-    if (id === THEME) continue;
+    if (id === RECOLOR) continue;
     const key: string | undefined = src[id]?.key;
       const to: string | undefined = key ? there[key] : undefined;
     if (!to) continue;

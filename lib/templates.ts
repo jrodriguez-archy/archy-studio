@@ -17,7 +17,13 @@ export type Manifest = {
   description: string;
   formats: Record<string, { label: string; width: number; height: number; html: string }>;
   variants?: Record<string, { label: string; when?: { empty?: string[] }; formats: Record<string, { label: string; width: number; height: number; html: string }> }>;
-  slots: Record<string, { type: 'text' | 'image' | 'logo'; default: string; limits?: Record<string, SlotLimits> }>;
+  /** Designs (layouts) and themes (colour treatments) the requester can choose. `formats` is the default combo. */
+  designs?: Record<string, { label: string }>;
+  themes?: Record<string, { label: string }>;
+  default?: { design: string; theme: string };
+  /** Every other design × theme, keyed `<design>--<theme>`. */
+  combos?: Record<string, { design: string; theme: string; formats: Record<string, { label: string; width: number; height: number; html: string }> }>;
+  slots: Record<string, { type: 'text' | 'image' | 'logo'; default: string; perFormat?: Record<string, unknown>; limits?: Record<string, SlotLimits> }>;
   optionals: Record<string, { contains: string[] }>;
 };
 
@@ -25,7 +31,33 @@ export type Rules = Record<string, unknown> & {
   slots: Record<string, unknown>;
   optionals?: Manifest['optionals'];
   variants?: Record<string, { slots?: Record<string, object> }>;
+  /** A design replaces the slot rules it names (and the containers when given): its layers differ. */
+  designs?: Record<string, { slots?: Record<string, object>; containers?: unknown[] }>;
 };
+
+export type Combo = { design: string; theme: string; key: string | null };
+
+// The design × theme a piece uses: the requested one (each part defaults to the template's default),
+// validated. `key` is null for the default combo, whose files are the base formats.
+export function resolveCombo(manifest: Manifest, design?: string | null, theme?: string | null): Combo | null {
+  if (!manifest.default) {
+    if (design || theme) throw new Error(`Template ${manifest.id} has a single design and theme.`);
+    return null;
+  }
+  const d = design || manifest.default.design;
+  const t = theme || manifest.default.theme;
+  if (!manifest.designs?.[d]) throw new Error(`Template ${manifest.id} has no design "${d}". Designs: ${Object.keys(manifest.designs ?? {}).join(', ')}`);
+  if (!manifest.themes?.[t]) throw new Error(`Template ${manifest.id} has no theme "${t}". Themes: ${Object.keys(manifest.themes ?? {}).join(', ')}`);
+  if (d === manifest.default.design && t === manifest.default.theme) return { design: d, theme: t, key: null };
+  const key = `${d}--${t}`;
+  if (!manifest.combos?.[key]) throw new Error(`Template ${manifest.id} has no ${manifest.designs[d].label} design in the ${manifest.themes[t].label} theme.`);
+  return { design: d, theme: t, key };
+}
+
+// The page files of a combo (the base formats for the default one).
+export function comboFormats(manifest: Manifest, combo: Combo | null) {
+  return combo?.key ? manifest.combos![combo.key].formats : manifest.formats;
+}
 
 const SAFE_ID = /^[a-z0-9-]+$/;
 

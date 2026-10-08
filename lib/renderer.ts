@@ -41,8 +41,8 @@ let componentsJs: string | null = null;
 
 export type { RenderReport };
 
-export async function render({ template, format, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false, autofix = false }: RenderInput) {
-  const plan = await prepareFill({ template, format, slots: given, fillDefaults, edits });
+export async function render({ template, format, design, theme, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false, autofix = false }: RenderInput) {
+  const plan = await prepareFill({ template, format, design, theme, slots: given, fillDefaults, edits });
   const { variant, slots, width, height } = plan;
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
   editsJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'edits.js'), 'utf8');
@@ -124,7 +124,7 @@ export async function render({ template, format, slots: given, scale = 1, fillDe
     mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
     mark('screenshot');
-    return { png, report, variant, slots, width, height, timing: t, inspected, fixed };
+    return { png, report, design: plan.design, theme: plan.theme, variant, slots, width, height, timing: t, inspected, fixed };
   } finally {
     await context.close();
   }

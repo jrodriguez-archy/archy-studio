@@ -3,12 +3,12 @@ import { render } from '@/lib/renderer';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-// POST { template, format, slots, scale? }  → image/png (or JSON with ?json=1)
-// GET  /api/render?template=ae-spotlight&format=post&slot.ae-first-name=Sarah.  → image/png
+// POST { template, format, design?, theme?, slots, scale? }  → image/png (or JSON with ?json=1)
+// GET  /api/render?template=ae-spotlight&format=post&design=the-arch&theme=navy&slot.ae-name=Sarah%20Lee  → image/png
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   if (!body?.template || !body?.format) return Response.json({ error: 'template and format are required' }, { status: 400 });
-  return respond({ template: body.template, format: body.format, slots: body.slots ?? {}, scale: body.scale }, new URL(req.url));
+  return respond({ template: body.template, format: body.format, design: body.design, theme: body.theme, slots: body.slots ?? {}, scale: body.scale }, new URL(req.url));
 }
 
 export async function GET(req: Request) {
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   for (const [k, v] of url.searchParams) if (k.startsWith('slot.')) slots[k.slice(5)] = v === '' ? null : v;
   // No slot params at all = a preview of the template with its sample copy.
   const fillDefaults = Object.keys(slots).length === 0;
-  return respond({ template, format, slots, scale: Number(url.searchParams.get('scale') ?? 1), fillDefaults }, url);
+  return respond({ template, format, design: url.searchParams.get('design'), theme: url.searchParams.get('theme'), slots, scale: Number(url.searchParams.get('scale') ?? 1), fillDefaults }, url);
 }
 
 async function respond(input: Parameters<typeof render>[0], url: URL) {

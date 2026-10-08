@@ -10,7 +10,9 @@ const stored = new Set<string>();
 
 export async function GET(req: Request, { params }: { params: Promise<{ template: string; format: string }> }) {
   const { template, format } = await params;
-  const key = await previewKey(template, format);
+  const q = new URL(req.url).searchParams;
+  const design = q.get('design'), theme = q.get('theme');
+  const key = await previewKey(template, format, design, theme);
   if (!key) return new Response('Not found', { status: 404 });
   if (!supabaseConfigured()) return new Response('Previews need Supabase', { status: 503 });
   const url = publicUrl(previewPath(key));
@@ -18,7 +20,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ template
     const head = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
     if (head?.ok) stored.add(key);
   }
-  if (!stored.has(key)) return Response.redirect(new URL(`/api/preview-render/${template}/${format}`, req.url), 302);
+  if (!stored.has(key)) return Response.redirect(new URL(`/api/preview-render/${template}/${format}${design || theme ? `?${new URLSearchParams({ ...(design ? { design } : {}), ...(theme ? { theme } : {}) })}` : ''}`, req.url), 302);
   // A versioned link (?v= from previewSrc) always means this image: kept for a year. Without it (or with
   // an old version), only briefly, so a changed template or engine shows up at once.
   const current = new URL(req.url).searchParams.get('v') === key.split('-').pop();

@@ -60,7 +60,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
       <Panel comp={comp} onReset={edited ? onReset : undefined}>
         <div className="flex gap-2.5 rounded-md bg-foreground/[0.04] p-3 text-foreground/60">
           <HugeiconsIcon icon={LockIcon} className="mt-px size-4 shrink-0 text-foreground/50" strokeWidth={1.6} />
-          <p>The drawing and its colour are the brand’s. You can move it and scale it; it turns white or Archy blue with the theme.</p>
+          <p>The drawing and its colour are the brand’s. You can move it and scale it; it turns white or Archy blue with the recolor.</p>
         </div>
         <Section title="Position">
           <AlignRow alignIn={alignIn} onAlign={onAlign} />
@@ -133,7 +133,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
       )}
 
       {comp.kind === 'background' && (
-        <Section title="Theme">
+        <Section title="Recolor">
           <div className="grid grid-cols-5 gap-1">
             {PRESETS.map(([key, label, swatch]) => (
               <button key={key} type="button" onClick={() => onPreset(key)}
@@ -143,7 +143,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
               </button>
             ))}
           </div>
-          <p className="text-foreground/40">Texts, buttons, lines, icons and the Archy logo follow the theme.</p>
+          <p className="text-foreground/40">Texts, buttons, lines, icons and the Archy logo follow the recolor.</p>
         </Section>
       )}
 

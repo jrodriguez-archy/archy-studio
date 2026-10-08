@@ -9,7 +9,7 @@ export type NodeEdit = {
   image?: string;
   /** Another Hugeicons icon for an icon layer (export name, e.g. "Calendar03Icon"). */
   icon?: string;
-  /** Only on the THEME entry: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground (scripts/edits.js). */
+  /** Only on the RECOLOR entry: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground (scripts/edits.js). */
   preset?: Preset;
   hidden?: boolean;
   box?: { dx?: number; dy?: number; width?: number; height?: number; scale?: number };
@@ -20,14 +20,19 @@ export type NodeEdit = {
 export type Layout = { distribute?: 'packed' | 'space-between'; gap?: number; position?: 'start' | 'center' | 'end'; align?: 'start' | 'center' | 'end' };
 export type Edits = Record<string, NodeEdit>;
 export type Preset = 'dark' | 'blue' | 'sky' | 'ice' | 'light';
-// The piece-level entry of Edits (not a layer).
-export const THEME = ':theme';
+// The piece-level entry of Edits (not a layer): a recolour preset. Not a template theme (a template's
+// themes are separate artboards, chosen at render). The stored key keeps its first name, ':theme', so
+// pieces saved before the rename still open recoloured.
+export const RECOLOR = ':theme';
 
 // Everything the page needs to draw one piece: the template file, the fill for fit.js and the
 // resolved URLs of edited images.
 export type FillPlan = {
   template: string;
   format: string;
+  /** The design and theme drawn (null on templates that offer only one). */
+  design: string | null;
+  theme: string | null;
   variant: string | null;
   slots: Record<string, string | null>;
   /** Path of the template HTML under the file root (templates/<id>/<file>.html). */

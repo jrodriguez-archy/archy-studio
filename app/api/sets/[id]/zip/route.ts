@@ -16,7 +16,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!/^[0-9a-f-]{36}$/i.test(id)) return new Response('Not found.', { status: 404 });
 
   const db = supabaseAdmin();
-  const { data } = await db.from('renders').select('id, set_id, template, format, storage_path, width, height, scale, slots, created_at, user_id, project_id').eq('set_id', id);
+  const { data } = await db.from('renders').select('id, set_id, template, format, design, theme, storage_path, width, height, scale, slots, created_at, user_id, project_id').eq('set_id', id);
   if (!data?.length) return new Response('Not found.', { status: 404 });
   type Row = (typeof data)[number] & { storage_path: string };
   const rows = data as Row[];
@@ -28,7 +28,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   await Promise.all(set.pieces.map(async (p) => {
     const { data: blob } = await db.storage.from('renders').download(path[p.id]);
     if (!blob) return;
-    const name = `${slug(set.templates.length > 1 ? `${set.title}-${p.title}` : set.title)}-${slug(formatLabel(p.format))}.png`;
+    // Options in other designs or themes get their own name (`…-the-arch-navy-post-1080x1080.png`).
+    const combo = [p.design, p.theme].filter(Boolean).join('-');
+    const name = `${slug(set.templates.length > 1 ? `${set.title}-${p.title}` : set.title)}${combo ? `-${slug(combo)}` : ''}-${slug(formatLabel(p.format))}.png`;
     files[name] = new Uint8Array(await blob.arrayBuffer());
   }));
   const zip = zipSync(Object.fromEntries(Object.entries(files).map(([k, v]) => [k, [v, { level: 0 }]])));

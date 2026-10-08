@@ -8,7 +8,7 @@ import { createProject, findProject, listProjects } from '@/lib/projects';
 import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
-import { listTemplates, loadConfig, loadLibrary, loadManifest } from '@/lib/templates';
+import { comboFormats, listTemplates, loadConfig, loadLibrary, loadManifest, resolveCombo } from '@/lib/templates';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -26,6 +26,8 @@ Brief first, then the best template:
 6. If copy does not fit, the format is refused with the exact maximum: shorten keeping the requester's wording, then render again. Never deliver a refused render. Short copy needs no padding: the design fills its room by itself (the headline grows up to 125%, the logo stays at the bottom), so never add words just to fill space.
 7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, and what was left out.
 
+Designs and themes: some templates (list_templates shows designs and themes) come in several designs (layouts) and themes (White, Royal Blue, Navy grounds) with the same slots. Use the default unless the requester asks for one or for options; to offer options, render two or three different designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits, and some slots exist only in some designs (only_in_designs). Changing the design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
+
 Event page covers: a template with a cover (list_templates shows it) has a matching event page cover (1200×900, the Webflow event page thumbnail). After making that style, offer the cover in one short line; never force it. If they want it, render the cover template with the same facts and the same set, so it stacks with the social formats.
 
 Projects: designs can be filed into project folders in the Studio gallery (one project per design). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
@@ -38,7 +40,7 @@ Brand rules:
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
-Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "switch to the light theme", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. Brand colours only; the Archy logo can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
+Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. Brand colours only; the Archy logo can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 
@@ -48,7 +50,7 @@ const handler = createMcpHandler(
       'list_templates',
       {
         title: 'List templates',
-        description: 'The Archy templates available, with what each is for, its formats, versions and editable slots.',
+        description: 'The Archy templates available, with what each is for, its formats, designs and themes (when it offers several), versions and editable slots.',
         inputSchema: z.object({}),
         annotations: { readOnlyHint: true },
       },
@@ -66,6 +68,9 @@ const handler = createMcpHandler(
             use_when: c.useWhen,
             not_when: c.notWhen,
             formats: Object.fromEntries(Object.entries(m.formats).map(([k, f]) => [k, f.label])),
+            designs: m.designs && Object.fromEntries(Object.entries(m.designs).map(([k, d]) => [k, d.label])),
+            themes: m.themes && Object.fromEntries(Object.entries(m.themes).map(([k, t]) => [k, t.label])),
+            default: m.default,
             versions: Object.fromEntries(Object.entries(m.variants ?? {}).map(([k, v]) => [k, `used automatically when ${v.when?.empty?.join(', ')} is missing`])),
             slots: Object.keys(m.slots),
           };
@@ -78,25 +83,39 @@ const handler = createMcpHandler(
       'get_template',
       {
         title: 'Get template',
-        description: 'Slots of one template: type, example, which are required, what happens when one is missing, and measured length limits per format.',
-        inputSchema: z.object({ template: z.string().describe('Template id from list_templates, e.g. "ae-spotlight"') }),
+        description: 'Slots of one template: type, example, which are required, what happens when one is missing, and measured length limits per format. On templates with several designs and themes, the limits are those of the design and theme asked for (default when not given).',
+        inputSchema: z.object({
+          template: z.string().describe('Template id from list_templates, e.g. "ae-spotlight"'),
+          design: z.string().optional().describe('Design id from list_templates (templates that offer several), e.g. "the-arch"'),
+          theme: z.string().optional().describe('Theme id from list_templates (templates that offer several), e.g. "navy"'),
+        }),
         annotations: { readOnlyHint: true },
       },
-      async ({ template }) => {
+      async ({ template, design, theme }) => {
         const m = await loadManifest(template);
         const c = await loadConfig(template);
+        const combo = resolveCombo(m, design, theme);
+        // Limits and slot presence of this design × theme, keyed by plain format.
+        const keyOf = (f: string) => (combo?.key ? `${f}--${combo.key}` : f);
+        const formats = comboFormats(m, combo);
+        const inCombo = (k: string) => !m.slots[k].perFormat || Object.keys(formats).some((f) => keyOf(f) in m.slots[k].perFormat!);
+        const designsWith = (k: string) => m.default && Object.keys(m.designs ?? {}).filter((d) => {
+          const key = d === m.default!.design ? null : Object.keys(m.combos ?? {}).find((x) => x.startsWith(`${d}--`));
+          return Object.keys(m.formats).some((f) => (key ? `${f}--${key}` : f) in (m.slots[k].perFormat ?? {}));
+        });
         const optional = new Set(c.optional ?? []);
         const derivedFrom = (k: string) => c.derive?.[k]?.from;
         const variantFor = (k: string) => Object.entries(m.variants ?? {}).find(([, v]) => v.when?.empty?.includes(k))?.[0];
-        const slots = Object.fromEntries(Object.entries(m.slots).map(([k, s]) => [k, {
+        const slots = Object.fromEntries(Object.entries(m.slots).filter(([k]) => inCombo(k)).map(([k, s]) => [k, {
           type: s.type,
+          only_in_designs: m.default && designsWith(k)!.length < Object.keys(m.designs ?? {}).length ? designsWith(k) : undefined,
           example: s.type === 'text' ? s.default : undefined,
           essential: !optional.has(k),
           fact: c.facts?.[k] ?? 'copy written from the brief',
           when_missing: !optional.has(k)
             ? derivedFrom(k) ? `derived from ${derivedFrom(k)}; otherwise ask, or use another template` : 'ask for it, or use another template (match_templates)'
             : s.type === 'image' && variantFor(k) ? `the "${variantFor(k)}" version is used` : 'left out with its label, the layout closes up',
-          limits: s.limits && Object.fromEntries(Object.entries(s.limits).map(([f, l]) => [f,
+          limits: s.limits && Object.fromEntries(Object.keys(formats).filter((f) => s.limits![keyOf(f)]).map((f) => [f, s.limits![keyOf(f)]] as const).map(([f, l]) => [f,
             `${l.maxCharsPerLine} characters per line at full size, up to ${l.maxLines} line${l.maxLines > 1 ? 's' : ''}; the type can shrink to ${l.fontSize.min}px (from ${l.fontSize.max}px) to fit a bit more`])),
         }]));
         return {
@@ -104,7 +123,12 @@ const handler = createMcpHandler(
             type: 'text',
             text: JSON.stringify({
               template, title: c.title, use_when: c.useWhen, not_when: c.notWhen,
-              formats: Object.fromEntries(Object.entries(m.formats).map(([k, f]) => [k, `${f.width}×${f.height}`])),
+              ...(combo ? {
+                design: combo.design, theme: combo.theme,
+                designs: Object.fromEntries(Object.entries(m.designs ?? {}).map(([k, d]) => [k, d.label])),
+                themes: Object.fromEntries(Object.entries(m.themes ?? {}).map(([k, t]) => [k, t.label])),
+              } : {}),
+              formats: Object.fromEntries(Object.entries(formats).map(([k, f]) => [k, `${f.width}×${f.height}`])),
               versions: Object.fromEntries(Object.entries(m.variants ?? {}).map(([k, v]) => [k, `${v.label}: used automatically when ${v.when?.empty?.join(', ')} is missing`])),
               slots, guidance: c.guidance,
               notes: 'Limits are measured guides; render is the final check and reports the exact maximum when copy does not fit.',
@@ -211,7 +235,7 @@ const handler = createMcpHandler(
         description: 'Change components of the design open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); the Archy logo can only be moved, aligned or scaled. The answer lists the Inspector’s design suggestions (misaligned, outside the safe area, hard to read…); fix them when they come from your change.',
         inputSchema: z.object({
           piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.'),
-          theme: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Redraw the whole design on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground.'),
+          recolor: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Recolour the whole design on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground. On a template with themes (get_canvas says so), prefer rendering the theme instead.'),
           changes: z.array(z.object({
             component: z.string().describe('Component id from get_canvas (best, e.g. "G5O-1"), or its name when unique; "Date (text)" picks the text over a group named the same'),
             text: z.string().optional().describe('New copy (US English). For a button, its label.'),
@@ -239,11 +263,11 @@ const handler = createMcpHandler(
           note: z.string().optional().describe('Optional; the person sees a note written by Studio in English'),
         }),
       },
-      async ({ piece, theme, changes, fix, note }, ctx) => {
+      async ({ piece, recolor, changes, fix, note }, ctx) => {
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
-          const out = await editCanvas(me, { piece, theme, changes, fix, note });
+          const out = await editCanvas(me, { piece, recolor, changes, fix, note });
           const tips = out.suggestions.length ? ` The Inspector still suggests: ${out.suggestions.join(' | ')}. Fix the ones your change caused (fix: "all", or your own change).` : ' The Inspector has nothing to flag.';
           return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it.${tips} Save with save_canvas only when they ask.` }] };
         } catch (e) {
@@ -279,13 +303,15 @@ const handler = createMcpHandler(
         inputSchema: z.object({
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"]. Default: all.'),
+          design: z.string().optional().describe('Design id, on templates that offer several (list_templates), e.g. "the-arch". Default: the template\'s default design.'),
+          theme: z.string().optional().describe('Theme id, on templates that offer several (list_templates), e.g. "navy". Default: the template\'s default theme.'),
           slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" or an https URL to a cutout PNG. Leave out (or null) what you do not have.'),
           project: z.string().optional().describe('Project to file the designs in (name or id from list_projects). Only when the requester mentions one.'),
           set: z.string().optional().describe('Set id returned by an earlier render of the same brief. Pass it for every later render of that brief (other formats, retries, other templates or options) so the gallery stacks them together.'),
         }),
         annotations: { readOnlyHint: true, openWorldHint: false },
       },
-      async ({ template, formats, slots, project, set }, ctx) => {
+      async ({ template, formats, design, theme, slots, project, set }, ctx) => {
         let projectId: string | null = null;
         if (project) {
           const me = await whoIs(ctx);
@@ -294,7 +320,10 @@ const handler = createMcpHandler(
           projectId = found.id;
         }
         const m = await loadManifest(template);
-        const wanted = formats?.length ? formats : Object.keys(m.formats);
+        let combo;
+        try { combo = resolveCombo(m, design, theme); } catch (e) { return { isError: true, content: [{ type: 'text', text: (e as Error).message }] }; }
+        const files = comboFormats(m, combo);
+        const wanted = formats?.length ? formats : Object.keys(files);
         const setId = await resolveSet({ userId: userIdOf(ctx), template, slots, requested: set });
         // New pieces of a set that is already filed in a project join that project.
         if (!projectId && supabaseConfigured()) {
@@ -307,7 +336,7 @@ const handler = createMcpHandler(
         for (const format of wanted) {
           let out;
           try {
-            out = await render({ template, format, slots });
+            out = await render({ template, format, design, theme, slots });
           } catch (e) {
             if (e instanceof MissingRequired) {
               const have = await factsFromSlots(template, slots);
@@ -329,17 +358,19 @@ const handler = createMcpHandler(
           // Without Supabase configured, the link re-renders the same piece (every decision explicit).
           let download: string;
           const saved = supabaseConfigured()
-            ? await render({ template, format, slots, scale: 2 }).then((hi) => saveRender({
+            ? await render({ template, format, design, theme, slots, scale: 2 }).then((hi) => saveRender({
                 userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId, setId, variant: hi.variant,
+                design: hi.design, theme: hi.theme,
               }))
             : null;
           if (saved) download = saved.url;
           else {
-            const q = new URLSearchParams({ template, format, scale: '2' });
+            const q = new URLSearchParams({ template, format, scale: '2', ...(combo ? { design: combo.design, theme: combo.theme } : {}) });
             for (const [k, v] of Object.entries(used)) q.set(`slot.${k}`, v ?? '');
             download = `${origin}/api/render?${q.toString()}`;
           }
           const notes: string[] = [];
+          if (combo) notes.push(`${m.designs![combo.design].label} design, ${m.themes![combo.theme].label} theme`);
           if (variant) notes.push(`${m.variants?.[variant]?.label ?? variant} version`);
           const derived = Object.entries(used).filter(([k, v]) => v && !slots[k] && m.slots[k].type === 'text').map(([k, v]) => `${k} "${v}" (derived)`);
           if (derived.length) notes.push(...derived);
@@ -352,7 +383,7 @@ const handler = createMcpHandler(
           content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
           content.push({
             type: 'text',
-            text: `${m.formats[format].label}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
+            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
           });
         }
         if (refused.length) {
@@ -364,7 +395,7 @@ const handler = createMcpHandler(
     );
   },
   {
-    serverInfo: { name: 'archy-studio', version: '0.6.0' },
+    serverInfo: { name: 'archy-studio', version: '0.7.0' },
     instructions: INSTRUCTIONS,
   },
 );

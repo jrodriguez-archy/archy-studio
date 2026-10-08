@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.11.2 (2026-10-08)
+
+- Canvas opens again in production: its pages now carry the asset library list and the template files ("ENOENT … library/library.json").
+
 ## archy-studio 0.11.1 (2026-10-08)
 
 - Event page covers take the Pixel Tone of their template's ground, as in Paper: navy on Booth Invite Photo (Navy), Night Out Illustration and Night Out Venue, royal blue on Booth Icon List, Speaker Invite and Booth Invite Photo (Royal Blue), ice on Booth Light Rulers and Booth Photo Band (`coverTone` / `coverTones` per theme in rules.json). Before, every cover came out royal blue.

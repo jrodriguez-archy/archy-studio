@@ -5,6 +5,9 @@ const renderFiles = [
 ];
 // Routes that render with Chromium (Canvas export and save go through /api/canvas).
 const rendering = ['/api/render', '/mcp', '/api/preview-render/[template]/[format]', '/api/canvas'];
+// Canvas pages prepare the fill (manifests, configs, rules, the library list); images come through /api/template-files.
+const canvasPages = ['/canvas/[id]', '/canvas/new', '/canvas', '/api/template-files/[...path]'];
+const canvasFiles = ['./templates/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js'];
 const notNeeded = ['./templates/*/reference/**', './templates/*/source/**'];
 // Pages that only list templates and designs read manifests and configs, never template images.
 const listing = ['/', '/archive', '/projects/[id]', '/templates', '/templates/[id]', '/admin', '/admin/review', '/account', '/install',
@@ -17,7 +20,12 @@ export default {
   devIndicators: { position: 'bottom-right' },
   // Chromium and Playwright stay as runtime node_modules, not bundled.
   serverExternalPackages: ['@sparticuz/chromium', 'playwright-core', 'sharp'],
-  outputFileTracingIncludes: { ...Object.fromEntries(rendering.map((r) => [r, renderFiles])), '/api/preview/[template]/[format]': ['./templates/*/manifest.json', './scripts/fit.js', './scripts/edits.js'] },
+  outputFileTracingIncludes: {
+    ...Object.fromEntries(rendering.map((r) => [r, renderFiles])),
+    '/api/preview/[template]/[format]': ['./templates/*/manifest.json', './scripts/fit.js', './scripts/edits.js'],
+    // The Canvas editor reads the asset library list and every template's files (fill plan, editor context).
+    ...Object.fromEntries(canvasPages.map((r) => [r, canvasFiles])),
+  },
   // Paper references and sources are for designers, never read by the app: no function carries them.
   outputFileTracingExcludes: { '**': notNeeded, ...Object.fromEntries(listing.map((r) => [r, noImages])) },
   experimental: { optimizePackageImports: ['@hugeicons/core-free-icons'] },

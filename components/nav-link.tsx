@@ -5,12 +5,12 @@ import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSidebar } from '@/components/sidebar';
-import { Archive02Icon, CheckListIcon, Folder01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PaintBoardIcon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
+import { Archive02Icon, Settings02Icon, CheckListIcon, Folder01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PaintBoardIcon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
 
-export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon, archive: Archive02Icon, canvas: PaintBoardIcon, review: CheckListIcon };
+export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon, archive: Archive02Icon, canvas: PaintBoardIcon, review: CheckListIcon, admin: Settings02Icon };
 export type NavIcon = keyof typeof NAV_ICONS;
 
-const ROW = 'flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] transition-colors';
+export const ROW = 'flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] transition-colors';
 
 // Collapsed rail: a centred icon with the label as a tooltip.
 function Collapsed({ label, children }: { label: React.ReactNode; children: React.ReactElement }) {

@@ -4,13 +4,14 @@ import { createContext, Fragment, useCallback, useContext, useEffect, useState }
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { SidebarLeft01Icon } from '@hugeicons/core-free-icons';
+import { ArrowRight01Icon, SidebarLeft01Icon, UnfoldMoreIcon } from '@hugeicons/core-free-icons';
 import { ArchyWordmark } from '@/components/archy-wordmark';
 import { BrandLockup } from '@/components/brand-lockup';
-import { NavLink, SignOutLink } from '@/components/nav-link';
+import { NAV_ICONS, NavLink, ROW } from '@/components/nav-link';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { NavSection } from '@/components/app-shell';
+import type { NavItem, NavSection } from '@/components/app-shell';
 
 const SidebarContext = createContext({ collapsed: false });
 export const useSidebar = () => useContext(SidebarContext);
@@ -59,7 +60,7 @@ const ToggleContext = createContext<() => void>(() => {});
 
 // Left rail on a faint grey layer (the login's card-on-ground idea): Studio lockup, icon nav with the
 // active page lifted onto white, account at the bottom. Collapsed, only icons remain, with tooltips.
-export function Sidebar({ sections, projects, me, email }: { sections: NavSection[]; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string }) {
+export function Sidebar({ sections, admin, projects, me, email, name }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; name: string }) {
   const { collapsed } = useSidebar();
   const toggle = useContext(ToggleContext);
   return (
@@ -90,10 +91,69 @@ export function Sidebar({ sections, projects, me, email }: { sections: NavSectio
         ))}
       </nav>
       <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
-        {!collapsed && <p className="truncate px-2 pb-1 text-[11px] text-foreground/35">{email}</p>}
-        <NavLink href="/account" icon="account">Account</NavLink>
-        <SignOutLink />
+        <NavLink href="/install" icon="install">Install</NavLink>
+        {admin && <AdminMenu items={admin} />}
+        <AccountMenu name={name} email={email} />
       </div>
     </aside>
+  );
+}
+
+// The rail's menus open upward (to the right when the rail is collapsed).
+const menuSide = (collapsed: boolean) => (collapsed ? { side: 'right' as const, align: 'end' as const } : { side: 'top' as const, align: 'start' as const });
+
+// Admin: one row, its pages in a menu. Lit while on any of them.
+function AdminMenu({ items }: { items: NavItem[] }) {
+  const { collapsed } = useSidebar();
+  const path = usePathname();
+  const active = path === '/admin' || path.startsWith('/admin/');
+  const trigger = (
+    <DropdownMenuTrigger aria-label="Admin"
+      className={`${ROW} w-full outline-none ${collapsed ? 'justify-center px-0' : ''} ${active ? 'bg-background text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/60 hover:bg-foreground/[0.04] hover:text-foreground'}`}>
+      <HugeiconsIcon icon={NAV_ICONS.admin} className={`size-4 shrink-0 ${active ? 'text-primary' : 'text-foreground/40'}`} strokeWidth={1.6} />
+      {!collapsed && <><span className="min-w-0 flex-1 truncate text-left">Admin</span><HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5 text-foreground/35" /></>}
+    </DropdownMenuTrigger>
+  );
+  return (
+    <DropdownMenu>
+      {collapsed ? <Tooltip><TooltipTrigger render={trigger} /><TooltipContent side="right">Admin</TooltipContent></Tooltip> : trigger}
+      <DropdownMenuContent {...menuSide(collapsed)} sideOffset={6} className="w-52">
+        {items.map((i) => (
+          <DropdownMenuItem key={i.href} render={<Link href={i.href} />} className="gap-2 text-[13px]">
+            <HugeiconsIcon icon={NAV_ICONS[i.icon]} className="size-4 text-foreground/45" strokeWidth={1.6} /> {i.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// The person: initial, name, and a menu with Account and Sign out.
+function AccountMenu({ name, email }: { name: string; email: string }) {
+  const { collapsed } = useSidebar();
+  const path = usePathname();
+  const initial = (name || email || '?').trim().charAt(0).toUpperCase();
+  const avatar = <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">{initial}</span>;
+  const trigger = (
+    <DropdownMenuTrigger aria-label="Account"
+      className={`${ROW} h-10 w-full outline-none ${collapsed ? 'justify-center px-0' : ''} ${path === '/account' ? 'bg-background shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'hover:bg-foreground/[0.04]'}`}>
+      {avatar}
+      {!collapsed && <><span className="min-w-0 flex-1 truncate text-left text-foreground/75">{name || email}</span><HugeiconsIcon icon={UnfoldMoreIcon} className="size-3.5 text-foreground/35" /></>}
+    </DropdownMenuTrigger>
+  );
+  return (
+    <DropdownMenu>
+      {collapsed ? <Tooltip><TooltipTrigger render={trigger} /><TooltipContent side="right">{name || email}</TooltipContent></Tooltip> : trigger}
+      <DropdownMenuContent {...menuSide(collapsed)} sideOffset={6} className="w-56">
+        <p className="truncate px-2 py-1.5 text-[12px] text-foreground/50">{email}</p>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link href="/account" />} className="gap-2 text-[13px]">
+          <HugeiconsIcon icon={NAV_ICONS.account} className="size-4 text-foreground/45" strokeWidth={1.6} /> Account
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<a href="/auth/signout" />} className="gap-2 text-[13px]">
+          <HugeiconsIcon icon={NAV_ICONS.signout} className="size-4 text-foreground/45" strokeWidth={1.6} /> Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

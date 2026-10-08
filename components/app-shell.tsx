@@ -16,16 +16,17 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const sections: NavSection[] = [
     { label: 'Library', items: [{ href: '/', label: 'Gallery', icon: 'gallery' }, { href: '/templates', label: 'Templates', icon: 'templates' }, { href: '/archive', label: 'Archive', icon: 'archive' }] },
     { label: 'Create', items: [{ href: '/canvas', label: 'Canvas', icon: 'canvas' }] },
-    { label: 'Resources', items: [{ href: '/install', label: 'Install', icon: 'install' }] },
-    ...(me?.is_admin ? [{ label: 'Admin', items: [{ href: '/admin', label: 'Team', icon: 'team' as const }, { href: '/admin/review', label: 'Template review', icon: 'review' as const }] }] : []),
   ];
+  // Less used, at the bottom of the rail: Install, Admin (admins only, in a menu) and the account.
+  const admin: NavItem[] | null = me?.is_admin ? [{ href: '/admin', label: 'Team', icon: 'team' }, { href: '/admin/review', label: 'Template review', icon: 'review' }] : null;
+  const name = me?.full_name || me?.email || '';
   const [list, jar] = await Promise.all([me ? listProjects(me).catch(() => []) : [], cookies()]);
   const projects: ProjectLink[] = list.map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id }));
   const who = me ? { id: me.id, is_admin: me.is_admin } : undefined;
   const collapsed = jar.get('sidebar')?.value === 'collapsed';
   return (
-    <ShellFrame initialCollapsed={collapsed} sidebar={<Sidebar sections={sections} projects={projects} me={who} email={me?.email ?? ''} />}>
-      <MobileNav sections={sections} projects={projects} me={who} email={me?.email ?? ''} />
+    <ShellFrame initialCollapsed={collapsed} sidebar={<Sidebar sections={sections} admin={admin} projects={projects} me={who} email={me?.email ?? ''} name={name} />}>
+      <MobileNav sections={sections} admin={admin} projects={projects} me={who} email={me?.email ?? ''} />
       {/* Full-screen tools (Canvas) mark themselves data-fullbleed and take the whole content area. */}
       <main className="min-w-0 px-4 pt-5 pb-16 sm:px-6 md:pt-8 lg:px-10 has-[[data-fullbleed]]:p-0">{children}</main>
     </ShellFrame>

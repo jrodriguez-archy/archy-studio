@@ -10,9 +10,9 @@ import { NavLink, SignOutLink } from '@/components/nav-link';
 import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import type { NavSection } from '@/components/app-shell';
+import type { NavItem, NavSection } from '@/components/app-shell';
 
-export function MobileNav({ sections, projects, me, email }: { sections: NavSection[]; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string }) {
+export function MobileNav({ sections, admin, projects, me, email }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
@@ -42,7 +42,14 @@ export function MobileNav({ sections, projects, me, email }: { sections: NavSect
               </Fragment>
             ))}
             <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
-              <p className="truncate px-2 pb-1 text-[11px] text-foreground/35">{email}</p>
+              <NavLink href="/install" icon="install" onNavigate={close}>Install</NavLink>
+              {admin && (
+                <>
+                  <p className="px-2 pt-3 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/35">Admin</p>
+                  {admin.map((i) => <NavLink key={i.href} href={i.href} icon={i.icon} onNavigate={close}>{i.label}</NavLink>)}
+                </>
+              )}
+              <p className="truncate px-2 pt-3 pb-1 text-[11px] text-foreground/35">{email}</p>
               <NavLink href="/account" icon="account" onNavigate={close}>Account</NavLink>
               <SignOutLink />
             </div>

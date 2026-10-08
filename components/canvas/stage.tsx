@@ -360,7 +360,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     if (!d.getElementById('canvas-editing')) {
       const st = d.createElement('style');
       st.id = 'canvas-editing';
-      st.textContent = '[data-canvas-editing]{outline:none!important}[data-canvas-editing]::selection{background:rgba(0,149,255,.7);color:#fff}';
+      st.textContent = '[data-canvas-editing]{outline:none!important}[data-canvas-editing]::selection{background:rgba(255,43,214,.55);color:#fff}';
       d.head.appendChild(st);
     }
     n.dataset.canvasEditing = '';
@@ -435,7 +435,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       {/* Fitting the new copy: a thin line along the top, only if it takes a moment. */}
       {refitting && (
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-[2px] overflow-hidden animate-in fade-in-0 fill-mode-both delay-300 duration-200">
-          <div className="h-full w-1/3 animate-[canvas-refit_1.1s_ease-in-out_infinite] rounded-full bg-[#0095FF]" />
+          <div className="h-full w-1/3 animate-[canvas-refit_1.1s_ease-in-out_infinite] rounded-full bg-[#FF2BD6]" />
         </div>
       )}
       {claude && (
@@ -458,32 +458,32 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
         onDoubleClick={onDoubleClick}
       >
         {/* The safe area shows while something moves; red when the piece leaves it. */}
-        {safeR && badge && <div className={`pointer-events-none absolute border border-dashed ${outside ? 'border-[#F2385A]' : 'border-primary/40'}`} style={{ left: safeR.x, top: safeR.y, width: safeR.w, height: safeR.h }} />}
-        {ctx && <div className="pointer-events-none absolute outline-1 outline-offset-0 outline-dashed outline-primary/35" style={{ left: ctx.x, top: ctx.y, width: ctx.w, height: ctx.h }}><Tag right>{ctxComp!.name}</Tag></div>}
+        {safeR && badge && <div className={`pointer-events-none absolute border border-dashed ${outside ? 'border-[#F2385A]' : 'border-[#FF2BD6]/40'}`} style={{ left: safeR.x, top: safeR.y, width: safeR.w, height: safeR.h }} />}
+        {ctx && <div className="pointer-events-none absolute outline-1 outline-offset-0 outline-dashed outline-[#FF2BD6]/35" style={{ left: ctx.x, top: ctx.y, width: ctx.w, height: ctx.h }}><Tag right>{ctxComp!.name}</Tag></div>}
         {hov && (
-          <div className={`pointer-events-none absolute ${hovComp?.kind === 'group' ? 'bg-primary/[0.04] outline-1 outline-dashed outline-primary/70' : 'ring-1 ring-primary/60'}`} style={{ left: hov.x, top: hov.y, width: hov.w, height: hov.h }}>
+          <div className={`pointer-events-none absolute ${hovComp?.kind === 'group' ? 'bg-[#FF2BD6]/[0.04] outline-1 outline-dashed outline-[#FF2BD6]/70' : 'ring-[1.5px] ring-[#FF2BD6]/80'}`} style={{ left: hov.x, top: hov.y, width: hov.w, height: hov.h }}>
             {hovComp?.kind === 'archy' ? <Tag icon>Archy logo · move and scale only</Tag> : hovComp?.kind === 'group' && <Tag>{hovComp.name}</Tag>}
           </div>
         )}
-        {sel.length > 1 && sel.map((s) => <div key={s.id} className="pointer-events-none absolute ring-1 ring-primary" style={{ left: s.r.x, top: s.r.y, width: s.r.w, height: s.r.h }} />)}
+        {sel.length > 1 && sel.map((s) => <div key={s.id} className="pointer-events-none absolute ring-1 ring-[#FF2BD6]" style={{ left: s.r.x, top: s.r.y, width: s.r.w, height: s.r.h }} />)}
         {frameBox && (
-          <div className={`pointer-events-none absolute ${sel.length > 1 ? 'ring-1 ring-primary/50 ring-offset-0' : 'ring-[1.5px] ring-primary'}`} style={{ left: frameBox.x, top: frameBox.y, width: frameBox.w, height: frameBox.h }}>
+          <div className={`pointer-events-none absolute ${sel.length > 1 ? 'ring-1 ring-[#FF2BD6]/50 ring-offset-0' : 'ring-2 ring-[#FF2BD6]'}`} style={{ left: frameBox.x, top: frameBox.y, width: frameBox.w, height: frameBox.h }}>
             {single && !editing && handles.map((h) => (
               <span
                 key={h}
                 onPointerDown={(e) => { e.stopPropagation(); startDrag(e, [single.id], h); }}
-                className="pointer-events-auto absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-[2px] border border-primary bg-white"
+                className="pointer-events-auto absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-[2px] border border-[#FF2BD6] bg-white"
                 style={{ left: h.includes('w') ? 0 : h.includes('e') ? '100%' : '50%', top: h.includes('n') ? 0 : h.includes('s') ? '100%' : '50%', cursor: `${h}-resize` }}
               />
             ))}
             {logo && !badge && <Tag icon>Archy logo · move and scale only</Tag>}
             {sel.length > 1 && !badge && <Tag>{sel.length} selected</Tag>}
-            {badge && <span className={`absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums ${outside ? 'bg-[#F2385A]' : 'bg-primary'}`}>{outside ? `${badge}   Outside the safe area` : badge}</span>}
+            {badge && <span className={`absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums ${outside ? 'bg-[#F2385A]' : 'bg-[#FF2BD6]'}`}>{outside ? `${badge}   Outside the safe area` : badge}</span>}
           </div>
         )}
-        {flash.map((id) => { const r = ready ? screen(boxOf(id)) : null; return r && <div key={`f-${id}`} className="pointer-events-none absolute rounded-[2px] bg-[#0095FF]/10 ring-2 ring-[#0095FF] animate-out fade-out-0 duration-[1600ms] fill-mode-forwards" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} />; })}
-        {editBox && <div className="pointer-events-none absolute ring-1 ring-primary" style={{ left: editBox.x, top: editBox.y, width: editBox.w, height: editBox.h }} />}
-        {marquee && <div className="pointer-events-none absolute border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
+        {flash.map((id) => { const r = ready ? screen(boxOf(id)) : null; return r && <div key={`f-${id}`} className="pointer-events-none absolute rounded-[2px] bg-[#FF2BD6]/10 ring-2 ring-[#FF2BD6] animate-out fade-out-0 duration-[1600ms] fill-mode-forwards" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} />; })}
+        {editBox && <div className="pointer-events-none absolute ring-1 ring-[#FF2BD6]" style={{ left: editBox.x, top: editBox.y, width: editBox.w, height: editBox.h }} />}
+        {marquee && <div className="pointer-events-none absolute border border-[#FF2BD6] bg-[#FF2BD6]/10" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
         {guides.map((g, i) => (
           <div key={i} className="pointer-events-none absolute bg-[#F2385A]"
             style={g.axis === 'x' ? { left: g.at * zoom, top: g.from * zoom, width: 1, height: (g.to - g.from) * zoom } : { top: g.at * zoom, left: g.from * zoom, height: 1, width: (g.to - g.from) * zoom }} />

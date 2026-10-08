@@ -35,7 +35,8 @@ export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: Who })
     <CanvasEditor
       seenAt={seenAt}
       piece={{
-        title: fresh ? ctx.title : piece.set_title ?? titleFromSlots(piece.slots) ?? ctx.title,
+        // The design and theme follow the title on templates that offer several ("AE Spotlight · The Arch, Navy").
+        title: (fresh ? ctx.title : piece.set_title ?? titleFromSlots(piece.slots) ?? ctx.title) + (ctx.combo ? ` · ${ctx.combo.designLabel}, ${ctx.combo.themeLabel}` : ''),
         backHref: back, active: piece.id,
         // Formats that cannot be drawn again stay out (they keep their image in the gallery).
         boards: boards.filter((b): b is Board => !('lost' in b)),

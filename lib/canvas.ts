@@ -133,6 +133,11 @@ export async function canvasLibrary(me: Who) {
     templates: items.map((i) => ({
       id: i.manifest.id, title: i.config.title, category: i.config.category ?? 'other', purpose: i.config.purpose ?? null, cover: !!i.config.coverOf,
       formats: Object.entries(i.manifest.formats).map(([key, f]) => ({ key, label: formatLabel(key), width: f.width, height: f.height, src: srcs[`${i.manifest.id}/${key}`] })),
+      // Designs and themes to start from (default first), on templates that offer several.
+      designs: i.manifest.default ? Object.entries(i.manifest.designs ?? {}).map(([key, d]) => ({ key, label: d.label })).sort((a, b) => Number(b.key === i.manifest.default!.design) - Number(a.key === i.manifest.default!.design)) : null,
+      themes: i.manifest.default ? Object.entries(i.manifest.themes ?? {}).map(([key, t]) => ({ key, label: t.label })).sort((a, b) => Number(b.key === i.manifest.default!.theme) - Number(a.key === i.manifest.default!.theme)) : null,
+      // Preview links of the other designs and themes, keyed `<format>--<design>--<theme>`.
+      comboSrcs: Object.fromEntries(Object.entries(srcs).filter(([k]) => k.startsWith(`${i.manifest.id}/`) && k.includes('--')).map(([k, v]) => [k.slice(i.manifest.id.length + 1), v])),
     })),
     mine: pieces(mine),
     team: pieces(team),

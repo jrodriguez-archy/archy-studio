@@ -20,15 +20,22 @@ export type TemplateCard = {
   /** Template id of the event page cover that goes with this style. */
   coverId?: string;
   slots: { key: string; type: 'text' | 'image' | 'logo'; optional: boolean }[];
+  /** Designs (layouts) and themes (colour treatments), on templates that offer several; the first is the default. */
+  designs?: { key: string; label: string }[];
+  themes?: { key: string; label: string }[];
+  /** Preview links of the other designs and themes, keyed `<format>--<design>--<theme>`. */
+  comboSrcs?: Record<string, string>;
 };
+type Combo = { design: string; theme: string } | null;
 export type TemplateSection = { key: string; label?: string; items: TemplateCard[] };
 /** A big category (Events, Ads…) with its subcategories. */
 export type TemplateGroup = { key: string; label: string; description?: string; href?: string; count: number; sections: TemplateSection[] };
 
-// What someone pastes in Claude to make a piece with this exact template.
-function templatePrompt(t: TemplateCard) {
+// What someone pastes in Claude to make a piece with this exact template (and design and theme).
+function templatePrompt(t: TemplateCard, combo: Combo = null) {
+  const pick = combo && t.designs ? `, design ${combo.design} (${labelOf(t.designs, combo.design)}), theme ${combo.theme} (${labelOf(t.themes!, combo.theme)})` : '';
   return [
-    `Use the Archy Studio template ${t.id} (${t.title})${t.coverId ? `, and its event page cover ${t.coverId} if useful,` : ''} for this brief:`,
+    `Use the Archy Studio template ${t.id} (${t.title})${pick}${t.coverId ? `, and its event page cover ${t.coverId} if useful,` : ''} for this brief:`,
     ...t.needs.map((n) => `- ${n}: `),
     ...t.extras.map((n) => `- ${n} (optional): `),
   ].join('\n');
@@ -52,7 +59,12 @@ function templateActions(t: TemplateCard, onOpen: () => void): Action[] {
 }
 
 const lead = (t: TemplateCard) => t.formats.find((f) => f.key === (t.lead ?? 'post')) ?? t.formats[0];
-const preview = (f: { src: string }) => f.src;
+const labelOf = (list: { key: string; label: string }[], key: string) => list.find((x) => x.key === key)?.label ?? key;
+// A design × theme applies to the template's own formats (not to the event page cover of another
+// template); the default one is the format's own preview.
+const preview = (f: { src: string; key: string }, combo: Combo = null, own = true, t?: TemplateCard) =>
+  (combo && own && t?.comboSrcs?.[`${f.key}--${combo.design}--${combo.theme}`]) || f.src;
+const defaultCombo = (t: TemplateCard): Combo => (t.designs?.length && t.themes?.length ? { design: t.designs[0].key, theme: t.themes[0].key } : null);
 
 // The catalog grid, in sections. A click opens the template in place with its formats and what it needs.
 export function TemplateBrowser({ groups, showGroupHeaders }: { groups: TemplateGroup[]; showGroupHeaders: boolean }) {
@@ -64,7 +76,9 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
   const viaCover = !openId && requested ? all.find((t) => t.coverId === requested) : undefined;
   const current = all.find((t) => t.id === openId) ?? viaCover;
   const [format, setFormat] = useState<string | null>(null);
-  useEffect(() => setFormat(null), [openId, viaCover?.id]);
+  const [combo, setCombo] = useState<Combo>(null);
+  useEffect(() => { setFormat(null); setCombo(null); }, [openId, viaCover?.id]);
+  const pick = current ? combo ?? defaultCombo(current) : null;
   const stepAny = (d: 1 | -1) => {
     if (!viaCover) return step(d);
     const i = all.indexOf(viaCover);
@@ -117,7 +131,7 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
                           <span className="truncate">{t.title}</span>
                           <span className="ml-auto shrink-0 text-foreground/40">{t.formats.map((x) => (x.key === 'og' ? 'OG' : x.key[0].toUpperCase() + x.key.slice(1))).join(' · ')}</span>
                         </div>
-                        <p className="truncate px-0.5 text-[13px] text-foreground/40">{t.purposeLabel}{t.needs.length ? ` · Needs ${t.needs.join(', ').toLowerCase()}` : ''}</p>
+                        <p className="truncate px-0.5 text-[13px] text-foreground/40">{t.purposeLabel}{t.designs ? ` · ${t.designs.length} designs, ${t.themes!.length} themes` : ''}{t.needs.length ? ` · Needs ${t.needs.join(', ').toLowerCase()}` : ''}</p>
                       </button>
                       <MoreActions actions={templateActions(t, () => open(t.id))} className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground opacity-0 shadow-sm backdrop-blur transition-opacity outline-none group-hover:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 max-lg:opacity-100" />
                       </ContextActions>
@@ -137,10 +151,17 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
           title={current.title}
           onClose={close}
           onStep={stepAny}
-          stage={<StageImage src={preview(shown)} alt={`${current.title} ${shown.label}`} width={shown.width} height={shown.height} />}
+          stage={<StageImage src={preview(shown, pick, shown.templateId === current.id, current)} alt={`${current.title} ${shown.label}`} width={shown.width} height={shown.height} />}
           info={
             <div className="space-y-6">
               {current.description && !current.description.toLowerCase().startsWith(current.purposeLabel.toLowerCase()) && <p className="text-foreground/70">{current.description}</p>}
+
+              {pick && current.designs && current.themes && (
+                <>
+                  <Chips label="Design" items={current.designs} active={pick.design} onPick={(design) => setCombo({ ...pick, design })} />
+                  <Chips label="Theme" items={current.themes} active={pick.theme} onPick={(theme) => setCombo({ ...pick, theme })} />
+                </>
+              )}
 
               <section>
                 <p className="pb-1.5 text-foreground/40">Formats</p>
@@ -175,11 +196,16 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
                 <InfoRows rows={current.slots.map((s) => [s.key, <span key={s.key} className={s.optional ? 'text-foreground/40' : ''}>{s.type === 'text' ? 'Text' : s.type === 'logo' ? 'Logo' : 'Image'} · {s.optional ? 'Optional' : 'Essential'}</span>])} />
               </section>
 
-              <button type="button" onClick={() => copied('Prompt')(templatePrompt(current))} className="flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90">
+              <button type="button" onClick={() => copied('Prompt')(templatePrompt(current, pick))} className="flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90">
                 <HugeiconsIcon icon={SparklesIcon} className="size-3.5" /> Copy prompt for Claude
               </button>
 
-              <Link href={`/templates/${current.id}`} className="inline-flex text-foreground/60 underline decoration-foreground/20 underline-offset-4 hover:text-foreground hover:decoration-foreground">
+              <Link href={`/canvas/new?template=${current.id}&format=${shown.templateId === current.id ? shown.key : lead(current).key}${pick ? `&design=${pick.design}&theme=${pick.theme}` : ''}`}
+                className="flex h-8 w-full items-center justify-center rounded-md bg-foreground/[0.05] px-3 text-[13px] font-medium transition-colors hover:bg-foreground/[0.08]">
+                Start in Canvas
+              </Link>
+
+              <Link href={`/templates/${current.id}${pick ? `?design=${pick.design}&theme=${pick.theme}` : ''}`} className="inline-flex text-foreground/60 underline decoration-foreground/20 underline-offset-4 hover:text-foreground hover:decoration-foreground">
                 Examples and length limits
               </Link>
             </div>
@@ -199,3 +225,22 @@ function IdButton({ id }: { id: string }) {
 }
 
 const sentence = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+// A row of choices (designs, themes) in the template inspector, styled like the format tabs.
+function Chips({ label, items, active, onPick }: { label: string; items: { key: string; label: string }[]; active: string; onPick: (key: string) => void }) {
+  return (
+    <section>
+      <p className="pb-1.5 text-foreground/40">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((x) => (
+          <button key={x.key} type="button" onClick={() => onPick(x.key)}
+            className={`flex h-7 items-center rounded-[4px] px-2.5 text-[13px] transition-colors ${
+              x.key === active ? 'bg-[#E6F4FF] font-medium text-primary' : 'bg-foreground/[0.04] text-foreground/60 hover:bg-foreground/[0.07] hover:text-foreground'
+            }`}>
+            {x.label}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}

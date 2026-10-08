@@ -93,5 +93,11 @@ function toCard(srcs: Record<string, string>, { manifest, config, formats, needs
     needs: needs.map((n) => FACT_LABEL[n] ?? n), extras: extras.map((n) => FACT_LABEL[n] ?? n),
     formats: [...own, ...extra], lead, coverId: cover?.manifest.id,
     slots: Object.entries(manifest.slots).map(([key, s]) => ({ key, type: s.type, optional: optional.has(key) })),
+    // The default design and theme first.
+    ...(manifest.default ? {
+      comboSrcs: Object.fromEntries(Object.entries(srcs).filter(([k]) => k.startsWith(`${manifest.id}/`) && k.includes('--')).map(([k, v]) => [k.slice(manifest.id.length + 1), v])),
+      designs: Object.entries(manifest.designs ?? {}).map(([key, d]) => ({ key, label: d.label })).sort((a, b) => Number(b.key === manifest.default!.design) - Number(a.key === manifest.default!.design)),
+      themes: Object.entries(manifest.themes ?? {}).map(([key, t]) => ({ key, label: t.label })).sort((a, b) => Number(b.key === manifest.default!.theme) - Number(a.key === manifest.default!.theme)),
+    } : {}),
   };
 }

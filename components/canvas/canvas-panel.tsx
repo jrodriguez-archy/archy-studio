@@ -58,6 +58,8 @@ export function LibraryTab({ library, current, updating = [], confirmLeave }: { 
   const router = useRouter();
   const [view, setView] = useState<'designs' | 'templates'>(current ? 'designs' : 'templates');
   const [whose, setWhose] = useState<'mine' | 'team'>('mine');
+  // Design and theme chosen per template (templates that offer several); the default otherwise.
+  const [combos, setCombos] = useState<Record<string, { design: string; theme: string }>>({});
   const go = (href: string) => { if (confirmLeave()) router.push(href); };
   const pieces = whose === 'mine' ? library.mine : library.team;
   // Event page covers get their own shelf, closed until wanted.
@@ -113,23 +115,40 @@ export function LibraryTab({ library, current, updating = [], confirmLeave }: { 
               </button>
               {open && (
                 <div className="space-y-1 px-2 pb-2">
-                  {list.map((t) => (
+                  {list.map((t) => {
+                    const c = t.designs && t.themes ? combos[t.id] ?? { design: t.designs[0].key, theme: t.themes[0].key } : null;
+                    const q = c ? `&design=${c.design}&theme=${c.theme}` : '';
+                    const set = (k: 'design' | 'theme', v: string) => setCombos((m) => ({ ...m, [t.id]: { ...c!, [k]: v } }));
+                    return (
                     <div key={t.id} className="flex items-center gap-2.5 rounded-md p-1.5 hover:bg-foreground/[0.03]">
-                      <button type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${t.formats[0].key}`)} className="size-12 shrink-0 overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
+                      <button type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${t.formats[0].key}${q}`)} className="size-12 shrink-0 self-start overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={t.formats[0].src} alt="" loading="lazy" className="size-full object-cover object-top" />
+                        <img src={(c && t.comboSrcs[`${t.formats[0].key}--${c.design}--${c.theme}`]) || t.formats[0].src} alt="" loading="lazy" className="size-full object-cover object-top" />
                       </button>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{t.title.replace(/^Event Cover · /, '')}</p>
                         <div className="mt-1 flex gap-1 overflow-x-auto [scrollbar-width:none]">
                           {t.formats.map((f) => (
-                            <button key={f.key} type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${f.key}`)} title={`${f.width}×${f.height}`}
+                            <button key={f.key} type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${f.key}${q}`)} title={`${f.width}×${f.height}`}
                               className="h-5 shrink-0 rounded-[3px] bg-foreground/[0.05] px-1.5 text-[11px] text-foreground/70 hover:bg-[#E6F4FF] hover:text-primary">{f.label}</button>
                           ))}
                         </div>
+                        {c && (
+                          <div className="mt-1 flex gap-1">
+                            <select aria-label="Design" value={c.design} onChange={(e) => set('design', e.target.value)}
+                              className="h-5 min-w-0 flex-1 rounded-[3px] bg-foreground/[0.05] px-1 text-[11px] text-foreground/70 outline-none hover:bg-foreground/[0.08]">
+                              {t.designs!.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
+                            </select>
+                            <select aria-label="Theme" value={c.theme} onChange={(e) => set('theme', e.target.value)}
+                              className="h-5 min-w-0 flex-1 rounded-[3px] bg-foreground/[0.05] px-1 text-[11px] text-foreground/70 outline-none hover:bg-foreground/[0.08]">
+                              {t.themes!.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}
+                            </select>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -29,7 +29,7 @@ Brief first, then the best template:
 
 Designs and themes: some templates (list_templates shows designs and themes) come in several designs (layouts) and themes (White, Royal Blue, Navy grounds) with the same slots. Use the default unless the requester asks for one or for options; to offer options, render two or three different designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits, and some slots exist only in some designs (only_in_designs). Changing the design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
 
-Event page covers: a template with a cover (list_templates shows it) has a matching event page cover (1200×900, the Webflow event page thumbnail). After making that style, offer the cover in one short line; never force it. If they want it, render the cover template with the same facts and the same set, so it stacks with the social formats.
+Event page covers: the event templates have a cover format (1200×900, the Webflow event page thumbnail) next to Post, Square, Stories and OG. It is never part of "all formats": after making the social formats, offer the cover in one short line; never force it. If they want it, render the same template with formats: ["cover"], the same facts, design, theme and set, so it stacks with the social formats. The cover splits the headline in two and prints "Booth" with the number by itself; it needs a city or venue photo for its ground (and a few covers a guest photo or a short cover-subhead): get_template lists them as only_in_formats ["cover"]; ask for them only then.
 
 Projects: designs can be filed into project folders in the Studio gallery (one project per design). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
 
@@ -63,8 +63,6 @@ const handler = createMcpHandler(
             template: m.id,
             title: c.title,
             category: c.category,
-            cover: c.cover,
-            cover_of: c.coverOf,
             description: c.description,
             use_when: c.useWhen,
             not_when: c.notWhen,
@@ -106,11 +104,14 @@ const handler = createMcpHandler(
         });
         const optional = new Set(c.optional ?? []);
         const derivedFrom = (k: string) => c.derive?.[k]?.from;
+        // Slots only some formats draw (the cover's ground photo, an OG without the venue line).
+        const formatsWith = (k: string) => Object.keys(formats).filter((f) => !m.slots[k].perFormat || keyOf(f) in m.slots[k].perFormat!);
         const variantFor = (k: string) => Object.entries(m.variants ?? {}).find(([, v]) => v.when?.empty?.includes(k))?.[0];
         const slots = Object.fromEntries(Object.entries(m.slots).filter(([k]) => inCombo(k)).map(([k, s]) => [k, {
           type: s.type,
           only_in_designs: m.default && designsWith(k)!.length < Object.keys(m.designs ?? {}).length ? designsWith(k) : undefined,
-          example: s.type === 'text' ? s.default : undefined,
+          only_in_formats: formatsWith(k).length < Object.keys(formats).length ? formatsWith(k) : undefined,
+          example: s.type === 'text' ? (Object.entries(s.perFormat ?? {}).find(([f]) => f === keyOf('post'))?.[1] as { sample?: string } | undefined)?.sample ?? s.default : undefined,
           essential: !optional.has(k),
           fact: c.facts?.[k] ?? 'copy written from the brief',
           when_missing: !optional.has(k)
@@ -145,7 +146,7 @@ const handler = createMcpHandler(
         title: 'Match templates to a brief',
         description: 'Which templates can be made with the facts a brief brings, best first, and what each other template is missing. Call it after reading the brief, and again after asking for missing facts.',
         inputSchema: z.object({
-          facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for a cover background; guest-photo = people enjoying a venue.'),
+          facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue.'),
           purpose: z.enum(PURPOSES).optional().describe('What the design is for, when clear from the brief.'),
         }),
         annotations: { readOnlyHint: true },
@@ -313,7 +314,7 @@ const handler = createMcpHandler(
         description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts; without a photo the no-photo version is used. Copy that does not fit is not delivered: the answer gives two options, shorter copy (with the exact maximum) or smaller text (a preview at down to 70%), for the requester to choose.',
         inputSchema: z.object({
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
-          formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"]. Default: all.'),
+          formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"], or ["cover"] for the event page cover. Default: all but the cover.'),
           design: z.string().optional().describe('Design id, on templates that offer several (list_templates), e.g. "the-arch". Default: the template\'s default design.'),
           theme: z.string().optional().describe('Theme id, on templates that offer several (list_templates), e.g. "navy". Default: the template\'s default theme.'),
           smaller_text: z.boolean().optional().describe('Only when the requester chose "smaller text" after a render said the copy does not fit: the copy keeps its wording and may shrink to 70% (never under 14px).'),
@@ -335,7 +336,8 @@ const handler = createMcpHandler(
         let combo;
         try { combo = resolveCombo(m, design, theme); } catch (e) { return { isError: true, content: [{ type: 'text', text: (e as Error).message }] }; }
         const files = comboFormats(m, combo);
-        const wanted = formats?.length ? formats : Object.keys(files);
+        // "All formats" are the social ones: the event page cover is made only when asked for.
+        const wanted = formats?.length ? formats : Object.keys(files).filter((f) => f !== 'cover');
         const setId = await resolveSet({ userId: userIdOf(ctx), template, slots, requested: set });
         // New pieces of a set that is already filed in a project join that project.
         if (!projectId && supabaseConfigured()) {
@@ -345,6 +347,8 @@ const handler = createMcpHandler(
         const origin = publicOrigin(ctx);
         const content: Content[] = [];
         const refused: string[] = [];
+        // The cover asked for with the social formats but missing its own content (its ground photo).
+        let coverNeeds: string[] | null = null;
         // Formats whose copy fits in smaller text (offered as an option).
         const smallerOption: string[] = [];
         for (const format of wanted) {
@@ -353,6 +357,8 @@ const handler = createMcpHandler(
             out = await render({ template, format, design, theme, slots, smallerText });
           } catch (e) {
             if (e instanceof MissingRequired) {
+              // Only the cover is missing its own content (its ground photo): say so, keep the other formats.
+              if (format === 'cover' && wanted.length > 1) { coverNeeds = e.slots; continue; }
               const have = await factsFromSlots(template, slots);
               // Same purpose first (a booth invite suggests booth invites, not reminders).
               const purpose = (await loadConfig(template)).purpose;
@@ -421,8 +427,9 @@ const handler = createMcpHandler(
               : '- Smaller text does not make it fit either: only shorter copy works here.',
           ].join('\n') });
         }
+        if (coverNeeds) content.push({ type: 'text', text: `Cover not made: it needs ${coverNeeds.join(', ')} (the event page cover's own content). Ask the requester for it, then render formats: ["cover"] with the same set.` });
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the designs stay together in the gallery).` });
-        return { isError: refused.length === wanted.length && !smallerOption.length, content };
+        return { isError: refused.length + (coverNeeds ? 1 : 0) === wanted.length && !smallerOption.length, content };
       },
     );
   },

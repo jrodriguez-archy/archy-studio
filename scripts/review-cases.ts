@@ -118,27 +118,26 @@ const kindOf = (id: string): Kind =>
 
 // The value of one slot for one case, in the template's own style (a booth sticker that prints BOOTH
 // takes "#412"; a line that does not, "Booth #412").
-function valueFor(manifest: Manifest, kind: Kind, slot: string, facts: Facts): string | null | undefined {
+function valueFor(manifest: Manifest, kind: Kind, slot: string, facts: Facts, format: string): string | null | undefined {
   const s = manifest.slots[slot];
   const def = s.default ?? '';
   if (s.type === 'image') {
     // City photos follow the event: a show's photo band, and the city behind every event cover.
     if (/^image-(photo|venue)$/.test(slot) && (kind === 'show' || kind === 'countdown') && facts.photo) return facts.photo;
-    if (slot === 'image-venue' && manifest.id.startsWith('event-cover') && facts.photo) return facts.photo;
+    if (slot === 'image-venue' && format.startsWith('cover') && facts.photo) return facts.photo;
     return undefined; // people and venues keep the template's photo
   }
   if (s.type === 'logo') return slot === 'logo-partner' ? facts['logo-partner'] ?? null : null;
+  // The engine prints it in each format's shape ("Booth #412" on the cover).
   if (slot === 'booth' && facts.booth) return /^booth/i.test(def) ? `Booth #${facts.booth}` : `#${facts.booth}`;
   if (slot === 'headline' && kind === 'countdown') return facts.countdown ?? undefined;
   if (slot === 'headline' && kind === 'night' && /dentists\./i.test(def)) return facts.short ?? undefined;
   if (slot === 'offer' && facts.offer) return def === def.toUpperCase() ? facts.offer.toUpperCase() : facts.offer;
-  if (slot === 'kicker' && manifest.id.startsWith('event-cover')) return undefined; // the cover's own words stay (Template review)
   const v = facts[slot];
   return v === undefined ? undefined : v;
 }
 
 export async function casesFor(manifest: Manifest, config: TemplateConfig, format: string, opts: { themes?: boolean; index?: number } = {}): Promise<ReviewCase[]> {
-  void format;
   const kind = kindOf(manifest.id);
   const optional = new Set(config.optional ?? []);
   const show = SHOWS[(opts.index ?? 0) % SHOWS.length];
@@ -147,7 +146,7 @@ export async function casesFor(manifest: Manifest, config: TemplateConfig, forma
     const out: Record<string, string | null> = {};
     for (const slot of Object.keys(manifest.slots)) {
       if (dropOptional && optional.has(slot)) { out[slot] = null; continue; }
-      const v = valueFor(manifest, kind, slot, facts);
+      const v = valueFor(manifest, kind, slot, facts, format);
       if (v !== undefined) out[slot] = v;
     }
     return out;

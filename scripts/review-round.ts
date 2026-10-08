@@ -24,12 +24,11 @@ const note = arg('note') ?? null;
 // A few templates per category, Post and Stories, realistic and short; themes on two templates only.
 const SMALL: Record<string, { formats: string[]; cases: string[] }> = {
   'booth-icon-list': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:sky', 'theme:light'] },
-  'booth-invite-photo': { formats: ['post', 'stories'], cases: ['realistic', 'short'] },
+  'booth-invite-photo': { formats: ['post', 'stories', 'cover'], cases: ['realistic', 'short'] },
   'countdown-mascot': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:sky', 'theme:ice'] },
   'night-out-illustration': { formats: ['post', 'stories'], cases: ['realistic', 'short'] },
   'speaker-invite': { formats: ['post', 'stories'], cases: ['short'] },
   'ae-spotlight': { formats: ['post'], cases: ['realistic'] },
-  'event-cover-booth-photo': { formats: ['cover'], cases: ['realistic'] },
 };
 const small = process.argv.includes('--small');
 // --template <id>: one new template, short round (realistic and short in every format; three themes on

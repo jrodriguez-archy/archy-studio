@@ -62,12 +62,9 @@ export const loadSource = cache(async (ref: string): Promise<PieceSource | null>
 
 export const isNew = (piece: PieceSource) => piece.id.startsWith('new:');
 
-// An event template and its page cover are one design family: the cover is one more format of the
-// event (as in Paper), though it is its own template. The event first, then its cover.
+// The templates whose formats make one design. The event page cover is a format of its event
+// template (as in Paper), so a design is a single template.
 export async function familyOf(template: string): Promise<string[]> {
-  const config = await loadConfig(template).catch(() => null);
-  if (config?.cover) return [template, config.cover];
-  if (config?.coverOf) return [config.coverOf, template];
   return [template];
 }
 
@@ -100,7 +97,8 @@ export async function loadSet(piece: PieceSource) {
   const have = new Set(siblings.map((p) => p.format));
   const missing = family.flatMap((t) => Object.entries(files[t]).filter(([f]) => !have.has(f)).map(([f, fm]) => ({
     ref: t === piece.template ? newRef(t, f, piece.design, piece.theme) : newRef(t, f), format: f, width: fm.width, height: fm.height,
-    defaults: Object.fromEntries(Object.entries(manifests[t].slots).map(([k, v]) => [k, v.default])) as Record<string, string | null>,
+    // The format's own sample where it has one (the cover's "Booth #1039").
+    defaults: Object.fromEntries(Object.entries(manifests[t].slots).map(([k, v]) => [k, (v.perFormat?.[f] as { sample?: string } | undefined)?.sample ?? v.default])) as Record<string, string | null>,
   })));
   return { pieces: siblings, missing };
 }
@@ -128,7 +126,8 @@ export async function editorContext(piece: PieceSource) {
   const slotsOf = (m: Member, format: string): Record<string, SlotInfo> => {
     const optional = new Set(m.config.optional ?? []);
     // Only the slots this format draws (a slot with per-format styles exists in those formats only).
-    const inFormat = (s: { perFormat?: Record<string, unknown> }) => !s.perFormat || format in s.perFormat;
+    const key = m.combo?.key ? `${format}--${m.combo.key}` : format;
+    const inFormat = (s: { perFormat?: Record<string, unknown> }) => !s.perFormat || key in s.perFormat;
     return Object.fromEntries(Object.entries(m.manifest.slots).filter(([, s]) => inFormat(s as { perFormat?: Record<string, unknown> }))
       .map(([k, s]) => [k, { type: s.type, optional: optional.has(k), fontSize: s.limits?.[m.combo?.key ? `${format}--${m.combo.key}` : format]?.fontSize }]));
   };

@@ -20,6 +20,10 @@
       "nodeId": "FYP-1",
       "label": "Post 1080×1350"
     },
+    "square": {
+      "nodeId": "G5D-1",
+      "label": "Square 1080×1080"
+    },
     "stories": {
       "nodeId": "G1F-1",
       "label": "Stories 1080×1920"
@@ -28,13 +32,12 @@
       "nodeId": "G3E-1",
       "label": "OG 1200×630"
     },
-    "square": {
-      "nodeId": "G5D-1",
-      "label": "Square 1080×1080"
+    "cover": {
+      "nodeId": "IBZ-0",
+      "label": "Cover 1200×900"
     }
   },
   "purpose": "hosted-evening",
-  "cover": "event-cover-night-out",
   "essential": [
     "headline",
     "city",
@@ -53,6 +56,26 @@
     "date": "date",
     "cta": null,
     "headline": "event-name",
-    "subhead": null
+    "subhead": null,
+    "headline-1": "event-name",
+    "headline-2": "event-name",
+    "image-photo": "guest-photo",
+    "image-venue": "ground-photo",
+    "cover-subhead": null
+  },
+  "coverEssential": [
+    "image-venue",
+    "image-photo",
+    "cover-subhead"
+  ],
+  "derive": {
+    "headline-1": {
+      "from": "headline",
+      "line": 0
+    },
+    "headline-2": {
+      "from": "headline",
+      "line": 1
+    }
   }
 }

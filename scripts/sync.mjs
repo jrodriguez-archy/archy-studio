@@ -23,6 +23,10 @@ if (config.discover && !offline) {
     config.formats[label.split(' ')[0].toLowerCase()] = { nodeId: a.id, label };
   }
   if (!Object.keys(config.formats).length) throw new Error(`No artboards for ${config.discover.family}`);
+  // The event page cover always comes last: it is the extra format, offered after the social ones.
+  const ORDER = ['post', 'square', 'stories', 'og', 'cover'];
+  const rank = (k) => (ORDER.includes(k) ? ORDER.indexOf(k) : ORDER.length - 1);
+  config.formats = Object.fromEntries(Object.entries(config.formats).sort(([a], [b]) => rank(a) - rank(b)));
   await fs.writeFile(path.join(dir, 'template.config.json'), JSON.stringify(config, null, 2) + '\n');
 }
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
@@ -264,6 +268,8 @@ for (const { key, format, variant, combo, nodeId, label } of jobs) {
   for (const [role, s] of Object.entries(r.slots)) {
     manifest.slots[role] ??= { type: s.type, default: s.default, perFormat: {} };
     manifest.slots[role].perFormat[key] = s.style ?? { nodes: s.nodes };
+    // A format whose own sample differs (the cover's "Booth #1039" next to the post's "#1039") keeps it.
+    if (s.type === 'text' && s.default != null && s.default !== manifest.slots[role].default) manifest.slots[role].perFormat[key].sample = s.default;
   }
   Object.assign(manifest.optionals, r.optionals);
   console.log(`${key}: ${r.width}×${r.height}, slots: ${Object.keys(r.slots).join(', ')}`);

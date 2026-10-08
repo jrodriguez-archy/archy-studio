@@ -13,12 +13,10 @@ import { StackBadge, StackLayers, stackPad } from '@/components/stack';
 export type TemplateCard = {
   id: string; title: string; description: string; category: string; categoryLabel: string; purposeLabel: string;
   useWhen?: string; notWhen?: string; needs: string[]; extras: string[];
-  /** Every format of the style; the event page cover comes from its own template. */
+  /** Every format of the style, the event page cover (1200×900) among them on event templates. */
   formats: { key: string; templateId: string; src: string; label: string; width: number; height: number }[];
   /** Format shown in front (e.g. the cover when filtering by event page covers). */
   lead?: string;
-  /** Template id of the event page cover that goes with this style. */
-  coverId?: string;
   /** `designs`: the designs that have the slot, when only some do. */
   slots: { key: string; type: 'text' | 'image' | 'logo'; optional: boolean; designs?: string[] }[];
   /** Designs (layouts) and themes (colour treatments), on templates that offer several; the first is the default. */
@@ -36,7 +34,7 @@ export type TemplateGroup = { key: string; label: string; description?: string; 
 function templatePrompt(t: TemplateCard, combo: Combo = null) {
   const pick = combo && t.designs ? `, design ${combo.design} (${labelOf(t.designs, combo.design)}), theme ${combo.theme} (${labelOf(t.themes!, combo.theme)})` : '';
   return [
-    `Use the Archy Studio template ${t.id} (${t.title})${pick}${t.coverId ? `, and its event page cover ${t.coverId} if useful,` : ''} for this brief:`,
+    `Use the Archy Studio template ${t.id} (${t.title})${pick}${t.formats.some((f) => f.key === 'cover') ? ' (and its event page cover format if useful)' : ''} for this brief:`,
     ...t.needs.map((n) => `- ${n}: `),
     ...t.extras.map((n) => `- ${n} (optional): `),
   ].join('\n');
@@ -48,21 +46,22 @@ function templateActions(t: TemplateCard, onOpen: () => void): Action[] {
   return [
     { label: 'Open', icon: ViewIcon, onSelect: onOpen },
     { separator: true },
-    t.coverId
-      ? { label: 'Copy template ID', icon: Copy01Icon, items: [
-          { label: t.id, hint: 'Social', onSelect: () => copied('Template ID')(t.id) },
-          { label: t.coverId, hint: 'Cover', onSelect: () => copied('Template ID')(t.coverId!) },
-        ] }
-      : { label: 'Copy template ID', icon: Copy01Icon, hint: t.id, onSelect: () => copied('Template ID')(t.id) },
+    { label: 'Copy template ID', icon: Copy01Icon, hint: t.id, onSelect: () => copied('Template ID')(t.id) },
     { label: 'Copy prompt for Claude', icon: SparklesIcon, onSelect: () => copied('Prompt')(templatePrompt(t)) },
     { label: 'Copy link', icon: Link01Icon, onSelect: () => copied('Link')(`${location.origin}/templates?t=${t.id}`) },
   ];
 }
 
+// The event page covers used to be templates of their own; their old ids still open their style.
+const OLD_COVERS: Record<string, string> = {
+  'event-cover-booth': 'booth-icon-list', 'event-cover-booth-light': 'booth-light-rulers', 'event-cover-booth-photo': 'booth-invite-photo',
+  'event-cover-booth-photo-band': 'booth-photo-band', 'event-cover-night-out': 'night-out-illustration',
+  'event-cover-night-out-venue': 'night-out-venue', 'event-cover-speaker': 'speaker-invite',
+};
+
 const lead = (t: TemplateCard) => t.formats.find((f) => f.key === (t.lead ?? 'post')) ?? t.formats[0];
 const labelOf = (list: { key: string; label: string }[], key: string) => list.find((x) => x.key === key)?.label ?? key;
-// A design × theme applies to the template's own formats (not to the event page cover of another
-// template); the default one is the format's own preview.
+// A design × theme applies to every format of the template; the default one is the format's own preview.
 const preview = (f: { src: string; key: string }, combo: Combo = null, own = true, t?: TemplateCard) =>
   (combo && own && t?.comboSrcs?.[`${f.key}--${combo.design}--${combo.theme}`]) || f.src;
 const defaultCombo = (t: TemplateCard): Combo => (t.designs?.length && t.themes?.length ? { design: t.designs[0].key, theme: t.themes[0].key } : null);
@@ -71,10 +70,10 @@ const defaultCombo = (t: TemplateCard): Combo => (t.designs?.length && t.themes?
 export function TemplateBrowser({ groups, showGroupHeaders }: { groups: TemplateGroup[]; showGroupHeaders: boolean }) {
   const all = groups.flatMap((g) => g.sections.flatMap((s) => s.items));
   const { openId, open, close, step } = useInspector('t', all.map((t) => t.id));
-  // A link to a cover template (?t=event-cover-booth) opens its style with the cover in front.
+  // An old link to a cover template (?t=event-cover-booth) opens its style with the cover in front.
   const search = useSearchParams();
   const requested = search.get('t');
-  const viaCover = !openId && requested ? all.find((t) => t.coverId === requested) : undefined;
+  const viaCover = !openId && requested && OLD_COVERS[requested] ? all.find((t) => t.id === OLD_COVERS[requested]) : undefined;
   const current = all.find((t) => t.id === openId) ?? viaCover;
   const [format, setFormat] = useState<string | null>(null);
   const [combo, setCombo] = useState<Combo>(null);
@@ -181,8 +180,7 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
               <InfoRows
                 rows={[
                   ['ID', <IdButton key="id" id={current.id} />],
-                  ['Cover ID', current.coverId && <IdButton key="cid" id={current.coverId} />],
-                  ['Cover', current.coverId && 'Event page cover (1200×900, Webflow)'],
+                  ['Cover', current.formats.some((f) => f.key === 'cover') && 'Event page cover format (1200×900, Webflow)'],
                   ['Category', current.categoryLabel],
                   ['Purpose', current.purposeLabel],
                   ['Needs', current.needs.join(', ')],

@@ -10,6 +10,7 @@ export const FACTS = [
 export const PURPOSES = ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite', 'event-cover', 'spotlight'] as const;
 
 // A city or venue photo can also serve as a cover's ground photo.
+// `event-cover` is not a template's own purpose: it asks for the event page cover format of any template that has one.
 const SATISFIES: Record<string, string[]> = { 'ground-photo': ['ground-photo', 'city-photo', 'venue-photo'] };
 
 export type Match = {
@@ -29,17 +30,20 @@ export async function matchTemplates(provided: string[], purpose?: string): Prom
   const out: Match[] = [];
   for (const m of await listTemplates()) {
     const c = await loadConfig(m.id);
-    if (purpose && c.purpose !== purpose) continue;
+    const cover = purpose === 'event-cover';
+    if (cover ? !m.formats.cover : purpose && c.purpose !== purpose) continue;
     const facts = c.facts ?? {};
     const factOf = (slot: string) => facts[slot] ?? null;
-    const essentialFacts = [...new Set((c.essential ?? []).map(factOf).filter((f): f is string => !!f))];
-    const allFacts = new Set([...(c.essential ?? []), ...(c.optional ?? [])].map(factOf).filter((f): f is string => !!f));
+    // The cover adds its own content (its ground photo) to the template's essentials.
+    const essential = [...(c.essential ?? []), ...(cover ? c.coverEssential ?? [] : [])];
+    const essentialFacts = [...new Set(essential.map(factOf).filter((f): f is string => !!f))];
+    const allFacts = new Set([...essential, ...(c.optional ?? [])].map(factOf).filter((f): f is string => !!f));
     const missing = essentialFacts.filter((f) => !has(f));
     const shows = provided.filter((f) => allFacts.has(f) || [...allFacts].some((a) => SATISFIES[a]?.includes(f)));
     const unused = provided.filter((f) => !shows.includes(f));
     // Use as much of the brief as possible; leaving facts out costs a little.
     const score = shows.length - 0.5 * unused.length - 2 * missing.length;
-    out.push({ template: m.id, title: c.title, purpose: c.purpose ?? '', eligible: missing.length === 0, missing, shows, unused, score });
+    out.push({ template: m.id, title: c.title, purpose: cover ? 'event-cover' : c.purpose ?? '', eligible: missing.length === 0, missing, shows, unused, score });
   }
   return out.sort((a, b) => Number(b.eligible) - Number(a.eligible) || b.score - a.score);
 }

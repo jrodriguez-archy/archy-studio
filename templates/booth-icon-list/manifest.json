@@ -26,6 +26,12 @@
       "width": 1200,
       "height": 630,
       "html": "og.html"
+    },
+    "cover": {
+      "label": "Cover 1200×900",
+      "width": 1200,
+      "height": 900,
+      "html": "cover.html"
     }
   },
   "variants": {},
@@ -132,7 +138,8 @@
           "fontSize": "80px",
           "fontWeight": 600,
           "lineHeight": "86px",
-          "letterSpacing": "-0.02em"
+          "letterSpacing": "-0.02em",
+          "sample": "Meet Archy at\nHinman Dental Meeting"
         }
       },
       "limits": {
@@ -391,6 +398,14 @@
           "fontWeight": 900,
           "lineHeight": "55px",
           "letterSpacing": "0.04em"
+        },
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "52px",
+          "letterSpacing": "0.02em",
+          "sample": "Booth #1039"
         }
       },
       "limits": {
@@ -429,6 +444,15 @@
             "min": 43
           },
           "roomPx": 169
+        },
+        "cover": {
+          "maxCharsPerLine": 42,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1200
         }
       }
     },
@@ -439,7 +463,65 @@
         "post": {},
         "square": {},
         "stories": {},
-        "og": {}
+        "og": {},
+        "cover": {}
+      }
+    },
+    "image-venue": {
+      "type": "image",
+      "default": "assets/7QARPVSEYAP6R9Y7NNRHHS5P8R.png",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
+        }
+      }
+    },
+    "headline-1": {
+      "type": "text",
+      "default": "Meet Archy at",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 13,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 104,
+            "min": 88
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "headline-2": {
+      "type": "text",
+      "default": "Hinman Dental Meeting",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 13,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 104,
+            "min": 88
+          },
+          "roomPx": 732
+        }
       }
     }
   },

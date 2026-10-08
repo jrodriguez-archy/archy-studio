@@ -1,5 +1,11 @@
 # Changelog
 
+## archy-studio 0.11.0 (2026-10-08)
+
+- Event page covers are a format of their event template, as in Paper: `booth-icon-list`, `booth-invite-photo` (Navy and Royal Blue), `booth-light-rulers`, `booth-photo-band`, `night-out-illustration`, `night-out-venue` and `speaker-invite` gain a `cover` format (1200×900). The seven `event-cover-*` templates are gone; old `?t=event-cover-*` links open their template with the cover in front.
+- The cover fills itself from the event's facts: the headline splits in two (`derive` with `line`), the booth prints "Booth #412" where the format's own sample does (per-format `sample` in the manifest), and the city photo of the photo templates becomes its ground. What only the cover needs (its ground photo, a guest photo, `cover-subhead` on the Night Out covers) is asked for only when the cover is made: `get_template` shows it as `only_in_formats`, and `coverEssential` in the config feeds `match_templates` with purpose `event-cover`.
+- `render` with no formats makes the social ones; the cover is made with `formats: ["cover"]`. Asked together and missing its photo, the cover is skipped with what it needs instead of failing the whole call.
+
 ## archy-studio 0.10.1 (2026-10-08)
 
 - Template guidance no longer mentions offer logos, and the brief facts drop `offer` and `offer-logo` (no template uses them since 0.10.0).

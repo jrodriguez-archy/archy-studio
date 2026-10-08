@@ -26,6 +26,12 @@
       "width": 1200,
       "height": 630,
       "html": "og.html"
+    },
+    "cover": {
+      "label": "Cover 1200×900",
+      "width": 1200,
+      "height": 900,
+      "html": "cover.html"
     }
   },
   "variants": {},
@@ -37,7 +43,8 @@
         "post": {},
         "square": {},
         "stories": {},
-        "og": {}
+        "og": {},
+        "cover": {}
       }
     },
     "headline-1": {
@@ -71,6 +78,13 @@
           "fontWeight": 600,
           "lineHeight": "78px",
           "letterSpacing": "-0.02em"
+        },
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)"
         }
       },
       "limits": {
@@ -109,6 +123,15 @@
             "min": 61
           },
           "roomPx": 990
+        },
+        "cover": {
+          "maxCharsPerLine": 14,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 104,
+            "min": 88
+          },
+          "roomPx": 732
         }
       }
     },
@@ -143,6 +166,13 @@
           "fontWeight": 600,
           "lineHeight": "78px",
           "letterSpacing": "-0.02em"
+        },
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)"
         }
       },
       "limits": {
@@ -181,6 +211,15 @@
             "min": 61
           },
           "roomPx": 990
+        },
+        "cover": {
+          "maxCharsPerLine": 13,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 104,
+            "min": 88
+          },
+          "roomPx": 732
         }
       }
     },
@@ -404,6 +443,13 @@
           "fontWeight": 700,
           "lineHeight": "40px",
           "letterSpacing": "0.02em"
+        },
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "52px",
+          "letterSpacing": "0.02em"
         }
       },
       "limits": {
@@ -442,6 +488,24 @@
             "min": 27
           },
           "roomPx": 1200
+        },
+        "cover": {
+          "maxCharsPerLine": 42,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "image-venue": {
+      "type": "image",
+      "default": "assets/7YQ4Y2FMHXP2XWCGF4DYDAB633.png",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
         }
       }
     }

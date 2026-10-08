@@ -31,10 +31,13 @@
     "og": {
       "nodeId": "51G-0",
       "label": "OG 1200×630"
+    },
+    "cover": {
+      "nodeId": "I7B-0",
+      "label": "Cover 1200×900"
     }
   },
   "purpose": "booth-invite",
-  "cover": "event-cover-booth-photo-band",
   "essential": [
     "headline",
     "city",
@@ -53,6 +56,22 @@
     "venue": "venue",
     "image-photo": "city-photo",
     "date": "date",
-    "headline": "event-name"
+    "headline": "event-name",
+    "headline-1": "event-name",
+    "headline-2": "event-name",
+    "image-venue": "ground-photo"
+  },
+  "derive": {
+    "headline-1": {
+      "from": "headline",
+      "line": 0
+    },
+    "headline-2": {
+      "from": "headline",
+      "line": 1
+    },
+    "image-venue": {
+      "from": "image-photo"
+    }
   }
 }

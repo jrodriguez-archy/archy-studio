@@ -31,10 +31,13 @@
     "og": {
       "nodeId": "4WS-0",
       "label": "OG 1200×630"
+    },
+    "cover": {
+      "nodeId": "I5W-0",
+      "label": "Cover 1200×900"
     }
   },
   "purpose": "booth-invite",
-  "cover": "event-cover-booth-light",
   "essential": [
     "headline-1",
     "headline-2",
@@ -53,6 +56,10 @@
     "city": "city",
     "venue": "venue",
     "headline-2": "event-name",
-    "date": "date"
-  }
+    "date": "date",
+    "image-venue": "ground-photo"
+  },
+  "coverEssential": [
+    "image-venue"
+  ]
 }

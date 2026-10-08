@@ -101,7 +101,7 @@ export function carried(from: Record<string, string | null>, key: string, own?: 
 }
 
 // "#1039" where the design prints "Booth #1039", and the other way round.
-function boothLike(v: string | null, own?: string | null) {
+export function boothLike(v: string | null, own?: string | null) {
   if (!v || own == null) return v;
   const bare = v.replace(/^booth\s*/i, '');
   if (/^booth\b/i.test(own.trim())) return `Booth ${bare}`;

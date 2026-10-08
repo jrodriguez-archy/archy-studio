@@ -26,6 +26,12 @@
       "width": 1200,
       "height": 630,
       "html": "og.html"
+    },
+    "cover": {
+      "label": "Cover 1200×900",
+      "width": 1200,
+      "height": 900,
+      "html": "cover.html"
     }
   },
   "variants": {},
@@ -37,7 +43,8 @@
         "post": {},
         "square": {},
         "stories": {},
-        "og": {}
+        "og": {},
+        "cover": {}
       }
     },
     "headline": {
@@ -127,6 +134,9 @@
         },
         "og": {
           "nodes": 1
+        },
+        "cover": {
+          "nodes": 1
         }
       }
     },
@@ -157,6 +167,12 @@
           "fontSize": "36px",
           "fontWeight": 600,
           "lineHeight": "44px"
+        },
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "56px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "62px"
         }
       },
       "limits": {
@@ -195,6 +211,15 @@
             "min": 31
           },
           "roomPx": 1200
+        },
+        "cover": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 56,
+            "min": 48
+          },
+          "roomPx": 1200
         }
       }
     },
@@ -225,6 +250,12 @@
           "fontSize": "28px",
           "fontWeight": 400,
           "lineHeight": "34px"
+        },
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
         }
       },
       "limits": {
@@ -263,6 +294,15 @@
             "min": 24
           },
           "roomPx": 1200
+        },
+        "cover": {
+          "maxCharsPerLine": 71,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1200
         }
       }
     },
@@ -293,6 +333,12 @@
           "fontSize": "28px",
           "fontWeight": 400,
           "lineHeight": "34px"
+        },
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
         }
       },
       "limits": {
@@ -329,6 +375,15 @@
           "fontSize": {
             "max": 28,
             "min": 24
+          },
+          "roomPx": 1200
+        },
+        "cover": {
+          "maxCharsPerLine": 74,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
           },
           "roomPx": 1200
         }
@@ -575,6 +630,63 @@
           "roomPx": 870
         }
       }
+    },
+    "image-venue": {
+      "type": "image",
+      "default": "assets/28WCH8BF37GTCV0TWA9P28YBG1.png",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
+        }
+      }
+    },
+    "headline-1": {
+      "type": "text",
+      "default": "Lead with Purpose,",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "86px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 18,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "headline-2": {
+      "type": "text",
+      "default": "Inspire with Culture",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "86px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 732
+        }
+      }
     }
   },
   "optionals": {
@@ -591,6 +703,13 @@
     "footer-note": {
       "contains": [
         "footer-note"
+      ]
+    },
+    "speaker": {
+      "contains": [
+        "speaker-name",
+        "speaker-role",
+        "speaker-company"
       ]
     }
   }

@@ -31,10 +31,13 @@
     "og": {
       "nodeId": "4KT-0",
       "label": "OG 1200×630"
+    },
+    "cover": {
+      "nodeId": "I2K-0",
+      "label": "Cover 1200×900"
     }
   },
   "purpose": "speaker-invite",
-  "cover": "event-cover-speaker",
   "essential": [
     "headline",
     "image-speaker",
@@ -59,6 +62,22 @@
     "city": "city",
     "headline": "event-name",
     "footer-note": null,
-    "datetime": "date"
+    "datetime": "date",
+    "image-venue": "ground-photo",
+    "headline-1": "event-name",
+    "headline-2": "event-name"
+  },
+  "coverEssential": [
+    "image-venue"
+  ],
+  "derive": {
+    "headline-1": {
+      "from": "headline",
+      "line": 0
+    },
+    "headline-2": {
+      "from": "headline",
+      "line": 1
+    }
   }
 }

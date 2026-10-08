@@ -93,17 +93,16 @@ export type TemplateConfig = {
   /** Top-level group in the catalog (the Paper master it comes from): events, ads... */
   category?: string;
   purpose?: string;
-  /** The event page cover (1200×900) that goes with this style: another template id. */
-  cover?: string;
-  /** On a cover template: the style it belongs to. */
-  coverOf?: string;
   /** Slots the template cannot go without; anything not listed in optional counts as essential. */
   essential?: string[];
+  /** Slots only the event page cover format (`cover`, 1200×900) needs; asked for only when the cover is made. */
+  coverEssential?: string[];
   /** Minor slots that may be left out (value and label go, the layout closes up). */
   optional?: string[];
   /** The brief fact each slot needs; null = copy written from the brief. */
   facts?: Record<string, string | null>;
-  derive?: Record<string, { from: string; firstWord?: boolean; suffix?: string }>;
+  /** A slot filled from another when empty: its first word plus a suffix, or one line of a headline split in two (`line` 0 or 1, as the cover's headline-1 / headline-2). */
+  derive?: Record<string, { from: string; firstWord?: boolean; suffix?: string; line?: 0 | 1 }>;
   variants?: Record<string, { label: string; when?: { empty?: string[] } }>;
 };
 

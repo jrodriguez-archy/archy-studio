@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Edits, FillPlan } from './canvas-shared';
+import { boothLike, splitHeadline } from './canvas-sync';
 import { iconMarkup } from './icons';
 import { supabaseAdmin } from './supabase/admin';
 import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo } from './templates';
@@ -60,15 +61,22 @@ export async function prepareFill({ template, format, design, theme, slots: give
   if (unknown.length) throw new Error(`Unknown slots: ${unknown.join(', ')}. Slots: ${Object.keys(manifest.slots).join(', ')}`);
 
   // Every slot gets a decision: the given value, the template's sample (previews only), or empty.
+  // A format can carry its own sample (the cover prints "Booth #1039" where the post prints "#1039").
+  const sampleOf = (k: string) => (manifest.slots[k].perFormat?.[fileKey] as { sample?: string } | undefined)?.sample ?? manifest.slots[k].default;
   const slots: Record<string, string | null> = {};
-  for (const [k, s] of Object.entries(manifest.slots)) {
+  for (const k of Object.keys(manifest.slots)) {
     const v = given[k];
-    slots[k] = v != null && v !== '' ? v : k in given || !fillDefaults ? null : s.default;
+    slots[k] = v != null && v !== '' ? v : k in given || !fillDefaults ? null : sampleOf(k);
   }
   for (const [k, d] of Object.entries(config.derive ?? {})) {
     const src = slots[d.from];
-    if (!slots[k] && src) slots[k] = (d.firstWord ? src.trim().split(/\s+/)[0] : src) + (d.suffix ?? '');
+    // A headline split follows the event's own headline even where the format has a sample of its own.
+    const sampled = d.line != null && !given[k] && given[d.from];
+    if ((slots[k] && !sampled) || !src) continue;
+    slots[k] = d.line != null ? splitHeadline(src)[d.line] : (d.firstWord ? src.trim().split(/\s+/)[0] : src) + (d.suffix ?? '');
   }
+  // The booth in the shape this format prints it ("#1039" or "Booth #1039").
+  if (slots.booth && manifest.slots.booth) slots.booth = boothLike(slots.booth, sampleOf('booth'));
   // Everything not marked optional is essential: a template never goes out half empty.
   const optional = new Set(config.optional ?? []);
   const missingEssential = Object.keys(manifest.slots).filter((k) => !optional.has(k) && !slots[k] && slotInFormat(manifest, k, fileKey));

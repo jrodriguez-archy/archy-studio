@@ -82,6 +82,16 @@ export function MoreActions({ actions, label = 'More actions', className }: { ac
   );
 }
 
+// The same actions opened with a plain click on the item itself (the item is the trigger).
+export function ClickActions({ actions, children, className, label }: { actions: Action[]; children: React.ReactNode; className?: string; label?: string }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger aria-label={label} className={className}>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">{render(actions, DROPDOWN)}</DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 // Clipboard with a toast-friendly result.
 export async function copy(text: string) {
   try { await navigator.clipboard.writeText(text); return true; } catch { return false; }

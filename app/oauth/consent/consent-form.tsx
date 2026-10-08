@@ -26,7 +26,7 @@ export function ConsentForm({ authorizationId, clientName, email, scopes }: { au
           {clientName} will make designs from Archy templates as <span className="text-foreground">{email}</span>. Each design is saved to the gallery under your name.
         </p>
       </div>
-      <p className="text-muted-foreground">It can list templates, render designs and read approved assets. It cannot change templates or your account.</p>
+      <p className="text-muted-foreground">It can list templates, render designs and read the team's images. It cannot change templates or your account.</p>
       {scopes.length > 0 && <p className="text-foreground/40">Requested: {scopes.join(', ')}</p>}
       {error && <p className="text-destructive">{error}</p>}
       <div className="flex gap-2">

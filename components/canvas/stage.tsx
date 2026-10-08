@@ -1,8 +1,9 @@
 'use client';
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
+import { toast } from 'sonner';
 import type { Edits, FillPlan, NodeEdit, RenderReport, Suggestion } from '@/lib/canvas-shared';
 import type { Keys } from '@/lib/canvas-sync';
 import { movingEdges, snap, type Guide } from './guides';
@@ -76,8 +77,19 @@ type Drag = {
 // The design itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
 export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview, claude, flash = [], passive = false, onActivate }, ref) {
-  const frame = useRef<HTMLIFrameElement>(null);
+  // Two pages, double-buffered: a new fill is drawn in the hidden one while the current one stays on
+  // screen, then fades in over it. `frame` is always the one on screen.
+  const frameA = useRef<HTMLIFrameElement>(null);
+  const frameB = useRef<HTMLIFrameElement>(null);
+  const [front, setFront] = useState(0);
+  const frontRef = useRef(0);
+  const frame = useMemo(() => ({ get current() { return (frontRef.current ? frameB : frameA).current; } }), []);
   const [ready, setReady] = useState(false);
+  const [refitting, setRefitting] = useState(false);
+  const drawn = useRef<string | null>(null); // the page and size on screen (null: nothing drawn yet)
+  const loading = useRef<number | null>(null); // the frame a fill is being drawn in
+  // Typing in place, ended without saving (a new fill arrived, so the typed copy is no longer current).
+  const cancelEdit = useRef<(() => void) | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [badge, setBadge] = useState<string | null>(null);
@@ -118,11 +130,19 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
 
   // A new fill (copy, slot image, variant) reloads the page; edits alone are re-applied in place.
   const fillKey = JSON.stringify([plan.html, plan.fill]);
+  const page = `${plan.html}|${plan.width}x${plan.height}`;
   useEffect(() => {
-    setReady(false);
+    cancelEdit.current?.();
     setEditing(null);
-    const f = frame.current;
+    // The first time (or another page or size) it draws in place; after that, behind the design on screen.
+    const behind = drawn.current === page;
+    const target = behind ? 1 - frontRef.current : frontRef.current;
+    if (behind) setRefitting(true); else { setRefitting(false); setReady(false); }
+    const f = (target ? frameB : frameA).current;
     if (!f) return;
+    // Hidden at once (it may still be fading out under the design from the last swap).
+    if (behind) { f.style.transition = 'none'; f.style.opacity = '0'; }
+    loading.current = target;
     let stale = false;
     const load = async () => {
       const d = f.contentDocument!, w = f.contentWindow as Win;
@@ -140,12 +160,33 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       const keys = w.__keys();
       w.__applyEdits(live.current.edits, live.current.plan.imageUrls, live.current.plan.iconSvgs);
       await d.fonts.ready;
+      if (stale) return;
+      const old = frontRef.current;
+      f.style.removeProperty('transition'); f.style.removeProperty('opacity');
+      frontRef.current = target;
+      drawn.current = page;
+      loading.current = null;
+      setFront(target);
+      // The page behind, once the new one has faded in, is emptied (memory, and no stale typing in it).
+      if (old !== target) setTimeout(() => {
+        const o = (old ? frameB : frameA).current;
+        if (o && frontRef.current !== old && loading.current !== old) o.src = 'about:blank';
+      }, 400);
+      setRefitting(false);
       setReady(true);
       live.current.onReady({ comps, safe, tokens, report, keys });
       check();
       redraw();
     };
-    const onLoad = () => { load().catch((e) => console.error('Canvas could not draw the design', e)); };
+    const onLoad = () => {
+      load().catch((e) => {
+        console.error('Canvas could not draw the design', e);
+        if (stale) return;
+        loading.current = null;
+        setRefitting(false);
+        if (behind) toast.error('Could not update the design. Undo the last change, or reload the page.');
+      });
+    };
     f.addEventListener('load', onLoad);
     // A new query each load makes the iframe reload; the file itself comes from the CDN and the browser cache.
     f.src = `/api/template-files/${plan.html}?load=${++loads}`;
@@ -161,7 +202,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     redraw();
     live.current.onInfo();
     return () => cancelAnimationFrame(raf);
-  }, [edits, plan.imageUrls, plan.iconSvgs, ready, redraw, check]);
+  }, [edits, plan.imageUrls, plan.iconSvgs, ready, front, redraw, check]);
 
   const screen = (b: Box | null): Rect | null => b && { x: b.x * zoom, y: b.y * zoom, w: b.w * zoom, h: b.h * zoom };
   const union = (bs: Box[]): Box => {
@@ -305,7 +346,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
 
   // Double-click a text (or a button's label) to type in place.
   const onDoubleClick = (e: React.MouseEvent) => {
-    if (passive) return;
+    if (passive || refitting) return; // a new version is on its way: type in it once it is here
     const c = innermostAt(pointAt(e), comps);
     const nodeId = c?.kind === 'text' ? c.id : c?.kind === 'button' ? c.textId : undefined;
     if (!c || !nodeId) return;
@@ -333,16 +374,22 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     if (range && n.contains(range.startContainer)) sel.addRange(range);
     else { const end = d.createRange(); end.selectNodeContents(n); end.collapse(false); sel.addRange(end); }
     const onInput = () => redraw();
-    const done = (save: boolean) => {
+    const off = () => {
+      cancelEdit.current = null;
       n.removeEventListener('blur', onBlur);
       n.removeEventListener('keydown', onKey);
       n.removeEventListener('input', onInput);
       n.removeAttribute('contenteditable');
       delete n.dataset.canvasEditing;
       n.style.removeProperty('caret-color');
+      n.blur();
+    };
+    const done = (save: boolean) => {
+      off();
       setEditing(null);
       if (!save || !onText(nodeId, n.textContent ?? '')) setNonce((x) => x + 1);
     };
+    cancelEdit.current = off;
     const onBlur = () => done(true);
     const onKey = (k: KeyboardEvent) => {
       if (k.key === 'Escape') { k.preventDefault(); done(false); }
@@ -371,14 +418,26 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const safeR = screen(safe);
 
   return (
-    <div data-stage className="relative shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)]" style={{ width: plan.width * zoom, height: plan.height * zoom }}>
-      <iframe
-        ref={frame}
-        title="Design"
-        className={`absolute top-0 left-0 origin-top-left border-0 bg-white transition-opacity duration-150 ${ready ? 'opacity-100' : 'opacity-0'}`}
-        style={{ width: plan.width, height: plan.height, transform: `scale(${zoom})` }}
-      />
+    <div data-stage className="relative isolate shrink-0 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)]" style={{ width: plan.width * zoom, height: plan.height * zoom }}>
+      {[frameA, frameB].map((r, i) => (
+        <iframe
+          key={i}
+          ref={r}
+          title={i === front ? 'Design' : 'Design (next)'}
+          aria-hidden={i !== front}
+          // On screen: fades in over the previous one. Behind: hidden once the new one has come in.
+          className={`absolute top-0 left-0 origin-top-left border-0 bg-white transition-opacity ${
+            i === front && ready ? 'z-0 opacity-100 duration-200 ease-out' : 'pointer-events-none -z-10 opacity-0 delay-200 duration-0'}`}
+          style={{ width: plan.width, height: plan.height, transform: `scale(${zoom})` }}
+        />
+      ))}
       {!ready && <div className="absolute inset-0 animate-pulse bg-foreground/[0.04]" />}
+      {/* Fitting the new copy: a thin line along the top, only if it takes a moment. */}
+      {refitting && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-[2px] overflow-hidden animate-in fade-in-0 fill-mode-both delay-300 duration-200">
+          <div className="h-full w-1/3 animate-[canvas-refit_1.1s_ease-in-out_infinite] rounded-full bg-[#0095FF]" />
+        </div>
+      )}
       {claude && (
         <>
           {/* Claude at work: a live frame around the artboard and its name tag, like a collaborator. */}

@@ -138,3 +138,9 @@
 
 html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 body { font-size: 13px; line-height: 1.4; letter-spacing: -0.003em; }
+
+/* Canvas: the thin line along an artboard while it fits new copy. */
+@keyframes canvas-refit {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}

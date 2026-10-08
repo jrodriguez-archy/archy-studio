@@ -1,10 +1,10 @@
 import 'server-only';
 import { cache } from 'react';
-import { catalog, titleOf } from './catalog';
-import { previewSrcs } from './previews';
+import { titleOf } from './catalog';
 import type { Edits } from './canvas-shared';
 import { loadPieces } from './gallery';
 import { formatLabel, groupSets } from './gallery-shared';
+import { listAssets } from './assets';
 import { supabaseAdmin } from './supabase/admin';
 import { comboFormats, loadConfig, loadLibrary, loadManifest, resolveCombo, type Manifest, type TemplateConfig } from './templates';
 
@@ -145,45 +145,22 @@ export async function editorContext(piece: PieceSource) {
   };
 }
 
-// The Canvas panel: templates to start from, the pieces to open (mine and the team's), the approved
-// images and the person's own uploads.
+// The Canvas panel: the pieces to open and the team's assets (mine and everyone's).
 export async function canvasLibrary(me: Who) {
-  const [items, mine, team, library, uploads, seen] = await Promise.all([
-    catalog(), loadPieces({ userId: me.id }, 80), loadPieces({}, 80), loadLibrary(), listUploads(me.id),
+  const [mine, team, myAssets, teamAssets, seen] = await Promise.all([
+    loadPieces({ userId: me.id }, 80), loadPieces({}, 80), listAssets({ ownerId: me.id }), listAssets(),
     supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle(),
   ]);
-  const srcs = await previewSrcs(items);
-  const byId = Object.fromEntries(items.map((i) => [i.manifest.id, i]));
   const card = (p: Awaited<ReturnType<typeof loadPieces>>[number], title: string) => ({ id: p.id, title, format: formatLabel(p.format), thumb: p.thumb ?? null, width: p.width, height: p.height, author: p.author });
   const pieces = (list: Awaited<ReturnType<typeof loadPieces>>) => groupSets(list).flatMap((s) => s.pieces.map((p) => card(p, s.title)));
   return {
-    // An event page cover is one more format of its event (as in Paper), not a template of its own.
-    templates: items.filter((i) => !(i.config.coverOf && byId[i.config.coverOf])).map((i) => ({
-      id: i.manifest.id, title: i.config.title, category: i.config.category ?? 'other', purpose: i.config.purpose ?? null,
-      formats: [i, ...(i.config.cover && byId[i.config.cover] ? [byId[i.config.cover]] : [])].flatMap((m) => Object.entries(m.manifest.formats)
-        .map(([key, f]) => ({ key, template: m.manifest.id, label: formatLabel(key), width: f.width, height: f.height, src: srcs[`${m.manifest.id}/${key}`] }))),
-      // Designs and themes to start from (default first), on templates that offer several.
-      designs: i.manifest.default ? Object.entries(i.manifest.designs ?? {}).map(([key, d]) => ({ key, label: d.label })).sort((a, b) => Number(b.key === i.manifest.default!.design) - Number(a.key === i.manifest.default!.design)) : null,
-      themes: i.manifest.default ? Object.entries(i.manifest.themes ?? {}).map(([key, t]) => ({ key, label: t.label })).sort((a, b) => Number(b.key === i.manifest.default!.theme) - Number(a.key === i.manifest.default!.theme)) : null,
-      // Preview links of the other designs and themes, keyed `<format>--<design>--<theme>`.
-      comboSrcs: Object.fromEntries(Object.entries(srcs).filter(([k]) => k.startsWith(`${i.manifest.id}/`) && k.includes('--')).map(([k, v]) => [k.slice(i.manifest.id.length + 1), v])),
-    })),
     mine: pieces(mine),
     team: pieces(team),
-    images: library.map((a) => ({ value: `asset:${a.id}`, title: a.title, kind: a.kind, url: `/api/template-files/library/${a.file}` })),
-    uploads,
+    /** Images the team brought to Studio (and what Studio made from them): mine, and everyone's. */
+    assets: { mine: myAssets, team: teamAssets },
     /** When this person last used the Archy Studio connector from Claude (null: never). */
     mcpSeenAt: (seen.data?.mcp_seen_at as string | null | undefined) ?? null,
   };
 }
 export type CanvasLibrary = Awaited<ReturnType<typeof canvasLibrary>>;
 
-// Images this person brought (Canvas uploads, inline logos), newest first.
-export async function listUploads(userId: string) {
-  const db = supabaseAdmin().storage.from('uploads');
-  const { data } = await db.list(userId, { limit: 60, sortBy: { column: 'created_at', order: 'desc' } });
-  const paths = (data ?? []).filter((f) => f.name && !f.name.startsWith('.')).map((f) => `${userId}/${f.name}`);
-  if (!paths.length) return [];
-  const { data: signed } = await db.createSignedUrls(paths, 60 * 60);
-  return (signed ?? []).filter((x) => x.signedUrl && x.path).map((x) => ({ value: `upload:${x.path}`, title: 'Upload', kind: 'upload', url: x.signedUrl as string }));
-}

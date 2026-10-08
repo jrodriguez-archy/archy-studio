@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowDown01Icon, SearchVisualIcon, ArrowRight01Icon, Image01Icon, ImageUploadIcon, Layers01Icon, LibraryIcon } from '@hugeicons/core-free-icons';
-import { toast } from 'sonner';
+import { SearchVisualIcon, Image01Icon, Layers01Icon, LibraryIcon } from '@hugeicons/core-free-icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CanvasLibrary } from '@/lib/canvas';
+import { ResizeHandle, useSideWidth } from './resizable';
 
 export type PanelTab = 'layers' | 'library' | 'assets' | 'inspector';
 const TABS: { key: PanelTab; label: string; icon: typeof Layers01Icon }[] = [
@@ -15,13 +15,13 @@ const TABS: { key: PanelTab; label: string; icon: typeof Layers01Icon }[] = [
   { key: 'assets', label: 'Assets', icon: Image01Icon },
   { key: 'inspector', label: 'Inspector', icon: SearchVisualIcon },
 ];
-const CATEGORY: Record<string, string> = { events: 'Events', ads: 'Ads', covers: 'Event covers', other: 'More' };
-const CLOSED_KEY = 'canvas.library.closed';
 
 // Canvas's own sidebar (Relume-like): a rail of tabs and the open tab.
 export function CanvasPanel({ tab, onTab, badges = {}, children }: { tab: PanelTab; onTab: (t: PanelTab) => void; badges?: Partial<Record<PanelTab, number>>; children: React.ReactNode }) {
+  const size = useSideWidth('canvas.left', 300, 260, 440);
   return (
-    <aside className="flex w-[300px] shrink-0 border-r border-foreground/[0.06] bg-background max-md:hidden">
+    <aside ref={size.ref} data-panel className="relative flex shrink-0 border-r border-foreground/[0.06] bg-background max-md:hidden" style={{ width: size.width }}>
+      <ResizeHandle side="left" width={size.width} onWidth={size.set} onReset={size.reset} />
       <div className="flex w-11 shrink-0 flex-col items-center gap-1 border-r border-foreground/[0.06] py-2">
         {TABS.map((t) => (
           <Tooltip key={t.key}>
@@ -42,47 +42,23 @@ export function CanvasPanel({ tab, onTab, badges = {}, children }: { tab: PanelT
   );
 }
 
-function Segmented<T extends string>({ value, items, onChange }: { value: T; items: [T, string][]; onChange: (v: T) => void }) {
-  return (
-    <div className="mx-3 my-2 grid h-7 grid-flow-col items-center gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5 text-[12px]">
-      {items.map(([k, label]) => (
-        <button key={k} type="button" onClick={() => onChange(k)}
-          className={`h-6 rounded-[4px] ${value === k ? 'bg-background font-medium shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/55 hover:text-foreground'}`}>{label}</button>
-      ))}
-    </div>
-  );
-}
-
-// Library: start from a template (it opens with its sample copy) or open a piece already made.
+// Library: the designs to open (mine and the team's). New designs start with Claude, or from Templates.
 export function LibraryTab({ library, current, updating = [], confirmLeave }: { library: CanvasLibrary; current?: string; updating?: string[]; confirmLeave: () => boolean }) {
   const router = useRouter();
-  const [view, setView] = useState<'designs' | 'templates'>('designs');
   const [whose, setWhose] = useState<'mine' | 'team'>('mine');
-  // Design and theme chosen per template (templates that offer several); the default otherwise.
-  const [combos, setCombos] = useState<Record<string, { design: string; theme: string }>>({});
   const go = (href: string) => { if (confirmLeave()) router.push(href); };
   const pieces = whose === 'mine' ? library.mine : library.team;
-  const catOf = (t: CanvasLibrary['templates'][number]) => t.category;
-  const cats = [...new Set(library.templates.map(catOf))];
-  const [closed, setClosed] = useState<string[]>([]);
-  // Read after mount (the server has no storage), so the first paint matches.
-  useEffect(() => { try { const v = localStorage.getItem(CLOSED_KEY); if (v) setClosed(JSON.parse(v)); } catch {} }, []);
-  const toggle = (c: string) => setClosed((cur) => {
-    const next = cur.includes(c) ? cur.filter((x) => x !== c) : [...cur, c];
-    try { localStorage.setItem(CLOSED_KEY, JSON.stringify(next)); } catch {}
-    return next;
-  });
   return (
     <div className="pb-4 text-[12px]">
-      <Segmented value={view} items={[['designs', 'Designs'], ['templates', 'Templates']]} onChange={setView} />
-      {view === 'designs' ? (
-        <>
-          <div className="flex gap-3 px-3 pb-2">
+          <div role="tablist" aria-label="Whose designs" className="mx-3 mt-1 mb-3 grid h-8 grid-cols-2 gap-0.5 rounded-md bg-foreground/[0.05] p-0.5">
             {(['mine', 'team'] as const).map((w) => (
-              <button key={w} type="button" onClick={() => setWhose(w)} className={whose === w ? 'font-medium text-foreground' : 'text-foreground/45 hover:text-foreground'}>{w === 'mine' ? 'Mine' : 'Team'}</button>
+              <button key={w} type="button" role="tab" aria-selected={whose === w} onClick={() => setWhose(w)}
+                className={`rounded-[5px] text-[12px] transition-colors ${whose === w ? 'bg-background font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.06)]' : 'text-foreground/50 hover:text-foreground'}`}>
+                {w === 'mine' ? 'Mine' : 'Team'}
+              </button>
             ))}
           </div>
-          {!pieces.length && <p className="px-3 py-6 text-center text-foreground/45">No designs yet. Start from a template, or ask Claude for one.</p>}
+          {!pieces.length && <p className="px-3 py-6 text-center text-foreground/45">No designs yet. Ask Claude for one, or open a template from Templates.</p>}
           <div className="grid grid-cols-2 gap-x-2 gap-y-3 px-3">
             {pieces.map((p) => (
               <button key={p.id} type="button" onClick={() => go(`/canvas/${p.id}`)} className="group text-left">
@@ -100,116 +76,7 @@ export function LibraryTab({ library, current, updating = [], confirmLeave }: { 
               </button>
             ))}
           </div>
-        </>
-      ) : (
-        cats.map((cat) => {
-          const list = library.templates.filter((t) => catOf(t) === cat);
-          const open = !closed.includes(cat);
-          return (
-            <div key={cat} className="pb-1">
-              <button type="button" onClick={() => toggle(cat)} className="flex h-8 w-full items-center gap-1 px-3 text-left hover:bg-foreground/[0.03]">
-                <HugeiconsIcon icon={open ? ArrowDown01Icon : ArrowRight01Icon} className="size-3 text-foreground/40" strokeWidth={2} />
-                <span className="text-[11px] font-medium tracking-[0.02em] text-foreground/60">{CATEGORY[cat] ?? cat}</span>
-                <span className="text-[11px] text-foreground/35">{list.length}</span>
-              </button>
-              {open && (
-                <div className="space-y-1 px-2 pb-2">
-                  {list.map((t) => {
-                    const c = t.designs && t.themes ? combos[t.id] ?? { design: t.designs[0].key, theme: t.themes[0].key } : null;
-                    const q = c ? `&design=${c.design}&theme=${c.theme}` : '';
-                    const set = (k: 'design' | 'theme', v: string) => setCombos((m) => ({ ...m, [t.id]: { ...c!, [k]: v } }));
-                    return (
-                    <div key={t.id} className="flex items-center gap-2.5 rounded-md p-1.5 hover:bg-foreground/[0.03]">
-                      <button type="button" onClick={() => go(`/canvas/new?template=${t.formats[0].template}&format=${t.formats[0].key}${q}`)} className="size-12 shrink-0 self-start overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={(c && t.comboSrcs[`${t.formats[0].key}--${c.design}--${c.theme}`]) || t.formats[0].src} alt="" loading="lazy" className="size-full object-cover object-top" />
-                      </button>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{t.title}</p>
-                        <div className="mt-1 flex gap-1 overflow-x-auto [scrollbar-width:none]">
-                          {t.formats.map((f) => (
-                            <button key={f.key} type="button" onClick={() => go(`/canvas/new?template=${f.template}&format=${f.key}${f.template === t.id ? q : ''}`)} title={`${f.width}×${f.height}`}
-                              className="h-5 shrink-0 rounded-[3px] bg-foreground/[0.05] px-1.5 text-[11px] text-foreground/70 hover:bg-[#E6F4FF] hover:text-primary">{f.label}</button>
-                          ))}
-                        </div>
-                        {c && (
-                          <div className="mt-1 flex gap-1">
-                            <select aria-label="Design" value={c.design} onChange={(e) => set('design', e.target.value)}
-                              className="h-5 min-w-0 flex-1 rounded-[3px] bg-foreground/[0.05] px-1 text-[11px] text-foreground/70 outline-none hover:bg-foreground/[0.08]">
-                              {t.designs!.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
-                            </select>
-                            <select aria-label="Theme" value={c.theme} onChange={(e) => set('theme', e.target.value)}
-                              className="h-5 min-w-0 flex-1 rounded-[3px] bg-foreground/[0.05] px-1 text-[11px] text-foreground/70 outline-none hover:bg-foreground/[0.08]">
-                              {t.themes!.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })
-      )}
     </div>
   );
 }
 
-// Assets: the approved images and the person's uploads. A click places it in the selected photo or logo.
-export function AssetsTab({ library, target, onPick }: { library: CanvasLibrary; target: string | null; onPick: (value: string) => void }) {
-  const input = useRef<HTMLInputElement>(null);
-  const [uploads, setUploads] = useState(library.uploads);
-  const [busy, setBusy] = useState(false);
-  const pick = (value: string) => (target ? onPick(value) : toast('Select a photo or a logo on the design first.'));
-  const upload = async (file: File) => {
-    setBusy(true);
-    try {
-      const body = new FormData();
-      body.set('file', file);
-      const res = await fetch('/api/uploads', { method: 'POST', body });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Could not upload the image.');
-      setUploads((u) => [{ value: data.value, title: file.name, kind: 'upload', url: data.url }, ...u]);
-      if (target) onPick(data.value);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
-      if (input.current) input.current.value = '';
-    }
-  };
-  const grid = (items: CanvasLibrary['images']) => (
-    <div className="grid grid-cols-3 gap-1.5 px-3">
-      {items.map((a) => (
-        <button key={a.value} type="button" title={a.title} onClick={() => pick(a.value)}
-          className="aspect-square overflow-hidden rounded-md bg-[repeating-conic-gradient(#f2f2f2_0_25%,#fff_0_50%)] bg-[length:10px_10px] ring-1 ring-foreground/[0.06] hover:ring-primary">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={a.url} alt={a.title} loading="lazy" className="size-full object-contain" />
-        </button>
-      ))}
-    </div>
-  );
-  return (
-    <div className="space-y-4 pb-4 text-[12px]">
-      <div className="px-3 pt-1">
-        <button type="button" disabled={busy} onClick={() => input.current?.click()}
-          className="flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.09] disabled:opacity-50">
-          <HugeiconsIcon icon={ImageUploadIcon} className="size-3.5" /> {busy ? 'Uploading…' : 'Upload an image'}
-        </button>
-        <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-        <p className="mt-1.5 text-foreground/40">{target ? 'Click an image to place it in the selected photo or logo.' : 'Select a photo or a logo on the design, then click an image.'}</p>
-      </div>
-      <div>
-        <p className="px-3 pb-1.5 text-[11px] font-medium tracking-[0.02em] text-foreground/40">Approved images</p>
-        {grid(library.images)}
-      </div>
-      <div>
-        <p className="px-3 pb-1.5 text-[11px] font-medium tracking-[0.02em] text-foreground/40">My uploads</p>
-        {uploads.length ? grid(uploads) : <p className="px-3 text-foreground/40">Nothing uploaded yet.</p>}
-      </div>
-    </div>
-  );
-}

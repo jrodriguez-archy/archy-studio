@@ -116,7 +116,7 @@ export async function prepareFill({ template, format, design, theme, slots: give
   };
 }
 
-// Image values: `asset:<id>` from the approved library, `upload:<path>` (brought in by someone, kept in
+// Image values: `asset:<id>` from a template's sample images, `upload:<path>` (brought in by someone, kept in
 // the uploads bucket), an https URL, or a path inside the template. `origin` is where the page reads the
 // repo files: the renderer's fake origin, or /api/template-files for the Canvas editor.
 // Logos are inlined as data URLs so the page can use them as a CSS mask (no cross-origin limits).
@@ -148,7 +148,7 @@ const remoteLogos = new Map<string, string>();
 async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
   if (v.startsWith('asset:')) {
     const asset = (await loadLibrary()).find((a) => a.id === v.slice(6));
-    if (!asset) throw new Error(`Unknown asset: ${v.slice(6)}. Use list_assets to see the approved ones.`);
+    if (!asset) throw new Error(`Unknown asset: ${v.slice(6)}. Use an image from list_assets (upload:<path>) instead.`);
     return `${origin}/library/${asset.file}`;
   }
   if (v.startsWith('upload:')) {

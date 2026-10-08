@@ -17,7 +17,8 @@ import { IconPicker } from './icon-picker';
 import type { Comp, LayerInfo, Token } from './model';
 
 export type SlotMeta = { type: 'text' | 'image' | 'logo'; optional: boolean; fontSize?: { min: number; max: number } };
-export type LibraryItem = { id: string; title: string; kind: string; url: string };
+/** An image from the team's Assets, offered when replacing a photo. */
+export type LibraryItem = { value: string; title: string; url: string };
 export type Align = 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
 
 const WEIGHTS = [[400, 'Regular'], [500, 'Medium'], [600, 'Semibold'], [700, 'Bold']] as const;
@@ -608,12 +609,12 @@ function ImagePicker({ kind, preview, library, onPick }: { kind: Comp['kind']; p
         </button>
         {library.length > 0 && (
           <Popover>
-            <PopoverTrigger className="flex h-7 items-center justify-center rounded-md bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.09]">Library</PopoverTrigger>
+            <PopoverTrigger className="flex h-7 items-center justify-center rounded-md bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.09]">Assets</PopoverTrigger>
             <PopoverContent align="end" className="w-64 p-2">
-              <p className="px-1 pb-2 text-[11px] text-foreground/40">Approved images</p>
+              <p className="px-1 pb-2 text-[11px] text-foreground/40">From Assets</p>
               <div className="grid grid-cols-3 gap-1.5">
                 {library.map((a) => (
-                  <button key={a.id} type="button" title={a.title} onClick={() => onPick(`asset:${a.id}`)} className="overflow-hidden rounded-md bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary">
+                  <button key={a.value} type="button" title={a.title} onClick={() => onPick(a.value)} className="overflow-hidden rounded-md bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={a.url} alt={a.title} className="aspect-square w-full object-contain" />
                   </button>

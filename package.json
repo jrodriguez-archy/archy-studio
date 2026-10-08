@@ -12,6 +12,7 @@
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "@tailwindcss/postcss": "^4.3.3",
+    "ai": "^7.0.134",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
     "fflate": "^0.8.3",

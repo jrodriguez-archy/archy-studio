@@ -22,9 +22,11 @@ import type { CanvasLibrary } from '@/lib/canvas';
 import { RECOLOR, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import { carried, follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
 import { BoardLabel, GhostBoard } from './artboards';
-import { AssetsTab, CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
+import { AssetsTab, withSession } from './assets-tab';
+import { CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
 import { InspectorTab } from './inspector-tab';
 import { ContentPanel } from './content-panel';
+import { ResizeHandle, useSideWidth } from './resizable';
 import { LayersPanel } from './layers-panel';
 import { merge, within, type Box, type Comp, type Token } from './model';
 import { MultiPanel, PiecePanel, PropertiesPanel, type Align, type SlotMeta } from './properties-panel';
@@ -77,12 +79,12 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
         <header className="flex h-12 shrink-0 items-center border-b border-foreground/[0.06] bg-background px-4"><p className="font-medium">Canvas</p></header>
         <div className="flex min-h-0 flex-1">
           <CanvasPanel tab={tab === 'layers' ? 'library' : tab} onTab={setTab}>
-            {!library ? <PanelLoading /> : tab === 'assets' ? <AssetsTab library={library} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a design and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
+            {!library ? <PanelLoading /> : tab === 'assets' ? <AssetsTab assets={library.assets} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a design and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
           </CanvasPanel>
           <main className="flex flex-1 items-center justify-center p-8">
             <div className="max-w-sm text-center">
               <p className="text-[15px] font-medium">Pick something to work on</p>
-              <p className="mt-1 text-foreground/50">Start from a template in the Library, or open one of your designs. Everything Claude made is there too.</p>
+              <p className="mt-1 text-foreground/50">Open one of your designs from the Library (everything Claude made is there too), or start one from Templates.</p>
             </div>
           </main>
         </div>
@@ -249,6 +251,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
 
   // Simple by default (made for people who are not designers); every layer and designer control is one
   // click away, and the choice is remembered.
+  const rightSize = useSideWidth('canvas.right', 280, 260, 420);
   const [allLayers, setAllLayers] = useStored('canvas.allLayers');
   const [advanced, setAdvanced] = useStored('canvas.advanced');
   // Copy or images from the brief that are not optional are essential: they can be edited, never hidden.
@@ -425,7 +428,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (t?.closest?.('input, textarea, [contenteditable], [role=dialog], [role=menu]')) return;
+      if (t?.closest?.('input, textarea, [contenteditable], [role=dialog], [role=menu], [data-panel]')) return; // keys in a side panel are the panel's
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
@@ -593,7 +596,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     if (!imageTarget) return;
     if (imageTarget.slot) setSlot(imageTarget.slot, value); else editLayer(imageTarget.id, { image: value });
   };
-  const pickerImages = (library?.images ?? []).map((a) => ({ id: a.value.slice(6), title: a.title, kind: a.kind, url: a.url }));
+  const pickerImages = (library ? withSession(library.assets).team : []).map((a) => ({ value: a.value, title: a.name, url: a.thumb }));
   const pct = Math.round(vp.zoom * 100);
   const allNew = boards.every((b) => b.isNew);
   const status = allNew ? ' · New from template' : pending.length ? ` · Unsaved changes${pending.length > 1 ? ` in ${pending.length} formats` : ''}` : '';
@@ -656,7 +659,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           )}
           {(tab === 'library' || tab === 'assets') && !library && <PanelLoading />}
           {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : board.ref} updating={updating} confirmLeave={confirmLeave} />}
-          {tab === 'assets' && library && <AssetsTab library={library} target={imageTarget?.id ?? null} onPick={placeImage} />}
+          {tab === 'assets' && library && <AssetsTab assets={library.assets} target={imageTarget?.id ?? null} onPick={placeImage} />}
           {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />}
         </CanvasPanel>
 
@@ -739,7 +742,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           </div>
         </main>
 
-        <aside className="w-[280px] shrink-0 overflow-y-auto border-l border-foreground/[0.06] bg-background [scrollbar-width:thin] max-lg:hidden">
+        <aside ref={rightSize.ref} data-panel className="relative shrink-0 border-l border-foreground/[0.06] bg-background max-lg:hidden" style={{ width: rightSize.width }}>
+          <ResizeHandle side="right" width={rightSize.width} onWidth={rightSize.set} onReset={rightSize.reset} />
+          <div className="h-full overflow-y-auto [scrollbar-width:thin]">
           {selected.length > 1 ? (
             <MultiPanel count={selected.length} onAlign={(a, to) => align(a, to)} onReset={() => resetIds(selected)}
               onHide={() => hideMany(selected)} />
@@ -769,6 +774,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           ) : (
             <PiecePanel pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />
           )}
+          </div>
         </aside>
       </div>
 

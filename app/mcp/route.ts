@@ -8,7 +8,8 @@ import { createProject, findProject, listProjects } from '@/lib/projects';
 import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
-import { comboFormats, listTemplates, loadConfig, loadLibrary, loadManifest, resolveCombo } from '@/lib/templates';
+import { listAssets } from '@/lib/assets';
+import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo } from '@/lib/templates';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -36,7 +37,7 @@ Sets: every render answer ends with "Set: <id>". All designs from one brief (mor
 
 Brand rules:
 - All copy on the design is in US English, even when the conversation is not.
-- Photos of people are always the person's real photo, from the approved library (list_assets) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo.
+- Photos of people are always the person's real photo, from the team's images (list_assets; a cutout without background works best) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo.
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
@@ -160,16 +161,20 @@ const handler = createMcpHandler(
     server.registerTool(
       'list_assets',
       {
-        title: 'List approved assets',
-        description: 'Approved Archy images (people cutouts, photos) usable in image slots as "asset:<id>".',
-        inputSchema: z.object({ template: z.string().optional().describe('Only assets that fit this template') }),
+        title: 'List the team\'s images',
+        description: 'Images the team brought to Studio (Canvas → Assets): uploaded photos and logos, cutouts without background, pixel effects and generated images, newest first. Use one in an image slot with its "value" (upload:<path>). For a person\'s photo use an upload or a cutout of that person; "generated" images are scenes, places and objects, never a real person.',
+        inputSchema: z.object({
+          search: z.string().optional().describe('Only images whose name contains this (e.g. a person\'s name)'),
+          kind: z.enum(['upload', 'cutout', 'pixel', 'generated']).optional().describe('Only this kind (cutout: a person or object without background)'),
+        }),
         annotations: { readOnlyHint: true },
       },
-      async ({ template }) => {
-        const lib = await loadLibrary();
-        const items = lib
-          .filter((a) => !template || !a.fits || a.fits.some((f) => f.startsWith(`${template}:`)))
-          .map((a) => ({ value: `asset:${a.id}`, kind: a.kind, title: a.title, description: a.description, fits: a.fits }));
+      async ({ search, kind }) => {
+        const q = search?.trim().toLowerCase();
+        const items = (await listAssets({ limit: 200 }))
+          .filter((a) => (!q || a.name.toLowerCase().includes(q)) && (!kind || a.kind === kind))
+          .slice(0, 60)
+          .map((a) => ({ value: a.value, name: a.name, kind: a.kind, by: a.author, size: a.width && a.height ? `${a.width}×${a.height}` : null, added: a.createdAt.slice(0, 10) }));
         return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
       },
     );

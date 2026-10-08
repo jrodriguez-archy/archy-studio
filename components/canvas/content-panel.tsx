@@ -28,7 +28,8 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
   const archy = comps.find((c) => c.kind === 'archy');
   // Optional details this design leaves out right now: listed too, so they can come back.
   const drawn = new Set(comps.flatMap((c) => [c.slot, c.textSlot]).filter(Boolean));
-  const absent = Object.entries(slotMeta).filter(([k, m]) => m.optional && !drawn.has(k));
+  // (Only once the design is read: while it loads, nothing is drawn yet.)
+  const absent = comps.length ? Object.entries(slotMeta).filter(([k, m]) => m.optional && !drawn.has(k)) : [];
   const absentTexts = absent.filter(([, m]) => m.type === 'text').map(([k]) => k);
   const absentImages = absent.filter(([, m]) => m.type !== 'text').map(([k, m]) => [k, m.type] as const);
   const decor = comps.filter((c) => ['decoration', 'line', 'icon'].includes(c.kind) || (c.kind === 'text' && !c.slot) || (c.kind === 'photo' && !c.slot));

@@ -68,6 +68,9 @@
         return [add({ id, kind: 'icon', name: label && !GENERIC.test(label) && !/^Icon/.test(label) ? `${human(label)} icon` : 'Icon' })];
       }
       if (LINE.test(name)) return [add({ id, kind: 'line', name: name.startsWith('Dot') ? 'Dot' : 'Line' })];
+      // A decoration that holds copy or a photo from the brief (the AE photo on its gradient panel) is
+      // not a leaf: what it holds is listed instead.
+      if ((DECORATION.test(name) || el.dataset?.optional === 'illustration') && el.querySelector('[data-slot]')) return kids(el).sort(visual).flatMap(walk);
       if (DECORATION.test(name) || el.dataset?.optional === 'illustration') return [add({ id, kind: 'decoration', name: human(name) })];
       if (isSvg(el)) return [add({ id, kind: 'decoration', name: GENERIC.test(name) ? 'Graphic' : human(name) })];
       const children = kids(el);

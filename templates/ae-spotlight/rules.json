@@ -35,6 +35,9 @@
             "gap": 32
           }
         ]
+      },
+      "inset": {
+        "stories": 397
       }
     }
   },
@@ -76,7 +79,10 @@
         },
         "ae-location": {
           "block": "optional-ae-location",
-          "within": "@artboard",
+          "within": {
+            "post": "Photo Panel",
+            "stories": "@artboard"
+          },
           "maxLines": 1,
           "minScale": 0.85,
           "checkBottom": false,
@@ -87,6 +93,10 @@
                 "gap": 32
               }
             ]
+          },
+          "inset": {
+            "post": 24,
+            "stories": 397
           }
         }
       },
@@ -139,7 +149,11 @@
               "node": "Archy Wordmark",
               "gap": 32
             }
-          ]
+          ],
+          "inset": {
+            "post": 360,
+            "stories": 397
+          }
         }
       },
       "containers": []
@@ -166,7 +180,10 @@
         },
         "ae-location": {
           "block": "optional-ae-location",
-          "within": "@artboard",
+          "within": {
+            "post": "Photo Panel",
+            "stories": "@artboard"
+          },
           "maxLines": 1,
           "minScale": 0.85,
           "checkBottom": false,
@@ -177,6 +194,10 @@
                 "gap": 32
               }
             ]
+          },
+          "inset": {
+            "post": 24,
+            "stories": 397
           }
         }
       },
@@ -208,7 +229,10 @@
         },
         "ae-location": {
           "block": "optional-ae-location",
-          "within": "@artboard",
+          "within": {
+            "post": "Photo Panel",
+            "stories": "@artboard"
+          },
           "maxLines": 1,
           "minScale": 0.85,
           "checkBottom": false,
@@ -219,6 +243,10 @@
                 "gap": 32
               }
             ]
+          },
+          "inset": {
+            "post": 24,
+            "stories": 397
           }
         }
       },

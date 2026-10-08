@@ -1390,13 +1390,13 @@
           "roomPx": 266
         },
         "stories": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--meet-name--royal": {
           "maxCharsPerLine": 20,
@@ -1408,13 +1408,13 @@
           "roomPx": 266
         },
         "stories--meet-name--royal": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--meet-name--navy": {
           "maxCharsPerLine": 20,
@@ -1426,229 +1426,229 @@
           "roomPx": 266
         },
         "stories--meet-name--navy": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--the-arch--white": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 21,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 284
         },
         "stories--the-arch--white": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--the-arch--royal": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 21,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 284
         },
         "stories--the-arch--royal": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--the-arch--navy": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 21,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 284
         },
         "stories--the-arch--navy": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--grid-card--white": {
-          "maxCharsPerLine": 61,
+          "maxCharsPerLine": 42,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 808
+          "roomPx": 554
         },
         "stories--grid-card--white": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 791
+          "roomPx": 500
         },
         "post--grid-card--royal": {
-          "maxCharsPerLine": 61,
+          "maxCharsPerLine": 42,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 808
+          "roomPx": 554
         },
         "stories--grid-card--royal": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 791
+          "roomPx": 500
         },
         "post--grid-card--navy": {
-          "maxCharsPerLine": 61,
+          "maxCharsPerLine": 42,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 808
+          "roomPx": 554
         },
         "stories--grid-card--navy": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 791
+          "roomPx": 500
         },
         "post--mosaic--white": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 23,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 302
         },
         "stories--mosaic--white": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--mosaic--royal": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 23,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 302
         },
         "stories--mosaic--royal": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--mosaic--navy": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 23,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 302
         },
         "stories--mosaic--navy": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--forum--white": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 21,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 284
         },
         "stories--forum--white": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--forum--royal": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 21,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 284
         },
         "stories--forum--royal": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         },
         "post--forum--navy": {
-          "maxCharsPerLine": 66,
+          "maxCharsPerLine": 21,
           "maxLines": 1,
           "fontSize": {
             "max": 20,
             "min": 17
           },
-          "roomPx": 876
+          "roomPx": 284
         },
         "stories--forum--navy": {
-          "maxCharsPerLine": 46,
+          "maxCharsPerLine": 29,
           "maxLines": 1,
           "fontSize": {
             "max": 26,
             "min": 22
           },
-          "roomPx": 793
+          "roomPx": 501
         }
       }
     }

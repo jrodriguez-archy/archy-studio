@@ -30,11 +30,8 @@
     "image-photo",
     "subhead"
   ],
-  "optional": [
-    "kicker"
-  ],
+  "optional": [],
   "facts": {
-    "kicker": "event-name",
     "headline-1": "event-name",
     "headline-2": "event-name",
     "image-photo": "guest-photo",

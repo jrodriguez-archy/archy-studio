@@ -21,30 +21,6 @@
         }
       }
     },
-    "kicker": {
-      "type": "text",
-      "default": "Event",
-      "perFormat": {
-        "cover": {
-          "fontFamily": "var(--font-heading)",
-          "fontSize": "38px",
-          "fontWeight": "var(--font-weight-regular)",
-          "lineHeight": "40px",
-          "letterSpacing": "0.02em"
-        }
-      },
-      "limits": {
-        "cover": {
-          "maxCharsPerLine": 47,
-          "maxLines": 1,
-          "fontSize": {
-            "max": 38,
-            "min": 32
-          },
-          "roomPx": 1200
-        }
-      }
-    },
     "headline-1": {
       "type": "text",
       "default": "A Free Night Out",

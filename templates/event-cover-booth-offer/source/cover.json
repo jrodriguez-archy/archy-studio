@@ -64,7 +64,7 @@
     },
     "I8O-0": {
       "id": "I8O-0",
-      "name": "slot-text-kicker",
+      "name": "Event Label",
       "component": "Text",
       "visible": true,
       "text": "Event",

@@ -64,7 +64,7 @@
     },
     "HZ7-0": {
       "id": "HZ7-0",
-      "name": "slot-text-kicker",
+      "name": "Event Label",
       "component": "Text",
       "visible": true,
       "text": "Event",

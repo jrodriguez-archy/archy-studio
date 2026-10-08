@@ -30,13 +30,11 @@
     "image-venue"
   ],
   "optional": [
-    "kicker",
     "logo-partner"
   ],
   "facts": {
     "logo-partner": "partner-logo",
     "booth": "booth",
-    "kicker": "event-name",
     "headline-1": "event-name",
     "headline-2": "event-name",
     "image-venue": "ground-photo"

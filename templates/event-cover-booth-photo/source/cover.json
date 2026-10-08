@@ -64,7 +64,7 @@
     },
     "I0Z-0": {
       "id": "I0Z-0",
-      "name": "slot-text-kicker",
+      "name": "Event Label",
       "component": "Text",
       "visible": true,
       "text": "Event",

@@ -33,7 +33,6 @@
   "optional": [
     "speaker-role",
     "speaker-company",
-    "kicker",
     "logo-partner"
   ],
   "facts": {
@@ -43,7 +42,6 @@
     "image-venue": "ground-photo",
     "logo-partner": "partner-logo",
     "speaker-company": "speaker-company",
-    "kicker": "event-name",
     "headline-1": "event-name",
     "headline-2": "event-name"
   }

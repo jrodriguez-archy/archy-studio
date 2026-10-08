@@ -31,7 +31,6 @@
     "offer"
   ],
   "optional": [
-    "kicker",
     "logo-partner",
     "logo-offer"
   ],
@@ -40,7 +39,6 @@
     "image-venue": "ground-photo",
     "logo-partner": "partner-logo",
     "booth": "booth",
-    "kicker": "event-name",
     "headline-1": "event-name",
     "logo-offer": "offer-logo",
     "headline-2": "event-name"

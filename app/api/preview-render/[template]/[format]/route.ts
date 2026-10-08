@@ -13,5 +13,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ templat
   if (!key) return new Response('Not found', { status: 404 });
   const url = await previewUrl(key, async () => (await render({ template, format, slots: {}, fillDefaults: true })).png);
   if (!url) return new Response('Previews need Supabase', { status: 503 });
-  return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': 'public, max-age=86400' } });
+  return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': 'public, max-age=60' } });
 }

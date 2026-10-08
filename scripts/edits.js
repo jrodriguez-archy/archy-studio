@@ -160,7 +160,7 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     keep(el);
     const s = el.style;
     const b = e.box ?? {};
-    if (b.dx || b.dy) s.translate = `${b.dx ?? 0}px ${b.dy ?? 0}px`;
+    if (b.dx || b.dy) moveBy(el, b.dx ?? 0, b.dy ?? 0);
     if (b.scale && b.scale !== 1) s.scale = String(b.scale);
     if (logo) continue;
     if (e.text != null && !svg && !el.children.length) el.textContent = e.text;
@@ -358,3 +358,18 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
   }
 };
 
+// Moves an element by (dx, dy) on top of the translate it has in the design (Paper places some stickers
+// with one, e.g. `calc(-50% + 361px) -132px`): never instead of it, so it stays where it was drawn.
+function moveBy(el, dx, dy) {
+  if (!('baseTranslate' in el.dataset)) el.dataset.baseTranslate = el.style.translate || '';
+  const base = el.dataset.baseTranslate;
+  if (!dx && !dy) { el.style.translate = base; return; }
+  if (!base || base === 'none') { el.style.translate = `${dx}px ${dy}px`; return; }
+  const parts = []; let depth = 0, cur = '';
+  for (const ch of base.trim()) {
+    if (ch === '(') depth++; else if (ch === ')') depth--;
+    if (/\s/.test(ch) && !depth) { if (cur) parts.push(cur); cur = ''; } else cur += ch;
+  }
+  if (cur) parts.push(cur);
+  el.style.translate = `calc(${parts[0] ?? '0px'} + ${dx}px) calc(${parts[1] ?? '0px'} + ${dy}px)`;
+}

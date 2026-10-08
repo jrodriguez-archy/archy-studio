@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/app-shell';
+import { previewSrcs } from '@/lib/previews';
 import { catalog, FACT_LABEL, PURPOSE_LABEL } from '@/lib/catalog';
 
 export default async function TemplatePage({ params }: { params: Promise<{ id: string }> }) {
@@ -9,6 +10,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ id: s
   if (!item) notFound();
   const { manifest, config, formats, needs, extras } = item;
   const optional = new Set(config.optional ?? []);
+  const srcs = await previewSrcs([item]);
   const lead = formats.includes('post') ? 'post' : formats[0];
 
   return (
@@ -23,7 +25,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ id: s
             <figure key={f} className="shrink-0">
               <div className="flex h-[20rem] items-center rounded-lg bg-foreground/[0.04] p-6 ring-1 ring-foreground/[0.06] xl:h-[24rem]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/preview/${manifest.id}/${f}`} alt={fm.label} loading="lazy"
+                <img src={srcs[`${manifest.id}/${f}`]} alt={fm.label} loading="lazy"
                   className="h-full w-auto rounded-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_-12px_rgba(0,0,0,0.25)]" style={{ aspectRatio: `${fm.width} / ${fm.height}` }} />
               </div>
               <figcaption className="mt-1.5 px-0.5 text-[13px] text-foreground/40">{fm.label}</figcaption>

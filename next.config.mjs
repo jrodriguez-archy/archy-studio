@@ -17,7 +17,7 @@ export default {
   devIndicators: { position: 'bottom-right' },
   // Chromium and Playwright stay as runtime node_modules, not bundled.
   serverExternalPackages: ['@sparticuz/chromium', 'playwright-core', 'sharp'],
-  outputFileTracingIncludes: { ...Object.fromEntries(rendering.map((r) => [r, renderFiles])), '/api/preview/[template]/[format]': ['./templates/*/manifest.json'] },
+  outputFileTracingIncludes: { ...Object.fromEntries(rendering.map((r) => [r, renderFiles])), '/api/preview/[template]/[format]': ['./templates/*/manifest.json', './scripts/fit.js', './scripts/edits.js'] },
   // Paper references and sources are for designers, never read by the app: no function carries them.
   outputFileTracingExcludes: { '**': notNeeded, ...Object.fromEntries(listing.map((r) => [r, noImages])) },
   experimental: { optimizePackageImports: ['@hugeicons/core-free-icons'] },

@@ -14,7 +14,7 @@ export type TemplateCard = {
   id: string; title: string; description: string; category: string; categoryLabel: string; purposeLabel: string;
   useWhen?: string; notWhen?: string; needs: string[]; extras: string[];
   /** Every format of the style; the event page cover comes from its own template. */
-  formats: { key: string; templateId: string; label: string; width: number; height: number }[];
+  formats: { key: string; templateId: string; src: string; label: string; width: number; height: number }[];
   /** Format shown in front (e.g. the cover when filtering by event page covers). */
   lead?: string;
   /** Template id of the event page cover that goes with this style. */
@@ -52,7 +52,7 @@ function templateActions(t: TemplateCard, onOpen: () => void): Action[] {
 }
 
 const lead = (t: TemplateCard) => t.formats.find((f) => f.key === (t.lead ?? 'post')) ?? t.formats[0];
-const preview = (f: { templateId: string; key: string }) => `/api/preview/${f.templateId}/${f.key}`;
+const preview = (f: { src: string }) => f.src;
 
 // The catalog grid, in sections. A click opens the template in place with its formats and what it needs.
 export function TemplateBrowser({ groups, showGroupHeaders }: { groups: TemplateGroup[]; showGroupHeaders: boolean }) {

@@ -117,7 +117,7 @@ export function LibraryTab({ library, current, updating = [], confirmLeave }: { 
                     <div key={t.id} className="flex items-center gap-2.5 rounded-md p-1.5 hover:bg-foreground/[0.03]">
                       <button type="button" onClick={() => go(`/canvas/new?template=${t.id}&format=${t.formats[0].key}`)} className="size-12 shrink-0 overflow-hidden rounded-[4px] bg-foreground/[0.04] ring-1 ring-foreground/[0.06] hover:ring-primary/40">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={`/api/preview/${t.id}/${t.formats[0].key}`} alt="" loading="lazy" className="size-full object-cover object-top" />
+                        <img src={t.formats[0].src} alt="" loading="lazy" className="size-full object-cover object-top" />
                       </button>
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{t.title.replace(/^Event Cover · /, '')}</p>

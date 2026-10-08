@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { catalog, titleOf } from './catalog';
+import { previewSrcs } from './previews';
 import type { Edits } from './canvas-shared';
 import { loadPieces } from './gallery';
 import { formatLabel, groupSets } from './gallery-shared';
@@ -105,12 +106,13 @@ export async function canvasLibrary(me: Who) {
     catalog(), loadPieces({ userId: me.id }, 80), loadPieces({}, 80), loadLibrary(), listUploads(me.id),
     supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle(),
   ]);
+  const srcs = await previewSrcs(items);
   const card = (p: Awaited<ReturnType<typeof loadPieces>>[number], title: string) => ({ id: p.id, title, format: formatLabel(p.format), thumb: p.thumb ?? null, width: p.width, height: p.height, author: p.author });
   const pieces = (list: Awaited<ReturnType<typeof loadPieces>>) => groupSets(list).flatMap((s) => s.pieces.map((p) => card(p, s.title)));
   return {
     templates: items.map((i) => ({
       id: i.manifest.id, title: i.config.title, category: i.config.category ?? 'other', purpose: i.config.purpose ?? null, cover: !!i.config.coverOf,
-      formats: Object.entries(i.manifest.formats).map(([key, f]) => ({ key, label: formatLabel(key), width: f.width, height: f.height })),
+      formats: Object.entries(i.manifest.formats).map(([key, f]) => ({ key, label: formatLabel(key), width: f.width, height: f.height, src: srcs[`${i.manifest.id}/${key}`] })),
     })),
     mine: pieces(mine),
     team: pieces(team),

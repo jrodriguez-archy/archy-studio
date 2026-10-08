@@ -1,5 +1,6 @@
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
 import { TemplateBrowser, type TemplateCard, type TemplateGroup } from '@/components/template-browser';
+import { previewSrcs } from '@/lib/previews';
 import { catalog, CATEGORY_LABEL, FACT_LABEL, PURPOSE_LABEL, PURPOSE_PLURAL, TAXONOMY, type CatalogItem } from '@/lib/catalog';
 
 export const metadata = { title: 'Templates · Archy Studio' };
@@ -10,6 +11,7 @@ export const metadata = { title: 'Templates · Archy Studio' };
 export default async function TemplatesPage({ searchParams }: { searchParams: Promise<{ category?: string; purpose?: string }> }) {
   const { category: rawCategory, purpose } = await searchParams;
   const all = await catalog();
+  const srcs = await previewSrcs(all);
   const byId = Object.fromEntries(all.map((i) => [i.manifest.id, i]));
   const styles = all.filter((i) => !i.config.coverOf);
   const taxonomy = TAXONOMY.filter((c) => styles.some((i) => i.config.category === c.key));
@@ -22,7 +24,7 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
     if (p) s.set('purpose', p);
     return s.size ? `/templates?${s}` : '/templates';
   };
-  const card = (i: CatalogItem) => toCard(i, i.config.cover ? byId[i.config.cover] : undefined, coversOnly ? 'cover' : undefined);
+  const card = (i: CatalogItem) => toCard(srcs, i, i.config.cover ? byId[i.config.cover] : undefined, coversOnly ? 'cover' : undefined);
 
   // Subcategories of a category, in taxonomy order; unknown ones last, so nothing is lost.
   const subcategories = (key: string, items: CatalogItem[]) => {
@@ -80,10 +82,10 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
   );
 }
 
-function toCard({ manifest, config, formats, needs, extras }: CatalogItem, cover?: CatalogItem, lead?: string): TemplateCard {
+function toCard(srcs: Record<string, string>, { manifest, config, formats, needs, extras }: CatalogItem, cover?: CatalogItem, lead?: string): TemplateCard {
   const optional = new Set(config.optional ?? []);
-  const own = formats.map((f) => ({ key: f, templateId: manifest.id, label: manifest.formats[f].label, width: manifest.formats[f].width, height: manifest.formats[f].height }));
-  const extra = cover ? cover.formats.map((f) => ({ key: f, templateId: cover.manifest.id, label: cover.manifest.formats[f].label, width: cover.manifest.formats[f].width, height: cover.manifest.formats[f].height })) : [];
+  const own = formats.map((f) => ({ key: f, templateId: manifest.id, src: srcs[`${manifest.id}/${f}`], label: manifest.formats[f].label, width: manifest.formats[f].width, height: manifest.formats[f].height }));
+  const extra = cover ? cover.formats.map((f) => ({ key: f, templateId: cover.manifest.id, src: srcs[`${cover.manifest.id}/${f}`], label: cover.manifest.formats[f].label, width: cover.manifest.formats[f].width, height: cover.manifest.formats[f].height })) : [];
   return {
     id: manifest.id, title: config.title, description: config.description, category: config.category ?? '',
     categoryLabel: CATEGORY_LABEL[config.category ?? ''] ?? '', purposeLabel: PURPOSE_LABEL[config.purpose ?? ''] ?? '',

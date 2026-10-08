@@ -1,6 +1,22 @@
 // Runs inside the template page. Fills slots and fits text following the plugin's order:
 // rewrap first, then reduce the type a little, then (if it still does not fit) report so the copy is shortened.
 // Never lets content overflow silently.
+// Moves an element by (dx, dy) on top of the translate it has in the design (Paper places some stickers
+// with one, e.g. `calc(-50% + 361px) -132px`): never instead of it, so it stays where it was drawn.
+function shiftBy(el, dx, dy) {
+  if (!('baseTranslate' in el.dataset)) el.dataset.baseTranslate = el.style.translate || '';
+  const base = el.dataset.baseTranslate;
+  if (!dx && !dy) { el.style.translate = base; return; }
+  if (!base || base === 'none') { el.style.translate = `${dx}px ${dy}px`; return; }
+  const parts = []; let depth = 0, cur = '';
+  for (const ch of base.trim()) {
+    if (ch === '(') depth++; else if (ch === ')') depth--;
+    if (/\s/.test(ch) && !depth) { if (cur) parts.push(cur); cur = ''; } else cur += ch;
+  }
+  if (cur) parts.push(cur);
+  el.style.translate = `calc(${parts[0] ?? '0px'} + ${dx}px) calc(${parts[1] ?? '0px'} + ${dy}px)`;
+}
+
 window.__fill = async function fill({ format, formats, values, rules, limits }) {
   const root = document.querySelector('body > [data-node]');
   const byName = (name) =>
@@ -49,6 +65,28 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       position: cs.position,
     });
   }
+
+  // Booth stickers as designed: how close each text sits to them in Paper. Their breathing room never
+  // asks for more than the design (a sticker drawn over the kicker's rule, or near the headline, stays).
+  const gapBetween = (a, b) => Math.max(a.left - b.right, b.left - a.right, a.top - b.bottom, b.top - a.bottom);
+  const designGaps = new Map([...root.querySelectorAll('svg[data-name^="RIBBON"]')].map((svg) => {
+    const v = rectOf(svg);
+    return [svg, new Map([...root.querySelectorAll('[data-slot-type="text"]')].map((t) => {
+      const rg = document.createRange(); rg.selectNodeContents(t);
+      const rs = [...rg.getClientRects()].filter((x) => x.width > 0);
+      return [t, rs.length ? Math.min(...rs.map((x) => gapBetween(x, v))) : Infinity];
+    }))];
+  }));
+
+  // Illustrations (a cocktail, a drawing) as designed: how close each text sits to each of their parts.
+  const RA0 = rectOf(root).width * rectOf(root).height;
+  const artLeaves = [...root.querySelectorAll('[data-name^="Cocktail"], [data-name^="Illustration"], [data-optional="illustration"]')]
+    .flatMap((a) => [...a.querySelectorAll('svg')].filter((s0) => { const b = s0.getBoundingClientRect(); return b.width > 4 && b.width * b.height < RA0 * 0.2; }));
+  const artGaps = new Map([...root.querySelectorAll('[data-slot-type="text"]')].map((t) => {
+    const rg = document.createRange(); rg.selectNodeContents(t);
+    const rs = [...rg.getClientRects()].filter((x) => x.width > 0);
+    return [t, new Map(artLeaves.map((l) => [l, rs.length ? Math.min(...rs.map((x) => gapBetween(x, l.getBoundingClientRect()))) : Infinity]))];
+  }));
 
   // Never stricter than the design itself: whatever already "overflows" in the original is tolerated.
   for (const [role, r] of Object.entries(rules.slots)) {
@@ -157,7 +195,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
           const a = rectOf(archy), m0 = el.getBoundingClientRect();
           const body = a.top + sample.top + sample.h * 0.39;
           const dy = Math.round(body - (m0.top + m0.height / 2));
-          if (Math.abs(dy) > 1 && Math.abs(dy) < box.height * 0.3) { el.style.translate = `0px ${dy}px`; (report.logos[role] ??= {}).dy = dy; }
+          if (Math.abs(dy) > 1 && Math.abs(dy) < box.height * 0.3) { shiftBy(el, 0, dy); (report.logos[role] ??= {}).dy = dy; }
         }
       } else n.textContent = value;
     }
@@ -788,7 +826,9 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     for (const t of textsAll) {
       const role = t.dataset.slot, rr = rules.slots[role];
       if (!rr) continue;
-      const hitting = () => leaves.filter((l) => glyphs(t).some((g) => intersects(g, l.getBoundingClientRect(), 16)));
+      // 16px clear, or as close as the design itself puts this text to that part (never stricter).
+      const need = (l) => Math.min(16, artGaps.get(t)?.get(l) ?? Infinity);
+      const hitting = () => leaves.filter((l) => glyphs(t).some((g) => gapBetween(g, l.getBoundingClientRect()) < need(l)));
       let hits = hitting();
       if (!hits.length) continue;
       const L = rectOf(t).left;
@@ -873,26 +913,29 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       }
       // It never sits on the copy: 40px clear of every text; it moves down into free space, else shrinks.
       const texts = [...root.querySelectorAll('[data-slot-type="text"]')].filter((t) => t.isConnected && !sticker.contains(t));
-      const hit = (gap = 40) => texts.some((t) => { const rg = document.createRange(); rg.selectNodeContents(t); return [...rg.getClientRects()].some((x) => x.width > 0 && intersects(x, rectOf(svg), gap)); });
+      // 40px, or what the design itself leaves (a text it overlaps in Paper only must not get closer).
+      const gaps = designGaps.get(svg) ?? new Map();
+      const need = (t) => { const g = gaps.get(t) ?? Infinity; return g >= 40 ? 40 : g; };
+      const hit = () => texts.some((t) => { const rg = document.createRange(); rg.selectNodeContents(t); return [...rg.getClientRects()].some((x) => x.width > 0 && gapBetween(x, rectOf(svg)) < need(t)); });
       const R = rectOf(root);
       const fits = () => rectOf(svg).bottom < R.bottom - 24 && !hit();
       if (hit()) {
         let placed = false;
         for (const dy of [24, 48, 72, 96, 120]) {
-          sticker.style.translate = `0px ${dy}px`;
+          shiftBy(sticker, 0, dy);
           if (fits()) { report.badgeMoved = dy; placed = true; break; }
         }
-        if (!placed) sticker.style.translate = '';
+        if (!placed) shiftBy(sticker, 0, 0);
         if (!placed) {
           // Smaller, and moved if that helps; else the least overlap it can get.
-          const overlap = () => texts.reduce((a, t) => { const rg = document.createRange(); rg.selectNodeContents(t); return a + [...rg.getClientRects()].reduce((b, x) => { const v = rectOf(svg); return b + Math.max(0, Math.min(x.right, v.right + 40) - Math.max(x.left, v.left - 40)) * Math.max(0, Math.min(x.bottom, v.bottom + 40) - Math.max(x.top, v.top - 40)); }, 0); }, 0);
-          sticker.style.translate = '';
+          const overlap = () => texts.reduce((a, t) => { const rg = document.createRange(); rg.selectNodeContents(t); return a + [...rg.getClientRects()].reduce((b, x) => { const v = rectOf(svg); const g = Math.max(0, need(t)); return b + (gapBetween(x, v) < need(t) ? Math.max(0, Math.min(x.right, v.right + g) - Math.max(x.left, v.left - g)) * Math.max(0, Math.min(x.bottom, v.bottom + g) - Math.max(x.top, v.top - g)) : 0); }, 0); }, 0);
+          shiftBy(sticker, 0, 0);
           const w0 = rectOf(svg).width, h0 = rectOf(svg).height;
           let best = { o: overlap(), k: 1, dx: 0, dy: 0 };
           // Shrinking keeps its bottom-right corner (it gives way to the copy above and to the left).
           outer: for (const k of [1, 0.92, 0.85, 0.78, 0.72]) for (const dy of [0, 24, 48, 72, 96, 120, 160, 200]) for (const dx of [0, 24, 48]) {
             const tx = dx + (1 - k) * w0, ty = dy + (1 - k) * h0;
-            sticker.style.scale = k === 1 ? '' : String(k); sticker.style.translate = `${Math.round(tx)}px ${Math.round(ty)}px`;
+            sticker.style.scale = k === 1 ? '' : String(k); shiftBy(sticker, Math.round(tx), Math.round(ty));
             const v = rectOf(svg);
             if (v.bottom > R.bottom - 24 || v.right > R.right - 8) continue;
             const o = overlap();
@@ -900,7 +943,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
             if (!o) break outer;
           }
           sticker.style.scale = best.k === 1 ? '' : String(best.k);
-          sticker.style.translate = best.dx || best.dy ? `${Math.round(best.dx)}px ${Math.round(best.dy)}px` : '';
+          shiftBy(sticker, Math.round(best.dx), Math.round(best.dy));
           report.badgeShrunk = best;
         }
         continue;
@@ -911,7 +954,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       if (firstBelow != null) {
         const room = firstBelow - 48 - rectOf(svg).bottom;
         const dy = Math.min(room, rectOf(svg).height * 0.7);
-        if (dy > 12) { sticker.style.translate = `0px ${Math.round(dy)}px`; if (!fits()) sticker.style.translate = ''; else report.badgeMoved = Math.round(dy); }
+        if (dy > 12) { shiftBy(sticker, 0, Math.round(dy)); if (!fits()) shiftBy(sticker, 0, 0); else report.badgeMoved = Math.round(dy); }
       }
     }
   }

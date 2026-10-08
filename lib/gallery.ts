@@ -1,5 +1,6 @@
 import 'server-only';
 import { titleOf } from './catalog';
+import { displayName } from './names';
 import { fileLink, largeUrl, thumbUrl } from './images';
 import { supabaseAdmin } from './supabase/admin';
 
@@ -25,7 +26,7 @@ export async function loadPieces(filter: PieceFilter & { before?: string; setId?
   const titles = Object.fromEntries(await Promise.all([...new Set(rows.map((r) => r.template))].map(async (t) => [t, await titleOf(t)])));
   return rows.map((r) => ({
     id: r.id, set_id: r.set_id ?? r.id, set_title: r.set_title, archived_at: r.archived_at, edited_at: r.edited_at, template: r.template, title: titles[r.template], format: r.format, design: r.design, theme: r.theme, width: r.width, height: r.height, scale: r.scale, slots: r.slots ?? {}, created_at: r.created_at,
-    user_id: r.user_id, author: r.profiles?.full_name ?? 'Studio', project_id: r.project_id,
+    user_id: r.user_id, author: r.profiles ? displayName(r.profiles.full_name, r.profiles.email) : 'Studio', project_id: r.project_id,
     // Stable links: the same URL on every visit, so the browser keeps them (no signing per page view).
     thumb: thumbUrl(r.storage_path), large: largeUrl(r.storage_path), file: fileLink(r.id),
   }));

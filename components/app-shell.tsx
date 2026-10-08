@@ -5,6 +5,7 @@ import type { NavIcon } from '@/components/nav-link';
 import type { ProjectLink } from '@/components/projects-nav';
 import { ShellFrame, Sidebar } from '@/components/sidebar';
 import { listProjects } from '@/lib/projects';
+import { displayName } from '@/lib/names';
 import { currentUser } from '@/lib/team';
 
 export type NavItem = { href: string; label: string; icon: NavIcon };
@@ -15,11 +16,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const me = await currentUser();
   const sections: NavSection[] = [
     { label: 'Library', items: [{ href: '/', label: 'Gallery', icon: 'gallery' }, { href: '/templates', label: 'Templates', icon: 'templates' }, { href: '/archive', label: 'Archive', icon: 'archive' }] },
-    { label: 'Create', items: [{ href: '/canvas', label: 'Canvas', icon: 'canvas' }] },
+    { label: 'Create', items: [{ href: '/canvas', label: 'Canvas', icon: 'canvas' }, { href: '/assets', label: 'Assets', icon: 'assets' }] },
   ];
   // Less used, at the bottom of the rail: Install, Admin (admins only, in a menu) and the account.
   const admin: NavItem[] | null = me?.is_admin ? [{ href: '/admin', label: 'Team', icon: 'team' }, { href: '/admin/review', label: 'Template review', icon: 'review' }] : null;
-  const name = me?.full_name || me?.email || '';
+  const name = me ? displayName(me.full_name, me.email) : '';
   const [list, jar] = await Promise.all([me ? listProjects(me).catch(() => []) : [], cookies()]);
   const projects: ProjectLink[] = list.map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id }));
   const who = me ? { id: me.id, is_admin: me.is_admin } : undefined;

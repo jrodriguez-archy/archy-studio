@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { NavItem, NavSection } from '@/components/app-shell';
+import { firstName } from '@/lib/names';
 
 const SidebarContext = createContext({ collapsed: false });
 export const useSidebar = () => useContext(SidebarContext);
@@ -138,7 +139,7 @@ function AccountMenu({ name, email }: { name: string; email: string }) {
     <DropdownMenuTrigger aria-label="Account"
       className={`${ROW} h-10 w-full outline-none ${collapsed ? 'justify-center px-0' : ''} ${path === '/account' ? 'bg-background shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'hover:bg-foreground/[0.04]'}`}>
       {avatar}
-      {!collapsed && <><span className="min-w-0 flex-1 truncate text-left text-foreground/75">{name || email}</span><HugeiconsIcon icon={UnfoldMoreIcon} className="size-3.5 text-foreground/35" /></>}
+      {!collapsed && <><span className="min-w-0 flex-1 truncate text-left text-foreground/75">{name ? firstName(name) : email}</span><HugeiconsIcon icon={UnfoldMoreIcon} className="size-3.5 text-foreground/35" /></>}
     </DropdownMenuTrigger>
   );
   return (

@@ -150,8 +150,14 @@ export async function canvasLibrary(me: Who) {
     loadPieces({ userId: me.id }, 80), loadPieces({}, 80), listAssets({ ownerId: me.id }), listAssets(), listFolders(),
     supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle(),
   ]);
-  const card = (p: Awaited<ReturnType<typeof loadPieces>>[number], title: string) => ({ id: p.id, title, format: formatLabel(p.format), thumb: p.thumb ?? null, width: p.width, height: p.height, author: p.author });
-  const pieces = (list: Awaited<ReturnType<typeof loadPieces>>) => groupSets(list).flatMap((s) => s.pieces.map((p) => card(p, s.title)));
+  // One card per set, as in the gallery: its lead format in front, the others stacked behind. Opening
+  // it opens the lead; the set's other formats come along as artboards.
+  const pieces = (list: Awaited<ReturnType<typeof loadPieces>>) => groupSets(list).map((s) => ({
+    id: s.lead.id, title: s.title, format: [...new Set(s.pieces.map((p) => formatLabel(p.format)))].join(', '),
+    thumb: s.lead.thumb ?? null, width: s.lead.width, height: s.lead.height, author: s.author,
+    /** Every design in the set (to light the card when any of them is open, or being saved). */
+    ids: s.pieces.map((p) => p.id),
+  }));
   return {
     mine: pieces(mine),
     team: pieces(team),

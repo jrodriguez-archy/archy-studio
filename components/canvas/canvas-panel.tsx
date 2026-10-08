@@ -6,6 +6,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { SearchVisualIcon, Image01Icon, Layers01Icon, LibraryIcon } from '@hugeicons/core-free-icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CanvasLibrary } from '@/lib/canvas';
+import { StackBadge, StackLayers, stackPad } from '@/components/stack';
 import { ResizeHandle, useSideWidth } from './resizable';
 
 export type PanelTab = 'layers' | 'library' | 'assets' | 'inspector';
@@ -60,21 +61,30 @@ export function LibraryTab({ library, current, updating = [], confirmLeave }: { 
           </div>
           {!pieces.length && <p className="px-3 py-6 text-center text-foreground/45">No designs yet. Ask Claude for one, or open a template from Templates.</p>}
           <div className="grid grid-cols-2 gap-x-2 gap-y-3 px-3">
-            {pieces.map((p) => (
-              <button key={p.id} type="button" onClick={() => go(`/canvas/${p.id}`)} className="group text-left">
-                <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-md bg-foreground/[0.04] p-1.5 ring-1 transition-colors ${p.id === current ? 'ring-2 ring-primary' : 'ring-foreground/[0.06] group-hover:ring-primary/40'}`}>
+            {pieces.map((p) => {
+              const n = p.ids.length;
+              const open = !!current && p.ids.includes(current);
+              return (
+              <button key={p.id} type="button" onClick={() => go(`/canvas/${p.id}`)} className={`group text-left ${stackPad(n)}`}>
+                {/* A set: its other formats stacked behind, as in the gallery. */}
+                <div className="relative">
+                <StackLayers n={n} />
+                <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-md bg-[#F4F4F5] p-1.5 ring-1 transition-colors ${open ? 'ring-2 ring-primary' : 'ring-foreground/[0.06] group-hover:ring-primary/40'}`}>
+                  <StackBadge n={n} />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {p.thumb && <img src={p.thumb} alt="" loading="lazy" className="max-h-full max-w-full rounded-[2px]" style={{ aspectRatio: `${p.width} / ${p.height}` }} />}
-                  {updating.includes(p.id) && (
+                  {p.ids.some((id) => updating.includes(id)) && (
                     <span className="absolute inset-0 flex items-end justify-center bg-background/50 pb-1.5 backdrop-blur-[1px]">
                       <span className="animate-pulse rounded-full bg-background px-2 py-0.5 text-[10px] text-foreground/60 shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">Updating…</span>
                     </span>
                   )}
                 </div>
+                </div>
                 <p className="mt-1 truncate">{p.title}</p>
                 <p className="truncate text-foreground/40">{p.format}{whose === 'team' ? ` · ${p.author}` : ''}</p>
               </button>
-            ))}
+              );
+            })}
           </div>
     </div>
   );

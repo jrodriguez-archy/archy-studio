@@ -1,5 +1,6 @@
 import 'server-only';
 import { PUBLIC, publicUrl } from './images';
+import { displayName } from './names';
 import { storeUpload } from './renders';
 import { supabaseAdmin } from './supabase/admin';
 
@@ -23,7 +24,7 @@ const thumbOf = (path: string) => `assets/${path.replace(/\.\w+$/, '')}.webp`;
 
 const toAsset = (r: Row): Asset => ({
   id: r.id, name: r.name, kind: r.kind, value: `upload:${r.path}`, thumb: publicUrl(thumbOf(r.path)),
-  width: r.width, height: r.height, ownerId: r.owner_id, author: r.profiles?.full_name ?? r.profiles?.email ?? 'Studio', prompt: r.prompt, createdAt: r.created_at,
+  width: r.width, height: r.height, ownerId: r.owner_id, author: r.profiles ? displayName(r.profiles.full_name, r.profiles.email) : 'Studio', prompt: r.prompt, createdAt: r.created_at,
   folderId: r.folder_id,
 });
 
@@ -71,10 +72,13 @@ async function thumbnail(path: string, body: Buffer) {
 // The newest assets: everyone's (Team) or one person's (Mine). One person's older uploads (from before
 // assets were kept) join the list the first time they look (once per server instance).
 const adopted = new Set<string>();
-export async function listAssets(opts: { ownerId?: string; folderId?: string; limit?: number } = {}): Promise<Asset[]> {
+export async function listAssets(opts: { ownerId?: string; folderId?: string; search?: string; limit?: number } = {}): Promise<Asset[]> {
   if (opts.ownerId && !adopted.has(opts.ownerId)) { adopted.add(opts.ownerId); await adoptOldUploads(opts.ownerId).catch(() => {}); }
   let q = supabaseAdmin().from('assets').select(COLUMNS).is('deleted_at', null).order('created_at', { ascending: false }).limit(opts.limit ?? 300);
   if (opts.ownerId) q = q.eq('owner_id', opts.ownerId);
+  // By name: the LIKE wildcards are taken literally (PostgREST reads * as a wildcard and cannot escape it).
+  const term = opts.search?.trim().slice(0, 80).replace(/[\\%_]/g, '\\$&').replace(/\*/g, '');
+  if (term) q = q.ilike('name', `%${term}%`);
   if (opts.folderId) q = /^[0-9a-f-]{36}$/i.test(opts.folderId) ? q.eq('folder_id', opts.folderId) : q.eq('id', '00000000-0000-0000-0000-000000000000');
   const { data } = await q;
   return ((data ?? []) as unknown as Row[]).map(toAsset);

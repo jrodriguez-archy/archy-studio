@@ -1,5 +1,6 @@
 import 'server-only';
 import { titleOf } from './catalog';
+import { loadManifest } from './templates';
 import { formatLabel } from './gallery-shared';
 import { largeUrl, thumbUrl } from './images';
 import { supabaseAdmin } from './supabase/admin';
@@ -46,10 +47,17 @@ export async function loadRound(roundId: string): Promise<ReviewItem[]> {
     }]);
   }
   const titles = Object.fromEntries(await Promise.all([...new Set(rows.map((r) => r.template))].map(async (t) => [t, await titleOf(t)])));
-  const rank = (f: string) => { const i = ['post', 'square', 'stories', 'og', 'cover'].indexOf(f); return i < 0 ? 9 : i; };
+  const rank = (f: string) => { const i = ['post', 'square', 'stories', 'og', 'cover'].indexOf(f.split('--')[0]); return i < 0 ? 9 : i; };
+  // "post--the-arch--navy" → "Post · The Arch, Navy" (another design and theme of the template).
+  const manifests = Object.fromEntries(await Promise.all([...new Set(rows.map((r) => r.template))].map(async (t) => [t, await loadManifest(t).catch(() => null)])));
+  const labelOf = (template: string, f: string) => {
+    const [plain, design, theme] = f.split('--');
+    const m = manifests[template];
+    return design ? `${formatLabel(plain)} · ${m?.designs?.[design]?.label ?? design}, ${m?.themes?.[theme]?.label ?? theme}` : formatLabel(f);
+  };
   rows.sort((a, b) => rank(a.format) - rank(b.format) || a.case.localeCompare(b.case));
   return rows.map((r) => ({
-    id: r.id, template: r.template, title: titles[r.template] ?? r.template, format: r.format, formatLabel: formatLabel(r.format), case: r.case, status: r.status,
+    id: r.id, template: r.template, title: titles[r.template] ?? r.template, format: r.format, formatLabel: labelOf(r.template, r.format), case: r.case, status: r.status,
     width: r.width, height: r.height, url: largeUrl(r.storage_path), thumb: thumbUrl(r.storage_path), report: r.report ?? {},
     prev: r.prev_item_id && prevPath[r.prev_item_id] ? { url: prevPath[r.prev_item_id] !== r.storage_path ? largeUrl(prevPath[r.prev_item_id]) : null, comments: comments.get(r.prev_item_id) ?? [] } : null,
     comments: comments.get(r.id) ?? [],

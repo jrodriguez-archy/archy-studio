@@ -1,4 +1,4 @@
-// Template QA: every template × format drawn with realistic, short and long copy (the cases of
+// Template QA: every template × format (and every design × theme) drawn with realistic, short and long copy (the cases of
 // Template review). Reports how
 // much of the design's footprint the content fills, what grew, what does not fit and what the Inspector
 // says, and keeps the PNGs, so a template that looks wrong with real copy is caught before people see it.
@@ -8,7 +8,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { catalog } from '../lib/catalog';
 import { render } from '../lib/renderer';
-import { casesFor } from './review-cases';
+import { casesFor, combosOf, comboFormat } from './review-cases';
 
 async function main() {
   const [outDir = path.join(process.cwd(), '.qa'), ...only] = process.argv.slice(2);
@@ -16,19 +16,20 @@ async function main() {
   const items = (await catalog()).filter((i) => !only.length || only.includes(i.manifest.id));
   const rows: string[] = [];
   for (const [index, { manifest, config }] of items.entries()) {
-    for (const format of Object.keys(manifest.formats)) {
+    for (const combo of combosOf(manifest)) for (const format of Object.keys(combo.formats)) {
+      const shown = comboFormat(format, combo.key);
       // The same realistic cases as Template review (scripts/review-cases.ts).
       for (const { case: name, slots } of await casesFor(manifest, config, format, { index })) {
         try {
-          const out = await render({ template: manifest.id, format, slots, fillDefaults: true, inspect: true });
+          const out = await render({ template: manifest.id, format, design: combo.design, theme: combo.theme, slots, fillDefaults: true, inspect: true });
           const f = out.report.fill;
           const before = f ? Math.round((f.before / f.footprint) * 100) : null;
           const after = f ? Math.round(((f.after ?? f.before) / f.footprint) * 100) : null;
-          const file = `${manifest.id}-${format}-${name}.png`;
+          const file = `${manifest.id}-${shown}-${name}.png`;
           await writeFile(path.join(outDir, file), out.png);
           const warn = out.inspected?.review.filter((r) => r.level === 'warn').map((r) => r.title) ?? [];
           rows.push([
-            manifest.id, format, name,
+            manifest.id, shown, name,
             f ? `${before}% → ${after}%` : 'n/a',
             f?.grew ? `${f.grew.slot} ×${f.grew.scale}` : '',
             f?.footer ? 'footer↓' : '',
@@ -36,7 +37,7 @@ async function main() {
             warn.join('; '),
           ].join(' | '));
         } catch (e) {
-          rows.push(`${manifest.id} | ${format} | ${name} | ERROR ${(e as Error).message}`);
+          rows.push(`${manifest.id} | ${shown} | ${name} | ERROR ${(e as Error).message}`);
         }
       }
     }

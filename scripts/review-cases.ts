@@ -246,3 +246,11 @@ export function shorter(slot: string, value: string): string[] {
   if (slot === 'city') out.push(value.replace(/, (Massachusetts|Texas|Georgia)$/, (m) => ({ ', Massachusetts': ', MA', ', Texas': ', TX', ', Georgia': ', GA' } as Record<string, string>)[m]));
   return [...new Set(out)].filter((v) => v && v !== value);
 }
+
+// Every design × theme a template draws (one entry, the base formats, on single-design templates). `key`
+// is null for the default; a review or QA item of another one is keyed `<format>--<design>--<theme>`.
+export function combosOf(manifest: Manifest) {
+  const base = { key: null as string | null, design: manifest.default?.design ?? null, theme: manifest.default?.theme ?? null, formats: manifest.formats };
+  return [base, ...Object.entries(manifest.combos ?? {}).map(([key, c]) => ({ key, design: c.design as string | null, theme: c.theme as string | null, formats: c.formats }))];
+}
+export const comboFormat = (format: string, key: string | null) => (key ? `${format}--${key}` : format);

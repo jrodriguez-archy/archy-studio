@@ -3,7 +3,7 @@
   "nodes": {
     "46V-0": {
       "id": "46V-0",
-      "name": "TPL · Booth Invite Photo · OG 1200×630",
+      "name": "TPL · Booth Invite Photo · Navy · OG 1200×630",
       "component": "Frame",
       "visible": true,
       "text": null,
@@ -255,7 +255,10 @@
       "top": "0px",
       "width": "1200px",
       "height": "630px",
-      "backgroundImage": "linear-gradient(in oklab 90deg, var(--color-dark-background) 0%, var(--color-dark-background) 64%, oklab(0% 0 0 / 0%) 92%)"
+      "maskImage": "linear-gradient(90deg, black 0%, black 64%, transparent 92%)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/3ZM10MNEVC1NB2ET496B1V8NFY.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
     },
     "47J-0": {
       "width": "220px",
@@ -296,7 +299,7 @@
       "textTransform": "uppercase",
       "position": "absolute",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Black\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 900,
       "display": "flex",
       "justifyContent": "center",
@@ -315,7 +318,7 @@
       "height": "40px",
       "position": "absolute",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "display": "flex",
       "justifyContent": "center",
@@ -348,7 +351,7 @@
       "letterSpacing": "-0.01em",
       "position": "relative",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-white)"
     },
@@ -378,7 +381,7 @@
       "textTransform": "uppercase",
       "letterSpacing": "0.02em",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-blue-tint-300)"
     },
@@ -390,7 +393,7 @@
       "alignContent": "center",
       "lineHeight": "44px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-white)"
     },
@@ -413,7 +416,7 @@
       "textTransform": "uppercase",
       "letterSpacing": "0.02em",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-blue-tint-300)"
     },
@@ -425,7 +428,7 @@
       "alignContent": "center",
       "lineHeight": "44px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 400,
       "color": "var(--color-white)"
     },

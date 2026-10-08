@@ -244,7 +244,10 @@
       "left": "1160px",
       "top": "8320px",
       "position": "absolute",
-      "backgroundColor": "var(--color-light-background)"
+      "backgroundColor": "var(--color-light-background)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/36GDP026Q7T1JSWYW4F4SDZ24X.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
     },
     "4WM-0": {
       "position": "absolute",
@@ -342,7 +345,7 @@
       "lineHeight": "126px",
       "letterSpacing": "-0.02em",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-light-text)"
     },
@@ -352,7 +355,7 @@
       "lineHeight": "126px",
       "letterSpacing": "-0.02em",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-neutral)"
     },
@@ -380,7 +383,7 @@
       "letterSpacing": "0.05em",
       "textTransform": "uppercase",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-neutral-light)"
     },
@@ -389,7 +392,7 @@
       "fontSize": "52px",
       "lineHeight": "60px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-light-text)"
     },
@@ -398,7 +401,7 @@
       "fontSize": "34px",
       "lineHeight": "42px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 400,
       "color": "var(--color-neutral)"
     },
@@ -416,7 +419,7 @@
       "letterSpacing": "0.05em",
       "textTransform": "uppercase",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-neutral-light)"
     },
@@ -425,7 +428,7 @@
       "fontSize": "52px",
       "lineHeight": "60px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-light-text)"
     },
@@ -444,7 +447,7 @@
       "textTransform": "uppercase",
       "width": "max-content",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-white)"
     }

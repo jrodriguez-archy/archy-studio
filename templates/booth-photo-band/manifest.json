@@ -63,28 +63,28 @@
       "default": "Meet Archy at Hinman Dental Meeting",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "100px",
           "fontWeight": 600,
           "lineHeight": "103px",
           "letterSpacing": "-0.02em"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "84px",
           "fontWeight": 600,
           "lineHeight": "88px",
           "letterSpacing": "-0.02em"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "100px",
           "fontWeight": 600,
           "lineHeight": "103px",
           "letterSpacing": "-0.02em"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "77px",
           "fontWeight": 600,
           "lineHeight": "76px",
@@ -135,25 +135,25 @@
       "default": "Atlanta, GA",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "40px",
           "fontWeight": 600,
           "lineHeight": "48px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "40px",
           "fontWeight": 600,
           "lineHeight": "48px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "40px",
           "fontWeight": 600,
           "lineHeight": "48px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "34px",
           "fontWeight": 600,
           "lineHeight": "38px"
@@ -203,19 +203,19 @@
       "default": "Georgia World Congress Center",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "30px",
           "fontWeight": 400,
           "lineHeight": "38px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "30px",
           "fontWeight": 400,
           "lineHeight": "38px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "30px",
           "fontWeight": 400,
           "lineHeight": "38px"
@@ -256,25 +256,25 @@
       "default": "March 12 – 14, 2026",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "40px",
           "fontWeight": 600,
           "lineHeight": "48px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "40px",
           "fontWeight": 600,
           "lineHeight": "48px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "40px",
           "fontWeight": 600,
           "lineHeight": "48px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "34px",
           "fontWeight": 600,
           "lineHeight": "38px"
@@ -324,25 +324,25 @@
       "default": "Booth #1039",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "30px",
           "fontWeight": "var(--font-weight-bold)",
           "lineHeight": "38px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "30px",
           "fontWeight": "var(--font-weight-bold)",
           "lineHeight": "38px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "30px",
           "fontWeight": "var(--font-weight-bold)",
           "lineHeight": "38px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Black\", \"Onest\", system-ui, sans-serif",
           "fontSize": "51px",
           "fontWeight": 900,
           "lineHeight": "55px",

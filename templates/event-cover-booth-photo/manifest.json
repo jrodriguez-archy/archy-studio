@@ -18,6 +18,9 @@
       "perFormat": {
         "cover": {
           "nodes": 1
+        },
+        "cover--booth-photo--royal": {
+          "nodes": 1
         }
       }
     },
@@ -25,7 +28,8 @@
       "type": "logo",
       "default": null,
       "perFormat": {
-        "cover": {}
+        "cover": {},
+        "cover--booth-photo--royal": {}
       }
     },
     "headline-1": {
@@ -38,6 +42,13 @@
           "fontWeight": "var(--font-weight-medium)",
           "lineHeight": "108px",
           "letterSpacing": "var(--tracking-snug)"
+        },
+        "cover--booth-photo--royal": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "94px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "98px",
+          "letterSpacing": "var(--tracking-snug)"
         }
       },
       "limits": {
@@ -47,6 +58,15 @@
           "fontSize": {
             "max": 104,
             "min": 88
+          },
+          "roomPx": 732
+        },
+        "cover--booth-photo--royal": {
+          "maxCharsPerLine": 16,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 94,
+            "min": 80
           },
           "roomPx": 732
         }
@@ -62,6 +82,13 @@
           "fontWeight": "var(--font-weight-bold)",
           "lineHeight": "108px",
           "letterSpacing": "var(--tracking-tight)"
+        },
+        "cover--booth-photo--royal": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "94px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "98px",
+          "letterSpacing": "var(--tracking-tight)"
         }
       },
       "limits": {
@@ -73,6 +100,15 @@
             "min": 88
           },
           "roomPx": 732
+        },
+        "cover--booth-photo--royal": {
+          "maxCharsPerLine": 15,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 94,
+            "min": 80
+          },
+          "roomPx": 732
         }
       }
     },
@@ -81,6 +117,13 @@
       "default": "Booth #1039",
       "perFormat": {
         "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "52px",
+          "letterSpacing": "0.02em"
+        },
+        "cover--booth-photo--royal": {
           "fontFamily": "var(--font-heading)",
           "fontSize": "44px",
           "fontWeight": "var(--font-weight-bold)",
@@ -97,6 +140,15 @@
             "min": 37
           },
           "roomPx": 1200
+        },
+        "cover--booth-photo--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1200
         }
       }
     }
@@ -106,6 +158,37 @@
       "contains": [
         "booth"
       ]
+    }
+  },
+  "designs": {
+    "booth-photo": {
+      "label": "Booth Photo"
+    }
+  },
+  "themes": {
+    "navy": {
+      "label": "Navy"
+    },
+    "royal": {
+      "label": "Royal Blue"
+    }
+  },
+  "default": {
+    "design": "booth-photo",
+    "theme": "navy"
+  },
+  "combos": {
+    "booth-photo--royal": {
+      "design": "booth-photo",
+      "theme": "royal",
+      "formats": {
+        "cover": {
+          "label": "Cover 1200×900",
+          "width": 1200,
+          "height": 900,
+          "html": "cover--booth-photo--royal.html"
+        }
+      }
     }
   }
 }

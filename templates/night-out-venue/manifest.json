@@ -466,9 +466,6 @@
     }
   },
   "optionals": {
-    "illustration": {
-      "contains": []
-    },
     "perks": {
       "contains": [
         "perks"

@@ -1,5 +1,11 @@
 # Changelog
 
+## archy-studio 0.10.0 (2026-10-08)
+
+- Event templates synced from Paper: every ground is now a Pixel Gradient, Rulers are 3px on it and photo bands end in a photo bar; Night Out Illustration has loose `Star` layers, Night Out Venue no drinks pattern.
+- Templates merged into themes (Navy, Royal Blue): `booth-invite-offer` is now the Royal Blue theme of `booth-invite-photo`, `countdown-offer` of `countdown-mascot`, `event-cover-booth-offer` of `event-cover-booth-photo`. The three old ids are gone (no offer slot any more); designs made with them no longer open.
+- Fit engine: loose `Star` layers are treated as sparkles (hidden when they touch a text), not as an obstacle the copy has to wrap around.
+
 ## archy-studio 0.9.0 (2026-10-08)
 
 - Copy that does not fit gets options instead of a plain refusal: **shorter copy** (with the exact maximum) or **smaller text**, a preview of the same copy with the type reduced to fit (down to 70%, never under 14px). The requester chooses; `render` takes `smaller_text: true` for the second, and the design remembers it (Canvas and later renders keep the smaller text).

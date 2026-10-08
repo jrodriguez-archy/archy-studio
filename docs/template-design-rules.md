@@ -85,7 +85,7 @@ Each guide says how it bends: its tolerance, when it backs off, and how to turn 
 
 ## For the designer in Paper
 
-- **Optional details need a layout without them.** If a logo overlaps a pill (offer logo on "WIN PRIZES"), make a variant for when it is left out: the engine cannot know where the pill should start. *Open: Booth Invite Offer.*
+- **Optional details need a layout without them.** If a logo overlaps a pill, make a variant for when it is left out: the engine cannot know where the pill should start. Resolved for the offer strip: it was removed (see below).
 - **A column that spreads its content (space-between) leaves a gap when details are missing.** Consider a compact variant. *Open: Night Out.*
 - **Covers bake a blue tint into their city photo.** Resolved: covers apply Pixel Tone to any photo (guide 12).
-- **Offer labels go.** The "WIN PRIZES…" label is being removed from Booth Invite Offer and Countdown Offer in Paper; the layout should close up and use the space. *Open: designer.*
+- **Offer labels go.** Resolved: `optional-offer` was removed in Paper. Booth Invite Offer became the Royal Blue theme of `booth-invite-photo` (its photo band took the room), Countdown Offer the Royal Blue theme of `countdown-mascot`, and the Booth Offer cover the Royal Blue theme of `event-cover-booth-photo`.

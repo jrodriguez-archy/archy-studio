@@ -45,28 +45,28 @@
       "default": "Lead with Purpose, Inspire with Culture",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
           "fontSize": "92px",
           "fontWeight": 500,
           "lineHeight": "100px",
           "letterSpacing": "-0.01em"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
           "fontSize": "76px",
           "fontWeight": 500,
           "lineHeight": "84px",
           "letterSpacing": "-0.01em"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
           "fontSize": "92px",
           "fontWeight": 500,
           "lineHeight": "100px",
           "letterSpacing": "-0.01em"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
           "fontSize": "64px",
           "fontWeight": 500,
           "lineHeight": "70px",
@@ -135,25 +135,25 @@
       "default": "Hollie Faust",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 600,
           "lineHeight": "56px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 600,
           "lineHeight": "56px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 600,
           "lineHeight": "56px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 600,
           "lineHeight": "44px"
@@ -203,25 +203,25 @@
       "default": "Owner and Consultant",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "28px",
           "fontWeight": 400,
           "lineHeight": "34px"
@@ -271,25 +271,25 @@
       "default": "Bryant Consultants",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "28px",
           "fontWeight": 400,
           "lineHeight": "34px"
@@ -339,25 +339,25 @@
       "default": "Denver, CO",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 600,
           "lineHeight": "56px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 600,
           "lineHeight": "56px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 600,
           "lineHeight": "56px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 600,
           "lineHeight": "44px"
@@ -407,19 +407,19 @@
       "default": "Left Hand Brewing Company, RINO",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
@@ -460,25 +460,25 @@
       "default": "February 24, 2026 · 6:00 pm",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 400,
           "lineHeight": "56px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 400,
           "lineHeight": "56px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "48px",
           "fontWeight": 400,
           "lineHeight": "56px"
         },
         "og": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "36px",
           "fontWeight": 400,
           "lineHeight": "44px"
@@ -528,19 +528,19 @@
       "default": "Know an office manager who could use a night out? Share this invite.",
       "perFormat": {
         "post": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "24px",
           "fontWeight": 400,
           "lineHeight": "30px"
         },
         "square": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "24px",
           "fontWeight": 400,
           "lineHeight": "30px"
         },
         "stories": {
-          "fontFamily": "\"Onest\", system-ui, sans-serif",
+          "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
           "fontSize": "24px",
           "fontWeight": 400,
           "lineHeight": "30px"

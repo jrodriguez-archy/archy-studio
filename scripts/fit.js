@@ -80,8 +80,9 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
 
   // Illustrations (a cocktail, a drawing) as designed: how close each text sits to each of their parts.
   const RA0 = rectOf(root).width * rectOf(root).height;
+  const isStar = (s0) => s0.dataset.name === 'Star';
   const artLeaves = [...root.querySelectorAll('[data-name^="Cocktail"], [data-name^="Illustration"], [data-optional="illustration"]')]
-    .flatMap((a) => [...a.querySelectorAll('svg')].filter((s0) => { const b = s0.getBoundingClientRect(); return b.width > 4 && b.width * b.height < RA0 * 0.2; }));
+    .flatMap((a) => [...a.querySelectorAll('svg')].filter((s0) => { const b = s0.getBoundingClientRect(); return !isStar(s0) && b.width > 4 && b.width * b.height < RA0 * 0.2; }));
   const artGaps = new Map([...root.querySelectorAll('[data-slot-type="text"]')].map((t) => {
     const rg = document.createRange(); rg.selectNodeContents(t);
     const rs = [...rg.getClientRects()].filter((x) => x.width > 0);
@@ -817,14 +818,15 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
   function clearIllustrations() {
     const textsAll = [...root.querySelectorAll('[data-slot-type="text"]')].filter((t) => t.isConnected);
     const glyphs = (el) => { const rg = document.createRange(); rg.selectNodeContents(el); return [...rg.getClientRects()].filter((x) => x.width > 0); };
-    for (const star of root.querySelectorAll('svg[data-name^="Stars"] path, svg[data-name^="Stars"] > *')) {
+    // Sparkles: the old `Stars` sheet (one SVG of paths) or loose `Star` layers, one SVG each.
+    for (const star of root.querySelectorAll('svg[data-name^="Stars"] path, svg[data-name^="Stars"] > *, svg[data-name="Star"]')) {
       const b = star.getBoundingClientRect();
       if (b.width > 60) continue;
       if (textsAll.some((t) => glyphs(t).some((g) => intersects(g, b, 10)))) star.style.display = 'none';
     }
     const R = rectOf(root), RA = R.width * R.height;
     const art = [...root.querySelectorAll('[data-name^="Cocktail"], [data-name^="Illustration"], [data-optional="illustration"]')];
-    const leaves = art.flatMap((a) => [...a.querySelectorAll('svg')].filter((s0) => { const b = s0.getBoundingClientRect(); return b.width > 4 && b.width * b.height < RA * 0.2; }));
+    const leaves = art.flatMap((a) => [...a.querySelectorAll('svg')].filter((s0) => { const b = s0.getBoundingClientRect(); return !isStar(s0) && b.width > 4 && b.width * b.height < RA * 0.2; }));
     if (!leaves.length) return;
     for (const t of textsAll) {
       const role = t.dataset.slot, rr = rules.slots[role];

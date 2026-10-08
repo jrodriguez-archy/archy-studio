@@ -3,12 +3,13 @@
   "nodes": {
     "HID-0": {
       "id": "HID-0",
-      "name": "TPL · Booth Invite Photo · Square 1080×1080",
+      "name": "TPL · Booth Invite Photo · Navy · Square 1080×1080",
       "component": "Frame",
       "visible": true,
       "text": null,
       "children": [
         "HJA-0",
+        "IGO-0",
         "HJ4-0",
         "HIG-0",
         "HIE-0"
@@ -28,6 +29,14 @@
       "id": "HJB-0",
       "name": "slot-image-photo",
       "component": "Rectangle",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IGO-0": {
+      "id": "IGO-0",
+      "name": "Ruler",
+      "component": "Frame",
       "visible": true,
       "text": null,
       "children": []
@@ -238,7 +247,10 @@
       "x": "539px",
       "y": "2534px",
       "position": "absolute",
-      "backgroundImage": "linear-gradient(in oklab 180deg, var(--color-dark-foreground) 0%, var(--color-dark-background) 55%)"
+      "backgroundColor": "var(--color-dark-background)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/3T15J679J500QN4GDW3DFDT607.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
     },
     "HJA-0": {
       "width": "1080px",
@@ -258,6 +270,14 @@
       "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/06VCA3KWP7T3TKXMSCT45BY25D.png)",
       "backgroundSize": "cover",
       "backgroundPosition": "50%"
+    },
+    "IGO-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "300px",
+      "width": "1080px",
+      "height": "6px",
+      "backgroundColor": "var(--color-royal-blue-500)"
     },
     "HJ4-0": {
       "width": "326px",
@@ -298,7 +318,7 @@
       "textTransform": "uppercase",
       "position": "absolute",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Black\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 900,
       "display": "flex",
       "justifyContent": "center",
@@ -317,7 +337,7 @@
       "height": "60px",
       "position": "absolute",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "display": "flex",
       "justifyContent": "center",
@@ -350,7 +370,7 @@
       "letterSpacing": "-0.01em",
       "position": "relative",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-white)"
     },
@@ -380,7 +400,7 @@
       "textTransform": "uppercase",
       "letterSpacing": "0.02em",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-blue-tint-300)"
     },
@@ -392,7 +412,7 @@
       "alignContent": "center",
       "lineHeight": "56px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 600,
       "color": "var(--color-white)"
     },
@@ -404,7 +424,7 @@
       "alignContent": "center",
       "lineHeight": "44px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 400,
       "color": "var(--color-blue-tint-100)"
     },
@@ -427,7 +447,7 @@
       "textTransform": "uppercase",
       "letterSpacing": "0.02em",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Bold\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 700,
       "color": "var(--color-blue-tint-300)"
     },
@@ -439,7 +459,7 @@
       "alignContent": "center",
       "lineHeight": "56px",
       "whiteSpace": "pre-wrap",
-      "fontFamily": "\"Onest\", system-ui, sans-serif",
+      "fontFamily": "\"Onest-Regular\", \"Onest\", system-ui, sans-serif",
       "fontWeight": 400,
       "color": "var(--color-white)"
     },

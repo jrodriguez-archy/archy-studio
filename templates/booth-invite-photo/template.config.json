@@ -6,10 +6,6 @@
   "useWhen": "there is a booth and a good city photo.",
   "notWhen": "there is no photo of the city (use `Booth Icon List` or `Booth Light Rulers`).",
   "paperFileId": "01M1F9VXX1S3JJETTVWG2H2PCD",
-  "discover": {
-    "page": "Templates",
-    "family": "Booth Invite Photo"
-  },
   "guidance": [
     "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
     "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
@@ -31,6 +27,47 @@
     "og": {
       "nodeId": "46V-0",
       "label": "OG 1200×630"
+    }
+  },
+  "designs": {
+    "photo": {
+      "label": "Photo"
+    }
+  },
+  "themes": {
+    "navy": {
+      "label": "Navy"
+    },
+    "royal": {
+      "label": "Royal Blue"
+    }
+  },
+  "default": {
+    "design": "photo",
+    "theme": "navy"
+  },
+  "combos": {
+    "photo--royal": {
+      "design": "photo",
+      "theme": "royal",
+      "formats": {
+        "post": {
+          "nodeId": "58W-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "HQQ-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "5DC-0",
+          "label": "Stories 1080×1920"
+        },
+        "og": {
+          "nodeId": "5HT-0",
+          "label": "OG 1200×630"
+        }
+      }
     }
   },
   "purpose": "booth-invite",

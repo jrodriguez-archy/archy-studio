@@ -6,10 +6,6 @@
   "useWhen": "an event page, Luma or email invite needs a header image.",
   "notWhen": "the piece is a social post or a day-before reminder. Pick the cover that matches the social template of the same campaign (the table below); when the event has no social template yet, choose by content: a booth, a speaker, or a hosted evening.",
   "paperFileId": "01M1F9VXX1S3JJETTVWG2H2PCD",
-  "discover": {
-    "page": "Templates",
-    "family": "Event Cover · Booth Photo"
-  },
   "guidance": [
     "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
     "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
@@ -19,6 +15,35 @@
     "cover": {
       "nodeId": "I09-0",
       "label": "Cover 1200×900"
+    }
+  },
+  "designs": {
+    "booth-photo": {
+      "label": "Booth Photo"
+    }
+  },
+  "themes": {
+    "navy": {
+      "label": "Navy"
+    },
+    "royal": {
+      "label": "Royal Blue"
+    }
+  },
+  "default": {
+    "design": "booth-photo",
+    "theme": "navy"
+  },
+  "combos": {
+    "booth-photo--royal": {
+      "design": "booth-photo",
+      "theme": "royal",
+      "formats": {
+        "cover": {
+          "nodeId": "I88-0",
+          "label": "Cover 1200×900"
+        }
+      }
     }
   },
   "purpose": "event-cover",

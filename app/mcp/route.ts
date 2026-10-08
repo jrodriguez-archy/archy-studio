@@ -8,7 +8,7 @@ import { createProject, findProject, listProjects } from '@/lib/projects';
 import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
-import { listAssets } from '@/lib/assets';
+import { listAssets, listFolders } from '@/lib/assets';
 import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo } from '@/lib/templates';
 
 export const runtime = 'nodejs';
@@ -166,15 +166,21 @@ const handler = createMcpHandler(
         inputSchema: z.object({
           search: z.string().optional().describe('Only images whose name contains this (e.g. a person\'s name)'),
           kind: z.enum(['upload', 'cutout', 'pixel', 'generated']).optional().describe('Only this kind (cutout: a person or object without background)'),
+          folder: z.string().optional().describe('Only images in the team folder with this name (e.g. "Speakers")'),
         }),
         annotations: { readOnlyHint: true },
       },
-      async ({ search, kind }) => {
+      async ({ search, kind, folder }) => {
         const q = search?.trim().toLowerCase();
-        const items = (await listAssets({ limit: 200 }))
-          .filter((a) => (!q || a.name.toLowerCase().includes(q)) && (!kind || a.kind === kind))
+        const folders = await listFolders();
+        const folderName = new Map(folders.map((f) => [f.id, f.name]));
+        const inFolder = folder ? folders.find((f) => f.name.toLowerCase() === folder.trim().toLowerCase())?.id ?? '-' : null;
+        // A folder is listed whole (in the database), whatever its size.
+        const assets = await listAssets(inFolder ? { folderId: inFolder, limit: 1000 } : { limit: 300 });
+        const items = assets
+          .filter((a) => (!q || a.name.toLowerCase().includes(q)) && (!kind || a.kind === kind) && (!inFolder || a.folderId === inFolder))
           .slice(0, 60)
-          .map((a) => ({ value: a.value, name: a.name, kind: a.kind, by: a.author, size: a.width && a.height ? `${a.width}×${a.height}` : null, added: a.createdAt.slice(0, 10) }));
+          .map((a) => ({ value: a.value, name: a.name, kind: a.kind, folder: a.folderId ? folderName.get(a.folderId) ?? null : null, by: a.author, size: a.width && a.height ? `${a.width}×${a.height}` : null, added: a.createdAt.slice(0, 10) }));
         return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
       },
     );

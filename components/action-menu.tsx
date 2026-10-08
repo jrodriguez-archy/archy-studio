@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
 import { MoreHorizontalIcon } from '@hugeicons/core-free-icons';
 import {
@@ -82,11 +83,16 @@ export function MoreActions({ actions, label = 'More actions', className }: { ac
   );
 }
 
-// The same actions opened with a plain click on the item itself (the item is the trigger).
+// The same actions opened with a plain click on the item itself (the item is the trigger). It opens on
+// the click, not on the press, so pressing the item can start a drag and ⌘-click can mark it; a click
+// someone else already handled (preventDefault) does not open it.
 export function ClickActions({ actions, children, className, label }: { actions: Action[]; children: React.ReactNode; className?: string; label?: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger aria-label={label} className={className}>{children}</DropdownMenuTrigger>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger aria-label={label} className={className}
+        onMouseDownCapture={(e) => e.stopPropagation()}
+        onClick={(e) => { if (!e.defaultPrevented && e.detail > 0) setOpen(true); }}>{children}</DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">{render(actions, DROPDOWN)}</DropdownMenuContent>
     </DropdownMenu>
   );

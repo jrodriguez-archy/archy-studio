@@ -4,7 +4,7 @@ import { titleOf } from './catalog';
 import type { Edits } from './canvas-shared';
 import { loadPieces } from './gallery';
 import { formatLabel, groupSets } from './gallery-shared';
-import { listAssets } from './assets';
+import { listAssets, listFolders } from './assets';
 import { supabaseAdmin } from './supabase/admin';
 import { comboFormats, loadConfig, loadLibrary, loadManifest, resolveCombo, type Manifest, type TemplateConfig } from './templates';
 
@@ -147,8 +147,8 @@ export async function editorContext(piece: PieceSource) {
 
 // The Canvas panel: the pieces to open and the team's assets (mine and everyone's).
 export async function canvasLibrary(me: Who) {
-  const [mine, team, myAssets, teamAssets, seen] = await Promise.all([
-    loadPieces({ userId: me.id }, 80), loadPieces({}, 80), listAssets({ ownerId: me.id }), listAssets(),
+  const [mine, team, myAssets, teamAssets, folders, seen] = await Promise.all([
+    loadPieces({ userId: me.id }, 80), loadPieces({}, 80), listAssets({ ownerId: me.id }), listAssets(), listFolders(),
     supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle(),
   ]);
   const card = (p: Awaited<ReturnType<typeof loadPieces>>[number], title: string) => ({ id: p.id, title, format: formatLabel(p.format), thumb: p.thumb ?? null, width: p.width, height: p.height, author: p.author });
@@ -158,6 +158,8 @@ export async function canvasLibrary(me: Who) {
     team: pieces(team),
     /** Images the team brought to Studio (and what Studio made from them): mine, and everyone's. */
     assets: { mine: myAssets, team: teamAssets },
+    /** The team's folders for Assets (one level). */
+    folders,
     /** When this person last used the Archy Studio connector from Claude (null: never). */
     mcpSeenAt: (seen.data?.mcp_seen_at as string | null | undefined) ?? null,
   };

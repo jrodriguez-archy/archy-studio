@@ -79,7 +79,7 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
         <header className="flex h-12 shrink-0 items-center border-b border-foreground/[0.06] bg-background px-4"><p className="font-medium">Canvas</p></header>
         <div className="flex min-h-0 flex-1">
           <CanvasPanel tab={tab === 'layers' ? 'library' : tab} onTab={setTab}>
-            {!library ? <PanelLoading /> : tab === 'assets' ? <AssetsTab assets={library.assets} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a design and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
+            {!library ? <PanelLoading /> : tab === 'assets' ? <AssetsTab assets={library.assets} folders={library.folders} target={null} onPick={() => {}} /> : tab === 'inspector' ? <p className="px-3 py-6 text-[12px] text-foreground/50">Open a design and the Inspector reviews it as you edit.</p> : <LibraryTab library={library} confirmLeave={() => true} />}
           </CanvasPanel>
           <main className="flex flex-1 items-center justify-center p-8">
             <div className="max-w-sm text-center">
@@ -659,7 +659,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           )}
           {(tab === 'library' || tab === 'assets') && !library && <PanelLoading />}
           {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : board.ref} updating={updating} confirmLeave={confirmLeave} />}
-          {tab === 'assets' && library && <AssetsTab assets={library.assets} target={imageTarget?.id ?? null} onPick={placeImage} />}
+          {tab === 'assets' && library && <AssetsTab assets={library.assets} folders={library.folders} target={imageTarget?.id ?? null} onPick={placeImage} />}
           {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />}
         </CanvasPanel>
 

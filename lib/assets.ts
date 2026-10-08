@@ -11,10 +11,12 @@ export type AssetKind = 'upload' | 'cutout' | 'pixel' | 'generated';
 export type Asset = {
   id: string; name: string; kind: AssetKind; value: string; thumb: string;
   width: number | null; height: number | null; ownerId: string | null; author: string; prompt: string | null; createdAt: string;
+  /** The team folder it is in (null: no folder). */
+  folderId: string | null;
 };
-type Row = { id: string; owner_id: string | null; path: string; name: string; kind: AssetKind; prompt: string | null; width: number | null; height: number | null; created_at: string; profiles: { full_name: string | null; email: string } | null };
+type Row = { id: string; owner_id: string | null; path: string; name: string; kind: AssetKind; prompt: string | null; width: number | null; height: number | null; created_at: string; folder_id: string | null; profiles: { full_name: string | null; email: string } | null };
 
-const COLUMNS = 'id, owner_id, path, name, kind, prompt, width, height, created_at, profiles!assets_owner_id_fkey(full_name, email)';
+const COLUMNS = 'id, owner_id, path, name, kind, prompt, width, height, created_at, folder_id, profiles!assets_owner_id_fkey(full_name, email)';
 const YEAR = '31536000';
 // The light thumbnail for the grid (public, unguessable path, never changes).
 const thumbOf = (path: string) => `assets/${path.replace(/\.\w+$/, '')}.webp`;
@@ -22,10 +24,13 @@ const thumbOf = (path: string) => `assets/${path.replace(/\.\w+$/, '')}.webp`;
 const toAsset = (r: Row): Asset => ({
   id: r.id, name: r.name, kind: r.kind, value: `upload:${r.path}`, thumb: publicUrl(thumbOf(r.path)),
   width: r.width, height: r.height, ownerId: r.owner_id, author: r.profiles?.full_name ?? r.profiles?.email ?? 'Studio', prompt: r.prompt, createdAt: r.created_at,
+  folderId: r.folder_id,
 });
 
 // Store an image as a new asset: the file (private), its thumbnail (public) and its record.
-export async function createAsset(input: { ownerId: string; body: Buffer; type: string; name: string; kind: AssetKind; parentId?: string | null; prompt?: string | null }): Promise<Asset> {
+export async function createAsset(input: { ownerId: string; body: Buffer; type: string; name: string; kind: AssetKind; parentId?: string | null; prompt?: string | null; folderId?: string | null }): Promise<Asset> {
+  // Into a folder that is no longer there: kept, out of any folder.
+  const folder = input.folderId && /^[0-9a-f-]{36}$/i.test(input.folderId) ? (await supabaseAdmin().from('asset_folders').select('id').eq('id', input.folderId).maybeSingle()).data?.id ?? null : null;
   // Made from an image that is no longer there: kept, without the link to it.
   const parent = input.parentId ? (await supabaseAdmin().from('assets').select('id').eq('id', input.parentId).maybeSingle()).data?.id ?? null : null;
   const value = await storeUpload(input.ownerId, input.body, input.type);
@@ -37,9 +42,10 @@ export async function createAsset(input: { ownerId: string; body: Buffer; type: 
   // An image Studio cannot read (damaged, or far too large) is refused, and its file goes.
   const size = await thumbnail(path, input.body).catch(async (e: Error) => { await drop(); throw new Error(`This image could not be read. ${e.message}`); });
   const { width, height } = size;
-  const { data, error } = await supabaseAdmin().from('assets').insert({
-    owner_id: input.ownerId, path, name: input.name.slice(0, 120) || 'Image', kind: input.kind, parent_id: parent, prompt: input.prompt ?? null, width, height,
-  }).select(COLUMNS).single();
+  const row = { owner_id: input.ownerId, path, name: input.name.slice(0, 120) || 'Image', kind: input.kind, parent_id: parent, folder_id: folder, prompt: input.prompt ?? null, width, height };
+  let { data, error } = await supabaseAdmin().from('assets').insert(row).select(COLUMNS).single();
+  // Its folder (or source) was removed while it was being made: kept, out of it.
+  if (error?.code === '23503') ({ data, error } = await supabaseAdmin().from('assets').insert({ ...row, folder_id: null, parent_id: null }).select(COLUMNS).single());
   if (error || !data) {
     // No half-saved images: the file goes too.
     await drop();
@@ -65,10 +71,11 @@ async function thumbnail(path: string, body: Buffer) {
 // The newest assets: everyone's (Team) or one person's (Mine). One person's older uploads (from before
 // assets were kept) join the list the first time they look (once per server instance).
 const adopted = new Set<string>();
-export async function listAssets(opts: { ownerId?: string; limit?: number } = {}): Promise<Asset[]> {
+export async function listAssets(opts: { ownerId?: string; folderId?: string; limit?: number } = {}): Promise<Asset[]> {
   if (opts.ownerId && !adopted.has(opts.ownerId)) { adopted.add(opts.ownerId); await adoptOldUploads(opts.ownerId).catch(() => {}); }
-  let q = supabaseAdmin().from('assets').select(COLUMNS).is('deleted_at', null).order('created_at', { ascending: false }).limit(opts.limit ?? 120);
+  let q = supabaseAdmin().from('assets').select(COLUMNS).is('deleted_at', null).order('created_at', { ascending: false }).limit(opts.limit ?? 300);
   if (opts.ownerId) q = q.eq('owner_id', opts.ownerId);
+  if (opts.folderId) q = /^[0-9a-f-]{36}$/i.test(opts.folderId) ? q.eq('folder_id', opts.folderId) : q.eq('id', '00000000-0000-0000-0000-000000000000');
   const { data } = await q;
   return ((data ?? []) as unknown as Row[]).map(toAsset);
 }
@@ -163,4 +170,70 @@ export async function sourceFor(asset: { path: string }): Promise<{ url: string;
   const { data } = await supabaseAdmin().storage.from('uploads').createSignedUrl(asset.path, 600);
   if (!data?.signedUrl) throw new Error('Could not read the image.');
   return { url: data.signedUrl, type: 'image/png' };
+}
+
+// ---- Folders: one level, shared by the whole team (like a team drive) ----
+export type Folder = { id: string; name: string; createdBy: string | null; count: number };
+
+export async function listFolders(): Promise<Folder[]> {
+  const db = supabaseAdmin();
+  const [{ data: folders }, { data: counts }] = await Promise.all([
+    db.from('asset_folders').select('id, name, created_by').order('name'),
+    db.rpc('asset_folder_counts'),
+  ]);
+  const count = new Map(((counts ?? []) as { folder_id: string; images: number }[]).map((c) => [c.folder_id, Number(c.images)]));
+  return (folders ?? []).map((f) => ({ id: f.id, name: f.name, createdBy: f.created_by, count: count.get(f.id) ?? 0 }));
+}
+
+const folderName = (name: string) => {
+  const n = Array.from(name.trim().replace(/\s+/g, ' ')).slice(0, 60).join('');
+  if (!n) throw new Error('Give the folder a name.');
+  return n;
+};
+
+export async function createFolder(me: Who, name: string): Promise<Folder> {
+  const n = folderName(name);
+  const db = supabaseAdmin();
+  const { data, error } = await db.from('asset_folders').insert({ name: n, created_by: me.id }).select('id, name, created_by').single();
+  if (data) return { id: data.id, name: data.name, createdBy: data.created_by, count: 0 };
+  // One name, one folder: that name exists (any capitals), so that folder is used.
+  if (error?.code === '23505') {
+    const same = (await listFolders()).find((f) => f.name.toLowerCase() === n.toLowerCase());
+    if (same) return same;
+  }
+  throw new Error('Could not create the folder.');
+}
+
+async function ownFolder(me: Who, id: string) {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error('Folder not found.');
+  const { data } = await supabaseAdmin().from('asset_folders').select('id, created_by').eq('id', id).maybeSingle();
+  if (!data) throw new Error('Folder not found.');
+  if (data.created_by !== me.id && !me.is_admin) throw new Error('Only the person who made the folder (or an admin) can change it.');
+}
+
+export async function renameFolder(me: Who, id: string, name: string): Promise<string> {
+  await ownFolder(me, id);
+  const n = folderName(name);
+  const { error } = await supabaseAdmin().from('asset_folders').update({ name: n }).eq('id', id);
+  if (error) throw new Error(error.code === '23505' ? 'There is already a folder with that name.' : 'Could not rename the folder.');
+  return n;
+}
+
+// The folder goes; its images stay in Assets, out of any folder.
+export async function deleteFolder(me: Who, id: string) {
+  await ownFolder(me, id);
+  const { error } = await supabaseAdmin().from('asset_folders').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+// Anyone on the team can file images (a shared drive).
+export async function moveAssets(ids: string[], folderId: string | null) {
+  const list = ids.filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 200);
+  if (!list.length) return;
+  if (folderId) {
+    const { data } = await supabaseAdmin().from('asset_folders').select('id').eq('id', folderId).maybeSingle();
+    if (!data) throw new Error('Folder not found.');
+  }
+  const { error } = await supabaseAdmin().from('assets').update({ folder_id: folderId }).in('id', list).is('deleted_at', null);
+  if (error) throw new Error(error.code === '23503' ? 'Folder not found.' : 'Could not move the images.');
 }

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     const w = Math.min(width, Math.round((height * rw) / rh)), h = Math.min(height, Math.round((width * rh) / rw));
     const png = await img.extract({ left: Math.round((width - w) / 2), top: Math.round((height - h) / 2), width: w, height: h }).png().toBuffer();
     const name = from ? `${from.name} · edited` : prompt.length > 48 ? `${prompt.slice(0, 47)}…` : prompt;
-    const asset = await createAsset({ ownerId: me.id, body: png, type: 'image/png', name, kind: 'generated', parentId: from?.id ?? null, prompt });
+    const asset = await createAsset({ ownerId: me.id, body: png, type: 'image/png', name, kind: 'generated', parentId: from?.id ?? null, prompt, folderId: typeof body.folder === 'string' ? body.folder : from?.folderId ?? null });
     return Response.json({ asset });
   } catch (e) {
     const msg = (e as Error).message;

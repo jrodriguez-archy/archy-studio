@@ -19,9 +19,10 @@ export async function POST(req: Request) {
   if (file.size > MAX) return Response.json({ error: 'The image is larger than 4 MB. Export it smaller and try again.' }, { status: 413 });
   const kind = KINDS.find((k) => k === form?.get('kind')) ?? 'upload';
   const parent = String(form?.get('parent') ?? '');
+  const folder = String(form?.get('folder') ?? '') || null;
   const name = String(form?.get('name') ?? '') || file.name.replace(/\.\w+$/, '') || 'Image';
   try {
-    const asset = await createAsset({ ownerId: me.id, body: Buffer.from(await file.arrayBuffer()), type: file.type, name, kind, parentId: /^[0-9a-f-]{36}$/i.test(parent) ? parent : null });
+    const asset = await createAsset({ ownerId: me.id, body: Buffer.from(await file.arrayBuffer()), type: file.type, name, kind, parentId: /^[0-9a-f-]{36}$/i.test(parent) ? parent : null, folderId: folder });
     return Response.json({ value: asset.value, url: asset.thumb, asset });
   } catch (e) {
     return Response.json({ error: (e as Error).message }, { status: 400 });

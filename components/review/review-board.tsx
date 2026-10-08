@@ -2,12 +2,11 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Alert02Icon, CheckmarkCircle02Icon, Comment01Icon, Delete02Icon } from '@hugeicons/core-free-icons';
+import { Alert02Icon, CheckmarkCircle02Icon, Comment01Icon, Copy01Icon, Delete02Icon, Task01Icon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Inspector, useInspector } from '@/components/inspector';
-import { addCommentAction, deleteCommentAction, setStatusAction } from '@/app/(app)/admin/review/actions';
+import { addCommentAction, deleteCommentAction, moveCommentAction, pasteCommentsAction, setStatusAction } from '@/app/(app)/admin/review/actions';
 import type { ReviewItem, ReviewRound, ReviewStatus } from '@/lib/review';
 
 const CASES = [['realistic', 'Realistic'], ['short', 'Short copy'], ['long', 'Long copy'], ['theme', 'Themes']] as const;
@@ -17,6 +16,9 @@ const STATUS: Record<ReviewStatus, { label: string; dot: string }> = {
   needs_work: { label: 'Needs work', dot: 'bg-[#D97706]' },
   approved: { label: 'Approved', dot: 'bg-[#05C168]' },
 };
+type Clip = { from: string; label: string; comments: { body: string; x: number | null; y: number | null }[] };
+const CLIP_KEY = 'review.clip';
+const ALSO_KEY = 'review.alsoFormats';
 const caseOf = (c: string): CaseKey => (c.startsWith('theme:') ? 'theme' : (c as CaseKey));
 const caseLabel = (c: string) => (c.startsWith('theme:') ? `${c.slice(6, 7).toUpperCase()}${c.slice(7)} theme` : CASES.find(([k]) => k === c)?.[1] ?? c);
 
@@ -33,7 +35,12 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
   const ids = order.flatMap((t) => shown.filter((i) => i.template === t).map((i) => i.id));
   const { openId, open, close, step } = useInspector('item', ids);
   const current = items.find((i) => i.id === openId) ?? null;
-  const patch = (id: string, p: Partial<ReviewItem>) => setItems((list) => list.map((i) => (i.id === id ? { ...i, ...p } : i)));
+  const patch = (id: string, p: Partial<ReviewItem> | ((i: ReviewItem) => Partial<ReviewItem>)) =>
+    setItems((list) => list.map((i) => (i.id === id ? { ...i, ...(typeof p === 'function' ? p(i) : p) } : i)));
+  // Comments copied from one design, to paste on another (kept across reloads in this browser).
+  const [clip, setClipState] = useState<Clip | null>(null);
+  useEffect(() => { try { const v = localStorage.getItem(CLIP_KEY); if (v) setClipState(JSON.parse(v)); } catch {} }, []);
+  const setClip = (c: Clip | null) => { setClipState(c); try { if (c) localStorage.setItem(CLIP_KEY, JSON.stringify(c)); else localStorage.removeItem(CLIP_KEY); } catch {} };
 
   return (
     <div className="text-[13px]">
@@ -99,14 +106,32 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
         {!shown.length && <p className="py-12 text-center text-foreground/45">Nothing here with this filter.</p>}
       </div>
 
-      {current && <Viewer key={current.id} item={current} onClose={close} onStep={step} onPatch={patch} />}
+      {current && (
+        <Viewer key={current.id} item={current} onClose={close} onStep={step} onPatch={patch} clip={clip} setClip={setClip}
+          siblings={items.filter((i) => i.template === current.template && i.case === current.case && i.id !== current.id)} />
+      )}
     </div>
   );
 }
 
-function Viewer({ item, onClose, onStep, onPatch }: { item: ReviewItem; onClose: () => void; onStep: (d: 1 | -1) => void; onPatch: (id: string, p: Partial<ReviewItem>) => void }) {
-  const router = useRouter();
+type Patch = (id: string, p: Partial<ReviewItem> | ((i: ReviewItem) => Partial<ReviewItem>)) => void;
+const comment = (id: string, body: string, x: number | null, y: number | null) => ({ id, body, x, y, author: 'You', created_at: new Date().toISOString(), resolved_at: null, resolution: null });
+
+function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch }: {
+  item: ReviewItem; siblings: ReviewItem[]; clip: Clip | null; setClip: (c: Clip | null) => void;
+  onClose: () => void; onStep: (d: 1 | -1) => void; onPatch: Patch;
+}) {
   const [busy, start] = useTransition();
+  // The same comment on the other formats of this template (remembered).
+  const [also, setAlsoState] = useState(false);
+  useEffect(() => { try { setAlsoState(localStorage.getItem(ALSO_KEY) === '1'); } catch {} }, []);
+  const setAlso = (v: boolean) => { setAlsoState(v); try { localStorage.setItem(ALSO_KEY, v ? '1' : '0'); } catch {} };
+  // Each design's new comments, and the needs-work status a comment brings.
+  const append = (ids: Record<string, string[]>, rows: { body: string; x: number | null; y: number | null }[]) => {
+    for (const [itemId, list] of Object.entries(ids)) {
+      onPatch(itemId, (i) => ({ status: i.status === 'approved' ? 'approved' : 'needs_work', comments: [...i.comments, ...list.map((id, n) => comment(id, rows[n % rows.length].body, rows[n % rows.length].x, rows[n % rows.length].y))] }));
+    }
+  };
   const [pin, setPin] = useState<{ x: number; y: number } | null>(null);
   const [draft, setDraft] = useState('');
   const [before, setBefore] = useState(false);
@@ -115,20 +140,42 @@ function Viewer({ item, onClose, onStep, onPatch }: { item: ReviewItem; onClose:
 
   const status = (s: ReviewStatus) => start(async () => {
     onPatch(item.id, { status: s });
-    try { await setStatusAction(item.id, s); router.refresh(); if (s === 'approved') onStep(1); } catch (e) { toast.error((e as Error).message); }
+    try { await setStatusAction(item.id, s); if (s === 'approved') onStep(1); } catch (e) { toast.error((e as Error).message); }
   });
   const send = () => start(async () => {
     if (!draft.trim()) return;
     try {
-      const id = await addCommentAction(item.id, draft, pin);
-      onPatch(item.id, { status: item.status === 'approved' ? 'approved' : 'needs_work', comments: [...item.comments, { id, body: draft.trim(), x: pin?.x ?? null, y: pin?.y ?? null, author: 'You', created_at: new Date().toISOString(), resolved_at: null, resolution: null }] });
+      const others = also ? siblings.map((s) => s.id) : [];
+      const ids = await addCommentAction(item.id, draft, pin, others);
+      append(ids, [{ body: draft.trim(), x: pin?.x ?? null, y: pin?.y ?? null }]);
+      if (others.length) toast(`Also on ${siblings.map((s) => s.formatLabel).join(', ')}. Drag a pin there if it lands off.`);
       setDraft(''); setPin(null);
-      router.refresh();
+     
     } catch (e) { toast.error((e as Error).message); }
   });
+  const copy = () => {
+    const list = open.map((c) => ({ body: c.body, x: c.x, y: c.y }));
+    if (!list.length) return;
+    setClip({ from: item.id, label: `${item.title} · ${item.formatLabel}`, comments: list });
+    toast(`${list.length} comment${list.length > 1 ? 's' : ''} copied. Open another design and paste.`);
+  };
+  const paste = (all: boolean) => start(async () => {
+    if (!clip) return;
+    const targets = [item.id, ...(all ? siblings.map((s) => s.id) : [])];
+    try {
+      const ids = await pasteCommentsAction(targets, clip.comments);
+      append(ids, clip.comments);
+      toast(`Pasted ${clip.comments.length} comment${clip.comments.length > 1 ? 's' : ''}${all ? ` on ${targets.length} formats` : ''}. Drag the pins to their spot if needed.`);
+    } catch (e) { toast.error((e as Error).message); }
+  });
+  // A pin dragged to its spot.
+  const move = (id: string, x: number, y: number) => {
+    onPatch(item.id, (i) => ({ comments: i.comments.map((c) => (c.id === id ? { ...c, x, y } : c)) }));
+    moveCommentAction(id, x, y).catch((e) => toast.error((e as Error).message));
+  };
   const remove = (id: string) => start(async () => {
     onPatch(item.id, { comments: item.comments.filter((c) => c.id !== id) });
-    try { await deleteCommentAction(id); router.refresh(); } catch (e) { toast.error((e as Error).message); }
+    try { await deleteCommentAction(id); } catch (e) { toast.error((e as Error).message); }
   });
 
   // A (approve), N (needs work); typing in the box is left alone.
@@ -171,7 +218,36 @@ function Viewer({ item, onClose, onStep, onPatch }: { item: ReviewItem; onClose:
               {pin ? <button type="button" onClick={() => setPin(null)} className="text-foreground/45 hover:text-foreground">Remove the point</button> : <span />}
               <button type="button" disabled={busy || !draft.trim()} onClick={send} className="h-7 rounded-md bg-primary px-3 font-medium text-primary-foreground disabled:opacity-40">Comment <span className="opacity-60">⌘↵</span></button>
             </div>
+            {siblings.length > 0 && (
+              <label className="mt-2 flex cursor-default items-start gap-2 text-foreground/65">
+                <input type="checkbox" checked={also} onChange={(e) => setAlso(e.target.checked)} className="mt-0.5 accent-primary" />
+                <span>Same for {siblings.map((s) => s.formatLabel).join(', ')} <span className="text-foreground/40">(same spot; drag a pin there if it lands off)</span></span>
+              </label>
+            )}
           </div>
+
+          {(open.length > 0 || (clip && clip.from !== item.id)) && (
+            <div className="flex flex-wrap gap-1.5">
+              {open.length > 0 && (
+                <button type="button" onClick={copy} title="Copy this design's open comments, to paste them on another"
+                  className="flex h-7 items-center gap-1.5 rounded-md bg-foreground/[0.05] px-2.5 text-foreground/75 hover:bg-foreground/[0.09]">
+                  <HugeiconsIcon icon={Copy01Icon} className="size-3.5" /> Copy comments
+                </button>
+              )}
+              {clip && clip.from !== item.id && (
+                <>
+                  <button type="button" disabled={busy} onClick={() => paste(false)} title={`From ${clip.label}`}
+                    className="flex h-7 items-center gap-1.5 rounded-md bg-[#E6F4FF] px-2.5 text-primary hover:bg-[#CCEAFF]">
+                    <HugeiconsIcon icon={Task01Icon} className="size-3.5" /> Paste {clip.comments.length}
+                  </button>
+                  {siblings.length > 0 && (
+                    <button type="button" disabled={busy} onClick={() => paste(true)} title={`From ${clip.label}, on every format of this template`}
+                      className="h-7 rounded-md px-2 text-primary hover:bg-[#E6F4FF]">…on all formats</button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           {item.comments.length > 0 && (
             <div className="space-y-2">
@@ -228,8 +304,7 @@ function Viewer({ item, onClose, onStep, onPatch }: { item: ReviewItem; onClose:
             onClick={(e) => { if (before) return; const r = e.currentTarget.getBoundingClientRect(); setPin({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }); box.current?.focus(); }}
             className={`size-full rounded-[3px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)] ${before ? '' : 'cursor-crosshair'}`} />
           {pins.filter((c) => c.x != null).map((c, n) => (
-            <span key={c.id} title={c.body} style={{ left: `${c.x! * 100}%`, top: `${c.y! * 100}%` }}
-              className={`pointer-events-auto absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-semibold ring-2 shadow-[0_2px_8px_rgba(0,0,0,0.35)] ${c.resolved_at ? 'bg-foreground/40 text-white ring-white/80' : 'bg-[#3DF5B0] text-[#00004E] ring-[#00004E]'}`}>{n + 1}</span>
+            <Pin key={c.id} n={n + 1} x={c.x!} y={c.y!} title={c.body} resolved={!!c.resolved_at} movable={!before && !c.resolved_at} onMove={(x, y) => move(c.id, x, y)} />
           ))}
           {pin && !before && (
             <span style={{ left: `${pin.x * 100}%`, top: `${pin.y * 100}%` }} className="pointer-events-none absolute size-6 -translate-x-1/2 -translate-y-1/2">
@@ -315,5 +390,38 @@ function ZoomStage({ width, height, top, children }: { width: number; height: nu
         </div>
       </div>
     </div>
+  );
+}
+
+// A comment's pin on the design. Open ones can be dragged to the right spot (after a copy to another format).
+function Pin({ n, x, y, title, resolved, movable, onMove }: { n: number; x: number; y: number; title: string; resolved: boolean; movable: boolean; onMove: (x: number, y: number) => void }) {
+  const [at, setAt] = useState<{ x: number; y: number } | null>(null);
+  const drag = useRef<{ box: DOMRect; moved: boolean } | null>(null);
+  const pos = at ?? { x, y };
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  return (
+    <span title={movable ? `${title}\n(drag to move)` : title} style={{ left: `${pos.x * 100}%`, top: `${pos.y * 100}%`, touchAction: 'none' }}
+      onPointerDown={(e) => {
+        if (!movable) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const box = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+        drag.current = { box, moved: false };
+        e.currentTarget.setPointerCapture(e.pointerId);
+      }}
+      onPointerMove={(e) => {
+        const d = drag.current;
+        if (!d) return;
+        d.moved = true;
+        setAt({ x: clamp((e.clientX - d.box.left) / d.box.width), y: clamp((e.clientY - d.box.top) / d.box.height) });
+      }}
+      onPointerUp={() => {
+        const d = drag.current;
+        drag.current = null;
+        if (d?.moved && at) onMove(at.x, at.y);
+        setAt(null);
+      }}
+      onClick={(e) => e.stopPropagation()}
+      className={`pointer-events-auto absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[11px] font-semibold ring-2 shadow-[0_2px_8px_rgba(0,0,0,0.35)] ${movable ? 'cursor-grab active:cursor-grabbing' : ''} ${resolved ? 'bg-foreground/40 text-white ring-white/80' : 'bg-[#3DF5B0] text-[#00004E] ring-[#00004E]'}`}>{n}</span>
   );
 }

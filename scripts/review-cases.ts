@@ -25,7 +25,7 @@ const SHOWS: { realistic: Facts; short: Facts; long: Facts }[] = [
       city: 'Boston, MA', venue: 'Boston Convention & Exhibition Center', date: 'January 28 – 30, 2027', booth: '412', photo: A('boston.jpg'), 'logo-partner': A('logo-yankee.svg'),
       offer: 'Win an Apple Watch', countdown: 'Tomorrow is the day',
     },
-    short: { kicker: 'TDA Meeting 2026', headline: 'Howdy, San Antonio', 'headline-1': 'Howdy,', 'headline-2': 'San Antonio', city: 'San Antonio, TX', date: 'May 7 – 9, 2026', booth: '219', photo: A('san-antonio.jpg'), offer: 'Free coffee', countdown: 'Tomorrow!' },
+    short: { kicker: 'TDA Meeting 2026', headline: 'Howdy,\nSan Antonio', 'headline-1': 'Howdy,', 'headline-2': 'San Antonio', city: 'San Antonio, TX', date: 'May 7 – 9, 2026', booth: '219', photo: A('san-antonio.jpg'), offer: 'Free coffee', countdown: 'Tomorrow!' },
     long: {
       kicker: 'Greater New York Dental Meeting 2026', headline: 'Visit the Archy team at the Greater New York Dental Meeting', 'headline-1': 'Visit the Archy team at the', 'headline-2': 'Greater New York Dental Meeting',
       city: 'New York, NY', venue: 'Jacob K. Javits Convention Center, Level 1 Exhibit Hall', date: 'November 29 – December 1, 2026', booth: '5512', photo: A('new-york.jpg'), 'logo-partner': A('logo-gnydm.png'),
@@ -41,7 +41,7 @@ const SHOWS: { realistic: Facts; short: Facts; long: Facts }[] = [
     short: { kicker: 'Yankee Dental Congress', headline: 'Hello, Boston', 'headline-1': 'Hello,', 'headline-2': 'Boston', city: 'Boston, MA', date: 'Jan 28 – 30, 2027', booth: '412', photo: A('boston.jpg'), offer: 'Free swag', countdown: 'Tomorrow!' },
     long: {
       kicker: 'The Texas Dental Association Annual Meeting', headline: 'Come see the Archy team at the 2026 TDA Meeting in San Antonio', 'headline-1': 'Come see the Archy team at', 'headline-2': 'the 2026 TDA Meeting in San Antonio',
-      city: 'San Antonio, TX', venue: 'Henry B. González Convention Center, Exhibit Hall C', date: 'Thursday, May 7 – Saturday, May 9, 2026', booth: '2219', photo: A('san-antonio.jpg'), 'logo-partner': A('logo-tda.png'),
+      city: 'San Antonio, TX', venue: 'Henry B. González Convention Center, Exhibit Hall C', date: 'May 7 – 9, 2026', booth: '2219', photo: A('san-antonio.jpg'), 'logo-partner': A('logo-tda.png'),
       offer: 'Spin the wheel to win a Theragun, AirPods or a Yeti', countdown: 'Tomorrow: come say hi',
     },
   },
@@ -54,7 +54,7 @@ const SHOWS: { realistic: Facts; short: Facts; long: Facts }[] = [
     short: { kicker: 'Southwest Dental Conference', headline: 'Hello, Dallas', 'headline-1': 'Hello,', 'headline-2': 'Dallas', city: 'Dallas, TX', date: 'Aug 21 – 22, 2026', booth: '88', photo: A('dallas.jpg'), offer: 'Free tacos', countdown: 'Tomorrow!' },
     long: {
       kicker: 'Yankee Dental Congress 2027 · Massachusetts Dental Society', headline: 'Come meet the whole Archy team at the Yankee Dental Congress in Boston', 'headline-1': 'Come meet the whole Archy team', 'headline-2': 'at the Yankee Dental Congress',
-      city: 'Boston, Massachusetts', venue: 'Boston Convention & Exhibition Center, South Hall', date: 'Thursday, January 28 – Saturday, January 30, 2027', booth: '4120', photo: A('boston.jpg'), 'logo-partner': A('logo-yankee.svg'),
+      city: 'Boston, Massachusetts', venue: 'Boston Convention & Exhibition Center, South Hall', date: 'January 28 – 30, 2027', booth: '4120', photo: A('boston.jpg'), 'logo-partner': A('logo-yankee.svg'),
       offer: 'Book a demo and win a weekend for two at the Boston Harbor Hotel', countdown: 'Tomorrow: Boston, here we come',
     },
   },
@@ -67,7 +67,7 @@ const SHOWS: { realistic: Facts; short: Facts; long: Facts }[] = [
     short: { kicker: 'Greater New York Dental Meeting', headline: 'See you in New York', 'headline-1': 'See you in', 'headline-2': 'New York', city: 'New York, NY', date: 'Nov 29 – Dec 1', booth: '5512', photo: A('new-york.jpg'), offer: 'Free bagels', countdown: 'Tomorrow!' },
     long: {
       kicker: 'Southwest Dental Conference 2026 · Dallas County Dental Society', headline: 'Find the Archy team at the 2026 Southwest Dental Conference in Dallas', 'headline-1': 'Find the Archy team at the', 'headline-2': '2026 Southwest Dental Conference',
-      city: 'Dallas, Texas', venue: 'Hilton Anatole, Chantilly Ballroom Exhibit Hall', date: 'Friday, August 21 – Saturday, August 22, 2026', booth: '1088', photo: A('dallas.jpg'), 'logo-partner': null,
+      city: 'Dallas, Texas', venue: 'Hilton Anatole, Chantilly Ballroom Exhibit Hall', date: 'August 21 – 22, 2026', booth: '1088', photo: A('dallas.jpg'), 'logo-partner': null,
       offer: 'Stop by for a demo and a chance to win a Big Green Egg grill', countdown: 'Tomorrow: Dallas, let’s talk practice growth',
     },
   },
@@ -84,7 +84,7 @@ const NIGHTS = {
   long: {
     headline: 'An evening of golf, drinks and good company for New York dentists', 'headline-1': 'An evening of golf and drinks', 'headline-2': 'for New York dentists and their teams',
     short: '50 New York dentists.\nOne unforgettable night.', subhead: 'Climate-controlled golf bays, an open bar and chef-made appetizers at Topgolf Chelsea Piers, on us',
-    city: 'New York, NY', venue: 'Topgolf at Chelsea Piers, Pier 59', date: 'Wednesday, December 2, 2026', time: '7:00 – 10:00 PM',
+    city: 'New York, NY', venue: 'Topgolf at Chelsea Piers, Pier 59', date: 'December 2, 2026', time: '7:00 – 10:00 PM',
     cta: 'Reserve your bay now', perks: 'Free golf, an open bar, chef-made appetizers, prizes & great company', kicker: 'Archy Night Out · New York', photo: A('new-york.jpg'),
   },
 };
@@ -99,8 +99,8 @@ const TALKS = {
   short: { headline: 'Lead with Purpose', 'headline-1': 'Lead with', 'headline-2': 'Purpose', 'speaker-name': 'Ana Ruiz', datetime: 'May 7 · 6 pm' },
   long: {
     headline: 'How Great Practices Grow: Culture, Systems and the Patient Experience', 'headline-1': 'How Great Practices Grow:', 'headline-2': 'Culture, Systems and the Patient Experience',
-    'speaker-name': 'Dr. Maria-Fernanda Castellanos-Whitfield', 'speaker-role': 'Founder and Chief Executive Officer', 'speaker-company': 'Castellanos Whitfield Dental Group',
-    city: 'San Antonio, TX', venue: 'Hotel Emma at Pearl Brewery, Sternewirth Room', datetime: 'Thursday, May 7, 2026 · 6:30 – 8:30 pm',
+    'speaker-name': 'Dr. Maria Castellanos-Whitfield', 'speaker-role': 'Founder and Chief Executive Officer', 'speaker-company': 'Castellanos Whitfield Dental Group',
+    city: 'San Antonio, TX', venue: 'Hotel Emma at Pearl Brewery, Sternewirth Room', datetime: 'May 7, 2026 · 6:30 – 8:30 pm',
     'footer-note': 'Know a practice owner or office manager who should hear this talk? Share this invite with them today.', kicker: 'Archy Speaker Series · San Antonio', photo: A('san-antonio.jpg'),
   },
 };
@@ -132,7 +132,7 @@ function valueFor(manifest: Manifest, kind: Kind, slot: string, facts: Facts): s
   if (slot === 'headline' && kind === 'countdown') return facts.countdown ?? undefined;
   if (slot === 'headline' && kind === 'night' && /dentists\./i.test(def)) return facts.short ?? undefined;
   if (slot === 'offer' && facts.offer) return def === def.toUpperCase() ? facts.offer.toUpperCase() : facts.offer;
-  if (slot === 'kicker' && manifest.id.startsWith('event-cover') && facts['logo-partner']) return null; // the logo names the event
+  if (slot === 'kicker' && manifest.id.startsWith('event-cover')) return undefined; // the cover's own words stay (Template review)
   const v = facts[slot];
   return v === undefined ? undefined : v;
 }
@@ -183,6 +183,41 @@ const ALT: Record<string, string[]> = {
   'Find Archy at the Southwest Dental Conference': ['Find Archy at Southwest Dental', 'Meet Archy in Dallas'],
   'Join Archy at the Greater New York Dental Meeting': ['Join Archy at Greater NY Dental', 'Meet Archy in New York'],
   'Come see Archy at the TDA Meeting': ['See Archy at the TDA Meeting', 'Meet Archy at TDA'],
+  'Come see Archy at': ['See Archy at', 'Meet Archy at'],
+  'Visit the Archy team at the Greater New York Dental Meeting': ['Visit Archy at the Greater NY Dental Meeting', 'See you at GNYDM 2026'],
+  'Come see the Archy team at the 2026 TDA Meeting in San Antonio': ['See the Archy team at the 2026 TDA Meeting', 'See Archy at TDA 2026'],
+  'Come meet the whole Archy team at the Yankee Dental Congress in Boston': ['Meet the Archy team at Yankee Dental Congress', 'Meet Archy at Yankee 2027'],
+  'Find the Archy team at the 2026 Southwest Dental Conference in Dallas': ['Find Archy at the Southwest Dental Conference', 'Find Archy at SWDC 2026'],
+  'Visit the Archy team at the': ['Visit Archy at the', 'Visit Archy at'],
+  'Greater New York Dental Meeting': ['Greater NY Dental Meeting', 'GNYDM 2026'],
+  'Come see the Archy team at': ['See Archy at', 'Meet Archy at'],
+  'the 2026 TDA Meeting in San Antonio': ['the 2026 TDA Meeting', 'TDA Meeting 2026'],
+  'at the Yankee Dental Congress': ['Yankee Dental Congress', 'Yankee 2027'],
+  '2026 Southwest Dental Conference': ['Southwest Dental 2026', 'SWDC 2026'],
+  'An evening of golf, drinks and good company for New York dentists': ['Golf, drinks and good company for NY dentists', 'A night out for NY dentists'],
+  'An evening of golf and drinks': ['An evening of golf', 'Golf and drinks'],
+  'for New York dentists and their teams': ['for New York dentists', 'for NY dentists'],
+  '50 New York dentists.\nOne unforgettable night.': ['50 NY dentists.\nOne great night.', '50 dentists.\nOne night out.'],
+  'Climate-controlled golf bays, an open bar and chef-made appetizers at Topgolf Chelsea Piers, on us': ['Golf bays, an open bar and appetizers at Topgolf Chelsea Piers', 'Golf, drinks and apps, on us'],
+  'Free golf, an open bar, chef-made appetizers, prizes & great company': ['Free golf, an open bar, appetizers and prizes', 'Free golf, drinks and apps'],
+  'How Great Practices Grow: Culture, Systems and the Patient Experience': ['How Great Practices Grow: Culture and Systems', 'How Great Practices Grow'],
+  'How Great Practices Grow:': ['How Great Practices', 'Great Practices'],
+  'Culture, Systems and the Patient Experience': ['Culture and Systems', 'Culture, Grown'],
+  'Know a practice owner or office manager who should hear this talk? Share this invite with them today.': ['Know someone who should hear this talk? Share this invite.', 'Share this invite.'],
+  'Hotel Emma at Pearl Brewery, Sternewirth Room': ['Hotel Emma at Pearl', 'Hotel Emma'],
+  'Founder and Chief Executive Officer': ['Founder and CEO', 'CEO'],
+  'Castellanos Whitfield Dental Group': ['Castellanos Dental Group', 'Castellanos Dental'],
+  'Dr. Maria Castellanos-Whitfield': ['Dr. Maria Castellanos'],
+  'Spin the wheel to win a Theragun, AirPods or a Yeti': ['Spin to win a Theragun, AirPods or a Yeti', 'Spin the wheel to win'],
+  'Stop by for a demo and a chance to win a Big Green Egg grill': ['Demo + a chance to win a Big Green Egg', 'Win a Big Green Egg'],
+  'Book a demo and win a weekend for two at the Boston Harbor Hotel': ['Book a demo, win a Boston Harbor weekend', 'Win a Boston weekend'],
+  'Enter to win AirPods Pro + a year of free coffee': ['Win AirPods Pro + free coffee', 'Win AirPods Pro'],
+  'Tomorrow: Boston, here we come': ['Tomorrow: Boston!', 'Tomorrow!'],
+  'Tomorrow: Dallas, let’s talk practice growth': ['Tomorrow: Dallas!', 'Tomorrow!'],
+  'Tomorrow we open the doors': ['Tomorrow we open', 'Tomorrow!'],
+  'Tomorrow: come say hi': ['Tomorrow: say hi', 'Tomorrow!'],
+  'Senior Enterprise Account Executive': ['Senior Account Executive', 'Account Executive'],
+  'SAN FRANCISCO BAY AREA, CA': ['SAN FRANCISCO, CA', 'SF BAY AREA'],
   'Meet Archy at Yankee Dental Congress': ['Meet Archy at Yankee', 'Meet Archy in Boston'],
   'Hiring and Keeping Great Front Office Teams': ['Hiring and Keeping Great Teams', 'Building Great Teams'],
   'Hiring and Keeping': ['Hiring and', 'Building'],
@@ -194,7 +229,9 @@ const ALT: Record<string, string[]> = {
   'Yankee Dental Congress 2027': ['Yankee Dental Congress', 'Yankee 2027'],
 };
 export function shorter(slot: string, value: string): string[] {
-  const out: string[] = [...(ALT[value] ?? [])];
+  const key = Object.keys(ALT).find((k) => k.toLowerCase() === value.toLowerCase());
+  const upper = value === value.toUpperCase() && /[A-Z]/.test(value);
+  const out: string[] = [...(key ? ALT[key].map((v) => (upper ? v.toUpperCase() : v)) : [])];
   if (slot === 'date' || slot === 'datetime') {
     let v = value.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), /, '').replace(/– (Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), /, '– ');
     if (v !== value) out.push(v);

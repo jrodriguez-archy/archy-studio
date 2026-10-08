@@ -96,8 +96,17 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     for (const n of nodes) {
       const type = n.dataset.slotType;
       // An image left empty is removed (photo band, portrait) and the ground closes the gap.
-      if (type === 'image') { if (empty) { touched.add(n.parentElement); n.remove(); } else n.style.backgroundImage = `url("${value}")`; continue; }
-      if (empty) { touched.add(n.parentElement); n.remove(); continue; }
+      if (type === 'image') {
+        if (empty) { touched.add(n.parentElement); n.remove(); continue; }
+        n.style.backgroundImage = `url("${value}")`;
+        try { await framePhoto(n, value, role, format); } catch {}
+        continue;
+      }
+      if (empty) {
+        // A divider that only separated this text from its neighbour goes with it (no line left alone).
+        for (const sib of [n.previousElementSibling, n.nextElementSibling]) if (sib && /^(Divider|Separator)/.test(sib.dataset.name ?? '')) { sib.remove(); break; }
+        touched.add(n.parentElement); n.remove(); continue;
+      }
       if (type === 'logo') {
         // A partner mark is one colour on the piece (the colour of the template's sample mark) and is
         // sized optically: same visible ink as the sample the designer balanced against the Archy
@@ -114,11 +123,13 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
         let h = sample ? sample.h : box.height, w = h * (mark ? mark.bw / mark.bh : 3);
         if (sample && mark) {
           const aspect = mark.bw / mark.bh;
-          h = Math.sqrt(sample.ink / (mark.density * aspect));
-          h = Math.min(Math.max(h, sample.h * 0.6), sample.h * 1.3, box.height);
+          // Same visual weight as the Archy wordmark, and never smaller than most of its height
+          // (Template review: partner logos read small next to Archy).
+          h = Math.sqrt((sample.ink * 1.4) / (mark.density * aspect));
+          h = Math.min(Math.max(h, sample.h * 0.8), sample.h * 1.35, box.height * 1.15);
           w = h * aspect;
           // Width: the room the design gives the partner mark (its sample frame), with a little slack.
-          const maxW = Math.max(box.width, sample.w) * 1.25;
+          const maxW = Math.max(box.width, sample.w * 1.6, rectOf(lockup).width * 0.38);
           if (w > maxW) { w = maxW; h = w / aspect; }
           (report.logos ??= {})[role] = { ref: archy ? 'archy' : 'sample', refH: Math.round(sample.h), refInk: Math.round(sample.ink), density: +mark.density.toFixed(3), aspect: +aspect.toFixed(2), boxH: Math.round(box.height), w: Math.round(w), h: Math.round(h) };
         }
@@ -140,6 +151,14 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
           el.style.setProperty(`${pre}mask-size`, size);
         }
         n.replaceChildren(el);
+        // Optical centre: the partner mark centres on the body of the Archy letters (cap height), not
+        // on the wordmark's box, which the descender of the "y" pulls down.
+        if (archy && sample?.top != null && mark) {
+          const a = rectOf(archy), m0 = el.getBoundingClientRect();
+          const body = a.top + sample.top + sample.h * 0.39;
+          const dy = Math.round(body - (m0.top + m0.height / 2));
+          if (Math.abs(dy) > 1 && Math.abs(dy) < box.height * 0.3) { el.style.translate = `0px ${dy}px`; (report.logos[role] ??= {}).dy = dy; }
+        }
       } else n.textContent = value;
     }
     if (empty) report.slots[role] = { status: 'removed' };
@@ -180,6 +199,38 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
   }
 
   // ---- Measurement helpers ----
+  // Hard rules: no word split across lines ("Tomorrow / !", ": Boston", "EVEN / T") and no short word
+  // stranded on a line of its own ("at"), when the text runs to several lines.
+  function wordsWhole(el) {
+    const tn = [...el.childNodes].filter((n) => n.nodeType === 3);
+    for (const node of tn) {
+      const re = /\S+/g;
+      for (let m = re.exec(node.textContent); m; m = re.exec(node.textContent)) {
+        const rg = document.createRange();
+        rg.setStart(node, m.index); rg.setEnd(node, m.index + m[0].length);
+        const tops = new Set([...rg.getClientRects()].filter((x) => x.width > 0).map((x) => Math.round(x.top / 4)));
+        if (tops.size > 1) return false;
+      }
+    }
+    return true;
+  }
+  function noOrphan(el) {
+    const tn = [...el.childNodes].filter((n) => n.nodeType === 3);
+    const byLine = new Map();
+    for (const node of tn) {
+      const re = /\S+/g;
+      for (let m = re.exec(node.textContent); m; m = re.exec(node.textContent)) {
+        const rg = document.createRange();
+        rg.setStart(node, m.index); rg.setEnd(node, m.index + m[0].length);
+        const r0 = [...rg.getClientRects()].find((x) => x.width > 0);
+        if (!r0) continue;
+        const k = Math.round(r0.top / 4);
+        byLine.set(k, [...(byLine.get(k) ?? []), m[0]]);
+      }
+    }
+    if (byLine.size < 2) return true;
+    return [...byLine.values()].every((words) => words.length > 1 || words[0].replace(/[^\p{L}\p{N}]/gu, '').length > 3);
+  }
   // The height a column's content takes (children, gaps, padding), whatever the frame's own height.
   function flowOf(box) { return [...box.children].filter((c) => getComputedStyle(c).position !== 'absolute' && getComputedStyle(c).display !== 'none'); }
   function usedOf(box) {
@@ -257,6 +308,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
   // ---- Fit each text slot ----
   for (const [role, r] of Object.entries(rules.slots)) fitSlot(role, r);
   settleCollisions();
+  sameSizeData();
 
   function fitSlot(role, r) {
     const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`);
@@ -279,7 +331,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     const allowed = new Map(containersOk().map((c) => [keyOf(c), c.overflowPx]));
     el.textContent = current;
     const containersFine = () => containersOk().every((c) => c.overflowPx <= (allowed.get(keyOf(c)) ?? 0) + 0.5);
-    const fits = () => overflow(role, r, el) === 0 && lines(el) <= maxLines && containersFine();
+    const fits = () => overflow(role, r, el) === 0 && lines(el) <= maxLines && containersFine() && wordsWhole(el) && noOrphan(el);
     const state = { status: 'fit', scale: 1, wrapped: false };
 
     // scaleGroup: every text node in that layer scales with the slot, so a headline stays one unit
@@ -299,7 +351,8 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     const authored = { width: el.style.width, whiteSpace: el.style.whiteSpace, textWrap: el.style.textWrap };
     const isBlockText = !!authored.width && !/content/.test(authored.width);
     const unwrap = () => {
-      if (isBlockText) Object.assign(el.style, authored);
+      // text-wrap first: white-space is a shorthand that includes it, set after so the copy's line breaks stay.
+      if (isBlockText) { el.style.textWrap = authored.textWrap; el.style.whiteSpace = authored.whiteSpace; el.style.width = authored.width; }
       else { el.style.width = 'max-content'; el.style.whiteSpace = 'pre'; el.style.textWrap = ''; }
     };
     const rewrap = () => {
@@ -308,8 +361,8 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       unwrap();
       const over = overflow(role, r, el);
       if (!over) return false;
-      el.style.whiteSpace = 'normal';
-      el.style.textWrap = 'balance';
+      el.style.whiteSpace = 'pre-line'; // keeps the copy's own line breaks
+      el.style.textWrapStyle = 'balance';
       el.style.width = `${Math.floor(el.getBoundingClientRect().width - over)}px`;
       return true;
     };
@@ -370,6 +423,47 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     state.lines = lines(el);
     state.fontSize = parseFloat(getComputedStyle(el).fontSize);
     report.slots[role] = state;
+  }
+
+  // Hard rule: the event's data (location, date, time, booth) reads as one set: values designed at the
+  // same size stay at the same size; one that had to shrink takes the others with it. Only the
+  // secondary line under them (the venue) is smaller.
+  function sameSizeData() {
+    // Values the design set at the same size read as one set (city and date; venue and time): they stay
+    // equal. Grouped by their designed size, so a secondary line never matches a primary one.
+    const DATA = ['city', 'date', 'time', 'datetime', 'location', 'venue'];
+    const groups = new Map();
+    for (const role of DATA) {
+      const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`);
+      const b = baseline.get(role);
+      if (!el?.isConnected || !b || report.slots[role]?.status !== 'fit') continue;
+      const k = Math.round(b.fontSize);
+      groups.set(k, [...(groups.get(k) ?? []), [role, el, b]]);
+    }
+    // Without a city line, the venue is the value of LOCATION: it joins the primary size.
+    if (!root.querySelector('[data-slot="city"][data-slot-type="text"]')?.isConnected) {
+      const v = [...groups.values()].flat().find(([r]) => r === 'venue'), d = [...groups.values()].flat().find(([r]) => r === 'date');
+      if (v && d && Math.round(v[2].fontSize) !== Math.round(d[2].fontSize)) {
+        groups.set(Math.round(v[2].fontSize), (groups.get(Math.round(v[2].fontSize)) ?? []).filter(([r]) => r !== 'venue'));
+        groups.get(Math.round(d[2].fontSize)).push(v);
+      }
+    }
+    for (const list of groups.values()) equalize(list);
+  }
+  function equalize(list) {
+    if (list.length < 2) return;
+    const sizes = list.map(([, el]) => parseFloat(getComputedStyle(el).fontSize));
+    if (Math.max(...sizes) - Math.min(...sizes) < 0.5) return;
+    const was = list.map(([, el]) => [el.style.fontSize, el.style.lineHeight]);
+    const setAll = (fs) => { for (const [, el, b] of list) { el.style.fontSize = `${fs.toFixed(2)}px`; el.style.lineHeight = `${Math.round((b.lineHeight / b.fontSize) * fs)}px`; } };
+    const spill = () => containersOk().reduce((a, c) => a + c.overflowPx, 0), before = spill();
+    const linesBefore = list.map(([, el]) => lines(el));
+    const okAll = () => list.every(([role, el], i) => overflow(role, rules.slots[role], el) === 0 && lines(el) <= linesBefore[i] && wordsWhole(el)) && spill() <= before + 0.5;
+    let size = Math.max(...sizes);
+    setAll(size);
+    if (!okAll()) { size = Math.min(...sizes); setAll(size); }
+    if (!okAll()) { list.forEach(([, el], i) => { el.style.fontSize = was[i][0]; el.style.lineHeight = was[i][1]; }); return; }
+    for (const [role, , b] of list) Object.assign(report.slots[role], { fontSize: size, scale: +(size / b.fontSize).toFixed(2), matched: true });
   }
 
   // A text that ran into a decoration beside the column (copy left out above it moved it up next to a
@@ -442,6 +536,10 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
   }
 
   balance();
+  keepLinesTidy();
+  clearIllustrations();
+  centerLoneLogo();
+  breathe();
 
   for (const c of containersOk()) {
     report.ok = false;
@@ -502,8 +600,35 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     // A fixed-height frame that spreads its content (space-between) is already full.
     // Only when the copy left the column shorter than the designer's own composition: the sample (or
     // copy as long) stays exactly as designed.
-    if (!target || info.before >= frame.used * 0.95 || info.before >= target * 0.95 || (frame.fixed && /space-/.test(getComputedStyle(box).justifyContent))) return;
+    // A frame that spreads its content (space-between) keeps its own spacing: there only the lead grows.
+    const spreads = frame.fixed && /space-/.test(getComputedStyle(box).justifyContent);
+    const room = spreads ? frame.h : target;
+    // Copy much shorter than the sample (a short headline) is room to use even when the column is full.
+    const anyShort = Object.keys(rules.slots).some((role) => {
+      const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`);
+      return el?.isConnected && box.contains(el) && el.textContent.length < (sampleText.get(role)?.length ?? 0) * 0.6 && parseFloat(getComputedStyle(el).fontSize) >= 48;
+    });
+    if (!target || (!anyShort && (info.before >= frame.used * 0.95 || (!spreads && info.before >= target * 0.95)))) return;
     box.dataset.footprint = String(Math.round(target));
+
+    // 0. Lots of room: a mascot bleeding off the top may grow (from its top centre) and the column
+    // steps down to stay clear of it (Template review: "agranda la cara de la mascota").
+    if (info.before < room * 0.8 && !spreads) {
+      const mascot = [...root.querySelectorAll('svg[data-name^="Mascot"]')].find((m) => getComputedStyle(m).position === 'absolute' && rectOf(m).top < rectOf(root).top + 20 && !box.contains(m));
+      if (mascot) {
+        const first = flow()[0];
+        const clearOf = () => rectOf(first).top - rectOf(mascot).bottom;
+        mascot.style.transformOrigin = '50% 0%';
+        let k = 1.3;
+        for (; k > 1.02; k = +(k - 0.04).toFixed(2)) {
+          mascot.style.scale = String(k);
+          const need = Math.max(0, 40 - clearOf());
+          if (used() + need <= target + 0.5) { if (need) box.style.paddingTop = `${(parseFloat(getComputedStyle(box).paddingTop) || 0) + Math.ceil(need)}px`; break; }
+        }
+        if (k <= 1.02) mascot.style.scale = '';
+        else info.mascot = k;
+      }
+    }
 
     // 1. The lead text grows: the slot named in rules.fill, else the largest text in the column.
     const texts = Object.keys(rules.slots)
@@ -512,36 +637,98 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     const lead = texts.find((x) => x.role === pick(opts.slot)) ?? texts.sort((a, b) => parseFloat(getComputedStyle(b.el).fontSize) - parseFloat(getComputedStyle(a.el).fontSize))[0];
     if (lead) {
       const r = rules.slots[lead.role], st = report.slots[lead.role], base = baseline.get(lead.role);
-      const maxScale = pick(opts.maxScale) ?? 1.25;
+      // Copy much shorter than the design's sample: the column's gaps were made for more text. They may
+      // close a little (to 70%) so the lead can grow instead of floating in air.
+      const shortCopy = (lead.el.textContent.length) < (sampleText.get(lead.role)?.length ?? 0) * 0.6;
+      const gap0 = parseFloat(getComputedStyle(box).rowGap) || 0;
+      if (shortCopy && gap0 > 24 && !spreads) { box.style.rowGap = `${Math.round(gap0 * 0.7)}px`; info.tightened = Math.round(gap0 * 0.7); }
+      // Little information, lots of room (a short line on a Stories, a speaker with no details): the lead
+      // may grow well past its design size and take more lines; otherwise a little, on its own lines.
+      const sparse = info.before < room * 0.72 || shortCopy;
+      const verySparse = info.before < room * 0.55 || (shortCopy && lead.el.textContent.replace(/\s/g, '').length <= 14);
+      const maxScale = pick(opts.maxScale) ?? (verySparse ? 2.4 : sparse ? 1.8 : 1.25);
+      const maxLines = sparse ? Math.max(lines(lead.el), pick(r.maxLines) ?? 1, 2) : lines(lead.el);
       // Nothing else may get worse: every other text keeps fitting, no frame overflows more.
       const others = Object.keys(rules.slots).filter((k) => k !== lead.role && report.slots[k]?.status === 'fit')
         .map((k) => [k, root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`)]).filter(([, n]) => n?.isConnected);
       const spill = () => containersOk().reduce((a, c) => a + c.overflowPx, 0);
       const before = spill();
       const othersFit = () => others.every(([k, n]) => overflow(k, rules.slots[k], n) === 0);
-      // It grows on the lines it already has: a word pushed alone onto a new line looks broken.
-      const had = lines(lead.el);
+      const had = maxLines;
       // …and never into a badge, mascot or sticker it was clear of (24px apart).
       const textBoxes = () => { const rg = document.createRange(); rg.selectNodeContents(lead.el); return [...rg.getClientRects()].filter((x) => x.width > 0); };
       const near = (xs) => xs.filter((x) => { const xr = rectOf(x); return textBoxes().some((t) => intersects(t, xr, 24)); });
+      // Background-sized decorations (a star field, a swoosh across the piece) are ground, not neighbours.
+      const RA = rectOf(root).width * rectOf(root).height;
       const loose = [...root.querySelectorAll('[data-node]')].filter((x) => {
         if (x === root || x.contains(lead.el) || lead.el.contains(x) || getComputedStyle(x).position !== 'absolute') return false;
-        const xr = rectOf(x); return xr.width > 2 && xr.height > 2;
+        const xr = rectOf(x); return xr.width > 2 && xr.height > 2 && xr.width * xr.height < RA * 0.25;
       });
       const apart = loose.filter((x) => !near([x]).length);
       // Those it was already close to: it may not get any closer (overlap with a 24px halo can't grow).
-      const halo = (x) => { const xr = rectOf(x); return textBoxes().reduce((a, t) => a + Math.max(0, Math.min(t.right, xr.right + 24) - Math.max(t.left, xr.left - 24)) * Math.max(0, Math.min(t.bottom, xr.bottom + 24) - Math.max(t.top, xr.top - 24)), 0); };
+      // Distance from the copy's glyphs to it (0 when they touch).
+      const halo = (x) => { const xr = rectOf(x); return Math.min(...textBoxes().map((t) => Math.hypot(Math.max(0, xr.left - t.right, t.left - xr.right), Math.max(0, xr.top - t.bottom, t.top - xr.bottom)))); };
       const close = loose.filter((x) => !apart.includes(x)).map((x) => [x, halo(x)]);
-      const at = (k) => { lead.el.style.fontSize = `${(base.fontSize * k).toFixed(2)}px`; lead.el.style.lineHeight = `${Math.round(base.lineHeight * k)}px`; };
-      const ok = () => overflow(lead.role, r, lead.el) === 0 && lines(lead.el) <= had && spill() <= before + 0.5 && othersFit() && used() <= target + 0.5 && !near(apart).length && close.every(([x, h0]) => halo(x) <= h0 + 1);
+      const sh0 = box.scrollHeight - box.clientHeight;
+      // A headline in parts (headline-1, headline-2) grows as one: every part by the same ratio.
+      const parts = /^headline-\d$/.test(lead.role)
+        ? texts.filter((x) => /^headline-\d$/.test(x.role)).map((x) => [x.el, baseline.get(x.role), x.role, parseFloat(getComputedStyle(x.el).fontSize) / baseline.get(x.role).fontSize])
+        : [[lead.el, base, lead.role, st.scale]];
+      // A headline grown big reads as one block: its leading closes in (to about the type size).
+      const lhAt = (b, kk) => { const lh = b.lineHeight * kk, fs = b.fontSize * kk; return kk > 1.2 ? Math.min(lh, fs * (kk > 1.6 ? 0.98 : 1.02)) : lh; };
+      const at = (k) => { for (const [el, b, , s0] of parts) { const kk = (k / st.scale) * s0; el.style.fontSize = `${(b.fontSize * kk).toFixed(2)}px`; el.style.lineHeight = `${Math.round(lhAt(b, kk))}px`; } };
+      const partsOk = () => parts.every(([el, , role]) => el === lead.el || (overflow(role, rules.slots[role], el) === 0 && wordsWhole(el) && noOrphan(el)));
+      const ok = () => partsOk() && overflow(lead.role, r, lead.el) === 0 && wordsWhole(lead.el) && noOrphan(lead.el) && lines(lead.el) <= had && spill() <= before + 0.5 && othersFit() && (spreads ? box.scrollHeight - box.clientHeight <= Math.max(1, sh0) + 1 : used() <= target + 0.5) && !near(apart).length && close.every(([x, h0]) => halo(x) >= Math.min(h0, 24) - 1);
+      // A one-line text (max-content) can only grow wider; with lots of room it may wrap instead.
+      const authored = { width: lead.el.style.width, whiteSpace: lead.el.style.whiteSpace, textWrap: lead.el.style.textWrap };
+      const oneLine = !authored.width || /content/.test(authored.width);
+      // It wraps short of a decoration beside it (the cocktail glass), never into it.
+      const wrapIn = () => {
+        const L = rectOf(lead.el).left, T = rectOf(lead.el).top;
+        let w = rectOf(box).right - L;
+        for (const x of apart) {
+          const xr = rectOf(x);
+          if (xr.left > L + w * 0.4 && xr.left < L + w && xr.bottom > T - 24 && xr.top < T + rectOf(box).height * 0.5) w = Math.min(w, xr.left - 24 - L);
+        }
+        lead.el.style.width = `${Math.floor(w)}px`; lead.el.style.whiteSpace = 'pre-line'; lead.el.style.textWrapStyle = 'balance';
+      };
+      const unwrap = () => { lead.el.style.textWrap = authored.textWrap; lead.el.style.whiteSpace = authored.whiteSpace; lead.el.style.width = authored.width; };
       let best = st.scale;
       for (let k = maxScale; k > st.scale + 0.005; k = +(k - 0.01).toFixed(2)) { at(k); if (ok()) { best = k; break; } }
+      // Growing wide stopped early (a decoration beside it): wrapping may let it grow much more.
+      if (best < maxScale * 0.85 && sparse && maxLines > 1 && (oneLine || apart.length)) {
+        wrapIn();
+        let wrapped = st.scale;
+        for (let k = maxScale; k > best + 0.005; k = +(k - 0.01).toFixed(2)) { at(k); if (ok()) { wrapped = k; break; } }
+        if (wrapped > best + 0.05) best = wrapped; else unwrap();
+      }
       at(best);
       if (best > st.scale) {
         Object.assign(st, { scale: best, grown: true, lines: lines(lead.el), fontSize: parseFloat(getComputedStyle(lead.el).fontSize) });
         info.grew = { slot: lead.role, scale: best };
       }
     }
+    // 1b. Still a lot of room: the event's data (location, date, time) and the subhead grow, together.
+    if (spreads || used() < target * 0.82) {
+      const data = ['city', 'date', 'time', 'datetime', 'venue', 'location', 'subhead']
+        .map((role) => [role, root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`), baseline.get(role)])
+        .filter(([role, el, b]) => el?.isConnected && box.contains(el) && b && report.slots[role]?.status === 'fit');
+      if (data.length) {
+        const sizes = data.map(([, el]) => [parseFloat(getComputedStyle(el).fontSize), parseFloat(getComputedStyle(el).lineHeight)]);
+        const linesBefore = data.map(([, el]) => lines(el));
+        const spill = () => containersOk().reduce((a, c) => a + c.overflowPx, 0), was = spill();
+        const set = (k) => data.forEach(([, el], i) => { el.style.fontSize = `${(sizes[i][0] * k).toFixed(2)}px`; el.style.lineHeight = `${Math.round(sizes[i][1] * k)}px`; });
+        const sh1 = box.scrollHeight - box.clientHeight;
+        const ok = () => data.every(([role, el], i) => overflow(role, rules.slots[role], el) === 0 && lines(el) <= linesBefore[i] && wordsWhole(el)) && spill() <= was + 0.5 && (spreads ? box.scrollHeight - box.clientHeight <= Math.max(1, sh1) + 1 : used() <= target + 0.5);
+        let best = 1;
+        for (let k = 1.3; k > 1.005; k = +(k - 0.02).toFixed(2)) { set(k); if (ok()) { best = k; break; } }
+        set(best);
+        if (best > 1) info.data = best;
+        sameSizeData();
+      }
+    }
+    if (spreads) { info.after = Math.round(used()); mark(); return; }
+
     // 2. Some of what is still free opens the column's rhythm (its gap, up to 1.5×), the rest goes above
     // the footer, which sits at the bottom of the area.
     const kids = flow();
@@ -563,12 +750,170 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     // (A fixed-height frame that spreads its content already has its footer at the bottom.)
     const spread = /space-/.test(getComputedStyle(box).justifyContent);
     if (!spread && isFooter && used() < target - 1) {
+      const free = target - used();
       if (!frame.fixed) box.style.minHeight = `${Math.round(target)}px`;
-      foot.style.marginTop = 'auto';
+      if (free > target * 0.14) {
+        // A lot of air left: content and footer stay one group, set a little above the middle of the
+        // room (no hole between the copy and the logo; Template review).
+        const g = parseFloat(getComputedStyle(box).rowGap) || 0;
+        const extraGap = Math.min(free * 0.25, g * 0.8);
+        foot.style.marginTop = `${Math.round(extraGap)}px`;
+        box.style.paddingTop = `${(parseFloat(getComputedStyle(box).paddingTop) || 0) + Math.round((free - extraGap) * 0.5)}px`;
+        info.grouped = true;
+      } else {
+        foot.style.marginTop = 'auto';
+      }
       info.footer = foot.dataset.name;
     }
+
     info.after = Math.round(used());
     mark();
+    return;
+  }
+
+  // Hard rule: an illustration (a cocktail glass, a mascot) never touches copy, and stars never sit under
+  // it. A text that runs into one wraps short of it (24px clear), then shrinks a little if it must.
+  function clearIllustrations() {
+    const textsAll = [...root.querySelectorAll('[data-slot-type="text"]')].filter((t) => t.isConnected);
+    const glyphs = (el) => { const rg = document.createRange(); rg.selectNodeContents(el); return [...rg.getClientRects()].filter((x) => x.width > 0); };
+    for (const star of root.querySelectorAll('svg[data-name^="Stars"] path, svg[data-name^="Stars"] > *')) {
+      const b = star.getBoundingClientRect();
+      if (b.width > 60) continue;
+      if (textsAll.some((t) => glyphs(t).some((g) => intersects(g, b, 10)))) star.style.display = 'none';
+    }
+    const R = rectOf(root), RA = R.width * R.height;
+    const art = [...root.querySelectorAll('[data-name^="Cocktail"], [data-name^="Illustration"], [data-optional="illustration"]')];
+    const leaves = art.flatMap((a) => [...a.querySelectorAll('svg')].filter((s0) => { const b = s0.getBoundingClientRect(); return b.width > 4 && b.width * b.height < RA * 0.2; }));
+    if (!leaves.length) return;
+    for (const t of textsAll) {
+      const role = t.dataset.slot, rr = rules.slots[role];
+      if (!rr) continue;
+      const hitting = () => leaves.filter((l) => glyphs(t).some((g) => intersects(g, l.getBoundingClientRect(), 16)));
+      let hits = hitting();
+      if (!hits.length) continue;
+      const L = rectOf(t).left;
+      const edge = Math.min(...hits.map((l) => l.getBoundingClientRect().left));
+      const w = Math.floor(edge - 24 - L);
+      if (w > rectOf(t).width * 0.45) {
+        t.style.width = `${w}px`;
+        if (/^(normal|nowrap|pre)$/.test(getComputedStyle(t).whiteSpace)) t.style.whiteSpace = 'pre-line';
+      }
+      const fs0 = parseFloat(getComputedStyle(t).fontSize), lh0 = parseFloat(getComputedStyle(t).lineHeight);
+      for (let k = 1; hitting().length && k > 0.8; k = +(k - 0.04).toFixed(2)) { t.style.fontSize = `${(fs0 * k).toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * k)}px`; }
+      hits = hitting();
+      report.illustrationCleared = [...(report.illustrationCleared ?? []), role + (hits.length ? ':still' : '')];
+    }
+  }
+
+  // Guide: a line does not end on a short word that belongs to the next one ("…apps at / Topgolf",
+  // "…Night Out For / Las Vegas"): the word moves down when the text keeps its line count.
+  function keepLinesTidy() {
+    const SHORT = /^(at|for|in|on|of|to|a|an|the|and|&|with|by|from)$/i;
+    for (const role of Object.keys(rules.slots)) {
+      const el = root.querySelector(`[data-slot="${role}"][data-slot-type="text"]`);
+      if (!el?.isConnected || report.slots[role]?.status !== 'fit' || el.children.length) continue;
+      // Headlines keep the designer's breaks ("Meet Archy at / Yankee…" reads well): only secondary copy.
+      if (/headline/.test(role)) continue;
+      const n0 = lines(el);
+      if (n0 < 2) continue;
+      if (/^(normal|nowrap)$/.test(getComputedStyle(el).whiteSpace)) continue;
+      for (let pass = 0; pass < 3; pass++) {
+        const node = el.firstChild;
+        if (!node || node.nodeType !== 3) break;
+        const words = [...node.textContent.matchAll(/\S+/g)];
+        const tops = words.map((m) => { const rg = document.createRange(); rg.setStart(node, m.index); rg.setEnd(node, m.index + m[0].length); return Math.round((rg.getClientRects()[0]?.top ?? 0) / 4); });
+        // The words that end a line: moving a word down may only change the line it leaves.
+        const endings = () => { const n1 = el.firstChild; const ws = [...n1.textContent.matchAll(/\S+/g)]; const tp = ws.map((m) => { const rg = document.createRange(); rg.setStart(n1, m.index); rg.setEnd(n1, m.index + m[0].length); return Math.round((rg.getClientRects()[0]?.top ?? 0) / 4); }); return ws.filter((_, k) => k < ws.length - 1 && tp[k] !== tp[k + 1]).map((m) => m[0]); };
+        const ends0 = endings();
+        let moved = false;
+        for (let i = 0; i < words.length - 1; i++) {
+          if (tops[i] !== tops[i + 1] && SHORT.test(words[i][0]) && i > 0 && tops[i - 1] === tops[i]) {
+            const before = node.textContent;
+            const at = words[i].index;
+            const sp = before.slice(0, at).replace(/[ \t]+$/, '');
+            node.textContent = `${sp}\n${before.slice(at)}`;
+            const allowed = new Set([...ends0.filter((w) => w !== words[i][0]), words[i - 1][0]]);
+            if (lines(el) > n0 || overflow(role, rules.slots[role], el) > 0 || endings().some((w) => !allowed.has(w))) { node.textContent = before; continue; }
+            moved = true;
+            report.tidied = [...(report.tidied ?? []), `${role}:${words[i][0]}`];
+            break;
+          }
+        }
+        if (!moved) break;
+      }
+    }
+  }
+
+  // A lockup left with only the Archy logo (no partner, no offer) in a centred column: the logo centres.
+  function centerLoneLogo() {
+    for (const lockup of root.querySelectorAll('[data-name^="Logo Lockup"]')) {
+      const visible = [...lockup.children].filter((c) => getComputedStyle(c).display !== 'none' && c.getBoundingClientRect().width > 4 && (c.querySelector('svg, [data-logo-mark]') || c.matches('svg')));
+      const column = lockup.parentElement;
+      if (visible.length === 1 && getComputedStyle(column).alignItems === 'center') { lockup.style.justifyContent = 'center'; report.loneLogo = true; }
+    }
+  }
+
+  // Booth stickers: the number grows when it is short and the sticker has room, and the sticker keeps
+  // 24px from the copy (it moves into free space, or shrinks a little).
+  function breathe() {
+    for (const svg of root.querySelectorAll('svg[data-name^="RIBBON"]')) {
+      const sticker = svg.closest('[data-optional="booth"]') ?? svg.parentElement;
+      const num = sticker.querySelector('[data-slot="booth"][data-slot-type="text"]');
+      // A short number (two or three digits) fills the sticker: up to 60% larger, as wide as it allows.
+      if (num && num.textContent.replace(/\W/g, '').length <= 4) {
+        const info0 = num.parentElement, fs = parseFloat(getComputedStyle(num).fontSize);
+        const roomW = rectOf(svg).width * 0.62;
+        const inkW = () => { const rg = document.createRange(); rg.selectNodeContents(num); return [...rg.getClientRects()].reduce((a, x) => a + x.width, 0); };
+        for (let k = 1.6; k > 1.005; k = +(k - 0.04).toFixed(2)) {
+          num.style.fontSize = `${(fs * k).toFixed(2)}px`;
+          if (inkW() <= roomW) { report.boothGrew = k; break; }
+          num.style.fontSize = `${fs}px`;
+        }
+        void info0;
+      }
+      // It never sits on the copy: 40px clear of every text; it moves down into free space, else shrinks.
+      const texts = [...root.querySelectorAll('[data-slot-type="text"]')].filter((t) => t.isConnected && !sticker.contains(t));
+      const hit = (gap = 40) => texts.some((t) => { const rg = document.createRange(); rg.selectNodeContents(t); return [...rg.getClientRects()].some((x) => x.width > 0 && intersects(x, rectOf(svg), gap)); });
+      const R = rectOf(root);
+      const fits = () => rectOf(svg).bottom < R.bottom - 24 && !hit();
+      if (hit()) {
+        let placed = false;
+        for (const dy of [24, 48, 72, 96, 120]) {
+          sticker.style.translate = `0px ${dy}px`;
+          if (fits()) { report.badgeMoved = dy; placed = true; break; }
+        }
+        if (!placed) sticker.style.translate = '';
+        if (!placed) {
+          // Smaller, and moved if that helps; else the least overlap it can get.
+          const overlap = () => texts.reduce((a, t) => { const rg = document.createRange(); rg.selectNodeContents(t); return a + [...rg.getClientRects()].reduce((b, x) => { const v = rectOf(svg); return b + Math.max(0, Math.min(x.right, v.right + 40) - Math.max(x.left, v.left - 40)) * Math.max(0, Math.min(x.bottom, v.bottom + 40) - Math.max(x.top, v.top - 40)); }, 0); }, 0);
+          sticker.style.translate = '';
+          const w0 = rectOf(svg).width, h0 = rectOf(svg).height;
+          let best = { o: overlap(), k: 1, dx: 0, dy: 0 };
+          // Shrinking keeps its bottom-right corner (it gives way to the copy above and to the left).
+          outer: for (const k of [1, 0.92, 0.85, 0.78, 0.72]) for (const dy of [0, 24, 48, 72, 96, 120, 160, 200]) for (const dx of [0, 24, 48]) {
+            const tx = dx + (1 - k) * w0, ty = dy + (1 - k) * h0;
+            sticker.style.scale = k === 1 ? '' : String(k); sticker.style.translate = `${Math.round(tx)}px ${Math.round(ty)}px`;
+            const v = rectOf(svg);
+            if (v.bottom > R.bottom - 24 || v.right > R.right - 8) continue;
+            const o = overlap();
+            if (o < best.o - 1) best = { o, k, dx: tx, dy: ty };
+            if (!o) break outer;
+          }
+          sticker.style.scale = best.k === 1 ? '' : String(best.k);
+          sticker.style.translate = best.dx || best.dy ? `${Math.round(best.dx)}px ${Math.round(best.dy)}px` : '';
+          report.badgeShrunk = best;
+        }
+        continue;
+      }
+      // Free room under it (a countdown with short copy): it comes down toward the copy, 48px above it.
+      const below = texts.map((t) => rectOf(t)).filter((b) => b.top > rectOf(svg).bottom && b.left < rectOf(svg).right && b.right > rectOf(svg).left).map((b) => b.top);
+      const firstBelow = below.length ? Math.min(...below) : null;
+      if (firstBelow != null) {
+        const room = firstBelow - 48 - rectOf(svg).bottom;
+        const dy = Math.min(room, rectOf(svg).height * 0.7);
+        if (dy > 12) { sticker.style.translate = `0px ${Math.round(dy)}px`; if (!fits()) sticker.style.translate = ''; else report.badgeMoved = Math.round(dy); }
+      }
+    }
   }
 };
 
@@ -685,5 +1030,114 @@ async function sampleInk(frame) {
   if (!st) return null;
   const k = r.width / st.nw; // canvas px -> rendered px
   const w = st.bw * k, h = st.bh * k;
-  return { w, h, ink: st.density * w * h };
+  return { w, h, ink: st.density * w * h, top: st.by * k };
 }
+
+// ---- Photos (Template review): framed on their subject, Pixel Tone on event cover places ----
+// A place photo (a skyline, a venue) is framed on what matters: the skyline whole with a little sky
+// above it, centred across, a little closer than "cover" so water and ground take less room. Photos of
+// people are left as the designer framed them. On event covers the place photo carries Pixel Tone (the
+// brand's tool, archy-design pixel: the photo dithered on the Royal Blue gradient's two tones).
+async function framePhoto(n, src, role, format) {
+  const root = document.querySelector('body > [data-node]');
+  if (/speaker|person|portrait|ae\b|^image-ae/i.test(role)) return;
+  const E = n.getBoundingClientRect(), R = root.getBoundingClientRect();
+  // The window the photo is seen through: the element clipped by its clipping ancestors.
+  let V = { left: E.left, top: E.top, right: E.right, bottom: E.bottom };
+  for (let p = n.parentElement; p && p !== document.body; p = p.parentElement) {
+    const cs = getComputedStyle(p);
+    if (/(hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) {
+      const b = p.getBoundingClientRect();
+      V = { left: Math.max(V.left, b.left), top: Math.max(V.top, b.top), right: Math.min(V.right, b.right), bottom: Math.min(V.bottom, b.bottom) };
+    }
+  }
+  const vw = V.right - V.left, vh = V.bottom - V.top;
+  if (vw * vh < R.width * R.height * 0.12 || getComputedStyle(n).borderRadius.startsWith('50%')) return; // small or round: a portrait
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.src = src;
+  await img.decode();
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  if (!iw || !ih) return;
+  // Where the subject starts and where it sits across: detail (luminance edges) per row and column.
+  const sw = 160, sh = Math.max(1, Math.round((ih / iw) * sw));
+  const cv = document.createElement('canvas'); cv.width = sw; cv.height = sh;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(img, 0, 0, sw, sh);
+  let data;
+  try { data = cx.getImageData(0, 0, sw, sh).data; } catch { return; }
+  const L = (x, y) => { const i = (y * sw + x) * 4; return 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]; };
+  const rows = new Array(sh).fill(0), cols = new Array(sw).fill(0);
+  for (let y = 1; y < sh - 1; y++) for (let x = 1; x < sw - 1; x++) {
+    const e = Math.abs(L(x + 1, y) - L(x - 1, y)) + Math.abs(L(x, y + 1) - L(x, y - 1));
+    rows[y] += e;
+  }
+  const sm = rows.map((_, y) => [-2, -1, 0, 1, 2].reduce((a, d) => a + (rows[y + d] ?? 0), 0));
+  const max = Math.max(...sm);
+  // The skyline: from the first rows with real detail (the tops of the buildings) down to where the
+  // detail falls away (water, a lawn, the sky's reflection), the first quiet stretch after the peak.
+  const top = Math.max(0, sm.findIndex((v) => v >= max * 0.25));
+  let peak = top;
+  for (let y = top; y < sh; y++) if (sm[y] > sm[peak]) peak = y; else if (y > peak + sh * 0.25) break;
+  let bottom = peak;
+  for (let y = peak; y < sh; y++) {
+    const quiet = sm.slice(y, y + Math.max(2, Math.round(sh * 0.04))).every((v) => v < sm[peak] * 0.3);
+    if (quiet) { bottom = y; break; }
+    bottom = y;
+  }
+  for (let y = top; y <= bottom; y++) for (let x = 1; x < sw - 1; x++) cols[x] += Math.abs(L(x + 1, y) - L(x - 1, y));
+  const colSum = cols.reduce((a, v) => a + v, 0) || 1;
+  const cxs = cols.reduce((a, v, x) => a + v * x, 0) / colSum;
+  // Scale: the skyline band takes about 80% of the window's height (never less than covering it), so
+  // there is little sky above and little water or ground below. Position: a slim margin of sky above,
+  // the skyline centred across.
+  const bandH = ((bottom - top) / sh) * ih;
+  const s = Math.max(vw / iw, vh / ih, Math.min((vh * 0.8) / Math.max(1, bandH), (Math.max(vw / iw, vh / ih)) * 2.2));
+  const ox = Math.min(0, Math.max(vw - iw * s, vw / 2 - (cxs / sw) * iw * s));
+  const oy = Math.min(0, Math.max(vh - ih * s, vh * 0.1 - (top / sh) * ih * s));
+  const tone = format === 'cover' && role === 'image-venue';
+  if (!tone) {
+    n.style.backgroundSize = `${Math.round(iw * s)}px ${Math.round(ih * s)}px`;
+    n.style.backgroundPosition = `${Math.round(V.left - E.left + ox)}px ${Math.round(V.top - E.top + oy)}px`;
+    n.style.backgroundRepeat = 'no-repeat';
+    return;
+  }
+  // Pixel Tone, as tools/pixel/pixel.py: autocontrast (1%), 4 steps between the two tones, Bayer 8×8, 1px cells at 2×.
+  const url = window.__pixelTone(img, { vw, vh, s, ox, oy, base: [1, 61, 245], front: [1, 105, 250], steps: 4, scale: 2 });
+  n.style.backgroundImage = `url("${url}")`;
+  n.style.backgroundSize = `${Math.round(vw)}px ${Math.round(vh)}px`;
+  n.style.backgroundPosition = `${Math.round(V.left - E.left)}px ${Math.round(V.top - E.top)}px`;
+  n.style.backgroundRepeat = 'no-repeat';
+  // The navy version too: on a royal or sky card the photo takes it, so the card stands out (edits.js).
+  n.dataset.toneRoyal = url;
+  n.dataset.toneNavy = window.__pixelTone(img, { vw, vh, s, ox, oy, base: [0, 0, 78], front: [0, 4, 132], steps: 4, scale: 2 });
+}
+
+window.__pixelTone = function pixelTone(img, { vw, vh, s, ox, oy, base, front, steps = 4, scale = 2 }) {
+  const W = Math.round(vw * scale), H = Math.round(vh * scale);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(img, ox * scale, oy * scale, img.naturalWidth * s * scale, img.naturalHeight * s * scale);
+  const im = cx.getImageData(0, 0, W, H), d = im.data;
+  const lum = new Float32Array(W * H);
+  const hist = new Array(256).fill(0);
+  for (let i = 0; i < W * H; i++) { const v = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]; lum[i] = v; hist[Math.round(v)]++; }
+  const cut = W * H * 0.01;
+  let lo = 0, hi = 255, acc = 0;
+  for (; lo < 255 && (acc += hist[lo]) < cut; lo++);
+  acc = 0;
+  for (; hi > 0 && (acc += hist[hi]) < cut; hi--);
+  const m = [[0, 2], [3, 1]];
+  let B = m;
+  while (B.length < 8) { const k = B.length; B = Array.from({ length: 2 * k }, (_, y) => Array.from({ length: 2 * k }, (_, x) => 4 * B[y % k][x % k] + [0, 2, 3, 1][Math.floor(y / k) * 2 + Math.floor(x / k)])); }
+  const pal = Array.from({ length: steps + 1 }, (_, i) => base.map((b, c) => Math.round(b + ((front[c] - b) * i) / steps)));
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    const v = Math.min(255, Math.max(0, ((lum[i] - lo) / Math.max(1, hi - lo)) * 255));
+    const t = (B[y % 8][x % 8] + 0.5) / 64;
+    const c = pal[Math.min(steps, Math.max(0, Math.floor((v / 255) * steps + t)))];
+    d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
+  }
+  cx.putImageData(im, 0, 0);
+  return cv.toDataURL('image/png');
+};

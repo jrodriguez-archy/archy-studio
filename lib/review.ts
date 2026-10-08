@@ -41,7 +41,8 @@ export async function loadRound(roundId: string): Promise<ReviewItem[]> {
   for (const c of (cRows ?? []) as unknown as CommentRow[]) {
     comments.set(c.item_id, [...(comments.get(c.item_id) ?? []), {
       id: c.id, body: c.body, x: c.x, y: c.y, created_at: c.created_at, resolved_at: c.resolved_at, resolution: c.resolution,
-      author: c.profiles?.full_name ?? c.profiles?.email ?? 'Someone',
+      // A comment without a person is a suggestion Claude drafted for the admin to keep, edit or delete.
+      author: c.profiles?.full_name ?? c.profiles?.email ?? 'Claude (suggestion)',
     }]);
   }
   const paths: string[] = [...rows.map((r) => r.storage_path), ...(Object.values(prevPath) as string[])];
@@ -62,13 +63,29 @@ export async function setStatus(itemId: string, status: ReviewStatus) {
   if (error) throw new Error(error.message);
 }
 
-export async function addComment(userId: string, itemId: string, body: string, point: { x: number; y: number } | null) {
+// Comments on one or several designs at once (the same comment on every format, or comments pasted
+// from another design). Returns the new ids per design, in order.
+export async function addComments(userId: string, rows: { itemId: string; body: string; x: number | null; y: number | null }[]) {
+  if (!rows.length) return {} as Record<string, string[]>;
   const db = supabaseAdmin();
-  const { data, error } = await db.from('review_comments').insert({ item_id: itemId, user_id: userId, body, x: point?.x ?? null, y: point?.y ?? null }).select('id').single();
+  const { data, error } = await db.from('review_comments')
+    .insert(rows.map((r) => ({ item_id: r.itemId, user_id: userId, body: r.body, x: r.x, y: r.y }))).select('id, item_id');
   if (error) throw new Error(error.message);
   // A comment means it needs work (unless it is already approved on purpose).
-  await db.from('review_items').update({ status: 'needs_work', reviewed_at: new Date().toISOString() }).eq('id', itemId).neq('status', 'approved');
-  return data.id as string;
+  await db.from('review_items').update({ status: 'needs_work', reviewed_at: new Date().toISOString() }).in('id', [...new Set(rows.map((r) => r.itemId))]).neq('status', 'approved');
+  const out: Record<string, string[]> = {};
+  for (const d of data ?? []) (out[d.item_id] ??= []).push(d.id);
+  return out;
+}
+
+export async function addComment(userId: string, itemId: string, body: string, point: { x: number; y: number } | null) {
+  return (await addComments(userId, [{ itemId, body, x: point?.x ?? null, y: point?.y ?? null }]))[itemId][0];
+}
+
+// A pin moved to the right spot (after copying it from another format).
+export async function moveComment(commentId: string, x: number, y: number) {
+  const { error } = await supabaseAdmin().from('review_comments').update({ x, y }).eq('id', commentId).is('resolved_at', null);
+  if (error) throw new Error(error.message);
 }
 
 export async function deleteComment(commentId: string) {

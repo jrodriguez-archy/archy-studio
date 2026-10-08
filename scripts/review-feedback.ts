@@ -33,9 +33,12 @@ async function main() {
   for (const c of comments ?? []) { const it = byId.get(c.item_id)!; const k = it.template; groups.set(k, [...(groups.get(k) ?? []), c]); }
   for (const [template, list] of groups) {
     console.log(`## ${template}`);
-    for (const c of list) {
-      const it = byId.get(c.item_id)!;
-      console.log(`- [${c.id}] ${it.format} · ${it.case}${c.x != null ? ` @ (${Math.round(c.x * 100)}%, ${Math.round(c.y! * 100)}%)` : ''}: ${c.body}`);
+    // The same comment on several formats (written once with "Same for…", or pasted) is one finding.
+    const same = new Map<string, typeof list>();
+    for (const c of list) same.set(c.body.trim(), [...(same.get(c.body.trim()) ?? []), c]);
+    for (const [body, group] of same) {
+      const where = group.map((c) => { const it = byId.get(c.item_id)!; return `${it.format} · ${it.case}${c.x != null ? ` @ (${Math.round(c.x * 100)}%, ${Math.round(c.y! * 100)}%)` : ''}`; });
+      console.log(`- ${body}\n    on: ${where.join('; ')}\n    ids: ${group.map((c) => c.id).join(',')}`);
     }
     if (pins) {
       for (const itemId of new Set(list.map((c) => c.item_id))) {

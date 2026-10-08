@@ -322,7 +322,15 @@
       const a = solid[i], c = solid[j], ea = node(a.id), ec = node(c.id);
       if (ea.contains(ec) || ec.contains(ea)) continue;
       const a0 = baseOf(ea), c0 = baseOf(ec);
-      if (meet(boxes.get(a.id), boxes.get(c.id)) > 16 && a0 && c0 && meet(a0, c0) <= 16) {
+      // A text is its letters, not its box (a full-width venue line next to a badge does not overlap it).
+      const inkOf = (el, c0, box) => {
+        if (!['text', 'tag', 'button'].includes(c0.kind)) return [box];
+        const rg = document.createRange(); rg.selectNodeContents(el);
+        const rs = [...rg.getClientRects()].filter((x) => x.width > 0).map((x) => ({ x: x.left - R.left, y: x.top - R.top, w: x.width, h: x.height }));
+        return rs.length ? rs : [box];
+      };
+      const inkMeet = () => { const A = inkOf(ea, a, boxes.get(a.id)), C = inkOf(ec, c, boxes.get(c.id)); return A.reduce((s0, p) => s0 + C.reduce((s1, q) => s1 + meet(p, q), 0), 0); };
+      if (meet(boxes.get(a.id), boxes.get(c.id)) > 16 && a0 && c0 && meet(a0, c0) <= 16 && inkMeet() > 16) {
         const who = changed(ea) ? a : c;
         out.push({ id: who.id, level: 'warn', title: `${a.name} overlaps ${c.name}`, detail: 'Move one of them so both read clearly.', ...revertOn(node(who.id), ['box.dx', 'box.dy', 'box.width', 'box.height', 'style.fontSize'], 'Move back') });
       }

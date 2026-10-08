@@ -18,9 +18,12 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
   const items = round ? await loadRound(round.id) : [];
   return (
     <div>
-      <PageHeader title="Template review" description="Every template with example copy, in each format. Approve it or click on the image to say what to improve; Claude works through the comments and the next round shows before and after." />
+      <PageHeader title="Template review" description="New templates with example content, in each format. Approve them or click on a design to say what to improve; Claude works through the comments and the next round shows before and after." />
       {round ? <ReviewBoard key={round.id} rounds={rounds} round={round} items={items} /> : (
-        <p className="py-16 text-center text-[13px] text-foreground/50">No rounds yet. Ask Claude to make the first one.</p>
+        <div className="mx-auto max-w-md py-20 text-center text-[13px]">
+          <p className="text-[15px] font-medium">No template in review</p>
+          <p className="mt-1.5 text-foreground/55">When a new template is ready in Paper, ask Claude to review it (“review the template booth-icon-list”). It shows here with example content in every format: approve it or click on the design to say what to improve.</p>
+        </div>
       )}
     </div>
   );

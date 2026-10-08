@@ -2,6 +2,7 @@
 // stored for an admin to evaluate in Studio (Admin → Template review).
 //
 //   set -a; source .env.local; set +a; NODE_OPTIONS=--conditions=react-server npx tsx scripts/review-round.ts [--templates a,b] [--note "..."]
+//   … scripts/review-round.ts --template <id>    a new template: realistic + short in every format, 3 themes
 //
 // With --templates only those are rendered again; the rest of the round is carried over from the last
 // one. A design whose inputs and engine did not change keeps its image and status (approved stays
@@ -18,6 +19,21 @@ import { casesFor, shorter } from './review-cases';
 const arg = (name: string) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : undefined; };
 const only = arg('templates')?.split(',').map((s) => s.trim()).filter(Boolean);
 const note = arg('note') ?? null;
+// --small: a short round that shows what was learned (Template review: rounds must be quick to review).
+// A few templates per category, Post and Stories, realistic and short; themes on two templates only.
+const SMALL: Record<string, { formats: string[]; cases: string[] }> = {
+  'booth-icon-list': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:sky', 'theme:light'] },
+  'booth-invite-photo': { formats: ['post', 'stories'], cases: ['realistic', 'short'] },
+  'countdown-mascot': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:sky', 'theme:ice'] },
+  'night-out-illustration': { formats: ['post', 'stories'], cases: ['realistic', 'short'] },
+  'speaker-invite': { formats: ['post', 'stories'], cases: ['short'] },
+  'ae-spotlight': { formats: ['post'], cases: ['realistic'] },
+  'event-cover-booth-photo': { formats: ['cover'], cases: ['realistic'] },
+};
+const small = process.argv.includes('--small');
+// --template <id>: one new template, short round (realistic and short in every format; three themes on
+// the main format). For reviewing a template newly prepared in Paper.
+const single = arg('template');
 
 type Prev = { id: string; template: string; format: string; case: string; status: string; storage_path: string; width: number; height: number; report: unknown; slots: unknown; edits: unknown; fingerprint: string | null };
 
@@ -32,7 +48,8 @@ async function main() {
     for (const p of (data ?? []) as Prev[]) prev.set(`${p.template}|${p.format}|${p.case}`, p);
   }
   const number = (last?.number ?? 0) + 1;
-  const { data: round, error } = await db.from('review_rounds').insert({ number, note }).select('id').single();
+  if (single && !(await catalog()).some((i) => i.manifest.id === single)) throw new Error(`Unknown template: ${single}`);
+  const { data: round, error } = await db.from('review_rounds').insert({ number, note: note ?? (single ? `New template: ${single}` : null) }).select('id').single();
   if (error) throw new Error(error.message);
   console.log(`Round ${number}${note ? `: ${note}` : ''}`);
 
@@ -47,19 +64,21 @@ async function main() {
       .map((f) => readFile(path.join(ROOT, 'templates', id, f), 'utf8').catch(() => '')));
     for (const format of formats) {
       for (const c of await casesFor(manifest, config, format, { themes: format === formats[0], index })) {
+        if (small && !(SMALL[id]?.formats.includes(format) && SMALL[id].cases.includes(c.case))) continue;
+        if (single && (id !== single || !(['realistic', 'short'].includes(c.case) || (format === formats[0] && ['theme:dark', 'theme:sky', 'theme:light'].includes(c.case))))) continue;
         const key = `${id}|${format}|${c.case}`;
         const before = prev.get(key);
         const fingerprint = createHash('sha1').update([engine, ...files, JSON.stringify(c.slots), JSON.stringify(c.edits)].join('\u0000')).digest('hex');
         const base = { round_id: round.id, template: id, format, case: c.case, slots: c.slots, edits: c.edits, prev_item_id: before?.id ?? null, fingerprint };
         // Unchanged (or not asked for): same image, same status.
-        if (before && (!touch || before.fingerprint === fingerprint)) {
+        if (!small && !single && before && (!touch || before.fingerprint === fingerprint)) {
           jobs.push(async () => {
             await db.from('review_items').insert({ ...base, slots: before.slots, edits: before.edits, fingerprint: before.fingerprint, storage_path: before.storage_path, width: before.width, height: before.height, report: before.report, status: before.status });
             carried++;
           });
           continue;
         }
-        if (!touch) continue;
+        if (!touch && !small && !single) continue;
         jobs.push(async () => {
           try {
             let slots = { ...c.slots };
@@ -73,12 +92,8 @@ async function main() {
               for (const e of out.report.errors) {
                 const v = e.slot ? slots[e.slot] : null;
                 if (!e.slot || typeof v !== 'string') continue;
-                let next = shorter(e.slot, v).find((x) => !tried.has(`${e.slot}:${x}`));
-                if (!next && c.case === 'long' && e.maxLength) {
-                  const words = v.replace(/\s+/g, ' ').split(' ');
-                  while (words.length > 1 && words.join(' ').length > e.maxLength) words.pop();
-                  next = words.join(' ').replace(/[,:;–-]$/, '');
-                }
+                const next = shorter(e.slot, v).find((x) => !tried.has(`${e.slot}:${x}`));
+                // Never a cut: what is left without a fitting rewrite stays refused (a finding about the template).
                 if (next && next !== v) { tried.add(`${e.slot}:${next}`); slots = { ...slots, [e.slot]: next }; trimmed.push(`${e.slot}: “${next.replace(/\n/g, ' ')}”`); changed = true; }
               }
               if (!changed) break;

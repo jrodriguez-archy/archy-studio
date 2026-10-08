@@ -26,12 +26,24 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     if (!(k in el.dataset)) el.dataset[k] = el.getAttribute(attr) ?? '';
     el.setAttribute(attr, value);
   };
+  // Any other attribute a theme sets (an outline's width…), put back on the next pass.
+  const setOther = (el, attr, value) => {
+    const kept = JSON.parse(el.dataset.themeAttrs ?? '{}');
+    if (!(attr in kept)) kept[attr] = el.getAttribute(attr);
+    el.dataset.themeAttrs = JSON.stringify(kept);
+    el.setAttribute(attr, value);
+  };
 
   // ---- Put everything back ----
   for (const el of document.querySelectorAll('[data-edit-style]')) {
     el.setAttribute('style', el.dataset.editStyle);
     if ('editText' in el.dataset) el.textContent = el.dataset.editText;
     if ('editHtml' in el.dataset) el.innerHTML = el.dataset.editHtml;
+  }
+  for (const el of root.querySelectorAll('[data-on-badge]')) delete el.dataset.onBadge;
+  for (const el of root.querySelectorAll('[data-theme-attrs]')) {
+    for (const [a, v] of Object.entries(JSON.parse(el.dataset.themeAttrs))) { if (v == null) el.removeAttribute(a); else el.setAttribute(a, v); }
+    delete el.dataset.themeAttrs;
   }
   for (const el of root.querySelectorAll('[data-theme-fill], [data-theme-stroke]')) {
     if ('themeFill' in el.dataset) { el.setAttribute('fill', el.dataset.themeFill); delete el.dataset.themeFill; }
@@ -61,12 +73,16 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
 
   // ---- Theme: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground, by role (text, accent, button,
   // surface, line, icon, the Archy logo's approved colour). Photos and illustrations keep theirs. ----
+  // solid: the ground as one colour (for contrast checks). fills: what a pill, badge or container may
+  // take, in order, when its colour sinks into what is behind it. Lines stay subtle but visible.
+  // Learned in Template review: Sky is white or extremely light blue, never dark; nothing takes the
+  // colour of its ground; rulers are a subtle blue, never grey.
   const PRESETS = {
-    dark: { bg: 'linear-gradient(in oklab 180deg, var(--color-dark-foreground) 0%, var(--color-dark-background) 55%)', text: '#FFFFFF', accent: '#66BFFF', surface: '#000484', border: '#0000C9', button: '#013DF5', onButton: '#FFFFFF', logo: '#FFFFFF' },
-    blue: { bg: '#013DF5', text: '#FFFFFF', accent: '#CCEAFF', surface: '#0000C9', border: '#66BFFF', button: '#FFFFFF', onButton: '#013DF5', logo: '#FFFFFF' },
-    sky: { bg: '#0095FF', text: '#FFFFFF', accent: '#00004E', surface: '#013DF5', border: '#CCEAFF', button: '#00004E', onButton: '#FFFFFF', logo: '#FFFFFF' },
-    ice: { bg: '#E6F4FF', text: '#00004E', accent: '#013DF5', surface: '#FFFFFF', border: '#CCEAFF', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5' },
-    light: { bg: '#FFFFFF', text: '#00004E', accent: '#013DF5', surface: '#F3F9FF', border: '#EEEEEE', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5' },
+    dark: { bg: 'linear-gradient(in oklab 180deg, var(--color-dark-foreground) 0%, var(--color-dark-background) 55%)', solid: '#00025F', text: '#FFFFFF', accent: '#66BFFF', surface: '#0000C9', border: '#141F9C', button: '#013DF5', onButton: '#FFFFFF', logo: '#FFFFFF', badge: '#013DF5', fills: ['#013DF5', '#0095FF', '#FFFFFF'] },
+    blue: { bg: '#013DF5', solid: '#013DF5', text: '#FFFFFF', accent: '#CCEAFF', surface: '#00004E', border: '#4D7BFF', button: '#FFFFFF', onButton: '#013DF5', logo: '#FFFFFF', badge: '#00004E', fills: ['#00004E', '#FFFFFF'] },
+    sky: { bg: '#0095FF', solid: '#0095FF', text: '#FFFFFF', accent: '#E6F4FF', surface: '#FFFFFF', border: '#CCEAFF', button: '#FFFFFF', onButton: '#013DF5', logo: '#FFFFFF', badge: '#013DF5', fills: ['#FFFFFF', '#013DF5'] },
+    ice: { bg: '#E6F4FF', solid: '#E6F4FF', text: '#00004E', accent: '#013DF5', surface: '#FFFFFF', border: '#A9D3F5', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5', badge: '#013DF5', fills: ['#013DF5', '#FFFFFF'] },
+    light: { bg: '#FFFFFF', solid: '#FFFFFF', text: '#00004E', accent: '#0095FF', surface: '#F3F9FF', border: '#99D1FF', button: '#013DF5', onButton: '#FFFFFF', logo: '#013DF5', badge: '#013DF5', fills: ['#E6F4FF', '#013DF5'] },
   };
   const t = PRESETS[piece.preset];
   if (t) {
@@ -115,6 +131,22 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       // A partner's sample mark (one colour, like the marks Studio places) follows the text.
       else if (inside(el, (n) => n.dataset?.slotType === 'logo')) setAttr(el, 'fill', t.text);
     }
+    for (const line of root.querySelectorAll('[data-name^="Rulers"] [data-name^="Ruler"]')) { keep(line); line.style.backgroundColor = t.border; }
+    const step = (name, f) => { try { f(); } catch (e) { (window.__themeErrors ??= []).push(`${name}: ${e.message}`); } };
+    step('fades', () => themeFades(t));
+    // Pixel Tone photos contrast with the card above them: navy behind a royal or sky card.
+    step('tone', () => {
+      for (const ph of root.querySelectorAll('[data-tone-navy]')) {
+        const card = [...root.querySelectorAll('[data-name]')].find((c) => /^(Content|Card)/.test(nameOf(c)) && getComputedStyle(c).position === 'absolute');
+        const c = card ? hexRgb(getComputedStyle(card).backgroundColor) : null;
+        const blueCard = c && c[2] > 180 && c[0] < 60 && c[1] < 200;
+        keep(ph);
+        ph.style.backgroundImage = `url("${blueCard ? ph.dataset.toneNavy : ph.dataset.toneRoyal}")`;
+      }
+    });
+    step('badges', () => themeBadges(t));
+    step('mascots', () => themeMascots(piece.preset));
+    step('contrast', () => keepContrast(t));
   }
 
   // ---- Layer edits ----
@@ -172,6 +204,122 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       if (l.align) s.alignItems = flex[l.align];
     }
     if (e.hidden) s.display = 'none';
+  }
+
+  // ---- Themes: what the role plan cannot see ----
+  function hexRgb(c) {
+    if (!c) return null;
+    const h = toHex(c);
+    if (h) return [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    return null;
+  }
+  function ratio(a, b) {
+    const lum = ([r0, g0, b0]) => [r0, g0, b0].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+    const [l1, l2] = [lum(a), lum(b)].sort((x, y) => y - x);
+    return (l1 + 0.05) / (l2 + 0.05);
+  }
+  // The colour right behind an element after the theme: the nearest ancestor with a fill (a gradient
+  // counts as the average of its stops), else the theme's ground. Null when a photo is behind.
+  function groundOf(el, t) {
+    for (let n = el.parentElement; n && root.contains(n); n = n.parentElement) {
+      const cs = getComputedStyle(n);
+      if (n !== root && /url\(/.test(cs.backgroundImage)) return null;
+      if (n === root) return hexRgb(t.solid);
+      const stops = cs.backgroundImage.match(/(rgba?|oklab|color)\([^)]*\)/g);
+      if (stops?.length && /gradient/.test(cs.backgroundImage)) {
+        const all = stops.map((x) => (x.match(/[\d.]+/g) ?? []).map(Number)).filter((v) => v.length >= 3 && v[0] > 1);
+        if (all.length) return [0, 1, 2].map((i) => all.reduce((a, c) => a + c[i], 0) / all.length);
+      }
+      const c = (cs.backgroundColor.match(/[\d.]+/g) ?? []).map(Number);
+      if (c.length >= 3 && (c[3] ?? 1) > 0.5) return c.slice(0, 3);
+    }
+    return hexRgb(t.solid);
+  }
+  // Fades and scrims are drawn in the template's ground colour: they take the theme's.
+  function themeFades(t) {
+    for (const el of root.querySelectorAll('[data-name]')) {
+      if (!/^(BK Fade|Scrim|Fade)/i.test(nameOf(el))) continue;
+      const bi = getComputedStyle(el).backgroundImage;
+      if (!/gradient/.test(bi)) continue;
+      keep(el);
+      el.style.backgroundImage = el.style.backgroundImage.replace(/var\(--color-(dark|light)-(background|foreground)\)/g, t.solid);
+    }
+  }
+  // Booth stickers (RIBBON) are drawn shapes: they take a fill that stands out from the ground, and
+  // what is printed on them takes the colour that reads on that fill (white on royal).
+  function themeBadges(t) {
+    for (const svg of root.querySelectorAll('svg[data-name^="RIBBON"]')) {
+      const paths = [...svg.querySelectorAll('[fill]')].filter((p) => p.getAttribute('fill') !== 'none');
+      const ground = groundOf(svg, t);
+      const own = hexRgb(paths[0]?.getAttribute('fill'));
+      const pick = [own && toHex(paths[0].getAttribute('fill')), t.badge, ...t.fills].filter(Boolean)
+        .find((c) => !ground || ratio(hexRgb(c), ground) >= 1.6) ?? t.badge;
+      for (const p of paths) setAttr(p, 'fill', pick);
+      const box = svg.parentElement;
+      const fill = hexRgb(pick);
+      const on = ratio(fill, [255, 255, 255]) >= 3 ? '#FFFFFF' : '#00004E';
+      for (const n of box.querySelectorAll('*')) {
+        if (isSvg(n) || n.children.length || !n.textContent.trim()) continue;
+        keep(n); n.style.color = on; n.dataset.onBadge = '';
+      }
+    }
+  }
+  // The mascot on each ground, as the Archy brand guidelines (Paper: Mascot · Grounds) say:
+  // a light antenna on blue and navy grounds, a dark one on white and light-blue grounds; on Ice the
+  // shell gets a barely-there edge (#C3DDF3), on Sky the ears do (they would melt into it), on Blue the
+  // body does (#0A30D6). 5 units on the 670 viewBox.
+  function themeMascots(preset) {
+    const antenna = { dark: '#66BFFF', blue: '#66BFFF', sky: '#00004E', ice: '#00004E', light: '#00004E' }[preset];
+    for (const svg of root.querySelectorAll('svg[data-name^="Mascot"]')) {
+      const stopOf = (p) => {
+        const m = (p.getAttribute('fill') ?? '').match(/url\(#([^)]+)\)/);
+        return m ? svg.querySelector(`#${CSS.escape(m[1])} stop`)?.getAttribute('stop-color')?.toLowerCase() ?? '' : '';
+      };
+      const paths = [...svg.querySelectorAll('path, rect, circle, ellipse')];
+      const flat = paths.find((p) => /^#(66bfff|00004e|0000c9)$/i.test(p.getAttribute('fill') ?? ''));
+      if (flat && antenna) setAttr(flat, 'fill', antenna);
+      const edge = (parts, color) => { for (const p of parts) { setAttr(p, 'stroke', color); setOther(p, 'stroke-width', '5'); setOther(p, 'paint-order', 'stroke'); } };
+      const ears = paths.filter((p) => /^#(66bdfd|66bfff)/.test(stopOf(p)));
+      const shell = paths.filter((p) => /^#e4f2fd/.test(stopOf(p)));
+      const body = paths.filter((p) => /^#(1f6bff|013df5|0a30d6|3d7bff)/.test(stopOf(p)));
+      if (preset === 'ice' || preset === 'light') edge(shell, '#C3DDF3');
+      if (preset === 'sky') edge(ears, '#0A6FD6');
+      if (preset === 'blue') edge(body, '#0A30D6');
+    }
+  }
+  // Hard rule: nothing takes the colour of what is behind it. Pills, badges, containers and buttons
+  // whose fill sinks into their ground take the first theme fill that stands out; then every text
+  // reads on what is right behind it.
+  function keepContrast(t) {
+    const els = [...root.querySelectorAll('*')].filter((el) => !isSvg(el) && !inArchyLogo(el) && !inside(el, (n) => DECORATION.test(nameOf(n)) || n.dataset?.slotType === 'image'));
+    for (const el of els) {
+      const cs = getComputedStyle(el);
+      const fill = (cs.backgroundColor.match(/[\d.]+/g) ?? []).map(Number);
+      if (fill.length < 3 || (fill[3] ?? 1) < 0.5 || /url\(/.test(cs.backgroundImage)) continue;
+      const r0 = el.getBoundingClientRect();
+      const R = root.getBoundingClientRect();
+      if (r0.height <= 4 || r0.width <= 4) continue; // a line or ruler: subtle on purpose (theme border)
+      if (r0.width > R.width * 0.6 && r0.height > R.height * 0.4) continue; // a card or panel, not a pill
+      const ground = groundOf(el, t);
+      if (!ground || ratio(fill.slice(0, 3), ground) >= 1.25) continue;
+      const pick = t.fills.find((c) => ratio(hexRgb(c), ground) >= 1.6);
+      if (pick) { keep(el); el.style.backgroundColor = pick; el.style.backgroundImage = 'none'; }
+    }
+    for (const el of els) {
+      if (el.children.length || !el.textContent.trim() || el.dataset.logoMark !== undefined || 'onBadge' in el.dataset) continue;
+      const fg = (getComputedStyle(el).color.match(/[\d.]+/g) ?? []).map(Number);
+      const own = (getComputedStyle(el).backgroundColor.match(/[\d.]+/g) ?? []).map(Number);
+      const ground = own.length >= 3 && (own[3] ?? 1) > 0.5 ? own.slice(0, 3) : groundOf(el, t);
+      if (!ground || fg.length < 3 || ratio(fg.slice(0, 3), ground) >= 3) continue;
+      // The theme's own label and accent colours are chosen by the brand (light blue labels on Sky,
+      // Sky blue labels on white): kept unless they truly vanish.
+      const hx = toHex(getComputedStyle(el).color);
+      const onGround = ratio(ground, hexRgb(t.solid)) < 1.1;
+      if (onGround && (hx === toHex(t.accent) || hx === toHex(t.text)) && ratio(fg.slice(0, 3), ground) >= 1.9) continue;
+      const options = ['#FFFFFF', t.text, t.accent, '#00004E', '#013DF5'];
+      const best = options.map((c) => [c, ratio(hexRgb(c), ground)]).sort((a, b) => b[1] - a[1])[0][0];
+      keep(el); el.style.color = best;
+    }
   }
 
   // Contrast of a text against what is behind it (null when a photo is behind).

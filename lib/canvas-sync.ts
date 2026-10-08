@@ -47,10 +47,10 @@ const byKey = (keys: Keys) => Object.fromEntries(Object.entries(keys).map(([id, 
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
 /** The target with what changed in the source (from `prev` to `next`). Without keys only the slots and the theme follow. */
-export function follow(prev: Snap, next: Snap, target: Snap, src?: Keys, dst?: Keys): Snap {
+export function follow(prev: Snap, next: Snap, target: Snap, src?: Keys, dst?: Keys, drawn?: Set<string>): Snap {
   const slots = { ...target.slots };
   for (const k of Object.keys(slots)) {
-    const was = carried(prev.slots, k, slots[k]), now = carried(next.slots, k, slots[k]);
+    const was = carried(prev.slots, k, slots[k], drawn), now = carried(next.slots, k, slots[k], drawn);
     if (now !== undefined && (was ?? null) !== (now ?? null)) slots[k] = now ?? null;
   }
   const edits = { ...target.edits };
@@ -72,9 +72,9 @@ export function follow(prev: Snap, next: Snap, target: Snap, src?: Keys, dst?: K
 }
 
 /** The target made to match the source in everything shared (a format just added, or synced again). */
-export function match(source: Snap, target: Snap, src: Keys, dst: Keys): Snap {
+export function match(source: Snap, target: Snap, src: Keys, dst: Keys, drawn?: Set<string>): Snap {
   const slots = { ...target.slots };
-  for (const k of Object.keys(slots)) { const v = carried(source.slots, k, slots[k]); if (v !== undefined) slots[k] = v ?? null; }
+  for (const k of Object.keys(slots)) { const v = carried(source.slots, k, slots[k], drawn); if (v !== undefined) slots[k] = v ?? null; }
   const edits: Edits = {};
   for (const [id, e] of Object.entries(target.edits)) if (id !== RECOLOR) edits[id] = withShared(e, {});
   if (source.edits[RECOLOR]) edits[RECOLOR] = source.edits[RECOLOR];
@@ -93,10 +93,14 @@ export function match(source: Snap, target: Snap, src: Keys, dst: Keys): Snap {
 // An event and its page cover are one set: the cover splits the event's headline over two lines
 // (headline-1, headline-2) and may print "Booth" with the number. What one says, the other says in
 // its own shape. Returns the value for `key` from `from` (undefined: nothing to carry).
-export function carried(from: Record<string, string | null>, key: string, own?: string | null): string | null | undefined {
-  if (key in from) return key === 'booth' ? boothLike(from[key], own) : from[key];
-  if (key === 'headline' && ('headline-1' in from || 'headline-2' in from)) return [from['headline-1'], from['headline-2']].filter(Boolean).join('\n') || null;
-  if ((key === 'headline-1' || key === 'headline-2') && 'headline' in from) return splitHeadline(from.headline)[key === 'headline-1' ? 0 : 1];
+// `drawn`: the slots the source format draws. A slot it does not draw (the cover's ground photo seen
+// from the post, the post's headline seen from the cover) is not its to give: it is never carried, so a
+// format's own content is not emptied by another one.
+export function carried(from: Record<string, string | null>, key: string, own?: string | null, drawn?: Set<string>): string | null | undefined {
+  if (key in from && (!drawn || drawn.has(key))) return key === 'booth' ? boothLike(from[key], own) : from[key];
+  if (drawn && !drawn.has(key) && key in from && !['headline', 'headline-1', 'headline-2'].includes(key)) return undefined;
+  if (key === 'headline' && ('headline-1' in from || 'headline-2' in from) && (!drawn || drawn.has('headline-1'))) return [from['headline-1'], from['headline-2']].filter(Boolean).join('\n') || null;
+  if ((key === 'headline-1' || key === 'headline-2') && 'headline' in from && (!drawn || drawn.has('headline'))) return splitHeadline(from.headline)[key === 'headline-1' ? 0 : 1];
   return undefined;
 }
 

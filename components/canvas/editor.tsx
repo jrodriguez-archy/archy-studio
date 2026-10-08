@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Alert02Icon, ArrowLeft02Icon, Cursor01Icon, SearchVisualIcon, Download04Icon, HandGrabIcon, MinusSignIcon, PlusSignIcon, Redo02Icon, Undo02Icon,
@@ -72,7 +72,9 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   }, []);
   useEffect(() => { if (!given) reload(); }, [given, reload]);
   useRendersLive(reload);
-  const [tab, setTab] = useState<PanelTab>(piece ? 'layers' : 'library');
+  // ?asset=<id> (Assets page → "Use in a design"): Assets open, that image pointed at.
+  const pointAsset = useSearchParams().get('asset');
+  const [tab, setTab] = useState<PanelTab>(pointAsset ? 'assets' : piece ? 'layers' : 'library');
   if (!piece) {
     return (
       <div data-fullbleed className="flex h-dvh flex-col bg-[#F5F5F5] text-[13px]">
@@ -93,12 +95,13 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   }
   return (
     <Editor key={piece.boards.map((b) => b.ref).join()} {...piece} library={library} updating={updating} onSaved={(ids) => setUpdating(ids)}
-      seenAt={library?.mcpSeenAt ?? seenAt} tab={tab} setTab={setTab} />
+      seenAt={library?.mcpSeenAt ?? seenAt} tab={tab} setTab={setTab} pointAsset={pointAsset} />
   );
 }
 
-function Editor({ title, backHref, active: firstActive, boards: firstBoards, ghosts: firstGhosts, slotMeta: slotMetaOf, library, updating, onSaved, seenAt, tab, setTab }: EditorProps & {
+function Editor({ title, backHref, active: firstActive, boards: firstBoards, ghosts: firstGhosts, slotMeta: slotMetaOf, library, updating, onSaved, seenAt, tab, setTab, pointAsset }: EditorProps & {
   library: CanvasLibrary | null; updating: string[]; onSaved: (ids: string[]) => void; seenAt: string | null; tab: PanelTab; setTab: (t: PanelTab) => void;
+  pointAsset?: string | null;
 }) {
   const router = useRouter();
   // ---- The artboards: one document of snaps (one per format), one history for all of them ----
@@ -115,6 +118,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   activeRef.current = active;
   const boardsRef = useRef(boards);
   boardsRef.current = boards;
+  const ghostsRef = useRef(ghosts);
+  ghostsRef.current = ghosts;
   const unsyncedRef = useRef(unsynced);
   unsyncedRef.current = unsynced;
   const liveBase = useRef<Doc | null>(null);
@@ -174,6 +179,11 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   const toMatch = useRef<Record<string, string>>({});
   const synced = (ref: string) => !unsyncedRef.current.includes(ref);
   // The document with one artboard changed, and what is shared followed to the synced ones.
+  // The slots a board's format draws (its own content), so another format never empties them.
+  const drawnBy = (ref: string) => {
+    const f = [...boardsRef.current, ...ghostsRef.current].find((b) => b.ref === ref)?.format;
+    return f && slotMetaOf[f] ? new Set(Object.keys(slotMetaOf[f])) : undefined;
+  };
   const spread = useCallback((d: Doc, ref: string, next: Snap): Doc => {
     const prev = d[ref];
     const out = { ...d, [ref]: next };
@@ -181,7 +191,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     for (const b of boardsRef.current) {
       if (b.ref === ref || !synced(b.ref) || !out[b.ref]) continue;
       const src = metaRef.current[ref]?.keys ?? undefined, dst = metaRef.current[b.ref]?.keys ?? undefined;
-      out[b.ref] = follow(prev, next, out[b.ref], src, dst);
+      out[b.ref] = follow(prev, next, out[b.ref], src, dst, drawnBy(ref));
       if (!src || !dst) toMatch.current[b.ref] = ref;
     }
     return out;
@@ -193,7 +203,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       const a = metaRef.current[from]?.keys, b = metaRef.current[ref]?.keys;
       if (!a || !b || !d[from] || !d[ref]) continue;
       delete toMatch.current[ref];
-      d = { ...d, [ref]: match(d[from], d[ref], a, b) };
+      d = { ...d, [ref]: match(d[from], d[ref], a, b, drawnBy(from)) };
       moved = true;
     }
     if (moved) setDoc(d);
@@ -312,7 +322,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     for (const g of list) {
       // What the designs already say (an event's headline becomes its cover's two lines), else the sample.
       const slots = Object.fromEntries(Object.entries(g.defaults).map(([k, v]) => {
-        for (const s of [src, ...Object.values(d)]) { const c = carried(s.slots, k, v); if (c !== undefined) return [k, c ?? null]; }
+        for (const [r, s] of [[from, src] as const, ...Object.entries(d)]) { const c = carried(s.slots, k, v, drawnBy(r)); if (c !== undefined) return [k, c ?? null]; }
         return [k, v];
       }));
       const initial: Snap = { slots, edits: src.edits[RECOLOR] ? { [RECOLOR]: src.edits[RECOLOR] } : {} };
@@ -332,7 +342,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       setUnsynced((u) => u.filter((x) => x !== ref));
       if (from) {
         const a = meta[from]?.keys, b = meta[ref]?.keys;
-        if (a && b) commitTo(ref, match(docRef.current[from], docRef.current[ref], a, b));
+        if (a && b) commitTo(ref, match(docRef.current[from], docRef.current[ref], a, b, drawnBy(from)));
       }
     } else setUnsynced((u) => [...u, ref]);
   };
@@ -592,6 +602,16 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   });
 
   const imageTarget = one && (one.kind === 'photo' || one.kind === 'partner') ? one : null;
+  // Brought here to use an image: with one photo on the design it is selected (a click places the
+  // image); with several, the person picks one.
+  const pointed = useRef(false);
+  useEffect(() => {
+    if (!pointAsset || pointed.current || !comps.length) return;
+    pointed.current = true;
+    const photos = comps.filter((c) => c.kind === 'photo');
+    if (photos.length === 1) { setSelected([photos[0].id]); toast('Click the image to place it.'); }
+    else toast('Select a photo on the design, then click the image.');
+  }, [pointAsset, comps]);
   const placeImage = (value: string) => {
     if (!imageTarget) return;
     if (imageTarget.slot) setSlot(imageTarget.slot, value); else editLayer(imageTarget.id, { image: value });
@@ -659,7 +679,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           )}
           {(tab === 'library' || tab === 'assets') && !library && <PanelLoading />}
           {tab === 'library' && library && <LibraryTab library={library} current={isNew ? undefined : board.ref} updating={updating} confirmLeave={confirmLeave} />}
-          {tab === 'assets' && library && <AssetsTab assets={library.assets} folders={library.folders} target={imageTarget?.id ?? null} onPick={placeImage} />}
+          {tab === 'assets' && library && <AssetsTab assets={library.assets} folders={library.folders} target={imageTarget?.id ?? null} onPick={placeImage} highlight={pointAsset} />}
           {tab === 'inspector' && <InspectorTab items={suggestions} onPick={(id) => id && setSelected([id])} onFix={fix} onRevert={revert} onFixAll={fixAll} pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />}
         </CanvasPanel>
 

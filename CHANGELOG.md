@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.11.3 (2026-10-08)
+
+- Canvas: a format never empties another format's own content. Editing the Post no longer clears the cover's photos and subhead ("This design cannot go without image-photo, cover-subhead"): a slot is carried only from a format that draws it, and the headline goes from the Post's one line to the cover's two (and back) as it is edited.
+
 ## archy-studio 0.11.2 (2026-10-08)
 
 - Canvas opens again in production: its pages now carry the asset library list and the template files ("ENOENT … library/library.json").

@@ -206,6 +206,15 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     if (e.hidden) s.display = 'none';
   }
 
+  // ---- Photos reframed by hand (after every box and layout, so the frame has its final size) ----
+  for (const [id, e] of Object.entries(edits ?? {})) {
+    if (!e?.crop || id === ':theme') continue;
+    const el = root.querySelector(`[data-node="${CSS.escape(id)}"]`);
+    if (!el || el.style.display === 'none') continue;
+    keep(el);
+    window.__setCrop(el, e.crop);
+  }
+
   // ---- Themes: what the role plan cannot see ----
   function hexRgb(c) {
     if (!c) return null;
@@ -373,3 +382,59 @@ function moveBy(el, dx, dy) {
   if (cur) parts.push(cur);
   el.style.translate = `calc(${parts[0] ?? '0px'} + ${dx}px) calc(${parts[1] ?? '0px'} + ${dy}px)`;
 }
+
+// ---- Reframing a photo inside its frame (Canvas) ----
+// The window a photo is seen through: the layer clipped by its clipping ancestors, relative to the layer.
+window.__photoWindow = function photoWindow(el) {
+  const E = el.getBoundingClientRect();
+  let V = { left: E.left, top: E.top, right: E.right, bottom: E.bottom };
+  for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+    const cs = getComputedStyle(p);
+    if (/(hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) {
+      const b = p.getBoundingClientRect();
+      V = { left: Math.max(V.left, b.left), top: Math.max(V.top, b.top), right: Math.min(V.right, b.right), bottom: Math.min(V.bottom, b.bottom) };
+    }
+  }
+  return { x: V.left - E.left, y: V.top - E.top, w: Math.max(1, V.right - V.left), h: Math.max(1, V.bottom - V.top), E };
+};
+// A photo can be reframed: a slot photo whose size is known, not a Pixel Tone ground (already cut to its window).
+window.__canCrop = (el) => !!el && !!el.dataset.imgW && !el.dataset.toneOwn;
+// crop { x, y, zoom }: the photo covers the window at zoom 1; x, y place it like background-position %.
+window.__setCrop = function setCrop(el, crop) {
+  if (!window.__canCrop(el)) return;
+  if (crop.src && el.dataset.slotSrc && crop.src !== el.dataset.slotSrc) return; // another photo (another size): automatic framing
+  const iw = +el.dataset.imgW, ih = +el.dataset.imgH, W = window.__photoWindow(el);
+  const k = Math.max(W.w / iw, W.h / ih) * (crop.zoom || 1);
+  const bw = iw * k, bh = ih * k;
+  const px = W.x + (W.w - bw) * (crop.x / 100), py = W.y + (W.h - bh) * (crop.y / 100);
+  el.style.backgroundSize = `${bw.toFixed(1)}px ${bh.toFixed(1)}px`;
+  el.style.backgroundPosition = `${px.toFixed(1)}px ${py.toFixed(1)}px`;
+  el.style.backgroundRepeat = 'no-repeat';
+};
+// The framing a photo has now (automatic or by hand), as a crop: where a reframe starts.
+window.__cropOf = function cropOf(el) {
+  if (!window.__canCrop(el)) return null;
+  const iw = +el.dataset.imgW, ih = +el.dataset.imgH, W = window.__photoWindow(el), E = W.E;
+  const cs = getComputedStyle(el);
+  const ew = E.width, eh = E.height;
+  let bw, bh;
+  const size = cs.backgroundSize.split(',')[0].trim();
+  if (size === 'cover' || size === 'contain') {
+    const k = size === 'cover' ? Math.max(ew / iw, eh / ih) : Math.min(ew / iw, eh / ih);
+    bw = iw * k; bh = ih * k;
+  } else {
+    const [a, b = 'auto'] = size.split(/\s+/);
+    const len = (v, ref) => (v.endsWith('%') ? (parseFloat(v) / 100) * ref : parseFloat(v));
+    bw = a === 'auto' ? NaN : len(a, ew); bh = b === 'auto' ? NaN : len(b, eh);
+    if (Number.isNaN(bw) && Number.isNaN(bh)) { bw = iw; bh = ih; }
+    else if (Number.isNaN(bw)) bw = (bh * iw) / ih;
+    else if (Number.isNaN(bh)) bh = (bw * ih) / iw;
+  }
+  const [px0, py0 = '50%'] = cs.backgroundPosition.split(',')[0].trim().split(/\s+/);
+  const pos = (v, room) => (v.endsWith('%') ? (parseFloat(v) / 100) * room : v === 'center' ? room / 2 : v === 'left' || v === 'top' ? 0 : v === 'right' || v === 'bottom' ? room : parseFloat(v));
+  const px = pos(px0, ew - bw), py = pos(py0, eh - bh);
+  const cover = Math.max(W.w / iw, W.h / ih);
+  const pct = (p, room) => (Math.abs(room) < 0.5 ? 50 : Math.max(0, Math.min(100, (p / room) * 100)));
+  return { x: +pct(px - W.x, W.w - bw).toFixed(2), y: +pct(py - W.y, W.h - bh).toFixed(2), zoom: +((bw / iw) / cover).toFixed(3) };
+};
+

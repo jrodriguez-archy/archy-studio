@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.12.0 (2026-10-08)
+
+- Canvas: reframe a photo inside its frame. Double-click the photo (or Reframe in the Photo panel), drag to move it, scroll or use the Zoom slider to zoom, arrows to nudge, Enter or Escape when done; the rest of the photo shows faint outside the frame. Reset framing goes back to the automatic framing. Each format keeps its own framing, it is one undo step, it is saved and exported as seen, and a new photo starts from the automatic framing. The old Zoom (scaling frame and photo together) is now Scale, in Advanced. Not on the event page cover's ground, which is already a Pixel Tone of its window.
+
 ## archy-studio 0.11.3 (2026-10-08)
 
 - Canvas: a format never empties another format's own content. Editing the Post no longer clears the cover's photos and subhead ("This design cannot go without image-photo, cover-subhead"): a slot is carried only from a format that draws it, and the headline goes from the Post's one line to the cover's two (and back) as it is edited.

@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
-import type { Edits, FillPlan, NodeEdit, RenderReport, Suggestion } from '@/lib/canvas-shared';
+import type { Crop, Edits, FillPlan, NodeEdit, RenderReport, Suggestion } from '@/lib/canvas-shared';
 import type { Keys } from '@/lib/canvas-sync';
 import { movingEdges, snap, type Guide } from './guides';
 import { componentAt, innermostAt, parentOf, readInfo, readTokens, within, type Box, type Comp, type LayerInfo, type Token } from './model';
@@ -17,7 +17,14 @@ type Win = Window & {
   __components: () => { comps: Comp[]; safe: Box };
   __alignBox: (id: string) => Box | null;
   __keys: () => Keys;
+  __canCrop: (el: Element) => boolean;
+  __cropOf: (el: Element) => Crop | null;
+  __photoWindow: (el: Element) => { x: number; y: number; w: number; h: number };
 };
+
+/** Asks the Stage showing this photo to start reframing it (the Photo panel's button). */
+export const REFRAME_EVENT = 'canvas:reframe';
+export const startReframe = (id: string) => window.dispatchEvent(new CustomEvent(REFRAME_EVENT, { detail: id }));
 
 const scripts: Record<string, Promise<string>> = {};
 let loads = 0;
@@ -105,6 +112,12 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     if (w?.__review) live.current.onReview(w.__review(live.current.edits, live.current.plan.fill.rules, live.current.plan.format));
   }, []);
   const drag = useRef<Drag | null>(null);
+  // Reframing a photo inside its frame: drag moves it, the wheel zooms, Enter / Escape / a click outside end.
+  const [reframe, setReframe] = useState<string | null>(null);
+  const reframeRef = useRef<string | null>(null);
+  reframeRef.current = reframe;
+  const pan = useRef<{ x: number; y: number; crop: Crop; room: { w: number; h: number } } | null>(null);
+  const overlay = useRef<HTMLDivElement>(null);
 
   const doc = () => frame.current?.contentDocument ?? null;
   const win = () => frame.current?.contentWindow as Win | null;
@@ -117,6 +130,78 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     if (!r.width && !r.height) return null;
     return { x: r.left - r0.left, y: r.top - r0.top, w: r.width, h: r.height };
   }, [el]);
+
+  // ---- Reframe ----
+  const cropNow = useCallback((id: string): Crop | null => {
+    const n = el(id), w = win();
+    if (!n || !w?.__canCrop?.(n)) return null;
+    const own = live.current.edits[id]?.crop;
+    return own && (!own.src || own.src === n.dataset.slotSrc) ? own : w.__cropOf(n);
+  }, [el]);
+  // How far the photo can travel in the window (artboard px; negative when it is larger than the window).
+  const roomOf = useCallback((id: string, crop: Crop) => {
+    const n = el(id), w = win();
+    if (!n || !w) return null;
+    const W = w.__photoWindow(n), iw = +n.dataset.imgW!, ih = +n.dataset.imgH!;
+    const k = Math.max(W.w / iw, W.h / ih) * crop.zoom;
+    return { w: W.w - iw * k, h: W.h - ih * k };
+  }, [el]);
+  const setCrop = useCallback((id: string, crop: Crop, commit: boolean) => {
+    const src = el(id)?.dataset.slotSrc;
+    const c = { x: +Math.max(0, Math.min(100, crop.x)).toFixed(2), y: +Math.max(0, Math.min(100, crop.y)).toFixed(2), zoom: +Math.max(0.2, Math.min(5, crop.zoom)).toFixed(3), ...(src ? { src } : {}) };
+    onEdit({ [id]: { crop: c } }, commit);
+  }, [el, onEdit]);
+  const enterReframe = useCallback((id: string) => {
+    const n = el(id), w = win();
+    if (!n || !w?.__canCrop?.(n)) { toast.message('This photo cannot be reframed here.'); return; }
+    onSelect([id], 'replace');
+    onHover(null);
+    setReframe(id);
+  }, [el, onSelect, onHover]);
+  useEffect(() => {
+    const on = (e: Event) => { const id = (e as CustomEvent<string>).detail; if (!passive && el(id)) enterReframe(id); };
+    window.addEventListener(REFRAME_EVENT, on);
+    return () => window.removeEventListener(REFRAME_EVENT, on);
+  }, [enterReframe, passive, el]);
+  // Out of reframe when the photo is no longer the one selected.
+  useEffect(() => { if (reframe && !selected.includes(reframe)) setReframe(null); }, [selected, reframe]);
+  // Keys while reframing: Enter / Escape finish (the selection stays), arrows nudge the photo.
+  useEffect(() => {
+    if (!reframe) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement)?.closest?.('input, textarea, [contenteditable]')) return;
+      if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); setReframe(null); return; }
+      const arrows: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+      const a = arrows[e.key];
+      if (!a) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      const c = cropNow(reframe), room = c && roomOf(reframe, c);
+      if (!c || !room) return;
+      const step = e.shiftKey ? 10 : 1;
+      const dx = Math.abs(room.w) > 0.5 ? (a[0] * step / room.w) * 100 : 0, dy = Math.abs(room.h) > 0.5 ? (a[1] * step / room.h) * 100 : 0;
+      setCrop(reframe, { ...c, x: c.x + dx, y: c.y + dy }, true);
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [reframe, cropNow, roomOf, setCrop]);
+  // The wheel zooms the photo (not the canvas) while reframing; one history step once it stops.
+  useEffect(() => {
+    const o = overlay.current;
+    if (!o || !reframe) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let last: Crop | null = null;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault(); e.stopPropagation();
+      const c = last ?? cropNow(reframe);
+      if (!c) return;
+      last = { ...c, zoom: Math.max(0.2, Math.min(5, c.zoom * Math.exp(-e.deltaY * 0.0015))) };
+      setCrop(reframe, last, false);
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => { if (last) setCrop(reframe, last, true); last = null; }, 350);
+    };
+    o.addEventListener('wheel', onWheel, { passive: false });
+    return () => { o.removeEventListener('wheel', onWheel); if (timer) clearTimeout(timer); };
+  }, [reframe, cropNow, setCrop]);
 
   useImperativeHandle(ref, () => ({
     info: (id) => { const n = el(id); return n ? readInfo(n, live.current.edits[id]?.box?.scale ?? 1) : null; },
@@ -309,6 +394,15 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 || editing || panning) return;
+    if (reframe) {
+      const b = boxOf(reframe), p = local(e), c = cropNow(reframe), room = c && roomOf(reframe, c);
+      if (b && c && room && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
+        pan.current = { x: e.clientX, y: e.clientY, crop: c, room };
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+        return;
+      }
+      setReframe(null); // a click outside the photo ends it, and does what a click does
+    }
     if (passive) { onActivate?.(pick(e)?.id ?? null); return; }
     const add = e.shiftKey;
     const c = pick(e);
@@ -326,15 +420,24 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     if (!add) startDrag(e, [c.id], 'move');
   };
 
+  const panTo = (e: React.PointerEvent, commit: boolean) => {
+    const g = pan.current!;
+    const dx = (e.clientX - g.x) / zoom, dy = (e.clientY - g.y) / zoom;
+    const x = Math.abs(g.room.w) > 0.5 ? g.crop.x + (dx / g.room.w) * 100 : g.crop.x;
+    const y = Math.abs(g.room.h) > 0.5 ? g.crop.y + (dy / g.room.h) * 100 : g.crop.y;
+    setCrop(reframeRef.current!, { ...g.crop, x, y }, commit);
+  };
   const onPointerMove = (e: React.PointerEvent) => {
+    if (pan.current) { panTo(e, false); return; }
     const g = drag.current;
-    if (!g) { if (!panning && !passive) onHover(pick(e)?.id ?? null); return; }
+    if (!g) { if (!panning && !passive && !reframe) onHover(pick(e)?.id ?? null); return; }
     if (!g.moved && Math.abs(e.clientX - g.x) + Math.abs(e.clientY - g.y) < 3) return;
     g.moved = true;
     dragTo(e, false);
   };
 
   const onPointerUp = (e: React.PointerEvent) => {
+    if (pan.current) { if (Math.abs(e.clientX - pan.current.x) + Math.abs(e.clientY - pan.current.y) > 1) panTo(e, true); pan.current = null; return; }
     const g = drag.current;
     if (g?.moved) dragTo(e, true);
     drag.current = null;
@@ -348,6 +451,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const onDoubleClick = (e: React.MouseEvent) => {
     if (passive || refitting) return; // a new version is on its way: type in it once it is here
     const c = innermostAt(pointAt(e), comps);
+    // Double-click a photo to reframe it inside its frame.
+    if (c?.kind === 'photo') { enterReframe(c.id); return; }
     const nodeId = c?.kind === 'text' ? c.id : c?.kind === 'button' ? c.textId : undefined;
     if (!c || !nodeId) return;
     const n = el(nodeId)!;
@@ -413,7 +518,18 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   // Texts hug their copy: only their width is pulled; the logo only scales from its corners.
   const handles: readonly Handle[] = logo ? ['nw', 'ne', 'se', 'sw'] : single && kindOf(single.id) === 'text' ? ['e', 'w'] : HANDLES;
   // While typing, one thin frame around the text being edited, nothing else.
-  const frameBox = editing ? null : (single ?? (group ? { r: group } : null))?.r;
+  const frameBox = editing || reframe ? null : (single ?? (group ? { r: group } : null))?.r;
+  // Reframing: the photo's window, and the whole photo faint beyond it (what the frame cuts away).
+  const refr = (() => {
+    if (!reframe || !ready) return null;
+    const n = el(reframe), w = win(), r0 = root()?.getBoundingClientRect();
+    if (!n || !w || !r0) return null;
+    const E = n.getBoundingClientRect(), W = w.__photoWindow(n), cs = w.getComputedStyle(n);
+    const [bw, bh] = cs.backgroundSize.split(' ').map(parseFloat), [px, py] = cs.backgroundPosition.split(' ').map(parseFloat);
+    const win0 = { x: E.left - r0.left + W.x, y: E.top - r0.top + W.y, w: W.w, h: W.h };
+    const img = { x: E.left - r0.left + px, y: E.top - r0.top + py, w: bw, h: bh };
+    return { win: screen(win0)!, img: screen(img)!, bg: cs.backgroundImage };
+  })();
   const editBox = editing && ready ? screen(boxOf(editing)) : null;
   const safeR = screen(safe);
 
@@ -450,7 +566,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
         </>
       )}
       <div
-        className={`absolute inset-0 ${editing || panning ? 'pointer-events-none' : 'cursor-default'}`}
+        ref={overlay}
+        className={`absolute inset-0 ${editing || panning ? 'pointer-events-none' : reframe ? 'cursor-move' : 'cursor-default'}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -482,6 +599,17 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
           </div>
         )}
         {flash.map((id) => { const r = ready ? screen(boxOf(id)) : null; return r && <div key={`f-${id}`} className="pointer-events-none absolute rounded-[2px] bg-[#FF2BD6]/10 ring-2 ring-[#FF2BD6] animate-out fade-out-0 duration-[1600ms] fill-mode-forwards" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} />; })}
+        {refr && (
+          <>
+            {/* The rest of the photo, faint, outside its frame. */}
+            <div className="pointer-events-none absolute opacity-35" style={{ left: refr.img.x, top: refr.img.y, width: refr.img.w, height: refr.img.h, backgroundImage: refr.bg, backgroundSize: '100% 100%',
+              clipPath: `polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, ${refr.win.x - refr.img.x}px ${refr.win.y - refr.img.y}px, ${refr.win.x - refr.img.x}px ${refr.win.y - refr.img.y + refr.win.h}px, ${refr.win.x - refr.img.x + refr.win.w}px ${refr.win.y - refr.img.y + refr.win.h}px, ${refr.win.x - refr.img.x + refr.win.w}px ${refr.win.y - refr.img.y}px, ${refr.win.x - refr.img.x}px ${refr.win.y - refr.img.y}px)` }} />
+            <div className="pointer-events-none absolute outline-1 outline-dashed outline-[#FF2BD6]/70" style={{ left: refr.img.x, top: refr.img.y, width: refr.img.w, height: refr.img.h }} />
+            <div className="pointer-events-none absolute ring-2 ring-[#FF2BD6]" style={{ left: refr.win.x, top: refr.win.y, width: refr.win.w, height: refr.win.h }}>
+              <Tag>Reframe · drag to move · scroll to zoom · Enter when done</Tag>
+            </div>
+          </>
+        )}
         {editBox && <div className="pointer-events-none absolute ring-1 ring-[#FF2BD6]" style={{ left: editBox.x, top: editBox.y, width: editBox.w, height: editBox.h }} />}
         {marquee && <div className="pointer-events-none absolute border border-[#FF2BD6] bg-[#FF2BD6]/10" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
         {guides.map((g, i) => (

@@ -1,7 +1,7 @@
 // What the editor reads from the template page: its components (from scripts/components.js, shared
 // with the server), its colours and its tokens.
 
-import type { NodeEdit } from '@/lib/canvas-shared';
+import type { Crop, NodeEdit } from '@/lib/canvas-shared';
 
 export type Kind = 'background' | 'group' | 'text' | 'button' | 'icon' | 'photo' | 'partner' | 'archy' | 'tag' | 'line' | 'decoration';
 export type Comp = {
@@ -18,6 +18,8 @@ export type LayerInfo = {
   color: string; backgroundColor: string; text: string; opacity: number;
   /** For flex frames (groups, tags, buttons): how the content is laid out now. */
   layout?: { direction: 'row' | 'column'; distribute: 'packed' | 'space-between'; gap: number; position: 'start' | 'center' | 'end'; align: 'start' | 'center' | 'end' };
+  /** For a photo that can be reframed: how it is framed now (by hand or automatically). */
+  crop?: Crop | null;
 };
 
 // Not instanceof: the nodes live in the iframe's realm.
@@ -110,7 +112,15 @@ export function readInfo(el: HTMLElement | SVGElement, scale = 1): LayerInfo {
       position: place(cs.justifyContent),
       align: place(cs.alignItems),
     } : undefined,
+    crop: cropIn(el),
   };
+}
+
+type CropWin = Window & { __canCrop?: (el: Element) => boolean; __cropOf?: (el: Element) => Crop | null };
+// The framing of a photo layer, read in its page (edits.js); null when it cannot be reframed.
+export function cropIn(el: Element): Crop | null {
+  const w = el.ownerDocument?.defaultView as CropWin | null;
+  return w?.__canCrop?.(el) ? w.__cropOf?.(el) ?? null : null;
 }
 
 export const merge = (a: NodeEdit | undefined, b: NodeEdit): NodeEdit => ({

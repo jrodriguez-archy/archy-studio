@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Edits, NodeEdit, Preset } from '@/lib/canvas-shared';
 import { IconPicker } from './icon-picker';
+import { startReframe } from './stage';
 import type { Comp, LayerInfo, Token } from './model';
 
 export type SlotMeta = { type: 'text' | 'image' | 'logo'; optional: boolean; fontSize?: { min: number; max: number } };
@@ -141,8 +142,26 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
               <HugeiconsIcon icon={Delete02Icon} className="size-3.5" /> Remove {comp.kind === 'partner' ? 'logo' : 'photo'}
             </button>
           )}
-          {comp.kind === 'photo' && (
-            <Row label="Zoom">
+          {comp.kind === 'photo' && me?.crop && (
+            <>
+              {/* Reframe: the photo moves and zooms inside its frame; the frame stays where it is. */}
+              <button type="button" onClick={() => startReframe(comp.id)} title="Or double-click the photo"
+                className="flex h-7 w-full items-center justify-center rounded-md bg-foreground/[0.05] font-medium text-foreground/80 hover:bg-foreground/[0.08] hover:text-foreground">
+                Reframe
+              </button>
+              <Row label="Zoom">
+                <SliderField value={Math.round(me.crop.zoom * 100)} min={Math.min(100, Math.round(me.crop.zoom * 100))} max={400} suffix="%"
+                  onChange={(v, commit) => onEdit(comp.id, { crop: { ...me.crop!, zoom: v / 100 } }, commit)} />
+              </Row>
+              {edit?.crop && (
+                <button type="button" onClick={() => onEdit(comp.id, { crop: undefined })} className="flex h-7 w-full items-center justify-center rounded-md text-foreground/60 hover:bg-foreground/[0.05] hover:text-foreground">
+                  Reset framing
+                </button>
+              )}
+            </>
+          )}
+          {comp.kind === 'photo' && (advanced || !me?.crop) && (
+            <Row label="Scale">
               <SliderField value={Math.round((box.scale ?? 1) * 100)} min={50} max={250} suffix="%" onChange={(v, commit) => onEdit(comp.id, { box: { scale: v / 100 } }, commit)} />
             </Row>
           )}

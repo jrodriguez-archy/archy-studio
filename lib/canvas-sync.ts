@@ -40,6 +40,8 @@ function withShared(own: NodeEdit | undefined, from: NodeEdit): NodeEdit {
   if (own?.box) out.box = own.box;
   if (own?.layout) out.layout = own.layout;
   if (own?.preset) out.preset = own.preset;
+  // A photo's framing is the format's own (its frame has its own shape), like its position.
+  if (own?.crop) out.crop = own.crop;
   return { ...out, ...from };
 }
 

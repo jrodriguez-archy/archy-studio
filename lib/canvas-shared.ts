@@ -16,7 +16,11 @@ export type NodeEdit = {
   style?: { color?: string; backgroundColor?: string; fontSize?: number; fontWeight?: number; opacity?: number };
   /** A group's layout (it is a flex frame from Paper): spread packed or space-between, gap, placement. */
   layout?: Layout;
+  /** A photo reframed inside its frame: x, y as CSS background-position % (0–100), zoom over "fill the frame"
+   * (1 = cover). `src` is the size of the photo it was made for ("1600x900"): another photo starts from the automatic framing. Per format. */
+  crop?: Crop;
 };
+export type Crop = { x: number; y: number; zoom: number; src?: string };
 export type Layout = { distribute?: 'packed' | 'space-between'; gap?: number; position?: 'start' | 'center' | 'end'; align?: 'start' | 'center' | 'end' };
 export type Edits = Record<string, NodeEdit>;
 export type Preset = 'dark' | 'blue' | 'sky' | 'ice' | 'light';
@@ -72,6 +76,7 @@ export function cleanEdits(edits: Edits): Edits {
     if (Object.keys(style).length) n.style = style;
     const layout = Object.fromEntries(Object.entries(e.layout ?? {}).filter(([, v]) => v != null));
     if (Object.keys(layout).length) n.layout = layout;
+    if (e.crop && Number.isFinite(e.crop.x) && Number.isFinite(e.crop.y) && Number.isFinite(e.crop.zoom)) n.crop = { x: e.crop.x, y: e.crop.y, zoom: e.crop.zoom, ...(e.crop.src ? { src: e.crop.src } : {}) };
     if (Object.keys(n).length) out[id] = n;
   }
   return out;

@@ -139,6 +139,10 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
         if (empty) { touched.add(n.parentElement); n.remove(); continue; }
         n.style.backgroundImage = `url("${value}")`;
         try { await framePhoto(n, value, role, format, rules.coverTone); } catch {}
+        // Its own size, for a reframe by hand in Canvas (edits.js crop).
+        if (!n.dataset.toneOwn) {
+          try { const im = new Image(); im.crossOrigin = 'anonymous'; im.src = value; await im.decode(); n.dataset.imgW = String(im.naturalWidth); n.dataset.imgH = String(im.naturalHeight); n.dataset.slotSrc = `${im.naturalWidth}x${im.naturalHeight}`; } catch {}
+        }
         continue;
       }
       if (empty) {

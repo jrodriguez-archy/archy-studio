@@ -12,7 +12,7 @@
   },
   "guidance": [
     "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
-    "Images (city or venue photo, speaker portrait) and partner or offer logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
+    "Images (city or venue photo, speaker portrait) and partner logos: an https link from the requester, or an approved asset. Never generate a person or a venue; a city photo may be left out.",
     "Leave out any fact that does not exist (booth, venue, time): its label goes with it and the layout closes up."
   ],
   "formats": {

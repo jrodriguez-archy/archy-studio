@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.10.1 (2026-10-08)
+
+- Template guidance no longer mentions offer logos, and the brief facts drop `offer` and `offer-logo` (no template uses them since 0.10.0).
+
 ## archy-studio 0.10.0 (2026-10-08)
 
 - Event templates synced from Paper: every ground is now a Pixel Gradient, Rulers are 3px on it and photo bands end in a photo bar; Night Out Illustration has loose `Star` layers, Night Out Venue no drinks pattern.

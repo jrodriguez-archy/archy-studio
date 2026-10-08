@@ -3,7 +3,7 @@ import { listTemplates, loadConfig } from './templates';
 // Facts a brief can bring. Copy (headlines, subheads, CTAs) is written from the brief, so it is not a fact.
 export const FACTS = [
   'event-name', 'city', 'venue', 'date', 'time', 'booth', 'city-photo', 'venue-photo', 'ground-photo', 'guest-photo',
-  'speaker', 'speaker-photo', 'speaker-role', 'speaker-company', 'offer', 'offer-logo', 'partner-logo',
+  'speaker', 'speaker-photo', 'speaker-role', 'speaker-company', 'partner-logo',
   'person', 'person-title', 'person-photo',
 ] as const;
 

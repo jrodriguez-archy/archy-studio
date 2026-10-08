@@ -30,7 +30,7 @@ export const FACT_LABEL: Record<string, string> = {
   'event-name': 'Event name', city: 'City', venue: 'Venue', date: 'Date', time: 'Time', booth: 'Booth',
   'city-photo': 'City photo', 'venue-photo': 'Venue photo', 'ground-photo': 'City or venue photo', 'guest-photo': 'Guests photo',
   speaker: 'Speaker name', 'speaker-photo': 'Speaker photo', 'speaker-role': 'Speaker role', 'speaker-company': 'Speaker company',
-  offer: 'Offer', 'offer-logo': 'Offer logo', 'partner-logo': 'Partner logo',
+  'partner-logo': 'Partner logo',
   person: 'Name', 'person-title': 'Title', 'person-photo': 'Photo (cutout)',
 };
 

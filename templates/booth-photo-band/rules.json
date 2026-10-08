@@ -1,6 +1,11 @@
 {
   "_comment": "Default rules apply to every slot (stay inside Content, keep the sample's line count, shrink to 85%). Add overrides here.",
   "slots": {
-    "booth": { "drop": { "og": "^\\s*booth\\s*" } }
-  }
+    "booth": {
+      "drop": {
+        "og": "^\\s*booth\\s*"
+      }
+    }
+  },
+  "coverTone": "ice"
 }

@@ -94,6 +94,9 @@ export async function prepareFill({ template, format, design, theme, slots: give
   if (variant && rules.variants?.[variant]?.slots) {
     for (const [k, o] of Object.entries(rules.variants[variant].slots)) rules.slots[k] = { ...(rules.slots[k] as object), ...o };
   }
+  // The cover's Pixel Tone follows the theme's ground when the template has several (rules.coverTones).
+  const tones = (rules as { coverTones?: Record<string, string> }).coverTones;
+  if (combo && tones?.[combo.theme]) (rules as { coverTone?: string }).coverTone = tones[combo.theme];
   const byDesign = combo && rules.designs?.[combo.design];
   if (byDesign) {
     Object.assign(rules.slots, byDesign.slots ?? {});

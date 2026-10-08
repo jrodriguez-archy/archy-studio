@@ -138,7 +138,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       if (type === 'image') {
         if (empty) { touched.add(n.parentElement); n.remove(); continue; }
         n.style.backgroundImage = `url("${value}")`;
-        try { await framePhoto(n, value, role, format); } catch {}
+        try { await framePhoto(n, value, role, format, rules.coverTone); } catch {}
         continue;
       }
       if (empty) {
@@ -1086,7 +1086,7 @@ async function sampleInk(frame) {
 // above it, centred across, a little closer than "cover" so water and ground take less room. Photos of
 // people are left as the designer framed them. On event covers the place photo carries Pixel Tone (the
 // brand's tool, archy-design pixel: the photo dithered on the Royal Blue gradient's two tones).
-async function framePhoto(n, src, role, format) {
+async function framePhoto(n, src, role, format, coverTone = 'royal') {
   const root = document.querySelector('body > [data-node]');
   if (/speaker|person|portrait|ae\b|^image-ae/i.test(role)) return;
   const E = n.getBoundingClientRect(), R = root.getBoundingClientRect();
@@ -1151,14 +1151,19 @@ async function framePhoto(n, src, role, format) {
     return;
   }
   // Pixel Tone, as tools/pixel/pixel.py: autocontrast (1%), 4 steps between the two tones, Bayer 8×8, 1px cells at 2×.
-  const url = window.__pixelTone(img, { vw, vh, s, ox, oy, base: [1, 61, 245], front: [1, 105, 250], steps: 4, scale: 2 });
+  // The tone follows the ground of the template (rules.coverTone, per theme in rules.coverTones): royal-blue,
+  // navy, or ice inverted on the light ones (dark subjects take the darker tint), as the covers in Paper.
+  const TONES = { royal: [[1, 61, 245], [1, 105, 250]], navy: [[0, 0, 78], [0, 4, 132]], ice: [[204, 234, 255], [230, 244, 255]] };
+  const [base, front] = TONES[coverTone] ?? TONES.royal;
+  const url = window.__pixelTone(img, { vw, vh, s, ox, oy, base, front, steps: 4, scale: 2 });
   n.style.backgroundImage = `url("${url}")`;
   n.style.backgroundSize = `${Math.round(vw)}px ${Math.round(vh)}px`;
   n.style.backgroundPosition = `${Math.round(V.left - E.left)}px ${Math.round(V.top - E.top)}px`;
   n.style.backgroundRepeat = 'no-repeat';
   // The navy version too: on a royal or sky card the photo takes it, so the card stands out (edits.js).
-  n.dataset.toneRoyal = url;
-  n.dataset.toneNavy = window.__pixelTone(img, { vw, vh, s, ox, oy, base: [0, 0, 78], front: [0, 4, 132], steps: 4, scale: 2 });
+  n.dataset.toneOwn = url;
+  n.dataset.toneRoyal = coverTone === 'royal' ? url : window.__pixelTone(img, { vw, vh, s, ox, oy, base: TONES.royal[0], front: TONES.royal[1], steps: 4, scale: 2 });
+  n.dataset.toneNavy = coverTone === 'navy' ? url : window.__pixelTone(img, { vw, vh, s, ox, oy, base: TONES.navy[0], front: TONES.navy[1], steps: 4, scale: 2 });
 }
 
 window.__pixelTone = function pixelTone(img, { vw, vh, s, ox, oy, base, front, steps = 4, scale = 2 }) {

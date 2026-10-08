@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.11.1 (2026-10-08)
+
+- Event page covers take the Pixel Tone of their template's ground, as in Paper: navy on Booth Invite Photo (Navy), Night Out Illustration and Night Out Venue, royal blue on Booth Icon List, Speaker Invite and Booth Invite Photo (Royal Blue), ice on Booth Light Rulers and Booth Photo Band (`coverTone` / `coverTones` per theme in rules.json). Before, every cover came out royal blue.
+
 ## archy-studio 0.11.0 (2026-10-08)
 
 - Event page covers are a format of their event template, as in Paper: `booth-icon-list`, `booth-invite-photo` (Navy and Royal Blue), `booth-light-rulers`, `booth-photo-band`, `night-out-illustration`, `night-out-venue` and `speaker-invite` gain a `cover` format (1200×900). The seven `event-cover-*` templates are gone; old `?t=event-cover-*` links open their template with the cover in front.

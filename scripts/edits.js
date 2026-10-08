@@ -134,14 +134,14 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     for (const line of root.querySelectorAll('[data-name^="Rulers"] [data-name^="Ruler"]')) { keep(line); line.style.backgroundColor = t.border; }
     const step = (name, f) => { try { f(); } catch (e) { (window.__themeErrors ??= []).push(`${name}: ${e.message}`); } };
     step('fades', () => themeFades(t));
-    // Pixel Tone photos contrast with the card above them: navy behind a royal or sky card.
+    // Pixel Tone photos contrast with the card above them: navy behind a royal or sky card, else the template's own tone.
     step('tone', () => {
       for (const ph of root.querySelectorAll('[data-tone-navy]')) {
         const card = [...root.querySelectorAll('[data-name]')].find((c) => /^(Content|Card)/.test(nameOf(c)) && getComputedStyle(c).position === 'absolute');
         const c = card ? hexRgb(getComputedStyle(card).backgroundColor) : null;
         const blueCard = c && c[2] > 180 && c[0] < 60 && c[1] < 200;
         keep(ph);
-        ph.style.backgroundImage = `url("${blueCard ? ph.dataset.toneNavy : ph.dataset.toneRoyal}")`;
+        ph.style.backgroundImage = `url("${blueCard ? ph.dataset.toneNavy : ph.dataset.toneOwn ?? ph.dataset.toneRoyal}")`;
       }
     });
     step('badges', () => themeBadges(t));

@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.13.0 (2026-10-08)
+
+- Canvas: a photo moves and resizes with its frame (what shows it: its clipping frame, or the frame it fills alone), and its selection shows that frame. Pulling an edge resizes the frame, the photo keeps covering it (framed as it was, then free to reframe), and on a frame placed on the artboard what sits against that edge moves with it (a photo band pushes the photo bar and the content under it). The frame grows only as far as what it pushes can go without leaving the artboard; a frame in a column already moves its neighbours.
+
 ## archy-studio 0.12.0 (2026-10-08)
 
 - Canvas: reframe a photo inside its frame. Double-click the photo (or Reframe in the Photo panel), drag to move it, scroll or use the Zoom slider to zoom, arrows to nudge, Enter or Escape when done; the rest of the photo shows faint outside the frame. Reset framing goes back to the automatic framing. Each format keeps its own framing, it is one undo step, it is saved and exported as seen, and a new photo starts from the automatic framing. The old Zoom (scaling frame and photo together) is now Scale, in Advanced. Not on the event page cover's ground, which is already a Pixel Tone of its window.

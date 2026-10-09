@@ -385,13 +385,18 @@ function moveBy(el, dx, dy) {
 
 // ---- Reframing a photo inside its frame (Canvas) ----
 // The window a photo is seen through: the layer clipped by its clipping ancestors, relative to the layer.
+// A photo's frame (the first clipping frame around it, below the artboard) is the window, even where the
+// photo layer itself is smaller (a frame made taller by hand): the photo is then grown to fill it.
 window.__photoWindow = function photoWindow(el) {
   const E = el.getBoundingClientRect();
+  const art = document.querySelector('body > [data-node]');
   let V = { left: E.left, top: E.top, right: E.right, bottom: E.bottom };
+  let framed = false;
   for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
     const cs = getComputedStyle(p);
     if (/(hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) {
       const b = p.getBoundingClientRect();
+      if (!framed && p !== art) { V = { left: b.left, top: b.top, right: b.right, bottom: b.bottom }; framed = true; continue; }
       V = { left: Math.max(V.left, b.left), top: Math.max(V.top, b.top), right: Math.min(V.right, b.right), bottom: Math.min(V.bottom, b.bottom) };
     }
   }
@@ -403,7 +408,18 @@ window.__canCrop = (el) => !!el && !!el.dataset.imgW && !el.dataset.toneOwn;
 window.__setCrop = function setCrop(el, crop) {
   if (!window.__canCrop(el)) return;
   if (crop.src && el.dataset.slotSrc && crop.src !== el.dataset.slotSrc) return; // another photo (another size): automatic framing
-  const iw = +el.dataset.imgW, ih = +el.dataset.imgH, W = window.__photoWindow(el);
+  let W = window.__photoWindow(el);
+  // The photo layer covers its whole frame (it may have been left smaller than a frame grown by hand).
+  if (W.x < -0.5 || W.y < -0.5 || W.x + W.w > W.E.width + 0.5 || W.y + W.h > W.E.height + 0.5) {
+    const cs = getComputedStyle(el), abs = cs.position === 'absolute';
+    if (abs && W.x < 0) el.style.left = `${parseFloat(cs.left) + W.x}px`;
+    if (abs && W.y < 0) el.style.top = `${parseFloat(cs.top) + W.y}px`;
+    el.style.width = `${Math.max(W.E.width - Math.min(0, W.x), W.w + Math.max(0, W.x))}px`;
+    el.style.height = `${Math.max(W.E.height - Math.min(0, W.y), W.h + Math.max(0, W.y))}px`;
+    el.style.flexShrink = '0';
+    W = window.__photoWindow(el);
+  }
+  const iw = +el.dataset.imgW, ih = +el.dataset.imgH;
   const k = Math.max(W.w / iw, W.h / ih) * (crop.zoom || 1);
   const bw = iw * k, bh = ih * k;
   const px = W.x + (W.w - bw) * (crop.x / 100), py = W.y + (W.h - bh) * (crop.y / 100);

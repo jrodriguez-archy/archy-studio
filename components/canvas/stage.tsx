@@ -79,6 +79,8 @@ const SNAP_PX = 6; // on screen
 type Drag = {
   ids: string[]; handle: Handle | 'move' | 'marquee'; x: number; y: number; moved: boolean; shift?: boolean;
   bases: Record<string, NodeEdit>; box: Box; w: number; h: number; targets: Box[];
+  /** Resizing a photo's frame: the photo (kept covering its frame) and what sits against the edges being pulled. */
+  photo?: { id: string; crop: Crop | null; push: { id: string; side: 'n' | 's' | 'e' | 'w'; base: NodeEdit }[]; room: Record<'n' | 's' | 'e' | 'w', number> };
 };
 
 // The design itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
@@ -151,6 +153,21 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const c = { x: +Math.max(0, Math.min(100, crop.x)).toFixed(2), y: +Math.max(0, Math.min(100, crop.y)).toFixed(2), zoom: +Math.max(0.2, Math.min(5, crop.zoom)).toFixed(3), ...(src ? { src } : {}) };
     onEdit({ [id]: { crop: c } }, commit);
   }, [el, onEdit]);
+  // A photo's frame: the box that shows it (its clipping frame, or the frame it fills alone), else the photo.
+  const maskOf = useCallback((id: string): string => {
+    const n = el(id), r = root();
+    if (!n || !r) return id;
+    let best: Element = n;
+    const same = (a: DOMRect, b: DOMRect) => Math.abs(a.left - b.left) < 2 && Math.abs(a.top - b.top) < 2 && Math.abs(a.width - b.width) < 2 && Math.abs(a.height - b.height) < 2;
+    for (let p = n.parentElement; p && p !== r; p = p.parentElement) {
+      if (!p.hasAttribute('data-node')) continue;
+      const cs = getComputedStyle(p);
+      const clips = /(hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY);
+      const alone = p.querySelectorAll(':scope > [data-node]').length === 1;
+      if (clips || (alone && same(p.getBoundingClientRect(), best.getBoundingClientRect()))) best = p; else break;
+    }
+    return best.getAttribute('data-node') ?? id;
+  }, [el]);
   const enterReframe = useCallback((id: string) => {
     const n = el(id), w = win();
     if (!n || !w?.__canCrop?.(n)) { toast.message('This photo cannot be reframed here.'); return; }
@@ -313,7 +330,10 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const kindOf = (id: string) => comps.find((c) => c.id === id)?.kind;
   const movable = (id: string) => !!id && !['background'].includes(kindOf(id) ?? 'background');
 
-  const startDrag = (e: React.PointerEvent, ids: string[], handle: Drag['handle']) => {
+  const startDrag = (e: React.PointerEvent, picked: string[], handle: Drag['handle']) => {
+    // A photo moves and resizes with its frame (what shows it), not inside it.
+    const photoId = picked.length === 1 && kindOf(picked[0]) === 'photo' ? picked[0] : null;
+    const ids = photoId ? [maskOf(photoId)] : picked;
     const boxes = ids.map(boxOf).filter((b): b is Box => !!b);
     if (handle !== 'marquee' && !boxes.length) return;
     const box = handle === 'marquee' ? { ...local(e), w: 0, h: 0 } : union(boxes);
@@ -330,7 +350,37 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const original = ids.length === 1 && handle === 'move'
       ? [{ ...box, x: box.x - (bases[ids[0]].box?.dx ?? 0), y: box.y - (bases[ids[0]].box?.dy ?? 0) }] : [];
     const targets = [{ x: 0, y: 0, w: plan.width, h: plan.height }, ...(safe ? [safe] : []), ...original, ...others.map((c) => boxOf(c.id)).filter((b): b is Box => !!b)];
-    drag.current = { ids, handle, x: e.clientX, y: e.clientY, moved: false, bases, box, w: box.w / scale, h: box.h / scale, targets };
+    let photo: Drag['photo'];
+    if (photoId && handle !== 'move' && handle !== 'marquee') {
+      // The photo keeps covering its frame as it grows or shrinks (framed as it is now).
+      const crop = el(photoId) && win()?.__canCrop?.(el(photoId)!) ? cropNow(photoId) : null;
+      // An absolute frame pushes what sits against the edges being pulled (a photo band and the content
+      // under it); a frame in a column already moves its neighbours.
+      const push: NonNullable<Drag['photo']>['push'] = [];
+      const room = { n: Infinity, s: Infinity, e: Infinity, w: Infinity };
+      const m = nodes[0];
+      if (m && getComputedStyle(m).position === 'absolute') {
+        const sides = (['n', 's', 'e', 'w'] as const).filter((sd) => handle.includes(sd));
+        for (const c of comps) {
+          if (c.parent !== null || c.kind === 'background' || moving.has(c.id) || c.id === photoId) continue;
+          const o = el(c.id), b = boxOf(c.id);
+          if (!o || !b || o.contains(m) || m.contains(o)) continue;
+          const xs = b.x < box.x + box.w && b.x + b.w > box.x, ys = b.y < box.y + box.h && b.y + b.h > box.y;
+          for (const sd of sides) {
+            const hit = sd === 's' ? xs && b.y >= box.y + box.h - 24 : sd === 'n' ? xs && b.y + b.h <= box.y + 24
+              : sd === 'e' ? ys && b.x >= box.x + box.w - 24 : ys && b.x + b.w <= box.x + 24;
+            if (hit) {
+              push.push({ id: c.id, side: sd, base: edits[c.id] ?? {} });
+              // How far it can go before it leaves the artboard: the frame grows no further than that.
+              room[sd] = Math.min(room[sd], Math.max(0, sd === 's' ? plan.height - (b.y + b.h) : sd === 'n' ? b.y : sd === 'e' ? plan.width - (b.x + b.w) : b.x));
+              break;
+            }
+          }
+        }
+      }
+      photo = { id: photoId, crop, push, room };
+    }
+    drag.current = { ids, handle, x: e.clientX, y: e.clientY, moved: false, bases, box, w: box.w / scale, h: box.h / scale, targets, photo };
     (e.currentTarget as Element).setPointerCapture(e.pointerId);
   };
 
@@ -369,6 +419,14 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       if (!(g.handle === 'move' && e.shiftKey && !dy)) dy += s.dy;
       lines = s.guides;
     }
+    if (g.photo && g.handle !== 'move') {
+      // A frame that pushes the content grows only as far as the content can go.
+      const r = g.photo.room, h = g.handle;
+      if (h.includes('s')) dy = Math.min(dy, r.s);
+      if (h.includes('n')) dy = Math.max(dy, -r.n);
+      if (h.includes('e')) dx = Math.min(dx, r.e);
+      if (h.includes('w')) dx = Math.max(dx, -r.w);
+    }
     if (g.handle === 'move') {
       // Never off the artboard.
       dx = Math.min(Math.max(dx, -g.box.x), plan.width - g.box.w - g.box.x);
@@ -384,6 +442,16 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     } else {
       for (const id of g.ids) changes[id] = boxFor({ handle: g.handle, base: g.bases[id], w: g.w, h: g.h }, dx, dy, e.shiftKey);
     }
+    if (g.photo) {
+      const b = changes[g.ids[0]]?.box ?? {};
+      if (g.photo.crop) changes[g.photo.id] = { crop: { ...g.photo.crop, ...(el(g.photo.id)?.dataset.slotSrc ? { src: el(g.photo.id)!.dataset.slotSrc } : {}) } };
+      const dw = (b.width ?? g.w) - g.w, dh = (b.height ?? g.h) - g.h;
+      for (const p of g.photo.push) {
+        const bb = p.base.box ?? {};
+        const ddx = p.side === 'e' ? dw : p.side === 'w' ? -dw : 0, ddy = p.side === 's' ? dh : p.side === 'n' ? -dh : 0;
+        changes[p.id] = { box: { dx: Math.round((bb.dx ?? 0) + ddx), dy: Math.round((bb.dy ?? 0) + ddy) } };
+      }
+    }
     onEdit(changes, final);
     setGuides(final ? [] : lines);
     const moved = { ...g.box, x: g.box.x + (g.handle === 'move' ? dx : 0), y: g.box.y + (g.handle === 'move' ? dy : 0) };
@@ -395,7 +463,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0 || editing || panning) return;
     if (reframe) {
-      const b = boxOf(reframe), p = local(e), c = cropNow(reframe), room = c && roomOf(reframe, c);
+      const b = boxOf(maskOf(reframe)), p = local(e), c = cropNow(reframe), room = c && roomOf(reframe, c);
       if (b && c && room && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
         pan.current = { x: e.clientX, y: e.clientY, crop: c, room };
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
@@ -408,7 +476,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const c = pick(e);
     // Inside the current selection, a drag moves the whole selection.
     const p = local(e);
-    const inSel = !add && !(e.metaKey || e.ctrlKey) && selected.some((id) => { const b = boxOf(id); return b && movable(id) && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h; });
+    const inSel = !add && !(e.metaKey || e.ctrlKey) && selected.some((id) => { const b = boxOf(kindOf(id) === 'photo' ? maskOf(id) : id); return b && movable(id) && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h; });
     if (inSel) { startDrag(e, selected.filter(movable), 'move'); return; }
     if (!c || c.kind === 'background') {
       // Empty ground: a click selects the background, a drag draws a selection rectangle.
@@ -506,12 +574,12 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     n.addEventListener('input', onInput);
   };
 
-  const sel = ready ? selected.filter((id) => kindOf(id) !== 'background').map((id) => ({ id, r: screen(boxOf(id)) })).filter((s) => s.r) as { id: string; r: Rect }[] : [];
+  const sel = ready ? selected.filter((id) => kindOf(id) !== 'background').map((id) => ({ id, r: screen(boxOf(kindOf(id) === 'photo' ? maskOf(id) : id)) })).filter((s) => s.r) as { id: string; r: Rect }[] : [];
   const single = sel.length === 1 ? sel[0] : null;
   const logo = single && kindOf(single.id) === 'archy';
   const group = sel.length > 1 ? screen(union(sel.map((s) => ({ x: s.r.x / zoom, y: s.r.y / zoom, w: s.r.w / zoom, h: s.r.h / zoom })))) : null;
   const hovComp = comps.find((c) => c.id === hover);
-  const hov = ready && hovComp && hovComp.kind !== 'background' && !selected.includes(hovComp.id) && !drag.current ? screen(boxOf(hover)) : null;
+  const hov = ready && hovComp && hovComp.kind !== 'background' && !selected.includes(hovComp.id) && !drag.current ? screen(boxOf(hovComp.kind === 'photo' ? maskOf(hovComp.id) : hover)) : null;
   // The group around what is hovered, faint, so its container is easy to see (and pick).
   const ctxComp = ready && !drag.current ? parentOf(comps, hover) : null;
   const ctx = ctxComp && !selected.includes(ctxComp.id) ? screen(boxOf(ctxComp.id)) : null;

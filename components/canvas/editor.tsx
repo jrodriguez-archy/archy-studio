@@ -56,8 +56,9 @@ const GAP = 120; // between artboards, in design px
 // Canvas's light server calls, side by side (server actions would run one at a time): /api/canvas/live.
 async function live(kind: string, args: unknown[]) {
   const r = await fetch('/api/canvas/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, args }) });
-  if (!r.ok && r.status !== 400) throw new Error(`Canvas call failed (${r.status})`);
-  return r.json();
+  // The same answers the actions gave: signed out, or any failure, comes back as { ok: false, error }.
+  if (r.status === 401) return { ok: false, error: 'Sign in again.' };
+  return r.json().catch(() => ({ ok: false, error: 'Something went wrong. Try again.' }));
 }
 const prepareAction = (...a: Parameters<typeof PrepareCall>): ReturnType<typeof PrepareCall> => live('prepare', a);
 const saveDraftAction = (...a: Parameters<typeof DraftCall>): ReturnType<typeof DraftCall> => live('draft', a);
@@ -80,7 +81,7 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   const [library, setLibrary] = useState<CanvasLibrary | null>(given);
   const [updating, setUpdating] = useState<string[]>([]);
   const reload = useCallback(() => {
-    libraryAction().then((l) => { if (l) { setLibrary(l); setUpdating([]); } }).catch(() => {});
+    libraryAction().then((l) => { if (l && 'assets' in l) { setLibrary(l); setUpdating([]); } }).catch(() => {});
   }, []);
   // ?asset=<id> (Assets page → "Use in a design"): Assets open, that image pointed at.
   const params = useSearchParams();
@@ -98,7 +99,8 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
     const t = setTimeout(reload, 3000);
     return () => clearTimeout(t);
   }, [given, reload]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (shown && stale.current) { stale.current = false; reload(); } }, [shown, reload]);
+  // Opened before it arrived, or changed while hidden: now.
+  useEffect(() => { if (shown && (stale.current || !library)) { stale.current = false; reload(); } }, [shown, reload]); // eslint-disable-line react-hooks/exhaustive-deps
   const shownRef = useRef(shown);
   shownRef.current = shown;
   useRendersLive(useCallback(() => { if (shownRef.current) reload(); else stale.current = true; }, [reload]));
@@ -713,8 +715,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     // Open the saved formats from the gallery (new versions and added formats have new ids).
     const next = ids[board.ref] ?? board.ref;
     if (next.startsWith('new:')) return;
-    if (next !== board.ref || Object.entries(ids).some(([ref, id]) => ref !== id)) router.replace(`/canvas/${next}`);
-    router.refresh();
+    // Always through the router: switching formats moves the address natively, so the router may still
+    // be on the format first opened (a refresh would put that one back in the address).
+    router.replace(`/canvas/${next}`);
   });
 
   const imageTarget = one && (one.kind === 'photo' || one.kind === 'partner') ? one : null;

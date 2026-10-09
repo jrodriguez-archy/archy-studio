@@ -9,10 +9,14 @@ export const runtime = 'nodejs';
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null) as { kind?: string; args?: unknown[] } | null;
   const a = (body?.args ?? []) as unknown;
-  switch (body?.kind) {
-    case 'prepare': return Response.json(await prepareAction(...(a as Parameters<typeof prepareAction>)));
-    case 'draft': return Response.json(await saveDraftAction(...(a as Parameters<typeof saveDraftAction>)));
-    case 'library': return Response.json(await libraryAction());
-    default: return Response.json({ ok: false, error: 'Unknown call.' }, { status: 400 });
+  try {
+    switch (body?.kind) {
+      case 'prepare': return Response.json(await prepareAction(...(a as Parameters<typeof prepareAction>)));
+      case 'draft': return Response.json(await saveDraftAction(...(a as Parameters<typeof saveDraftAction>)));
+      case 'library': return Response.json(await libraryAction());
+      default: return Response.json({ ok: false, error: 'Unknown call.' }, { status: 400 });
+    }
+  } catch (e) {
+    return Response.json({ ok: false, error: (e as Error).message || 'Something went wrong. Try again.' }, { status: 500 });
   }
 }

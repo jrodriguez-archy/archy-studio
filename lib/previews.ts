@@ -63,18 +63,28 @@ export async function previewSrcs(items: { manifest: Pick<Manifest, 'id' | 'form
     if (files.some((x) => x.name === `${name}.webp`)) return [id, publicUrl(previewPath(key))] as const;
     const base = name.slice(0, name.lastIndexOf('-'));
     const earlier = files.find((x) => x.name.startsWith(`${base}-`) && x.name.slice(base.length + 1, -5).length === 10 && !x.name.slice(base.length + 1).includes('--'));
-    const q = new URLSearchParams({ ...(d ? { design: d } : {}), ...(th ? { theme: th } : {}) });
-    missing.push(`/api/preview-render/${t}/${f}${q.size ? `?${q}` : ''}`);
-    return [id, earlier ? publicUrl(`previews/${t}/${earlier.name}`) : await previewSrc(t, f, d, th)] as const;
+    // No earlier image: the browser's own request draws it (/api/preview). Otherwise drawn here, once.
+    if (!earlier) return [id, await previewSrc(t, f, d, th)] as const;
+    if ((requested.get(key) ?? 0) < Date.now()) {
+      requested.set(key, Date.now() + 15 * 60_000);
+      const q = new URLSearchParams({ ...(d ? { design: d } : {}), ...(th ? { theme: th } : {}) });
+      missing.push(`/api/preview-render/${t}/${f}${q.size ? `?${q}` : ''}`);
+    }
+    return [id, publicUrl(`previews/${t}/${earlier.name}`)] as const;
   }));
   // Draw what is missing after the page is sent (each in its own function), a few at a time.
   if (missing.length && origin) {
     after(async () => {
-      for (let i = 0; i < missing.length; i += 4) await Promise.allSettled(missing.slice(i, i + 4).map((u) => fetch(new URL(u, origin), { cache: 'no-store' })));
+      for (let i = 0; i < missing.length; i += 4) await Promise.allSettled(missing.slice(i, i + 4).map((u) => fetch(new URL(u, origin), { cache: 'no-store', redirect: 'manual' })));
+      // Drawn: the next visit lists them again and links the new images.
+      for (const t of new Set(items.map((i) => i.manifest.id))) listed.delete(t);
     });
   }
   return Object.fromEntries(out);
 }
+
+// Previews already asked to be drawn in the background (key → until when), so visits do not ask again.
+const requested = new Map<string, number>();
 
 // The previews stored for a template, newest first. Kept 10 minutes, so most visits to Templates skip
 // asking storage at all; one drawn meanwhile shows its earlier version until then.

@@ -29,10 +29,15 @@ export default {
   // Paper references and sources are for designers, never read by the app: no function carries them.
   outputFileTracingExcludes: { '**': notNeeded, ...Object.fromEntries(listing.map((r) => [r, noImages])) },
   experimental: { optimizePackageImports: ['@hugeicons/core-free-icons'] },
-  // Template files (pages, fonts, images, page scripts) change only with a deploy: the browser keeps them
-  // an hour without asking and uses its copy while it checks for a newer one, so Canvas opens without
-  // going back to the network for every font and image.
+  // The deploy's id, so Canvas asks for this deploy's template pages and page scripts (never a cached
+  // copy from the one before).
+  env: { NEXT_PUBLIC_BUILD: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 10) ?? 'dev' },
+  // Template files change only with a deploy. Pages and scripts are asked for with the deploy's id, so a
+  // few minutes of browser cache never shows an old one; template images briefly too; fonts for a day.
   async headers() {
-    return [{ source: '/api/template-files/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=604800' }] }];
+    return [
+      { source: '/api/template-files/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=600' }] },
+      { source: '/api/template-files/fonts/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }] },
+    ];
   },
 };

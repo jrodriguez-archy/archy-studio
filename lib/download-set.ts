@@ -11,7 +11,11 @@ export async function downloadSet(id: string) {
     const r = await fetch(`/api/sets/${id}/zip?list=1`);
     if (!r.ok) throw new Error();
     const { name, files } = (await r.json()) as { name: string; files: { name: string; url: string }[] };
-    const parts = await Promise.all(files.map(async (f) => [f.name, new Uint8Array(await (await fetch(f.url)).arrayBuffer())] as const));
+    const parts = await Promise.all(files.map(async (f) => {
+      const res = await fetch(f.url);
+      if (!res.ok) throw new Error(); // never an error page saved as a PNG: the server's ZIP instead
+      return [f.name, new Uint8Array(await res.arrayBuffer())] as const;
+    }));
     const zip = zipSync(Object.fromEntries(parts.map(([n, b]) => [n, [b, { level: 0 }]])));
     const url = URL.createObjectURL(new Blob([zip as BlobPart], { type: 'application/zip' }));
     const a = Object.assign(document.createElement('a'), { href: url, download: name });

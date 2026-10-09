@@ -1,0 +1,1200 @@
+{
+  "rootId": "IUO-0",
+  "nodes": {
+    "IUO-0": {
+      "id": "IUO-0",
+      "name": "TPL · Night Out Scorecard · Post 1080×1350",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IWF-0",
+        "IUP-0"
+      ]
+    },
+    "IWF-0": {
+      "id": "IWF-0",
+      "name": "optional-illustration",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IWY-0",
+        "IY4-0",
+        "IWG-0"
+      ]
+    },
+    "IWY-0": {
+      "id": "IWY-0",
+      "name": "Stars",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IY4-0": {
+      "id": "IY4-0",
+      "name": "slot-image-illustration",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IWG-0": {
+      "id": "IWG-0",
+      "name": "Sparkles",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IUP-0": {
+      "id": "IUP-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IW9-0",
+        "IW8-0",
+        "IV3-0",
+        "IUQ-0"
+      ]
+    },
+    "IW9-0": {
+      "id": "IW9-0",
+      "name": "Logo Archy",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IW8-0": {
+      "id": "IW8-0",
+      "name": "slot-text-headline",
+      "component": "Text",
+      "visible": true,
+      "text": "Strike up a conversation.",
+      "children": []
+    },
+    "IV3-0": {
+      "id": "IV3-0",
+      "name": "optional-card",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVT-0",
+        "IV4-0"
+      ]
+    },
+    "IVT-0": {
+      "id": "IVT-0",
+      "name": "Header Row",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IW6-0",
+        "IW4-0",
+        "IW2-0",
+        "IW0-0",
+        "IVY-0",
+        "IVW-0",
+        "IVU-0"
+      ]
+    },
+    "IW6-0": {
+      "id": "IW6-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IW7-0"
+      ]
+    },
+    "IW7-0": {
+      "id": "IW7-0",
+      "name": "Player",
+      "component": "Text",
+      "visible": true,
+      "text": "Player",
+      "children": []
+    },
+    "IW4-0": {
+      "id": "IW4-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IW5-0"
+      ]
+    },
+    "IW5-0": {
+      "id": "IW5-0",
+      "name": "1",
+      "component": "Text",
+      "visible": true,
+      "text": "1",
+      "children": []
+    },
+    "IW2-0": {
+      "id": "IW2-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IW3-0"
+      ]
+    },
+    "IW3-0": {
+      "id": "IW3-0",
+      "name": "2",
+      "component": "Text",
+      "visible": true,
+      "text": "2",
+      "children": []
+    },
+    "IW0-0": {
+      "id": "IW0-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IW1-0"
+      ]
+    },
+    "IW1-0": {
+      "id": "IW1-0",
+      "name": "3",
+      "component": "Text",
+      "visible": true,
+      "text": "3",
+      "children": []
+    },
+    "IVY-0": {
+      "id": "IVY-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVZ-0"
+      ]
+    },
+    "IVZ-0": {
+      "id": "IVZ-0",
+      "name": "4",
+      "component": "Text",
+      "visible": true,
+      "text": "4",
+      "children": []
+    },
+    "IVW-0": {
+      "id": "IVW-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVX-0"
+      ]
+    },
+    "IVX-0": {
+      "id": "IVX-0",
+      "name": "5",
+      "component": "Text",
+      "visible": true,
+      "text": "5",
+      "children": []
+    },
+    "IVU-0": {
+      "id": "IVU-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVV-0"
+      ]
+    },
+    "IVV-0": {
+      "id": "IVV-0",
+      "name": "Total",
+      "component": "Text",
+      "visible": true,
+      "text": "Total",
+      "children": []
+    },
+    "IV4-0": {
+      "id": "IV4-0",
+      "name": "Body Row",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVR-0",
+        "IVN-0",
+        "IVJ-0",
+        "IVF-0",
+        "IVB-0",
+        "IV7-0",
+        "IV5-0"
+      ]
+    },
+    "IVR-0": {
+      "id": "IVR-0",
+      "name": "Player Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVS-0"
+      ]
+    },
+    "IVS-0": {
+      "id": "IVS-0",
+      "name": "slot-text-card-player",
+      "component": "Text",
+      "visible": true,
+      "text": "Inland Empire Dentists",
+      "children": []
+    },
+    "IVN-0": {
+      "id": "IVN-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVP-0",
+        "IVO-0"
+      ]
+    },
+    "IVP-0": {
+      "id": "IVP-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVQ-0"
+      ]
+    },
+    "IVQ-0": {
+      "id": "IVQ-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IVO-0": {
+      "id": "IVO-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "30",
+      "children": []
+    },
+    "IVJ-0": {
+      "id": "IVJ-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVL-0",
+        "IVK-0"
+      ]
+    },
+    "IVL-0": {
+      "id": "IVL-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVM-0"
+      ]
+    },
+    "IVM-0": {
+      "id": "IVM-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IVK-0": {
+      "id": "IVK-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "60",
+      "children": []
+    },
+    "IVF-0": {
+      "id": "IVF-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVH-0",
+        "IVG-0"
+      ]
+    },
+    "IVH-0": {
+      "id": "IVH-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVI-0"
+      ]
+    },
+    "IVI-0": {
+      "id": "IVI-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IVG-0": {
+      "id": "IVG-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "90",
+      "children": []
+    },
+    "IVB-0": {
+      "id": "IVB-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVD-0",
+        "IVC-0"
+      ]
+    },
+    "IVD-0": {
+      "id": "IVD-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVE-0"
+      ]
+    },
+    "IVE-0": {
+      "id": "IVE-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IVC-0": {
+      "id": "IVC-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "120",
+      "children": []
+    },
+    "IV7-0": {
+      "id": "IV7-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IV9-0",
+        "IV8-0"
+      ]
+    },
+    "IV9-0": {
+      "id": "IV9-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IVA-0"
+      ]
+    },
+    "IVA-0": {
+      "id": "IVA-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IV8-0": {
+      "id": "IV8-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "150",
+      "children": []
+    },
+    "IV5-0": {
+      "id": "IV5-0",
+      "name": "Total Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IV6-0"
+      ]
+    },
+    "IV6-0": {
+      "id": "IV6-0",
+      "name": "slot-text-card-total",
+      "component": "Text",
+      "visible": true,
+      "text": "On us",
+      "children": []
+    },
+    "IUQ-0": {
+      "id": "IUQ-0",
+      "name": "Footer",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IUW-0",
+        "IUR-0"
+      ]
+    },
+    "IUW-0": {
+      "id": "IUW-0",
+      "name": "Details",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IV0-0",
+        "IUX-0"
+      ]
+    },
+    "IV0-0": {
+      "id": "IV0-0",
+      "name": "optional-location",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IV2-0",
+        "IV1-0"
+      ]
+    },
+    "IV2-0": {
+      "id": "IV2-0",
+      "name": "slot-text-venue",
+      "component": "Text",
+      "visible": true,
+      "text": "Punch Bowl Social",
+      "children": []
+    },
+    "IV1-0": {
+      "id": "IV1-0",
+      "name": "slot-text-city",
+      "component": "Text",
+      "visible": true,
+      "text": "Rancho Cucamonga, CA",
+      "children": []
+    },
+    "IUX-0": {
+      "id": "IUX-0",
+      "name": "optional-date",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IUZ-0",
+        "IUY-0"
+      ]
+    },
+    "IUZ-0": {
+      "id": "IUZ-0",
+      "name": "slot-text-date",
+      "component": "Text",
+      "visible": true,
+      "text": "Thursday, November 12",
+      "children": []
+    },
+    "IUY-0": {
+      "id": "IUY-0",
+      "name": "slot-text-time",
+      "component": "Text",
+      "visible": true,
+      "text": "6:00 – 9:00 PM",
+      "children": []
+    },
+    "IUR-0": {
+      "id": "IUR-0",
+      "name": "Button",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IUV-0",
+        "IUS-0"
+      ]
+    },
+    "IUV-0": {
+      "id": "IUV-0",
+      "name": "slot-text-cta",
+      "component": "Text",
+      "visible": true,
+      "text": "Claim your spot",
+      "children": []
+    },
+    "IUS-0": {
+      "id": "IUS-0",
+      "name": "Icon Arrow",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    }
+  },
+  "styles": {
+    "IUO-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1350px",
+      "left": "0px",
+      "top": 24960,
+      "position": "absolute",
+      "backgroundColor": "var(--color-dark-background)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/2Y0N49E8PS9KNHCZF0NXXD3913.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "IWF-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "0px",
+      "width": "1080px",
+      "height": "1350px",
+      "overflow": "visible"
+    },
+    "IWY-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "0px",
+      "display": "inline-block",
+      "overflow": "visible"
+    },
+    "IY4-0": {
+      "position": "absolute",
+      "left": "701px",
+      "top": "-30px",
+      "width": "383px",
+      "height": "383px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/15J2ZJNWEW1FB7T25QWA4H8RVE.png)",
+      "backgroundSize": "contain",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat"
+    },
+    "IWG-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "170px",
+      "display": "inline-block",
+      "overflow": "visible"
+    },
+    "IUP-0": {
+      "position": "absolute",
+      "left": "105px",
+      "top": "105px",
+      "width": "870px",
+      "height": "1140px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "start"
+    },
+    "IW9-0": {
+      "display": "inline-block",
+      "flexShrink": "0"
+    },
+    "IW8-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "112px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "letterSpacing": "var(--tracking-tight)",
+      "lineHeight": "118px",
+      "width": "100%",
+      "flexShrink": "0",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-white)"
+    },
+    "IV3-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "borderRadius": "12px",
+      "overflow": "clip",
+      "rotate": "-2deg",
+      "backgroundColor": "var(--color-white)",
+      "transformOrigin": "50% 50%"
+    },
+    "IVT-0": {
+      "display": "flex",
+      "width": "100%",
+      "height": "52px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-blue-tint-100)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IW6-0": {
+      "width": "260px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "paddingLeft": "24px"
+    },
+    "IW7-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "0.05em",
+      "lineHeight": "28px",
+      "textTransform": "uppercase",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IW4-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IW5-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IW2-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IW3-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IW0-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IW1-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IVY-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IVZ-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IVW-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IVX-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IVU-0": {
+      "flexGrow": "1",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IVV-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "0.05em",
+      "lineHeight": "28px",
+      "textTransform": "uppercase",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IV4-0": {
+      "display": "flex",
+      "width": "100%",
+      "height": "128px",
+      "flexShrink": "0"
+    },
+    "IVR-0": {
+      "width": "260px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "paddingLeft": "24px"
+    },
+    "IVS-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "30px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "34px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IVN-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IVP-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IVQ-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IVO-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IVJ-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IVL-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IVM-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IVK-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IVF-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IVH-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IVI-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IVG-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IVB-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IVD-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IVE-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IVC-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IV7-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IV9-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IVA-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IV8-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IV5-0": {
+      "flexGrow": "1",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "backgroundColor": "var(--color-blue-tint-50)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IV6-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "40px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "var(--tracking-tight)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IUQ-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "gap": "40px"
+    },
+    "IUW-0": {
+      "display": "flex",
+      "width": "100%",
+      "gap": "56px"
+    },
+    "IV0-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "4px",
+      "flexBasis": "0px",
+      "flexGrow": "1",
+      "minWidth": "0px"
+    },
+    "IV2-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "36px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-white)"
+    },
+    "IV1-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-regular)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-blue-tint-100)"
+    },
+    "IUX-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "4px",
+      "flexBasis": "0px",
+      "flexGrow": "1",
+      "minWidth": "0px"
+    },
+    "IUZ-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "36px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-white)"
+    },
+    "IUY-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-regular)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-blue-tint-100)"
+    },
+    "IUR-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "width": "fit-content",
+      "paddingBlock": "24px",
+      "paddingInline": "40px",
+      "borderRadius": "16px",
+      "gap": "20px",
+      "backgroundColor": "var(--color-royal-blue-500)"
+    },
+    "IUV-0": {
+      "fontFamily": "var(--font-body)",
+      "fontSize": "34px",
+      "fontWeight": "var(--font-weight-medium)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-white)"
+    },
+    "IUS-0": {
+      "flexShrink": "0",
+      "width": "32px",
+      "height": "32px",
+      "display": "inline-block"
+    }
+  },
+  "svgs": {
+    "IWY-0": "(\n    <svg width=\"1080\" height=\"1080\" viewBox=\"0 0 1080 1080\" xmlns=\"http://www.w3.org/2000/svg\" style={{ position: 'absolute', left: '0px', top: '0px', display: 'inline-block', overflow: 'visible' }}>\n      <path transform=\"matrix(0.5 0 0 0.5 60 60)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.6 0 0 0.6 965 600)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IWG-0": "(\n    <svg width=\"1080\" height=\"1080\" viewBox=\"0 0 1080 1080\" xmlns=\"http://www.w3.org/2000/svg\" style={{ position: 'absolute', left: '0px', top: '170px', display: 'inline-block', overflow: 'visible' }}>\n      <path transform=\"matrix(0.6 0 0 0.6 700 40)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.75 0 0 0.75 1010 330)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.5 0 0 0.5 1000 790)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.8 0 0 0.8 860 1000)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IW9-0": "(\n    <svg width=\"260\" height=\"101.1111111111111\" viewBox=\"0 0 372.667 143.433\" xmlns=\"http://www.w3.org/2000/svg\" style={{ display: 'inline-block', flexShrink: '0' }}>\n      <path d=\"M120.231 100.191C120.231 100.191 102.122 100.191 102.122 100.191 102.122 100.191 102.122 59.413 102.122 59.413 102.122 41.516 116.736 26.956 134.699 26.956 134.699 26.956 140.084 26.956 140.084 26.956 140.084 26.956 140.084 44.999 140.084 44.999 140.084 44.999 134.699 44.999 134.699 44.999 126.72 44.999 120.231 51.463 120.231 59.413 120.231 59.413 120.231 100.191 120.231 100.191Z\" fill=\"var(--color-white)\" />\n      <path d=\"M257.178 31.024C250.747 31.024 244.718 32.797 239.495 35.886 239.495 35.886 239.495 0.229 239.495 0.229 239.495 0.229 221.354 0.229 221.354 0.229 221.354 0.229 221.354 100.191 221.354 100.191 221.354 100.191 239.495 100.191 239.495 100.191 239.495 100.191 239.495 68.174 239.495 68.174 239.495 57.659 247.431 49.1 257.178 49.1 266.925 49.1 274.861 57.659 274.861 68.174 274.861 68.174 274.861 100.191 274.861 100.191 274.861 100.191 293 100.191 293 100.191 293 100.191 293 68.174 293 68.174 293 47.693 276.932 31.03 257.178 31.03 257.178 31.03 257.178 31.024 257.178 31.024Z\" fill=\"var(--color-white)\" />\n      <path d=\"M354.526 36.045C354.526 36.045 354.526 64.211 354.526 64.211 354.526 75.125 346.59 84.001 336.843 84.001 327.097 84.001 319.16 75.125 319.16 64.211 319.16 64.211 319.16 36.045 319.16 36.045 319.16 36.045 301.021 36.045 301.021 36.045 301.021 36.045 301.021 64.211 301.021 64.211 301.021 85.083 317.089 102.064 336.843 102.064 343.274 102.064 349.304 100.255 354.526 97.109 354.526 97.109 354.526 106.373 354.526 106.373 354.526 116.881 346.59 125.434 336.843 125.434 327.097 125.434 319.16 116.888 319.16 106.373 319.16 106.373 301.021 106.373 301.021 106.373 301.021 126.84 317.089 143.492 336.843 143.492 356.597 143.492 372.667 126.84 372.667 106.373 372.667 106.373 372.667 36.045 372.667 36.045 372.667 36.045 354.526 36.045 354.526 36.045Z\" fill=\"var(--color-white)\" />\n      <path d=\"M178.078 83.639C167.741 83.639 159.327 74.872 159.327 64.103 159.327 53.333 167.741 44.566 178.078 44.566 186.156 44.566 193.062 49.919 195.691 57.402 195.691 57.402 214.403 57.402 214.403 57.402 211.298 39.811 196.193 26.422 178.078 26.422 157.716 26.422 141.154 43.327 141.154 64.108 141.154 84.891 157.716 101.796 178.078 101.796 196.193 101.796 211.298 88.408 214.403 70.816 214.403 70.816 195.691 70.816 195.691 70.816 193.062 78.299 186.156 83.652 178.078 83.652 178.078 83.652 178.078 83.639 178.078 83.639Z\" fill=\"var(--color-white)\" />\n      <path fillRule=\"evenodd\" d=\"M18.165 94.052C18.165 78.775 30.643 66.349 45.983 66.349 61.323 66.349 73.798 78.775 73.798 94.052 73.798 94.052 73.798 100.191 73.798 100.191 73.798 100.191 91.964 100.191 91.964 100.191 91.964 100.191 91.964 46.015 91.964 46.015 91.964 38.444 90.068 30.929 86.473 24.301 78.418 9.454 62.906 0.229 45.975 0.229 45.117 0.229 44.251 0.255 43.393 0.298 27.874 1.161 13.959 9.69 6.159 23.115 5.631 24.022 5.128 24.959 4.664 25.904 1.572 32.203 0 38.97 0 46.015 0 46.015 0 100.191 0 100.191 0 100.191 18.165 100.191 18.165 100.191 18.165 100.191 18.165 94.052 18.165 94.052ZM18.165 46.015C18.165 41.746 19.113 37.658 20.978 33.856 21.257 33.286 21.563 32.716 21.881 32.171 26.602 24.042 35.025 18.876 44.404 18.357 44.925 18.325 45.46 18.314 45.983 18.314 56.225 18.314 65.61 23.896 70.485 32.886 72.654 36.892 73.798 41.428 73.798 46.015 73.798 46.015 73.798 57.624 73.798 57.624 66.069 51.756 56.429 48.264 45.983 48.264 35.535 48.264 25.896 51.756 18.165 57.624 18.165 57.624 18.165 46.015 18.165 46.015Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IUS-0": "(\n    <svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" style={{ flexShrink: '0', width: '32px', height: '32px', display: 'inline-block' }}>\n      <path d=\"M18.5 12L5 12\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 18C13 18 19 13.581 19 12C19 10.419 13 6 13 6\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-mint-bright: #00FFA4;\n  --color-mint: #00E291;\n  --color-mint-light: #6FFFCB;\n  --color-mint-dark: #003C26;\n  --color-red: #E23B7B;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-success-100: #DEF2E6;\n  --color-success-300: #05C168;\n  --color-success-400: #11845B;\n  --color-error-400: #DC2B2B;\n  --color-info-100: #EAF4FF;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --text-h1: 60px;\n  --text-h2: 48px;\n  --text-h3: 40px;\n  --text-h4: 32px;\n  --text-h5: 24px;\n  --text-large: 20px;\n  --text-medium: 18px;\n  --text-regular: 16px;\n  --text-small: 14px;\n  --text-tiny: 12px;\n  --text-tagline: 13.6px;\n  --font-weight-light: 300;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --leading-h1: 63px;\n  --leading-h2: 58px;\n  --leading-h3: 48px;\n  --leading-h4: 38px;\n  --leading-h5: 29px;\n  --leading-body: 24px;\n  --leading-small: 21px;\n  --leading-tiny: 18px;\n  --breakpoint-mobile: 479px;\n  --breakpoint-mobile-landscape: 767px;\n  --breakpoint-tablet: 991px;\n  --breakpoint-desktop: 1440px;\n  --container-small: 768px;\n  --container-medium: 1024px;\n  --container-large: 1280px;\n  --spacing-tiny: 4px;\n  --spacing-xxsmall: 8px;\n  --spacing-xsmall: 16px;\n  --spacing-small: 24px;\n  --spacing-medium: 32px;\n  --spacing-large: 48px;\n  --spacing-xlarge: 64px;\n  --spacing-xxlarge: 80px;\n  --spacing-huge: 96px;\n  --spacing-xhuge: 112px;\n  --section-small: 48px;\n  --section-medium: 80px;\n  --section-large: 112px;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-tag: 4px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

@@ -1,0 +1,1238 @@
+{
+  "rootId": "IPB-0",
+  "nodes": {
+    "IPB-0": {
+      "id": "IPB-0",
+      "name": "TPL · Night Out Scorecard · Stories 1080×1920",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IPC-0",
+        "IQE-0"
+      ]
+    },
+    "IPC-0": {
+      "id": "IPC-0",
+      "name": "optional-illustration",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IPH-0",
+        "IY7-0",
+        "IPW-0",
+        "IQ5-0",
+        "IQA-0"
+      ]
+    },
+    "IPH-0": {
+      "id": "IPH-0",
+      "name": "Stars",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IY7-0": {
+      "id": "IY7-0",
+      "name": "slot-image-illustration",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IPW-0": {
+      "id": "IPW-0",
+      "name": "Sparkles",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IQ5-0": {
+      "id": "IQ5-0",
+      "name": "Sparkles",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IQA-0": {
+      "id": "IQA-0",
+      "name": "Sparkles",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IQE-0": {
+      "id": "IQE-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQF-0",
+        "IQM-0",
+        "IQO-0",
+        "IRT-0"
+      ]
+    },
+    "IQF-0": {
+      "id": "IQF-0",
+      "name": "Logo Archy",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IQM-0": {
+      "id": "IQM-0",
+      "name": "slot-text-headline",
+      "component": "Text",
+      "visible": true,
+      "text": "Strike up a conversation.",
+      "children": []
+    },
+    "IQO-0": {
+      "id": "IQO-0",
+      "name": "optional-card",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQP-0",
+        "IR4-0"
+      ]
+    },
+    "IQP-0": {
+      "id": "IQP-0",
+      "name": "Header Row",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQQ-0",
+        "IQS-0",
+        "IQU-0",
+        "IQW-0",
+        "IQY-0",
+        "IR0-0",
+        "IR2-0"
+      ]
+    },
+    "IQQ-0": {
+      "id": "IQQ-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQR-0"
+      ]
+    },
+    "IQR-0": {
+      "id": "IQR-0",
+      "name": "Player",
+      "component": "Text",
+      "visible": true,
+      "text": "Player",
+      "children": []
+    },
+    "IQS-0": {
+      "id": "IQS-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQT-0"
+      ]
+    },
+    "IQT-0": {
+      "id": "IQT-0",
+      "name": "1",
+      "component": "Text",
+      "visible": true,
+      "text": "1",
+      "children": []
+    },
+    "IQU-0": {
+      "id": "IQU-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQV-0"
+      ]
+    },
+    "IQV-0": {
+      "id": "IQV-0",
+      "name": "2",
+      "component": "Text",
+      "visible": true,
+      "text": "2",
+      "children": []
+    },
+    "IQW-0": {
+      "id": "IQW-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQX-0"
+      ]
+    },
+    "IQX-0": {
+      "id": "IQX-0",
+      "name": "3",
+      "component": "Text",
+      "visible": true,
+      "text": "3",
+      "children": []
+    },
+    "IQY-0": {
+      "id": "IQY-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IQZ-0"
+      ]
+    },
+    "IQZ-0": {
+      "id": "IQZ-0",
+      "name": "4",
+      "component": "Text",
+      "visible": true,
+      "text": "4",
+      "children": []
+    },
+    "IR0-0": {
+      "id": "IR0-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IR1-0"
+      ]
+    },
+    "IR1-0": {
+      "id": "IR1-0",
+      "name": "5",
+      "component": "Text",
+      "visible": true,
+      "text": "5",
+      "children": []
+    },
+    "IR2-0": {
+      "id": "IR2-0",
+      "name": "Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IR3-0"
+      ]
+    },
+    "IR3-0": {
+      "id": "IR3-0",
+      "name": "Total",
+      "component": "Text",
+      "visible": true,
+      "text": "Total",
+      "children": []
+    },
+    "IR4-0": {
+      "id": "IR4-0",
+      "name": "Body Row",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IR5-0",
+        "IR7-0",
+        "IRB-0",
+        "IRF-0",
+        "IRJ-0",
+        "IRN-0",
+        "IRR-0"
+      ]
+    },
+    "IR5-0": {
+      "id": "IR5-0",
+      "name": "Player Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IR6-0"
+      ]
+    },
+    "IR6-0": {
+      "id": "IR6-0",
+      "name": "slot-text-card-player",
+      "component": "Text",
+      "visible": true,
+      "text": "Inland Empire Dentists",
+      "children": []
+    },
+    "IR7-0": {
+      "id": "IR7-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IR8-0",
+        "IRA-0"
+      ]
+    },
+    "IR8-0": {
+      "id": "IR8-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IR9-0"
+      ]
+    },
+    "IR9-0": {
+      "id": "IR9-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IRA-0": {
+      "id": "IRA-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "30",
+      "children": []
+    },
+    "IRB-0": {
+      "id": "IRB-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRC-0",
+        "IRE-0"
+      ]
+    },
+    "IRC-0": {
+      "id": "IRC-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRD-0"
+      ]
+    },
+    "IRD-0": {
+      "id": "IRD-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IRE-0": {
+      "id": "IRE-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "60",
+      "children": []
+    },
+    "IRF-0": {
+      "id": "IRF-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRG-0",
+        "IRI-0"
+      ]
+    },
+    "IRG-0": {
+      "id": "IRG-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRH-0"
+      ]
+    },
+    "IRH-0": {
+      "id": "IRH-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IRI-0": {
+      "id": "IRI-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "90",
+      "children": []
+    },
+    "IRJ-0": {
+      "id": "IRJ-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRK-0",
+        "IRM-0"
+      ]
+    },
+    "IRK-0": {
+      "id": "IRK-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRL-0"
+      ]
+    },
+    "IRL-0": {
+      "id": "IRL-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IRM-0": {
+      "id": "IRM-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "120",
+      "children": []
+    },
+    "IRN-0": {
+      "id": "IRN-0",
+      "name": "Frame",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRO-0",
+        "IRQ-0"
+      ]
+    },
+    "IRO-0": {
+      "id": "IRO-0",
+      "name": "Strike Box",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRP-0"
+      ]
+    },
+    "IRP-0": {
+      "id": "IRP-0",
+      "name": "X",
+      "component": "Text",
+      "visible": true,
+      "text": "X",
+      "children": []
+    },
+    "IRQ-0": {
+      "id": "IRQ-0",
+      "name": "Score",
+      "component": "Text",
+      "visible": true,
+      "text": "150",
+      "children": []
+    },
+    "IRR-0": {
+      "id": "IRR-0",
+      "name": "Total Cell",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRS-0"
+      ]
+    },
+    "IRS-0": {
+      "id": "IRS-0",
+      "name": "slot-text-card-total",
+      "component": "Text",
+      "visible": true,
+      "text": "On us",
+      "children": []
+    },
+    "IRT-0": {
+      "id": "IRT-0",
+      "name": "Footer",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRU-0",
+        "IS1-0"
+      ]
+    },
+    "IRU-0": {
+      "id": "IRU-0",
+      "name": "Details",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRV-0",
+        "IRY-0"
+      ]
+    },
+    "IRV-0": {
+      "id": "IRV-0",
+      "name": "optional-location",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRW-0",
+        "IRX-0"
+      ]
+    },
+    "IRW-0": {
+      "id": "IRW-0",
+      "name": "slot-text-venue",
+      "component": "Text",
+      "visible": true,
+      "text": "Punch Bowl Social",
+      "children": []
+    },
+    "IRX-0": {
+      "id": "IRX-0",
+      "name": "slot-text-city",
+      "component": "Text",
+      "visible": true,
+      "text": "Rancho Cucamonga, CA",
+      "children": []
+    },
+    "IRY-0": {
+      "id": "IRY-0",
+      "name": "optional-date",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IRZ-0",
+        "IS0-0"
+      ]
+    },
+    "IRZ-0": {
+      "id": "IRZ-0",
+      "name": "slot-text-date",
+      "component": "Text",
+      "visible": true,
+      "text": "Thursday, November 12",
+      "children": []
+    },
+    "IS0-0": {
+      "id": "IS0-0",
+      "name": "slot-text-time",
+      "component": "Text",
+      "visible": true,
+      "text": "6:00 – 9:00 PM",
+      "children": []
+    },
+    "IS1-0": {
+      "id": "IS1-0",
+      "name": "Button",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IS2-0",
+        "IS3-0"
+      ]
+    },
+    "IS2-0": {
+      "id": "IS2-0",
+      "name": "slot-text-cta",
+      "component": "Text",
+      "visible": true,
+      "text": "Claim your spot",
+      "children": []
+    },
+    "IS3-0": {
+      "id": "IS3-0",
+      "name": "Icon Arrow",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    }
+  },
+  "styles": {
+    "IPB-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1920px",
+      "left": 1160,
+      "top": "24960px",
+      "position": "absolute",
+      "backgroundColor": "var(--color-dark-background)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/3HQ1ZXCHAW4FXAJM0QDVYS9EYJ.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "IPC-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "0px",
+      "width": "1080px",
+      "height": "1920px",
+      "overflow": "visible"
+    },
+    "IPH-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "0px",
+      "display": "inline-block",
+      "overflow": "visible"
+    },
+    "IY7-0": {
+      "position": "absolute",
+      "left": "16px",
+      "top": "1px",
+      "width": "541px",
+      "height": "541px",
+      "translate": "480px 226px",
+      "rotate": "345.06deg",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/15J2ZJNWEW1FB7T25QWA4H8RVE.png)",
+      "backgroundSize": "contain",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat",
+      "transformOrigin": "0% 0%"
+    },
+    "IPW-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "200px",
+      "display": "inline-block",
+      "overflow": "visible"
+    },
+    "IQ5-0": {
+      "position": "absolute",
+      "left": "-60px",
+      "top": "1300px",
+      "display": "inline-block",
+      "overflow": "visible"
+    },
+    "IQA-0": {
+      "position": "absolute",
+      "left": "-540px",
+      "top": "20px",
+      "display": "inline-block",
+      "overflow": "visible"
+    },
+    "IQE-0": {
+      "position": "absolute",
+      "left": "105px",
+      "top": 384,
+      "width": "870px",
+      "height": "1121px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "start",
+      "gap": 126
+    },
+    "IQF-0": {
+      "display": "inline-block",
+      "flexShrink": "0"
+    },
+    "IQM-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "116px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "letterSpacing": "var(--tracking-tight)",
+      "lineHeight": "118px",
+      "width": "100%",
+      "flexShrink": "0",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-white)"
+    },
+    "IQO-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "borderRadius": "12px",
+      "overflow": "clip",
+      "rotate": "-2deg",
+      "backgroundColor": "var(--color-white)",
+      "transformOrigin": "50% 50%"
+    },
+    "IQP-0": {
+      "display": "flex",
+      "width": "100%",
+      "height": "52px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-blue-tint-100)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IQQ-0": {
+      "width": "260px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "paddingLeft": "24px"
+    },
+    "IQR-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "0.05em",
+      "lineHeight": "28px",
+      "textTransform": "uppercase",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IQS-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IQT-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IQU-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IQV-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IQW-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IQX-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IQY-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IQZ-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IR0-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IR1-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IR2-0": {
+      "flexGrow": "1",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IR3-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "22px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "0.05em",
+      "lineHeight": "28px",
+      "textTransform": "uppercase",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IR4-0": {
+      "display": "flex",
+      "width": "100%",
+      "height": "128px",
+      "flexShrink": "0"
+    },
+    "IR5-0": {
+      "width": "260px",
+      "flexShrink": "0",
+      "display": "flex",
+      "alignItems": "center",
+      "paddingLeft": "24px"
+    },
+    "IR6-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "30px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "34px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IR7-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IR8-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IR9-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IRA-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IRB-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IRC-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IRD-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IRE-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IRF-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IRG-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IRH-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IRI-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IRJ-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IRK-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IRL-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IRM-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IRN-0": {
+      "width": "96px",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "end",
+      "paddingBottom": "14px",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IRO-0": {
+      "width": "44px",
+      "height": "44px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "flexShrink": "0",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)",
+      "borderBottomWidth": "2px",
+      "borderBottomStyle": "solid",
+      "borderBottomColor": "var(--color-blue-tint-200)"
+    },
+    "IRP-0": {
+      "display": "flex",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "28px",
+      "fontWeight": "var(--font-weight-bold)",
+      "lineHeight": "28px",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IRQ-0": {
+      "width": "100%",
+      "textAlign": "center",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "display": "flex",
+      "justifyContent": "center",
+      "flexWrap": "wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IRR-0": {
+      "flexGrow": "1",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "backgroundColor": "var(--color-blue-tint-50)",
+      "borderLeftWidth": "2px",
+      "borderLeftStyle": "solid",
+      "borderLeftColor": "var(--color-blue-tint-200)"
+    },
+    "IRS-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "40px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "var(--tracking-tight)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IRT-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "gap": "40px"
+    },
+    "IRU-0": {
+      "display": "flex",
+      "width": "100%",
+      "gap": "56px"
+    },
+    "IRV-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "4px",
+      "flexBasis": "0px",
+      "flexGrow": "1",
+      "minWidth": "0px"
+    },
+    "IRW-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "36px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-white)"
+    },
+    "IRX-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-regular)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-blue-tint-100)"
+    },
+    "IRY-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "4px",
+      "flexBasis": "0px",
+      "flexGrow": "1",
+      "minWidth": "0px"
+    },
+    "IRZ-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "36px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-white)"
+    },
+    "IS0-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-regular)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-blue-tint-100)"
+    },
+    "IS1-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "width": "fit-content",
+      "paddingBlock": "24px",
+      "paddingInline": "40px",
+      "borderRadius": "16px",
+      "gap": "20px",
+      "backgroundColor": "var(--color-royal-blue-500)"
+    },
+    "IS2-0": {
+      "fontFamily": "var(--font-body)",
+      "fontSize": "34px",
+      "fontWeight": "var(--font-weight-medium)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-white)"
+    },
+    "IS3-0": {
+      "flexShrink": "0",
+      "width": "32px",
+      "height": "32px",
+      "display": "inline-block"
+    }
+  },
+  "svgs": {
+    "IPH-0": "(\n    <svg width=\"1080\" height=\"1080\" viewBox=\"0 0 1080 1080\" xmlns=\"http://www.w3.org/2000/svg\" style={{ position: 'absolute', left: '0px', top: '0px', display: 'inline-block', overflow: 'visible' }}>\n      <path transform=\"matrix(0.5 0 0 0.5 60 60)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.6 0 0 0.6 965 600)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IPW-0": "(\n    <svg width=\"1080\" height=\"1080\" viewBox=\"0 0 1080 1080\" xmlns=\"http://www.w3.org/2000/svg\" style={{ position: 'absolute', left: '0px', top: '200px', display: 'inline-block', overflow: 'visible' }}>\n      <path transform=\"matrix(0.6 0 0 0.6 700 40)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.75 0 0 0.75 1010 330)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.4 0 0 0.4 700 330)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.5 0 0 0.5 1000 790)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IQ5-0": "(\n    <svg width=\"1080\" height=\"1080\" viewBox=\"0 0 1080 1080\" xmlns=\"http://www.w3.org/2000/svg\" style={{ position: 'absolute', left: '-60px', top: '1300px', display: 'inline-block', overflow: 'visible' }}>\n      <path transform=\"matrix(0.6 0 0 0.6 700 40)\" d=\"M-190 351.464C-190 351.464-171.69 351.561-171.69 351.561-171.69 351.561-175.951 346.913-175.951 346.913-175.951 346.913-173.606 345.183-173.606 345.183-173.492 345.211-172.025 346.852-170.065 349.091-170.065 349.091-169.974 331.97-169.974 331.97-169.974 331.97-166.25 331.667-166.25 331.667-166.25 331.667-166.063 350.503-166.063 350.503-166.063 350.503-159.849 344.064-159.849 344.064-159.849 344.064-158.764 345.751-158.764 345.751-158.764 345.751-164.079 351.602-164.079 351.602-164.079 351.602-146.755 351.695-146.755 351.695-146.755 351.695-146.452 355.419-146.452 355.419-146.452 355.419-164.42 355.598-164.42 355.598-161.553 358.921-159.12 361.761-159.12 361.761-159.12 361.761-161.014 363.216-161.014 363.216-161.014 363.216-165.992 357.783-165.992 357.783-165.992 357.783-165.822 374.86-165.822 374.86-165.822 374.86-170.204 375.218-170.204 375.218-170.204 375.218-170.115 358.25-170.115 358.25-170.115 358.25-175.711 364.414-175.711 364.414-175.711 364.414-177.205 362.05-177.205 362.05-177.205 362.05-171.043 355.664-171.043 355.664-171.043 355.664-189.646 355.849-189.646 355.849-189.646 355.849-190 351.464-190 351.464Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.75 0 0 0.75 1010 330)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.4 0 0 0.4 700 330)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.5 0 0 0.5 1000 790)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IQA-0": "(\n    <svg width=\"1080\" height=\"1080\" viewBox=\"0 0 1080 1080\" xmlns=\"http://www.w3.org/2000/svg\" style={{ position: 'absolute', left: '-540px', top: '20px', display: 'inline-block', overflow: 'visible' }}>\n      <path transform=\"matrix(0.6 0 0 0.6 700 40)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.75 0 0 0.75 1010 330)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n      <path transform=\"matrix(0.4 0 0 0.4 700 330)\" d=\"M0.000 19.797C0.000 19.797 18.310 19.894 18.310 19.894C18.310 19.894 14.049 15.246 14.049 15.246C14.049 15.246 16.394 13.516 16.394 13.516C16.508 13.544 17.975 15.185 19.935 17.424C19.935 17.424 20.026 0.303 20.026 0.303C20.026 0.303 23.750 0.000 23.750 0.000C23.750 0.000 23.937 18.836 23.937 18.836C23.937 18.836 30.151 12.397 30.151 12.397C30.151 12.397 31.236 14.084 31.236 14.084C31.236 14.084 25.921 19.935 25.921 19.935C25.921 19.935 43.245 20.028 43.245 20.028C43.245 20.028 43.548 23.752 43.548 23.752C43.548 23.752 25.580 23.931 25.580 23.931C28.447 27.254 30.880 30.094 30.880 30.094C30.880 30.094 28.986 31.549 28.986 31.549C28.986 31.549 24.008 26.116 24.008 26.116C24.008 26.116 24.178 43.193 24.178 43.193C24.178 43.193 19.796 43.551 19.796 43.551C19.796 43.551 19.885 26.583 19.885 26.583C19.885 26.583 14.289 32.747 14.289 32.747C14.289 32.747 12.795 30.383 12.795 30.383C12.795 30.383 18.957 23.997 18.957 23.997C18.957 23.997 0.354 24.182 0.354 24.182C0.354 24.182 0.000 19.797 0.000 19.797Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IQF-0": "(\n    <svg width=\"295\" height=\"114.72321808349031\" viewBox=\"0 0 422.837 162.743\" xmlns=\"http://www.w3.org/2000/svg\" style={{ display: 'inline-block', flexShrink: '0' }}>\n      <path d=\"M136.873 114.184C136.873 114.184 116.257 114.184 116.257 114.184 116.257 114.184 116.257 67.754 116.257 67.754 116.257 47.376 132.893 30.797 153.343 30.797 153.343 30.797 159.472 30.797 159.472 30.797 159.472 30.797 159.472 51.341 159.472 51.341 159.472 51.341 153.343 51.341 153.343 51.341 144.259 51.341 136.873 58.701 136.873 67.754 136.873 67.754 136.873 114.184 136.873 114.184Z\" fill=\"var(--color-white)\" />\n      <path d=\"M292.774 35.428C285.452 35.428 278.59 37.448 272.643 40.966 272.643 40.966 272.643 0.365 272.643 0.365 272.643 0.365 251.991 0.365 251.991 0.365 251.991 0.365 251.991 114.184 251.991 114.184 251.991 114.184 272.643 114.184 272.643 114.184 272.643 114.184 272.643 77.729 272.643 77.729 272.643 65.756 281.677 56.01 292.774 56.01 303.87 56.01 312.903 65.756 312.903 77.729 312.903 77.729 312.903 114.184 312.903 114.184 312.903 114.184 333.553 114.184 333.553 114.184 333.553 114.184 333.553 77.729 333.553 77.729 333.553 54.409 315.262 35.435 292.774 35.435 292.774 35.435 292.774 35.428 292.774 35.428Z\" fill=\"var(--color-white)\" />\n      <path d=\"M403.595 41.146C403.595 41.146 403.595 73.216 403.595 73.216 403.595 85.643 394.561 95.749 383.465 95.749 372.37 95.749 363.334 85.643 363.334 73.216 363.334 73.216 363.334 41.146 363.334 41.146 363.334 41.146 342.684 41.146 342.684 41.146 342.684 41.146 342.684 73.216 342.684 73.216 342.684 96.982 360.977 116.316 383.465 116.316 390.785 116.316 397.652 114.256 403.595 110.675 403.595 110.675 403.595 121.222 403.595 121.222 403.595 133.187 394.561 142.926 383.465 142.926 372.37 142.926 363.334 133.196 363.334 121.222 363.334 121.222 342.684 121.222 342.684 121.222 342.684 144.526 360.977 163.487 383.465 163.487 405.953 163.487 424.247 144.526 424.247 121.222 424.247 121.222 424.247 41.146 424.247 41.146 424.247 41.146 403.595 41.146 403.595 41.146Z\" fill=\"var(--color-white)\" />\n      <path d=\"M202.727 95.338C190.957 95.338 181.379 85.356 181.379 73.093 181.379 60.831 190.957 50.849 202.727 50.849 211.922 50.849 219.784 56.944 222.776 65.463 222.776 65.463 244.079 65.463 244.079 65.463 240.544 45.433 223.348 30.19 202.727 30.19 179.546 30.19 160.691 49.438 160.691 73.099 160.691 96.764 179.546 116.011 202.727 116.011 223.348 116.011 240.544 100.767 244.079 80.737 244.079 80.737 222.776 80.737 222.776 80.737 219.784 89.257 211.922 95.352 202.727 95.352 202.727 95.352 202.727 95.338 202.727 95.338Z\" fill=\"var(--color-white)\" />\n      <path fillRule=\"evenodd\" d=\"M20.68 107.194C20.68 89.799 34.884 75.651 52.347 75.651 69.811 75.651 84.013 89.799 84.013 107.194 84.013 107.194 84.013 114.184 84.013 114.184 84.013 114.184 104.692 114.184 104.692 114.184 104.692 114.184 104.692 52.498 104.692 52.498 104.692 43.878 102.535 35.32 98.442 27.775 89.271 10.87 71.613 0.365 52.339 0.365 51.362 0.365 50.375 0.395 49.399 0.444 31.732 1.426 15.892 11.137 7.012 26.424 6.41 27.456 5.839 28.524 5.31 29.6 1.79 36.771 0 44.476 0 52.498 0 52.498 0 114.184 0 114.184 0 114.184 20.68 114.184 20.68 114.184 20.68 114.184 20.68 107.194 20.68 107.194ZM20.68 52.498C20.68 47.637 21.759 42.983 23.882 38.654 24.199 38.004 24.548 37.356 24.909 36.735 30.285 27.479 39.874 21.597 50.55 21.006 51.144 20.97 51.752 20.957 52.347 20.957 64.008 20.957 74.691 27.313 80.241 37.55 82.71 42.11 84.013 47.276 84.013 52.498 84.013 52.498 84.013 65.716 84.013 65.716 75.214 59.035 64.24 55.059 52.347 55.059 40.454 55.059 29.481 59.035 20.68 65.716 20.68 65.716 20.68 52.498 20.68 52.498Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "IS3-0": "(\n    <svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" style={{ flexShrink: '0', width: '32px', height: '32px', display: 'inline-block' }}>\n      <path d=\"M18.5 12L5 12\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 18C13 18 19 13.581 19 12C19 10.419 13 6 13 6\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-mint-bright: #00FFA4;\n  --color-mint: #00E291;\n  --color-mint-light: #6FFFCB;\n  --color-mint-dark: #003C26;\n  --color-red: #E23B7B;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-success-100: #DEF2E6;\n  --color-success-300: #05C168;\n  --color-success-400: #11845B;\n  --color-error-400: #DC2B2B;\n  --color-info-100: #EAF4FF;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --text-h1: 60px;\n  --text-h2: 48px;\n  --text-h3: 40px;\n  --text-h4: 32px;\n  --text-h5: 24px;\n  --text-large: 20px;\n  --text-medium: 18px;\n  --text-regular: 16px;\n  --text-small: 14px;\n  --text-tiny: 12px;\n  --text-tagline: 13.6px;\n  --font-weight-light: 300;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --leading-h1: 63px;\n  --leading-h2: 58px;\n  --leading-h3: 48px;\n  --leading-h4: 38px;\n  --leading-h5: 29px;\n  --leading-body: 24px;\n  --leading-small: 21px;\n  --leading-tiny: 18px;\n  --breakpoint-mobile: 479px;\n  --breakpoint-mobile-landscape: 767px;\n  --breakpoint-tablet: 991px;\n  --breakpoint-desktop: 1440px;\n  --container-small: 768px;\n  --container-medium: 1024px;\n  --container-large: 1280px;\n  --spacing-tiny: 4px;\n  --spacing-xxsmall: 8px;\n  --spacing-xsmall: 16px;\n  --spacing-small: 24px;\n  --spacing-medium: 32px;\n  --spacing-large: 48px;\n  --spacing-xlarge: 64px;\n  --spacing-xxlarge: 80px;\n  --spacing-huge: 96px;\n  --spacing-xhuge: 112px;\n  --section-small: 48px;\n  --section-medium: 80px;\n  --section-large: 112px;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-tag: 4px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

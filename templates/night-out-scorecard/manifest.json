@@ -1,0 +1,706 @@
+{
+  "id": "night-out-scorecard",
+  "title": "Night Out Scorecard",
+  "description": "Hosted social evening with an activity illustration and a playful scorecard",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    },
+    "og": {
+      "label": "OG 1200×630",
+      "width": 1200,
+      "height": 630,
+      "html": "og.html"
+    },
+    "cover": {
+      "label": "Cover 1200×900",
+      "width": 1200,
+      "height": 900,
+      "html": "cover.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-illustration": {
+      "type": "image",
+      "default": "assets/15J2ZJNWEW1FB7T25QWA4H8RVE.png",
+      "perFormat": {
+        "post": {
+          "nodes": 1
+        },
+        "square": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 1
+        },
+        "og": {
+          "nodes": 1
+        }
+      }
+    },
+    "headline": {
+      "type": "text",
+      "default": "Strike up a conversation.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "112px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "118px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "112px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "118px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "116px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "118px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "90px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "76px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 112,
+            "min": 95
+          },
+          "roomPx": 870
+        },
+        "square": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 112,
+            "min": 95
+          },
+          "roomPx": 870
+        },
+        "stories": {
+          "maxCharsPerLine": 16,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 116,
+            "min": 99
+          },
+          "roomPx": 870
+        },
+        "og": {
+          "maxCharsPerLine": 15,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 90,
+            "min": 77
+          },
+          "roomPx": 640
+        }
+      }
+    },
+    "card-player": {
+      "type": "text",
+      "default": "Inland Empire Dentists",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "34px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "34px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "34px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 13,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 194
+        },
+        "square": {
+          "maxCharsPerLine": 13,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 194
+        },
+        "stories": {
+          "maxCharsPerLine": 13,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 194
+        }
+      }
+    },
+    "card-total": {
+      "type": "text",
+      "default": "On us",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 108
+        },
+        "square": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 108
+        },
+        "stories": {
+          "maxCharsPerLine": 5,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 108
+        }
+      }
+    },
+    "venue": {
+      "type": "text",
+      "default": "Punch Bowl Social",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "44px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "44px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "44px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "34px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 407
+        },
+        "square": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 407
+        },
+        "stories": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 407
+        },
+        "og": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 289
+        }
+      }
+    },
+    "city": {
+      "type": "text",
+      "default": "Rancho Cucamonga, CA",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "30px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 22,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 407
+        },
+        "square": {
+          "maxCharsPerLine": 22,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 407
+        },
+        "stories": {
+          "maxCharsPerLine": 22,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 407
+        },
+        "og": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 289
+        }
+      }
+    },
+    "date": {
+      "type": "text",
+      "default": "Thursday, November 12",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "44px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "44px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "44px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "34px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 407
+        },
+        "square": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 407
+        },
+        "stories": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 407
+        },
+        "og": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 310
+        }
+      }
+    },
+    "time": {
+      "type": "text",
+      "default": "6:00 – 9:00 PM",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        },
+        "square": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "40px"
+        },
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "30px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 407
+        },
+        "square": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 407
+        },
+        "stories": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 407
+        },
+        "og": {
+          "maxCharsPerLine": 23,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 289
+        }
+      }
+    },
+    "cta": {
+      "type": "text",
+      "default": "Claim your spot",
+      "perFormat": {
+        "post": {
+          "fontFamily": "var(--font-body)",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "40px"
+        },
+        "square": {
+          "fontFamily": "var(--font-body)",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "40px"
+        },
+        "stories": {
+          "fontFamily": "var(--font-body)",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "40px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 63,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 63,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 63,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "subhead": {
+      "type": "text",
+      "default": "Dinner and drinks are on us.",
+      "perFormat": {
+        "og": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "38px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "og": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1200
+        }
+      }
+    },
+    "image-venue": {
+      "type": "image",
+      "default": "assets/1HGHQW5ZC0NF7BJ30QDAJWHWSP.png",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
+        }
+      }
+    },
+    "headline-1": {
+      "type": "text",
+      "default": "Strike up a",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "84px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "90px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 19,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 84,
+            "min": 71
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "headline-2": {
+      "type": "text",
+      "default": "conversation.",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "84px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "90px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 18,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 84,
+            "min": 71
+          },
+          "roomPx": 732
+        }
+      }
+    },
+    "image-photo": {
+      "type": "image",
+      "default": "assets/01M48Z938HV2X0GCDFWM4AGYKJ.png",
+      "perFormat": {
+        "cover": {
+          "nodes": 1
+        }
+      }
+    },
+    "cover-subhead": {
+      "type": "text",
+      "default": "Dinner and drinks\non us at Punch\nBowl Social",
+      "perFormat": {
+        "cover": {
+          "fontFamily": "var(--font-heading)",
+          "fontSize": "52px",
+          "fontWeight": "var(--font-weight-semibold)",
+          "lineHeight": "60px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "cover": {
+          "maxCharsPerLine": 47,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 52,
+            "min": 44
+          },
+          "roomPx": 1200
+        }
+      }
+    }
+  },
+  "optionals": {
+    "illustration": {
+      "contains": []
+    },
+    "card": {
+      "contains": [
+        "card-player",
+        "card-total"
+      ]
+    },
+    "location": {
+      "contains": [
+        "venue",
+        "city"
+      ]
+    },
+    "date": {
+      "contains": [
+        "date",
+        "time"
+      ]
+    },
+    "footer": {
+      "contains": [
+        "cover-subhead"
+      ]
+    }
+  }
+}

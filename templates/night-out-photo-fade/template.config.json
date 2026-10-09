@@ -1,0 +1,84 @@
+{
+  "id": "night-out-photo-fade",
+  "title": "Night Out Photo Fade",
+  "category": "events",
+  "description": "Hosted social evening led by a photo of the venue that dissolves into the navy ground",
+  "useWhen": "Archy hosts an evening at a named venue and there is a good photo of the venue's outside or inside.",
+  "notWhen": "there is no venue photo (use `Night Out Illustration` or `Night Out Scorecard`).",
+  "paperFileId": "01M1F9VXX1S3JJETTVWG2H2PCD",
+  "discover": {
+    "page": "Templates",
+    "family": "Night Out Photo Fade"
+  },
+  "guidance": [
+    "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
+    "Leave out any fact that does not exist (venue, time): its label goes with it and the layout closes up.",
+    "headline: the invitation line, one white block (\"Pull up a chair, Inland Empire.\"), about two lines. The event page cover splits it into two lines by itself.",
+    "image-venue: a photo of the venue from the requester or the venue, never generated; its top part shows, the lower part dissolves into pixels under the text."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "ITZ-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "IL9-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "IOJ-0",
+      "label": "Stories 1080×1920"
+    },
+    "og": {
+      "nodeId": "IS6-0",
+      "label": "OG 1200×630"
+    },
+    "cover": {
+      "nodeId": "IX1-0",
+      "label": "Cover 1200×900"
+    }
+  },
+  "purpose": "hosted-evening",
+  "essential": [
+    "headline",
+    "image-venue",
+    "venue",
+    "date"
+  ],
+  "optional": [
+    "subhead",
+    "city",
+    "time",
+    "cta"
+  ],
+  "facts": {
+    "headline": null,
+    "subhead": null,
+    "cta": null,
+    "venue": "venue",
+    "city": "city",
+    "date": "date",
+    "time": "time",
+    "image-venue": "venue-photo",
+    "headline-1": null,
+    "headline-2": null,
+    "image-photo": "venue-photo",
+    "cover-subhead": null
+  },
+  "coverEssential": [
+    "cover-subhead"
+  ],
+  "derive": {
+    "headline-1": {
+      "from": "headline",
+      "line": 0
+    },
+    "headline-2": {
+      "from": "headline",
+      "line": 1
+    },
+    "image-photo": {
+      "from": "image-venue"
+    }
+  }
+}

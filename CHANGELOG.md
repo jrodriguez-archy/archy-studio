@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.15.0 (2026-10-08)
+
+- Two new hosted-evening templates from `Master - Events`, each in Post, Square, Stories, OG and Cover: `night-out-photo-fade` (a venue photo dissolving into the navy ground; needs the venue photo, whose cover reuses it) and `night-out-scorecard` (an activity illustration, bowling by default, as `image-illustration`, and an optional scorecard with `card-player` / `card-total`; its cover asks for a venue photo). Details columns and the card's cells carry their own limits.
+
 ## archy-studio 0.14.0 (2026-10-08)
 
 - New template `photo-headline` (Ads, purpose `photo-claim`, "Photo ads"): one product claim told by a photo. Three designs (`full-photo` default, `photo-bottom`, `split`), two themes (`royal` default, `navy`), formats Square 1080×1080, Post 1080×1350 and Stories 1080×1920 (18 artboards in `Master - Ads`, page `Photo Headline`). Slots: `headline` (two lines, grows when the copy is short), `subline` (optional), `cta`, `image-photo`; in Split `image-left`, `image-right` and the optional `label-left` / `label-right`.

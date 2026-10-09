@@ -1,0 +1,270 @@
+{
+  "rootId": "5PT-0",
+  "nodes": {
+    "5PT-0": {
+      "id": "5PT-0",
+      "name": "TPL · Photo Headline · Photo Bottom · Royal Blue · Stories 1080×1920",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5QE-0",
+        "5QD-0",
+        "5QC-0",
+        "5QB-0",
+        "5PU-0"
+      ]
+    },
+    "5QE-0": {
+      "id": "5QE-0",
+      "name": "slot-image-photo",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5QD-0": {
+      "id": "5QD-0",
+      "name": "Shade Top",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5QC-0": {
+      "id": "5QC-0",
+      "name": "Pixel Band",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5QB-0": {
+      "id": "5QB-0",
+      "name": "Shade Bottom",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5PU-0": {
+      "id": "5PU-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5Q8-0",
+        "5PV-0"
+      ]
+    },
+    "5Q8-0": {
+      "id": "5Q8-0",
+      "name": "Main",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5QA-0",
+        "5Q9-0"
+      ]
+    },
+    "5QA-0": {
+      "id": "5QA-0",
+      "name": "slot-text-headline",
+      "component": "Text",
+      "visible": true,
+      "text": "Full schedule.\nFrozen server.",
+      "children": []
+    },
+    "5Q9-0": {
+      "id": "5Q9-0",
+      "name": "slot-text-subline",
+      "component": "Text",
+      "visible": true,
+      "text": "Archy runs in the cloud. Nothing to freeze.",
+      "children": []
+    },
+    "5PV-0": {
+      "id": "5PV-0",
+      "name": "Footer",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5Q1-0",
+        "5PW-0"
+      ]
+    },
+    "5Q1-0": {
+      "id": "5Q1-0",
+      "name": "Archy Wordmark",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5PW-0": {
+      "id": "5PW-0",
+      "name": "CTA Button",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5Q0-0",
+        "5PX-0"
+      ]
+    },
+    "5Q0-0": {
+      "id": "5Q0-0",
+      "name": "slot-text-cta",
+      "component": "Text",
+      "visible": true,
+      "text": "Book a demo",
+      "children": []
+    },
+    "5PX-0": {
+      "id": "5PX-0",
+      "name": "Arrow",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    }
+  },
+  "styles": {
+    "5PT-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1920px",
+      "position": "absolute",
+      "left": "2320px",
+      "top": "2080px",
+      "backgroundColor": "var(--color-dark-background)"
+    },
+    "5QE-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": "470px",
+      "width": "1080px",
+      "height": "1450px",
+      "paddingBlock": "40px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/01M46M62YX54DHP3ASA73ECZA4.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "5QD-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "500px",
+      "width": "1080px",
+      "height": "360px",
+      "backgroundImage": "linear-gradient(in oklab 180deg, color-mix(var(--color-blue-tint-800) 60%, transparent) 0%, oklab(0% 0 0 / 0%) 100%)"
+    },
+    "5QC-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": "0px",
+      "width": "1080px",
+      "height": "736px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/481XS137232VJR0STAN5TDQKPX.png)",
+      "backgroundSize": "100% 100%",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat"
+    },
+    "5QB-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "1430px",
+      "width": "1080px",
+      "height": "490px",
+      "backgroundImage": "linear-gradient(in oklab 180deg, oklab(0% 0 0 / 0%) 0%, color-mix(var(--color-blue-tint-800) 70%, transparent) 100%)"
+    },
+    "5PU-0": {
+      "position": "absolute",
+      "left": "80px",
+      "top": "250px",
+      "width": "920px",
+      "height": "1420px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between"
+    },
+    "5Q8-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "gap": 32,
+      "height": "fit-content",
+      "flexShrink": "0"
+    },
+    "5QA-0": {
+      "width": "100%",
+      "fontSize": "115px",
+      "lineHeight": "108px",
+      "letterSpacing": "var(--tracking-tight)",
+      "flexShrink": "0",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    },
+    "5Q9-0": {
+      "width": "100%",
+      "fontSize": "44px",
+      "lineHeight": "48px",
+      "flexShrink": "0",
+      "letterSpacing": "var(--tracking-snug)",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-white)"
+    },
+    "5PV-0": {
+      "display": "flex",
+      "justifyContent": "space-between",
+      "alignItems": "center",
+      "width": "100%",
+      "flexShrink": "0",
+      "height": "fit-content"
+    },
+    "5Q1-0": {
+      "width": "266px",
+      "height": "104px",
+      "flexShrink": "0"
+    },
+    "5PW-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "19px",
+      "paddingInline": "29px",
+      "borderRadius": "16px",
+      "gap": "16px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-royal-blue-500)",
+      "borderWidth": "3px",
+      "borderStyle": "solid",
+      "borderColor": "color-mix(var(--color-white) 40%, transparent)"
+    },
+    "5Q0-0": {
+      "width": "max-content",
+      "fontSize": "30px",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-white)"
+    },
+    "5PX-0": {
+      "width": "28px",
+      "height": "28px",
+      "flexShrink": "0",
+      "display": "inline-block"
+    }
+  },
+  "svgs": {
+    "5Q1-0": "(\n    <svg width=\"180\" height=\"70\" viewBox=\"0 5 252 98\" xmlns=\"http://www.w3.org/2000/svg\" style={{ width: '266px', height: '104px', flexShrink: '0' }}>\n      <g transform=\"translate(0 21.752)\">\n        <path d=\"M81.301 51.629C81.301 51.629 69.056 51.629 69.056 51.629 69.056 51.629 69.056 23.733 69.056 23.733 69.056 11.492 78.938 1.531 91.085 1.531 91.085 1.531 94.726 1.531 94.726 1.531 94.726 1.531 94.726 13.873 94.726 13.873 94.726 13.873 91.085 13.873 91.085 13.873 85.688 13.873 81.301 18.296 81.301 23.733 81.301 23.733 81.301 51.629 81.301 51.629Z\" fill=\"#FFFFFF\" />\n        <path d=\"M173.905 4.314C169.558 4.314 165.48 5.526 161.948 7.639 161.948 7.639 161.948-16.752 161.948-16.752 161.948-16.752 149.682-16.752 149.682-16.752 149.682-16.752 149.682 51.629 149.682 51.629 149.682 51.629 161.948 51.629 161.948 51.629 161.948 51.629 161.948 29.727 161.948 29.727 161.948 22.533 167.315 16.678 173.905 16.678 180.496 16.678 185.862 22.533 185.862 29.727 185.862 29.727 185.862 51.629 185.862 51.629 185.862 51.629 198.13 51.629 198.13 51.629 198.13 51.629 198.13 29.727 198.13 29.727 198.13 15.717 187.264 4.317 173.905 4.317 173.905 4.317 173.905 4.314 173.905 4.314Z\" fill=\"#FFFFFF\" />\n        <path d=\"M239.734 7.748C239.734 7.748 239.734 27.015 239.734 27.015 239.734 34.482 234.367 40.554 227.776 40.554 221.185 40.554 215.819 34.482 215.819 27.015 215.819 27.015 215.819 7.748 215.819 7.748 215.819 7.748 203.552 7.748 203.552 7.748 203.552 7.748 203.552 27.015 203.552 27.015 203.552 41.293 214.418 52.91 227.776 52.91 232.124 52.91 236.202 51.672 239.734 49.52 239.734 49.52 239.734 55.856 239.734 55.856 239.734 63.045 234.367 68.896 227.776 68.896 221.185 68.896 215.819 63.05 215.819 55.856 215.819 55.856 203.552 55.856 203.552 55.856 203.552 69.858 214.418 81.248 227.776 81.248 241.134 81.248 252 69.858 252 55.856 252 55.856 252 7.748 252 7.748 252 7.748 239.734 7.748 239.734 7.748Z\" fill=\"#FFFFFF\" />\n        <path d=\"M120.418 40.305C113.428 40.305 107.737 34.308 107.737 26.942 107.737 19.574 113.428 13.577 120.418 13.577 125.88 13.577 130.549 17.239 132.328 22.358 132.328 22.358 144.982 22.358 144.982 22.358 142.88 10.324 132.667 1.166 120.418 1.166 106.649 1.166 95.449 12.729 95.449 26.945 95.449 41.163 106.649 52.726 120.418 52.726 132.667 52.726 142.88 43.567 144.982 31.534 144.982 31.534 132.328 31.534 132.328 31.534 130.549 36.653 125.88 40.315 120.418 40.315 120.418 40.315 120.418 40.305 120.418 40.305Z\" fill=\"#FFFFFF\" />\n        <path d=\"M12.283 47.429C12.283 36.978 20.72 28.478 31.093 28.478 41.466 28.478 49.903 36.978 49.903 47.429 49.903 47.429 49.903 51.629 49.903 51.629 49.903 51.629 62.186 51.629 62.186 51.629 62.186 51.629 62.186 14.569 62.186 14.569 62.186 9.389 60.905 4.249 58.474-0.285 53.027-10.441 42.538-16.752 31.088-16.752 30.508-16.752 29.923-16.735 29.342-16.704 18.848-16.115 9.439-10.281 4.165-1.096 3.808-0.476 3.468 0.166 3.154 0.811 1.063 5.12 0 9.749 0 14.569 0 14.569 0 51.629 0 51.629 0 51.629 12.283 51.629 12.283 51.629 12.283 51.629 12.283 47.429 12.283 47.429ZM12.283 14.569C12.283 11.647 12.924 8.851 14.185 6.251 14.375 5.861 14.581 5.471 14.796 5.098 17.988-0.463 23.684-3.996 30.026-4.351 30.379-4.373 30.74-4.382 31.093-4.382 38.02-4.382 44.366-0.563 47.662 5.588 49.129 8.327 49.903 11.43 49.903 14.569 49.903 14.569 49.903 22.509 49.903 22.509 44.676 18.496 38.158 16.108 31.093 16.108 24.029 16.108 17.51 18.496 12.283 22.509 12.283 22.509 12.283 14.569 12.283 14.569Z\" fill=\"#FFFFFF\" />\n      </g>\n    </svg>\n  )",
+    "5PX-0": "(\n    <svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" style={{ width: '28px', height: '28px', flexShrink: '0', display: 'inline-block' }}>\n      <path d=\"M18.5 12L5 12\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 18C13 18 19 13.581 19 12C19 10.419 13 6 13 6\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

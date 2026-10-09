@@ -1,0 +1,342 @@
+{
+  "rootId": "IL9-0",
+  "nodes": {
+    "IL9-0": {
+      "id": "IL9-0",
+      "name": "TPL · Night Out Photo Fade · Square 1080×1080",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "ILA-0",
+        "ILB-0",
+        "ILC-0"
+      ]
+    },
+    "ILA-0": {
+      "id": "ILA-0",
+      "name": "slot-image-venue",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "ILB-0": {
+      "id": "ILB-0",
+      "name": "Pixel Band",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "ILC-0": {
+      "id": "ILC-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "ILD-0",
+        "ILJ-0"
+      ]
+    },
+    "ILD-0": {
+      "id": "ILD-0",
+      "name": "Logo Archy",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "ILJ-0": {
+      "id": "ILJ-0",
+      "name": "Body",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "ILL-0",
+        "ILN-0",
+        "ILO-0",
+        "ILV-0"
+      ]
+    },
+    "ILL-0": {
+      "id": "ILL-0",
+      "name": "slot-text-headline",
+      "component": "Text",
+      "visible": true,
+      "text": "Pull up a chair, Inland Empire.",
+      "children": []
+    },
+    "ILN-0": {
+      "id": "ILN-0",
+      "name": "slot-text-subhead",
+      "component": "Text",
+      "visible": true,
+      "text": "Dinner, drinks and great company, all on us.",
+      "children": []
+    },
+    "ILO-0": {
+      "id": "ILO-0",
+      "name": "Details",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "ILP-0",
+        "ILS-0"
+      ]
+    },
+    "ILP-0": {
+      "id": "ILP-0",
+      "name": "optional-location",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "ILQ-0",
+        "ILR-0"
+      ]
+    },
+    "ILQ-0": {
+      "id": "ILQ-0",
+      "name": "slot-text-venue",
+      "component": "Text",
+      "visible": true,
+      "text": "Punch Bowl Social",
+      "children": []
+    },
+    "ILR-0": {
+      "id": "ILR-0",
+      "name": "slot-text-city",
+      "component": "Text",
+      "visible": true,
+      "text": "Rancho Cucamonga, CA",
+      "children": []
+    },
+    "ILS-0": {
+      "id": "ILS-0",
+      "name": "optional-date",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "ILT-0",
+        "ILU-0"
+      ]
+    },
+    "ILT-0": {
+      "id": "ILT-0",
+      "name": "slot-text-date",
+      "component": "Text",
+      "visible": true,
+      "text": "Thursday, November 12",
+      "children": []
+    },
+    "ILU-0": {
+      "id": "ILU-0",
+      "name": "slot-text-time",
+      "component": "Text",
+      "visible": true,
+      "text": "6:00 – 9:00 PM",
+      "children": []
+    },
+    "ILV-0": {
+      "id": "ILV-0",
+      "name": "Button",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "ILW-0",
+        "ILX-0"
+      ]
+    },
+    "ILW-0": {
+      "id": "ILW-0",
+      "name": "slot-text-cta",
+      "component": "Text",
+      "visible": true,
+      "text": "Claim your spot",
+      "children": []
+    },
+    "ILX-0": {
+      "id": "ILX-0",
+      "name": "Icon Arrow",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    }
+  },
+  "styles": {
+    "IL9-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1080px",
+      "left": 3600,
+      "top": "22880px",
+      "position": "absolute",
+      "backgroundColor": "var(--color-dark-background)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/5PCWJ6BMJ3C0GSWBXCSPDEQT19.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "ILA-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": -24,
+      "width": "1080px",
+      "height": "1080px",
+      "display": "flex",
+      "alignItems": "start",
+      "justifyContent": "center",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/01M48Z938HV2X0GCDFWM4AGYKJ.png)",
+      "backgroundSize": "1082px 722px",
+      "backgroundPosition": "50% top",
+      "backgroundRepeat": "no-repeat"
+    },
+    "ILB-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": "328px",
+      "width": "1080px",
+      "height": "752px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/3Y8YJAB2KK010TC3RC9NSBP249.png)",
+      "backgroundSize": "100% 100%",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat"
+    },
+    "ILC-0": {
+      "position": "absolute",
+      "left": "105px",
+      "top": "90px",
+      "width": "870px",
+      "height": "900px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between",
+      "alignItems": "start"
+    },
+    "ILD-0": {
+      "display": "inline-block",
+      "flexShrink": "0"
+    },
+    "ILJ-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "gap": "40px"
+    },
+    "ILL-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "112px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "letterSpacing": "var(--tracking-tight)",
+      "lineHeight": "114px",
+      "flexShrink": "0",
+      "width": "100%",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-white)"
+    },
+    "ILN-0": {
+      "width": "100%",
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "40px",
+      "fontWeight": "var(--font-weight-medium)",
+      "letterSpacing": "var(--tracking-snug)",
+      "lineHeight": "50px",
+      "textWrap": "balance",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-white)"
+    },
+    "ILO-0": {
+      "display": "flex",
+      "width": "100%",
+      "gap": "56px"
+    },
+    "ILP-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "4px",
+      "flexBasis": "0px",
+      "flexGrow": "1",
+      "minWidth": "0px"
+    },
+    "ILQ-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "36px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-white)"
+    },
+    "ILR-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-regular)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-blue-tint-100)"
+    },
+    "ILS-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "4px",
+      "flexBasis": "0px",
+      "flexGrow": "1",
+      "minWidth": "0px"
+    },
+    "ILT-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "36px",
+      "fontWeight": "var(--font-weight-semibold)",
+      "lineHeight": "44px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-white)"
+    },
+    "ILU-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontSize": "32px",
+      "fontWeight": "var(--font-weight-regular)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre",
+      "color": "var(--color-blue-tint-100)"
+    },
+    "ILV-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "width": "fit-content",
+      "paddingBlock": "24px",
+      "paddingInline": "40px",
+      "borderRadius": "16px",
+      "gap": "20px",
+      "backgroundColor": "var(--color-white)"
+    },
+    "ILW-0": {
+      "fontFamily": "var(--font-body)",
+      "fontSize": "34px",
+      "fontWeight": "var(--font-weight-medium)",
+      "lineHeight": "40px",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "ILX-0": {
+      "flexShrink": "0",
+      "width": "32px",
+      "height": "32px",
+      "display": "inline-block"
+    }
+  },
+  "svgs": {
+    "ILD-0": "(\n    <svg width=\"267.42857142857144\" height=\"104\" viewBox=\"0 0 383.314 147.531\" xmlns=\"http://www.w3.org/2000/svg\" style={{ display: 'inline-block', flexShrink: '0' }}>\n      <path d=\"M123.006 103.183C123.006 103.183 104.479 103.183 104.479 103.183 104.479 103.183 104.479 61.193 104.479 61.193 104.479 42.765 119.429 27.772 137.807 27.772 137.807 27.772 143.316 27.772 143.316 27.772 143.316 27.772 143.316 46.351 143.316 46.351 143.316 46.351 137.807 46.351 137.807 46.351 129.644 46.351 123.006 53.007 123.006 61.193 123.006 61.193 123.006 103.183 123.006 103.183Z\" fill=\"var(--color-white)\" />\n      <path d=\"M263.112 31.961C256.533 31.961 250.365 33.786 245.021 36.967 245.021 36.967 245.021 0.251 245.021 0.251 245.021 0.251 226.462 0.251 226.462 0.251 226.462 0.251 226.462 103.183 226.462 103.183 226.462 103.183 245.021 103.183 245.021 103.183 245.021 103.183 245.021 70.215 245.021 70.215 245.021 59.387 253.14 50.574 263.112 50.574 273.084 50.574 281.203 59.387 281.203 70.215 281.203 70.215 281.203 103.183 281.203 103.183 281.203 103.183 299.761 103.183 299.761 103.183 299.761 103.183 299.761 70.215 299.761 70.215 299.761 49.125 283.322 31.966 263.112 31.966 263.112 31.966 263.112 31.961 263.112 31.961Z\" fill=\"var(--color-white)\" />\n      <path d=\"M362.707 37.131C362.707 37.131 362.707 66.133 362.707 66.133 362.707 77.371 354.588 86.512 344.616 86.512 334.646 86.512 326.525 77.371 326.525 66.133 326.525 66.133 326.525 37.131 326.525 37.131 326.525 37.131 307.967 37.131 307.967 37.131 307.967 37.131 307.967 66.133 307.967 66.133 307.967 87.626 324.406 105.111 344.616 105.111 351.195 105.111 357.365 103.248 362.707 100.009 362.707 100.009 362.707 109.548 362.707 109.548 362.707 120.368 354.588 129.175 344.616 129.175 334.646 129.175 326.525 120.375 326.525 109.548 326.525 109.548 307.967 109.548 307.967 109.548 307.967 130.622 324.406 147.769 344.616 147.769 364.826 147.769 381.267 130.622 381.267 109.548 381.267 109.548 381.267 37.131 381.267 37.131 381.267 37.131 362.707 37.131 362.707 37.131Z\" fill=\"var(--color-white)\" />\n      <path d=\"M182.188 86.139C171.611 86.139 163.003 77.111 163.003 66.022 163.003 54.933 171.611 45.905 182.188 45.905 190.451 45.905 197.517 51.417 200.206 59.122 200.206 59.122 219.351 59.122 219.351 59.122 216.174 41.009 200.721 27.223 182.188 27.223 161.355 27.223 144.411 44.629 144.411 66.028 144.411 87.428 161.355 104.835 182.188 104.835 200.721 104.835 216.174 91.049 219.351 72.935 219.351 72.935 200.206 72.935 200.206 72.935 197.517 80.64 190.451 86.152 182.188 86.152 182.188 86.152 182.188 86.139 182.188 86.139Z\" fill=\"var(--color-white)\" />\n      <path fillRule=\"evenodd\" d=\"M18.584 96.861C18.584 81.13 31.349 68.335 47.043 68.335 62.737 68.335 75.501 81.13 75.501 96.861 75.501 96.861 75.501 103.183 75.501 103.183 75.501 103.183 94.086 103.183 94.086 103.183 94.086 103.183 94.086 47.397 94.086 47.397 94.086 39.602 92.147 31.862 88.469 25.039 80.227 9.751 64.357 0.251 47.036 0.251 46.158 0.251 45.272 0.278 44.394 0.322 28.517 1.211 14.281 9.993 6.301 23.817 5.76 24.75 5.246 25.716 4.772 26.689 1.608 33.174 0 40.142 0 47.397 0 47.397 0 103.183 0 103.183 0 103.183 18.584 103.183 18.584 103.183 18.584 103.183 18.584 96.861 18.584 96.861ZM18.584 47.397C18.584 43.001 19.554 38.792 21.462 34.877 21.747 34.29 22.06 33.703 22.385 33.142 27.216 24.771 35.833 19.452 45.428 18.917 45.962 18.885 46.508 18.873 47.043 18.873 57.522 18.873 67.123 24.621 72.111 33.879 74.331 38.003 75.501 42.674 75.501 47.397 75.501 47.397 75.501 59.351 75.501 59.351 67.593 53.309 57.731 49.713 47.043 49.713 36.355 49.713 26.493 53.309 18.584 59.351 18.584 59.351 18.584 47.397 18.584 47.397Z\" fill=\"var(--color-white)\" />\n    </svg>\n  )",
+    "ILX-0": "(\n    <svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" style={{ flexShrink: '0', width: '32px', height: '32px', display: 'inline-block' }}>\n      <path d=\"M18.5 12L5 12\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 18C13 18 19 13.581 19 12C19 10.419 13 6 13 6\" fill=\"none\" stroke=\"var(--color-royal-blue-500)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-mint-bright: #00FFA4;\n  --color-mint: #00E291;\n  --color-mint-light: #6FFFCB;\n  --color-mint-dark: #003C26;\n  --color-red: #E23B7B;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-success-100: #DEF2E6;\n  --color-success-300: #05C168;\n  --color-success-400: #11845B;\n  --color-error-400: #DC2B2B;\n  --color-info-100: #EAF4FF;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --text-h1: 60px;\n  --text-h2: 48px;\n  --text-h3: 40px;\n  --text-h4: 32px;\n  --text-h5: 24px;\n  --text-large: 20px;\n  --text-medium: 18px;\n  --text-regular: 16px;\n  --text-small: 14px;\n  --text-tiny: 12px;\n  --text-tagline: 13.6px;\n  --font-weight-light: 300;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --leading-h1: 63px;\n  --leading-h2: 58px;\n  --leading-h3: 48px;\n  --leading-h4: 38px;\n  --leading-h5: 29px;\n  --leading-body: 24px;\n  --leading-small: 21px;\n  --leading-tiny: 18px;\n  --breakpoint-mobile: 479px;\n  --breakpoint-mobile-landscape: 767px;\n  --breakpoint-tablet: 991px;\n  --breakpoint-desktop: 1440px;\n  --container-small: 768px;\n  --container-medium: 1024px;\n  --container-large: 1280px;\n  --spacing-tiny: 4px;\n  --spacing-xxsmall: 8px;\n  --spacing-xsmall: 16px;\n  --spacing-small: 24px;\n  --spacing-medium: 32px;\n  --spacing-large: 48px;\n  --spacing-xlarge: 64px;\n  --spacing-xxlarge: 80px;\n  --spacing-huge: 96px;\n  --spacing-xhuge: 112px;\n  --section-small: 48px;\n  --section-medium: 80px;\n  --section-large: 112px;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-tag: 4px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

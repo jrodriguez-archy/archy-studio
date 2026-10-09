@@ -31,8 +31,8 @@ export type Rules = Record<string, unknown> & {
   slots: Record<string, unknown>;
   optionals?: Manifest['optionals'];
   variants?: Record<string, { slots?: Record<string, object> }>;
-  /** A design replaces the slot rules it names (and the containers when given): its layers differ. */
-  designs?: Record<string, { slots?: Record<string, object>; containers?: unknown[] }>;
+  /** A design replaces the slot rules it names (and the containers and fill when given): its layers differ. */
+  designs?: Record<string, { slots?: Record<string, object>; containers?: unknown[]; fill?: unknown }>;
 };
 
 export type Combo = { design: string; theme: string; key: string | null };
@@ -67,18 +67,28 @@ export async function listTemplates(): Promise<Manifest[]> {
   return Promise.all(ids.map((id) => loadManifest(id)));
 }
 
+// Template files never change inside a deploy: read once per server instance (in development they are
+// read every time, as they are being edited).
+const texts = new Map<string, Promise<string>>();
+const readText = (file: string) => {
+  if (process.env.NODE_ENV !== 'production') return fs.readFile(file, 'utf8');
+  let t = texts.get(file);
+  if (!t) { t = fs.readFile(file, 'utf8'); t.catch(() => texts.delete(file)); texts.set(file, t); }
+  return t;
+};
+
 export async function loadManifest(id: string): Promise<Manifest> {
   if (!SAFE_ID.test(id)) throw new Error(`Unknown template: ${id}`);
   const file = path.join(ROOT, 'templates', id, 'manifest.json');
   try {
-    return JSON.parse(await fs.readFile(file, 'utf8'));
+    return JSON.parse(await readText(file));
   } catch {
     throw new Error(`Unknown template: ${id}`);
   }
 }
 
 export async function loadRules(id: string, manifest: Manifest): Promise<Rules> {
-  const rules = JSON.parse(await fs.readFile(path.join(ROOT, 'templates', id, 'rules.json'), 'utf8'));
+  const rules = JSON.parse(await readText(path.join(ROOT, 'templates', id, 'rules.json')));
   rules.optionals = manifest.optionals;
   return rules;
 }
@@ -108,7 +118,7 @@ export type TemplateConfig = {
 
 export async function loadConfig(id: string): Promise<TemplateConfig> {
   if (!SAFE_ID.test(id)) throw new Error(`Unknown template: ${id}`);
-  return JSON.parse(await fs.readFile(path.join(ROOT, 'templates', id, 'template.config.json'), 'utf8'));
+  return JSON.parse(await readText(path.join(ROOT, 'templates', id, 'template.config.json')));
 }
 
 export type LibraryAsset = {
@@ -121,5 +131,5 @@ export type LibraryAsset = {
 };
 
 export async function loadLibrary(): Promise<LibraryAsset[]> {
-  return JSON.parse(await fs.readFile(path.join(ROOT, 'library', 'library.json'), 'utf8'));
+  return JSON.parse(await readText(path.join(ROOT, 'library', 'library.json')));
 }

@@ -3,8 +3,8 @@
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowDown01Icon, ArrowRight01Icon, Layers01Icon, LockIcon, ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
-import type { Edits, Preset } from '@/lib/canvas-shared';
+import { ArrowDown01Icon, ArrowRight01Icon, Delete02Icon, Image02Icon, Layers01Icon, LockIcon, ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
+import { LEFT_OUT, type Edits, type Preset } from '@/lib/canvas-shared';
 import { humanize } from '@/lib/gallery-shared';
 import type { Comp } from './model';
 import { PRESETS, type SlotMeta } from './properties-panel';
@@ -12,7 +12,7 @@ import { PRESETS, type SlotMeta } from './properties-panel';
 // Content: the design as someone who is not a designer reads it. What it says (the copy from the brief),
 // its images, its look (the theme) and, folded away, its decorations. A click picks the part on the
 // design and opens its controls on the right. Every layer is still there under Advanced.
-export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, selected, hover, onSelect, onHover, onSlotToggle, onSlot, onHide, onPreset, onAdvanced }: {
+export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, selected, hover, onSelect, onHover, onSlotToggle, onSlot, onHide, onPreset, onAdvanced, onLogoColors, onSlotRemove }: {
   comps: Comp[]; edits: Edits; slots: Record<string, string | null>; slotMeta: Record<string, SlotMeta>; previews: Record<string, string | null>;
   preset?: Preset; selected: string[]; hover: string | null;
   onSelect: (id: string) => void; onHover: (id: string | null) => void;
@@ -21,6 +21,10 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
   /** An image for a detail that is not on the design yet (a partner logo). */
   onSlot: (slot: string, value: string) => void;
   onHide: (id: string) => void; onPreset: (p: Preset) => void; onAdvanced: () => void;
+  /** A partner logo in one colour or its own colours. */
+  onLogoColors: (id: string, colors: 'one' | 'original') => void;
+  /** Remove an optional image for good (the eye only hides it). */
+  onSlotRemove: (slot: string) => void;
 }) {
   const [decorOpen, setDecorOpen] = useState(false);
   const texts = comps.filter((c) => (c.kind === 'text' && c.slot) || (c.kind === 'button' && c.textSlot));
@@ -38,9 +42,17 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
     selected.includes(id) ? 'bg-[#E6F4FF]' : hover === id ? 'bg-foreground/[0.04]' : 'hover:bg-foreground/[0.04]'}`;
   const pick = (id: string) => ({ onClick: () => onSelect(id), onMouseEnter: () => onHover(id), onMouseLeave: () => onHover(null) });
 
-  // An optional detail has an eye (left out: the design closes up); an essential one cannot go.
+  // What hidden details held (an eye brings them back).
+  const kept = edits[LEFT_OUT]?.slots ?? {};
+  const bin = (slot: string) => (
+    <button type="button" onClick={(e) => { e.stopPropagation(); onSlotRemove(slot); }} aria-label="Remove" title="Remove"
+      className="flex size-5 shrink-0 items-center justify-center rounded text-foreground/40 opacity-0 group-hover:opacity-100 hover:text-foreground">
+      <HugeiconsIcon icon={Delete02Icon} className="size-3.5" strokeWidth={1.6} />
+    </button>
+  );
+  // An optional detail has an eye (hidden: the design closes up); an essential one cannot go.
   const slotEye = (slot: string, empty: boolean) => slotMeta[slot]?.optional ? (
-    <button type="button" onClick={(e) => { e.stopPropagation(); onSlotToggle(slot); }} aria-label={empty ? 'Bring it back' : 'Leave it out'} title={empty ? 'Bring it back' : 'Leave it out (the design closes up)'}
+    <button type="button" onClick={(e) => { e.stopPropagation(); onSlotToggle(slot); }} aria-label={empty ? 'Show' : 'Hide'} title={empty ? 'Show' : 'Hide'}
       className={`flex size-5 shrink-0 items-center justify-center rounded text-foreground/40 hover:text-foreground ${empty ? '' : 'opacity-0 group-hover:opacity-100'}`}>
       <HugeiconsIcon icon={empty ? ViewOffSlashIcon : ViewIcon} className="size-3.5" strokeWidth={1.6} />
     </button>
@@ -78,21 +90,44 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
           {images.map((c) => {
             const value = slots[c.slot!];
             const src = previews[c.slot!];
+            // A partner logo hides at once (it stays loaded, and its lockup closes up), and shows again at once.
+            const logo = c.kind === 'partner' && !!value;
+            const hidden = logo && !!edits[c.id]?.hidden;
             return (
               <div key={c.id} {...pick(c.id)} className={rowClass(c.id)}>
                 <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[4px] bg-[repeating-conic-gradient(#f2f2f2_0_25%,#fff_0_50%)] bg-[length:8px_8px] ring-1 ring-foreground/[0.06]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {value && src && <img src={src} alt="" className={`size-full ${c.kind === 'partner' ? 'object-contain p-0.5' : 'object-cover'}`} />}
                 </span>
-                <div className="min-w-0 flex-1">
+                <div className={`min-w-0 flex-1 ${hidden ? 'opacity-45' : ''}`}>
                   <p className={`truncate ${value ? '' : 'opacity-45'}`}>{c.name}</p>
-                  <p className="text-foreground/40">{value ? 'Replace' : 'Left out'}</p>
+                  <p className="text-foreground/40">{hidden ? 'Hidden' : value ? 'Replace' : 'Left out'}</p>
                 </div>
-                {slotEye(c.slot!, !value)}
+                {logo && !hidden && <LogoColors value={edits[c.id]?.colors ?? c.logoAuto ?? 'one'} onChange={(v) => onLogoColors(c.id, v)} />}
+                {logo ? (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); onHide(c.id); }} aria-label={hidden ? 'Show' : 'Hide'} title={hidden ? 'Show' : 'Hide'}
+                    className={`flex size-5 shrink-0 items-center justify-center rounded text-foreground/40 hover:text-foreground ${hidden ? '' : 'opacity-0 group-hover:opacity-100'}`}>
+                    <HugeiconsIcon icon={hidden ? ViewOffSlashIcon : ViewIcon} className="size-3.5" strokeWidth={1.6} />
+                  </button>
+                ) : slotEye(c.slot!, !value)}
+                {value && slotMeta[c.slot!]?.optional && bin(c.slot!)}
               </div>
             );
           })}
-          {absentImages.map(([k, type]) => <AddImage key={k} name={nameOf(k)} logo={type === 'logo'} className={rowClass(`slot:${k}`)} onPick={(v) => onSlot(k, v)} />)}
+          {absentImages.map(([k, type]) => kept[k] ? (
+            // Hidden: kept, one click from coming back.
+            <div key={k} className={rowClass(`slot:${k}`)}>
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-[4px] bg-foreground/[0.04]">
+                <HugeiconsIcon icon={Image02Icon} className="size-3.5 text-foreground/35" strokeWidth={1.6} />
+              </span>
+              <div className="min-w-0 flex-1 opacity-45">
+                <p className="truncate">{nameOf(k)}</p>
+                <p>Hidden</p>
+              </div>
+              {slotEye(k, true)}
+              {bin(k)}
+            </div>
+          ) : <AddImage key={k} name={nameOf(k)} logo={type === 'logo'} className={rowClass(`slot:${k}`)} onPick={(v) => onSlot(k, v)} />)}
           {archy && (
             <div {...pick(archy.id)} className={rowClass(archy.id)}>
               <span className="flex size-8 shrink-0 items-center justify-center rounded-[4px] bg-foreground/[0.04]">
@@ -108,7 +143,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
       )}
 
       <Group title="Look">
-        <div className="grid grid-cols-5 gap-1 px-3">
+        <div className="grid grid-cols-4 gap-1 px-3">
           {PRESETS.map(([key, label, swatch]) => (
             <button key={key} type="button" onClick={() => onPreset(key)} title={label}
               className={`flex flex-col items-center gap-1 rounded-md p-1 ring-1 transition-colors ${preset === key ? 'bg-[#E6F4FF] ring-primary/50' : 'ring-foreground/10 hover:bg-foreground/[0.03]'}`}>
@@ -157,6 +192,20 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
     <div className="space-y-0.5">
       <p className="px-3 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/45">{title}</p>
       {children}
+    </div>
+  );
+}
+
+// A partner logo: its shape in the design's colour, or its own colours.
+function LogoColors({ value, onChange }: { value: 'one' | 'original'; onChange: (v: 'one' | 'original') => void }) {
+  return (
+    <div role="radiogroup" aria-label="Logo colours" className="flex shrink-0 gap-0.5 rounded-[5px] bg-foreground/[0.05] p-0.5" onClick={(e) => e.stopPropagation()}>
+      {(['one', 'original'] as const).map((v) => (
+        <button key={v} type="button" role="radio" aria-checked={value === v} title={v === 'one' ? 'One colour' : 'Its own colours'} onClick={() => onChange(v)}
+          className={`h-5 rounded-[4px] px-1.5 text-[11px] ${value === v ? 'bg-background font-medium shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/50 hover:text-foreground'}`}>
+          {v === 'one' ? 'Mono' : 'Color'}
+        </button>
+      ))}
     </div>
   );
 }

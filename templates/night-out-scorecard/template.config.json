@@ -1,0 +1,92 @@
+{
+  "id": "night-out-scorecard",
+  "title": "Night Out Scorecard",
+  "category": "events",
+  "description": "Hosted social evening with an activity illustration and a playful scorecard",
+  "useWhen": "Archy hosts an evening built around an activity (bowling by default) and a lighter, illustrated feel is wanted.",
+  "notWhen": "there is a good venue photo and the place should lead (use `Night Out Photo Fade`).",
+  "paperFileId": "01M1F9VXX1S3JJETTVWG2H2PCD",
+  "discover": {
+    "page": "Templates",
+    "family": "Night Out Scorecard"
+  },
+  "guidance": [
+    "Dates follow the house style: \"March 12 – 14, 2026\". Kickers and event names in title case (the design sets uppercase where needed).",
+    "Leave out any fact that does not exist (venue, time): its label goes with it and the layout closes up.",
+    "headline: the invitation line, one white block (\"Pull up a chair, Inland Empire.\"), about two lines. The event page cover splits it into two lines by itself.",
+    "card-player and card-total: the scorecard's player name and total (\"Inland Empire Dentists\", \"On us\"). The card is optional; leave both out to drop it.",
+    "image-illustration: the activity illustration (transparent PNG). The bowling pins are the default; another activity needs an illustration from the design team.",
+    "The event page cover shows a photo of the venue in its circle and as its ground: ask for it only when the cover is made."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "IUO-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "IM0-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "IPB-0",
+      "label": "Stories 1080×1920"
+    },
+    "og": {
+      "nodeId": "ISS-0",
+      "label": "OG 1200×630"
+    },
+    "cover": {
+      "nodeId": "IXJ-0",
+      "label": "Cover 1200×900"
+    }
+  },
+  "purpose": "hosted-evening",
+  "essential": [
+    "headline",
+    "venue",
+    "date"
+  ],
+  "optional": [
+    "subhead",
+    "city",
+    "time",
+    "cta",
+    "card-player",
+    "card-total",
+    "image-illustration"
+  ],
+  "facts": {
+    "headline": null,
+    "subhead": null,
+    "cta": null,
+    "venue": "venue",
+    "city": "city",
+    "date": "date",
+    "time": "time",
+    "card-player": null,
+    "card-total": null,
+    "image-illustration": null,
+    "headline-1": null,
+    "headline-2": null,
+    "image-photo": "venue-photo",
+    "image-venue": "ground-photo",
+    "cover-subhead": null
+  },
+  "coverEssential": [
+    "image-photo",
+    "cover-subhead"
+  ],
+  "derive": {
+    "headline-1": {
+      "from": "headline",
+      "line": 0
+    },
+    "headline-2": {
+      "from": "headline",
+      "line": 1
+    },
+    "cover-subhead": {
+      "from": "subhead"
+    }
+  }
+}

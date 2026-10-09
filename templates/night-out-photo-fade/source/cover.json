@@ -1,0 +1,249 @@
+{
+  "rootId": "IX1-0",
+  "nodes": {
+    "IX1-0": {
+      "id": "IX1-0",
+      "name": "TPL · Night Out Photo Fade · Cover 1200×900",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IXI-0",
+        "IX2-0"
+      ]
+    },
+    "IXI-0": {
+      "id": "IXI-0",
+      "name": "slot-image-venue",
+      "component": "Rectangle",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IX2-0": {
+      "id": "IX2-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IX9-0",
+        "IX6-0",
+        "IX3-0"
+      ]
+    },
+    "IX9-0": {
+      "id": "IX9-0",
+      "name": "Logo Lockup",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IXC-0",
+        "IXB-0",
+        "IXA-0"
+      ]
+    },
+    "IXC-0": {
+      "id": "IXC-0",
+      "name": "Logo Archy",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IXB-0": {
+      "id": "IXB-0",
+      "name": "Divider",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IXA-0": {
+      "id": "IXA-0",
+      "name": "Event Label",
+      "component": "Text",
+      "visible": true,
+      "text": "Event",
+      "children": []
+    },
+    "IX6-0": {
+      "id": "IX6-0",
+      "name": "Headline",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IX8-0",
+        "IX7-0"
+      ]
+    },
+    "IX8-0": {
+      "id": "IX8-0",
+      "name": "slot-text-headline-1",
+      "component": "Text",
+      "visible": true,
+      "text": "Pull up a chair,",
+      "children": []
+    },
+    "IX7-0": {
+      "id": "IX7-0",
+      "name": "slot-text-headline-2",
+      "component": "Text",
+      "visible": true,
+      "text": "Inland Empire.",
+      "children": []
+    },
+    "IX3-0": {
+      "id": "IX3-0",
+      "name": "optional-footer",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "IX5-0",
+        "IX4-0"
+      ]
+    },
+    "IX5-0": {
+      "id": "IX5-0",
+      "name": "slot-image-photo",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "IX4-0": {
+      "id": "IX4-0",
+      "name": "slot-text-cover-subhead",
+      "component": "Text",
+      "visible": true,
+      "text": "Dinner, drinks and\ngreat company at\nPunch Bowl Social",
+      "children": []
+    }
+  },
+  "styles": {
+    "IX1-0": {
+      "width": "1200px",
+      "height": "900px",
+      "left": 4830,
+      "top": "22880px",
+      "overflow": "clip",
+      "position": "absolute",
+      "backgroundColor": "var(--color-royal-blue-500)"
+    },
+    "IXI-0": {
+      "width": "1200px",
+      "height": "900px",
+      "left": "0px",
+      "top": "0px",
+      "position": "absolute",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/1HGHQW5ZC0NF7BJ30QDAJWHWSP.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "IX2-0": {
+      "position": "absolute",
+      "left": "48px",
+      "top": "48px",
+      "width": "844px",
+      "height": "804px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "start",
+      "alignItems": "start",
+      "padding": "56px",
+      "gap": "48px",
+      "backgroundColor": "var(--color-white)"
+    },
+    "IX9-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "gap": "32px",
+      "width": "100%"
+    },
+    "IXC-0": {
+      "flexShrink": "0"
+    },
+    "IXB-0": {
+      "width": "2px",
+      "height": "72px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-royal-blue-500)"
+    },
+    "IXA-0": {
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-regular)",
+      "fontSize": "38px",
+      "lineHeight": "40px",
+      "letterSpacing": "0.02em",
+      "textTransform": "uppercase",
+      "width": "max-content",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-royal-blue-500)"
+    },
+    "IX6-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%"
+    },
+    "IX8-0": {
+      "width": "100%",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-medium)",
+      "fontSize": "84px",
+      "lineHeight": "90px",
+      "letterSpacing": "var(--tracking-snug)",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IX7-0": {
+      "width": "100%",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-bold)",
+      "fontSize": "84px",
+      "lineHeight": "90px",
+      "letterSpacing": "var(--tracking-tight)",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    },
+    "IX3-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "width": "100%",
+      "gap": "32px",
+      "marginTop": "auto"
+    },
+    "IX5-0": {
+      "width": "240px",
+      "height": "240px",
+      "flexShrink": "0",
+      "borderRadius": "var(--radius-pill)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M1F9VXX1S3JJETTVWG2H2PCD/01M48Z938HV2X0GCDFWM4AGYKJ.png)",
+      "backgroundOrigin": "border-box",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50% 55%",
+      "borderWidth": "4px",
+      "borderStyle": "solid",
+      "borderColor": "var(--color-royal-blue-500)"
+    },
+    "IX4-0": {
+      "flexGrow": "1",
+      "flexBasis": "0px",
+      "minWidth": "0px",
+      "fontFamily": "var(--font-heading)",
+      "fontWeight": "var(--font-weight-semibold)",
+      "fontSize": "52px",
+      "lineHeight": "60px",
+      "letterSpacing": "var(--tracking-snug)",
+      "textWrap": "initial",
+      "whiteSpace": "pre-wrap",
+      "color": "var(--color-light-text)"
+    }
+  },
+  "svgs": {
+    "IXC-0": "(\n    <svg width=\"180\" height=\"70\" viewBox=\"0 0 258 99.3\" xmlns=\"http://www.w3.org/2000/svg\" style={{ flexShrink: '0' }}>\n      <path d=\"M83.237 69.281C83.237 69.281 70.700 69.281 70.700 69.281C70.700 69.281 70.700 41.019 70.700 41.019C70.700 28.615 80.817 18.524 93.253 18.524C93.253 18.524 96.981 18.524 96.981 18.524C96.981 18.524 96.981 31.029 96.981 31.029C96.981 31.029 93.253 31.029 93.253 31.029C87.729 31.029 83.237 35.509 83.237 41.019C83.237 41.019 83.237 69.281 83.237 69.281Z\" fill=\"var(--color-royal-blue-500)\" />\n      <path d=\"M178.046 21.343C173.594 21.343 169.420 22.572 165.804 24.713C165.804 24.713 165.804 0.000 165.804 0.000C165.804 0.000 153.245 0.000 153.245 0.000C153.245 0.000 153.245 69.281 153.245 69.281C153.245 69.281 165.804 69.281 165.804 69.281C165.804 69.281 165.804 47.091 165.804 47.091C165.804 39.803 171.298 33.871 178.046 33.871C184.794 33.871 190.288 39.803 190.288 47.091C190.288 47.091 190.288 69.281 190.288 69.281C190.288 69.281 202.846 69.281 202.846 69.281C202.846 69.281 202.846 47.091 202.846 47.091C202.846 32.896 191.722 21.347 178.046 21.347C178.046 21.347 178.046 21.343 178.046 21.343Z\" fill=\"var(--color-royal-blue-500)\" />\n      <path d=\"M245.441 24.823C245.441 24.823 245.441 44.344 245.441 44.344C245.441 51.908 239.947 58.060 233.199 58.060C226.452 58.060 220.957 51.908 220.957 44.344C220.957 44.344 220.957 24.823 220.957 24.823C220.957 24.823 208.399 24.823 208.399 24.823C208.399 24.823 208.399 44.344 208.399 44.344C208.399 58.810 219.523 70.579 233.199 70.579C237.651 70.579 241.826 69.325 245.441 67.145C245.441 67.145 245.441 73.565 245.441 73.565C245.441 80.848 239.947 86.776 233.199 86.776C226.452 86.776 220.957 80.853 220.957 73.565C220.957 73.565 208.399 73.565 208.399 73.565C208.399 87.750 219.523 99.291 233.199 99.291C246.875 99.291 258.000 87.750 258.000 73.565C258.000 73.565 258.000 24.823 258.000 24.823C258.000 24.823 245.441 24.823 245.441 24.823Z\" fill=\"var(--color-royal-blue-500)\" />\n      <path d=\"M123.285 57.809C116.128 57.809 110.303 51.733 110.303 44.269C110.303 36.805 116.128 30.729 123.285 30.729C128.877 30.729 133.658 34.439 135.478 39.625C135.478 39.625 148.433 39.625 148.433 39.625C146.283 27.433 135.826 18.154 123.285 18.154C109.188 18.154 97.722 29.870 97.722 44.273C97.722 58.677 109.188 70.393 123.285 70.393C135.826 70.393 146.283 61.114 148.433 48.922C148.433 48.922 135.478 48.922 135.478 48.922C133.658 54.108 128.877 57.818 123.285 57.818C123.285 57.818 123.285 57.809 123.285 57.809Z\" fill=\"var(--color-royal-blue-500)\" />\n      <path fillRule=\"evenodd\" d=\"M12.576 65.026C12.576 54.438 21.214 45.826 31.834 45.826C42.454 45.826 51.091 54.438 51.091 65.026C51.091 65.026 51.091 69.281 51.091 69.281C51.091 69.281 63.667 69.281 63.667 69.281C63.667 69.281 63.667 31.733 63.667 31.733C63.667 26.486 62.355 21.277 59.866 16.684C54.289 6.394 43.550 0.000 31.829 0.000C31.235 0.000 30.635 0.018 30.041 0.048C19.297 0.646 9.664 6.557 4.264 15.862C3.898 16.490 3.550 17.140 3.229 17.795C1.088 22.160 0.000 26.850 0.000 31.733C0.000 31.733 0.000 69.281 0.000 69.281C0.000 69.281 12.576 69.281 12.576 69.281C12.576 69.281 12.576 65.026 12.576 65.026ZM12.576 31.733C12.576 28.774 13.232 25.941 14.523 23.306C14.716 22.911 14.928 22.516 15.148 22.138C18.417 16.504 24.248 12.924 30.741 12.564C31.102 12.542 31.472 12.534 31.834 12.534C38.925 12.534 45.422 16.403 48.797 22.634C50.299 25.410 51.091 28.554 51.091 31.733C51.091 31.733 51.091 39.779 51.091 39.779C45.740 35.712 39.066 33.292 31.834 33.292C24.601 33.292 17.928 35.712 12.576 39.779C12.576 39.779 12.576 31.733 12.576 31.733Z\" fill=\"var(--color-royal-blue-500)\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-mint-bright: #00FFA4;\n  --color-mint: #00E291;\n  --color-mint-light: #6FFFCB;\n  --color-mint-dark: #003C26;\n  --color-red: #E23B7B;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-success-100: #DEF2E6;\n  --color-success-300: #05C168;\n  --color-success-400: #11845B;\n  --color-error-400: #DC2B2B;\n  --color-info-100: #EAF4FF;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --text-h1: 60px;\n  --text-h2: 48px;\n  --text-h3: 40px;\n  --text-h4: 32px;\n  --text-h5: 24px;\n  --text-large: 20px;\n  --text-medium: 18px;\n  --text-regular: 16px;\n  --text-small: 14px;\n  --text-tiny: 12px;\n  --text-tagline: 13.6px;\n  --font-weight-light: 300;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --leading-h1: 63px;\n  --leading-h2: 58px;\n  --leading-h3: 48px;\n  --leading-h4: 38px;\n  --leading-h5: 29px;\n  --leading-body: 24px;\n  --leading-small: 21px;\n  --leading-tiny: 18px;\n  --breakpoint-mobile: 479px;\n  --breakpoint-mobile-landscape: 767px;\n  --breakpoint-tablet: 991px;\n  --breakpoint-desktop: 1440px;\n  --container-small: 768px;\n  --container-medium: 1024px;\n  --container-large: 1280px;\n  --spacing-tiny: 4px;\n  --spacing-xxsmall: 8px;\n  --spacing-xsmall: 16px;\n  --spacing-small: 24px;\n  --spacing-medium: 32px;\n  --spacing-large: 48px;\n  --spacing-xlarge: 64px;\n  --spacing-xxlarge: 80px;\n  --spacing-huge: 96px;\n  --spacing-xhuge: 112px;\n  --section-small: 48px;\n  --section-medium: 80px;\n  --section-large: 112px;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-tag: 4px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

@@ -1,0 +1,1365 @@
+{
+  "id": "photo-headline",
+  "title": "Photo Headline",
+  "description": "Photo-led ad: one product claim told by a photo, with a big headline, a subline and a demo CTA. Three designs (Full Photo, Photo Bottom, Split) in two themes (Royal Blue, Navy).",
+  "formats": {
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-photo": {
+      "type": "image",
+      "default": "assets/01M46M1PSKRKK2HRB9H3P8SM6K.png",
+      "perFormat": {
+        "square": {
+          "nodes": 1
+        },
+        "post": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 1
+        },
+        "square--full-photo--navy": {
+          "nodes": 1
+        },
+        "post--full-photo--navy": {
+          "nodes": 1
+        },
+        "stories--full-photo--navy": {
+          "nodes": 1
+        },
+        "square--photo-bottom--royal": {
+          "nodes": 1
+        },
+        "post--photo-bottom--royal": {
+          "nodes": 1
+        },
+        "stories--photo-bottom--royal": {
+          "nodes": 1
+        },
+        "square--photo-bottom--navy": {
+          "nodes": 1
+        },
+        "post--photo-bottom--navy": {
+          "nodes": 1
+        },
+        "stories--photo-bottom--navy": {
+          "nodes": 1
+        }
+      }
+    },
+    "headline": {
+      "type": "text",
+      "default": "What your closet looks like after the cloud.",
+      "perFormat": {
+        "square": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "post": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "stories": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "square--full-photo--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "post--full-photo--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "stories--full-photo--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "square--photo-bottom--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "115px",
+          "fontWeight": 600,
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)",
+          "sample": "Full schedule.\nFrozen server."
+        },
+        "post--photo-bottom--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "115px",
+          "fontWeight": 600,
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)",
+          "sample": "Full schedule.\nFrozen server."
+        },
+        "stories--photo-bottom--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "115px",
+          "fontWeight": 600,
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)",
+          "sample": "Full schedule.\nFrozen server."
+        },
+        "square--photo-bottom--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "115px",
+          "fontWeight": 600,
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)",
+          "sample": "Full schedule.\nFrozen server."
+        },
+        "post--photo-bottom--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "115px",
+          "fontWeight": 600,
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)",
+          "sample": "Full schedule.\nFrozen server."
+        },
+        "stories--photo-bottom--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "115px",
+          "fontWeight": 600,
+          "lineHeight": "108px",
+          "letterSpacing": "var(--tracking-tight)",
+          "sample": "Full schedule.\nFrozen server."
+        },
+        "square--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "post--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "stories--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "square--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "post--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        },
+        "stories--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "87px",
+          "fontWeight": 600,
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-tight)"
+        }
+      },
+      "limits": {
+        "square": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "post": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "stories": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "square--full-photo--navy": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "post--full-photo--navy": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "stories--full-photo--navy": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "square--photo-bottom--royal": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 115,
+            "min": 86
+          },
+          "roomPx": 920
+        },
+        "post--photo-bottom--royal": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 115,
+            "min": 86
+          },
+          "roomPx": 920
+        },
+        "stories--photo-bottom--royal": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 115,
+            "min": 86
+          },
+          "roomPx": 920
+        },
+        "square--photo-bottom--navy": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 115,
+            "min": 86
+          },
+          "roomPx": 920
+        },
+        "post--photo-bottom--navy": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 115,
+            "min": 86
+          },
+          "roomPx": 920
+        },
+        "stories--photo-bottom--navy": {
+          "maxCharsPerLine": 17,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 115,
+            "min": 86
+          },
+          "roomPx": 920
+        },
+        "square--split--royal": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "post--split--royal": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "stories--split--royal": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "square--split--navy": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "post--split--navy": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        },
+        "stories--split--navy": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 87,
+            "min": 74
+          },
+          "roomPx": 920
+        }
+      }
+    },
+    "subline": {
+      "type": "text",
+      "default": "Archy runs in the cloud. No server closet needed.",
+      "perFormat": {
+        "square": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "post": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "stories": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "square--full-photo--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "post--full-photo--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "stories--full-photo--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "square--photo-bottom--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)",
+          "sample": "Archy runs in the cloud. Nothing to freeze."
+        },
+        "post--photo-bottom--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)",
+          "sample": "Archy runs in the cloud. Nothing to freeze."
+        },
+        "stories--photo-bottom--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)",
+          "sample": "Archy runs in the cloud. Nothing to freeze."
+        },
+        "square--photo-bottom--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)",
+          "sample": "Archy runs in the cloud. Nothing to freeze."
+        },
+        "post--photo-bottom--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)",
+          "sample": "Archy runs in the cloud. Nothing to freeze."
+        },
+        "stories--photo-bottom--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)",
+          "sample": "Archy runs in the cloud. Nothing to freeze."
+        },
+        "square--split--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "post--split--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "stories--split--royal": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "square--split--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "post--split--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        },
+        "stories--split--navy": {
+          "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-snug)"
+        }
+      },
+      "limits": {
+        "square": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "post": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "stories": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "square--full-photo--navy": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "post--full-photo--navy": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "stories--full-photo--navy": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "square--photo-bottom--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 920
+        },
+        "post--photo-bottom--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 920
+        },
+        "stories--photo-bottom--royal": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 920
+        },
+        "square--photo-bottom--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 920
+        },
+        "post--photo-bottom--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 920
+        },
+        "stories--photo-bottom--navy": {
+          "maxCharsPerLine": 46,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 920
+        },
+        "square--split--royal": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "post--split--royal": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "stories--split--royal": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "square--split--navy": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "post--split--navy": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        },
+        "stories--split--navy": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 920
+        }
+      }
+    },
+    "cta": {
+      "type": "text",
+      "default": "Book a demo",
+      "perFormat": {
+        "square": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "post": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "stories": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "square--full-photo--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "post--full-photo--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "stories--full-photo--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "square--photo-bottom--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "post--photo-bottom--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "stories--photo-bottom--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "square--photo-bottom--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "post--photo-bottom--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "stories--photo-bottom--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "square--split--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "post--split--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "stories--split--royal": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "square--split--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "post--split--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        },
+        "stories--split--navy": {
+          "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": 500,
+          "lineHeight": "36px"
+        }
+      },
+      "limits": {
+        "square": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "post": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "stories": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "square--full-photo--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "post--full-photo--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "stories--full-photo--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "square--photo-bottom--royal": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "post--photo-bottom--royal": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "stories--photo-bottom--royal": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "square--photo-bottom--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "post--photo-bottom--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "stories--photo-bottom--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "square--split--royal": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "post--split--royal": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "stories--split--royal": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "square--split--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "post--split--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        },
+        "stories--split--navy": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 27
+          },
+          "roomPx": 920
+        }
+      }
+    },
+    "image-left": {
+      "type": "image",
+      "default": "assets/01M4704G94A4V53CAK7FES1AZR.png",
+      "perFormat": {
+        "square--split--royal": {
+          "nodes": 1
+        },
+        "post--split--royal": {
+          "nodes": 1
+        },
+        "stories--split--royal": {
+          "nodes": 1
+        },
+        "square--split--navy": {
+          "nodes": 1
+        },
+        "post--split--navy": {
+          "nodes": 1
+        },
+        "stories--split--navy": {
+          "nodes": 1
+        }
+      }
+    },
+    "image-right": {
+      "type": "image",
+      "default": "assets/01M46M1PSKRKK2HRB9H3P8SM6K.png",
+      "perFormat": {
+        "square--split--royal": {
+          "nodes": 1
+        },
+        "post--split--royal": {
+          "nodes": 1
+        },
+        "stories--split--royal": {
+          "nodes": 1
+        },
+        "square--split--navy": {
+          "nodes": 1
+        },
+        "post--split--navy": {
+          "nodes": 1
+        },
+        "stories--split--navy": {
+          "nodes": 1
+        }
+      }
+    },
+    "label-left": {
+      "type": "text",
+      "default": "Before",
+      "perFormat": {
+        "square--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "square--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        }
+      },
+      "limits": {
+        "square--split--royal": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "post--split--royal": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "stories--split--royal": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "square--split--navy": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "post--split--navy": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "stories--split--navy": {
+          "maxCharsPerLine": 24,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        }
+      }
+    },
+    "label-right": {
+      "type": "text",
+      "default": "After",
+      "perFormat": {
+        "square--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--split--royal": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "square--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "post--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        },
+        "stories--split--navy": {
+          "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": 600,
+          "lineHeight": "36px",
+          "letterSpacing": "-0.01em"
+        }
+      },
+      "limits": {
+        "square--split--royal": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "post--split--royal": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "stories--split--royal": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "square--split--navy": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "post--split--navy": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        },
+        "stories--split--navy": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 348
+        }
+      }
+    }
+  },
+  "optionals": {
+    "label-left": {
+      "contains": [
+        "label-left"
+      ]
+    },
+    "label-right": {
+      "contains": [
+        "label-right"
+      ]
+    }
+  },
+  "designs": {
+    "full-photo": {
+      "label": "Full Photo"
+    },
+    "photo-bottom": {
+      "label": "Photo Bottom"
+    },
+    "split": {
+      "label": "Split"
+    }
+  },
+  "themes": {
+    "royal": {
+      "label": "Royal Blue"
+    },
+    "navy": {
+      "label": "Navy"
+    }
+  },
+  "default": {
+    "design": "full-photo",
+    "theme": "royal"
+  },
+  "combos": {
+    "full-photo--navy": {
+      "design": "full-photo",
+      "theme": "navy",
+      "formats": {
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--full-photo--navy.html"
+        },
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--full-photo--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--full-photo--navy.html"
+        }
+      }
+    },
+    "photo-bottom--royal": {
+      "design": "photo-bottom",
+      "theme": "royal",
+      "formats": {
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--photo-bottom--royal.html"
+        },
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--photo-bottom--royal.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--photo-bottom--royal.html"
+        }
+      }
+    },
+    "photo-bottom--navy": {
+      "design": "photo-bottom",
+      "theme": "navy",
+      "formats": {
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--photo-bottom--navy.html"
+        },
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--photo-bottom--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--photo-bottom--navy.html"
+        }
+      }
+    },
+    "split--royal": {
+      "design": "split",
+      "theme": "royal",
+      "formats": {
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--split--royal.html"
+        },
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--split--royal.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--split--royal.html"
+        }
+      }
+    },
+    "split--navy": {
+      "design": "split",
+      "theme": "navy",
+      "formats": {
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--split--navy.html"
+        },
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--split--navy.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--split--navy.html"
+        }
+      }
+    }
+  }
+}

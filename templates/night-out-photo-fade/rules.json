@@ -1,0 +1,26 @@
+{
+  "_comment": "Default rules apply to every slot (stay inside Content, keep the sample's line count, shrink to 85%). Add overrides here.",
+  "slots": {
+    "venue": {
+      "within": "optional-location",
+      "maxLines": 1,
+      "minScale": 0.85
+    },
+    "city": {
+      "within": "optional-location",
+      "maxLines": 1,
+      "minScale": 0.85
+    },
+    "date": {
+      "within": "optional-date",
+      "maxLines": 1,
+      "minScale": 0.85
+    },
+    "time": {
+      "within": "optional-date",
+      "maxLines": 1,
+      "minScale": 0.85
+    }
+  },
+  "coverTone": "navy"
+}

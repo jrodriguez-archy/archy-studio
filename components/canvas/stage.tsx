@@ -28,7 +28,25 @@ export const startReframe = (id: string) => window.dispatchEvent(new CustomEvent
 
 const scripts: Record<string, Promise<string>> = {};
 let loads = 0;
-const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}`).then((r) => r.text()));
+// This deploy's copy (a new deploy, a new address: never an old engine from the browser cache).
+const BUILD = process.env.NEXT_PUBLIC_BUILD ?? 'dev';
+const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}?v=${BUILD}`).then((r) => r.text()));
+// Formats not being edited draw their first time one after another (the one being edited never waits),
+// so opening a set shows the active format first instead of every format at once on one thread.
+let busy = 0;
+const waiting: (() => void)[] = [];
+const turn = () => new Promise<() => void>((done) => {
+  const go = () => { busy++; let out = false; done(() => { if (out) return; out = true; busy--; waiting.shift()?.(); }); };
+  if (busy < 1) go(); else waiting.push(go);
+});
+
+// A template page, fetched once per tab: each redraw writes it into the iframe (no network), and its
+// fonts and images resolve against the template's folder and come from the browser cache.
+const pages: Record<string, Promise<string>> = {};
+const templatePage = (html: string) => (pages[html] ??= fetch(`/api/template-files/${html}?v=${BUILD}`)
+  .then((r) => { if (!r.ok) throw new Error(`Template page ${r.status}`); return r.text(); })
+  .then((t) => t.replace(/<head([^>]*)>/i, `<head$1><base href="${location.origin}/api/template-files/${html}">`))
+  .catch((e) => { delete pages[html]; throw e; })); // a failed fetch is tried again next time
 
 export type StageHandle = {
   info: (id: string) => LayerInfo | null;
@@ -231,7 +249,10 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   }), [el, boxOf]);
 
   // A new fill (copy, slot image, variant) reloads the page; edits alone are re-applied in place.
-  const fillKey = JSON.stringify([plan.html, plan.fill]);
+  // Computed once per fill (not on every render: hover, selection and zoom redraw the stage often).
+  const passiveRef = useRef(passive);
+  passiveRef.current = passive;
+  const fillKey = useMemo(() => JSON.stringify([plan.html, plan.fill]), [plan.html, plan.fill]);
   const page = `${plan.html}|${plan.width}x${plan.height}`;
   useEffect(() => {
     cancelEdit.current?.();
@@ -246,6 +267,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     if (behind) { f.style.transition = 'none'; f.style.opacity = '0'; }
     loading.current = target;
     let stale = false;
+    let release: (() => void) | null = null; // this format's turn, given back once it is drawn
     const load = async () => {
       const d = f.contentDocument!, w = f.contentWindow as Win;
       for (const name of ['fit.js', 'edits.js', 'components.js']) {
@@ -272,10 +294,11 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       // The page behind, once the new one has faded in, is emptied (memory, and no stale typing in it).
       if (old !== target) setTimeout(() => {
         const o = (old ? frameB : frameA).current;
-        if (o && frontRef.current !== old && loading.current !== old) o.src = 'about:blank';
+        if (o && frontRef.current !== old && loading.current !== old) { o.removeAttribute('srcdoc'); o.src = 'about:blank'; }
       }, 400);
       setRefitting(false);
       setReady(true);
+      release?.(); release = null;
       live.current.onReady({ comps, safe, tokens, report, keys });
       check();
       redraw();
@@ -283,6 +306,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const onLoad = () => {
       load().catch((e) => {
         console.error('Canvas could not draw the design', e);
+        release?.(); release = null;
         if (stale) return;
         loading.current = null;
         setRefitting(false);
@@ -290,9 +314,21 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       });
     };
     f.addEventListener('load', onLoad);
-    // A new query each load makes the iframe reload; the file itself comes from the CDN and the browser cache.
-    f.src = `/api/template-files/${plan.html}?load=${++loads}`;
-    return () => { stale = true; f.removeEventListener('load', onLoad); };
+    // Written in, so a redraw does not go back to the network for the page (if that fails, loaded
+    // from its address; srcdoc would win over src, so it goes first).
+    const write = () => templatePage(plan.html).then((t) => { if (!stale) f.srcdoc = `${t}<!--${++loads}-->`; })
+      .catch(() => { if (stale) return; f.removeAttribute('srcdoc'); f.src = `/api/template-files/${plan.html}?load=${++loads}`; });
+    // A format waiting its turn never holds the others for long, even if its page never loads.
+    let safety: ReturnType<typeof setTimeout> | undefined;
+    if (passiveRef.current && !behind) {
+      turn().then((r) => {
+        if (stale) { r(); return; }
+        release = r;
+        safety = setTimeout(() => { release?.(); release = null; }, 20_000);
+        write();
+      });
+    } else write();
+    return () => { stale = true; clearTimeout(safety); f.removeEventListener('load', onLoad); release?.(); release = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fillKey, nonce, redraw]);
 

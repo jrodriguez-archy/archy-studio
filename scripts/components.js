@@ -52,7 +52,7 @@
       const slot = el.dataset?.slot;
       const id = idOf(el);
       if (ARCHY.test(name)) return [add({ id, kind: 'archy', name: 'Archy logo' })];
-      if (type === 'logo') return [add({ id, kind: 'partner', name: `${human((slot ?? 'partner').replace(/^logo-/, ''))} logo`, slot })];
+      if (type === 'logo') return [add({ id, kind: 'partner', name: `${human((slot ?? 'partner').replace(/^logo-/, ''))} logo`, slot, logoAuto: el.querySelector('[data-logo-mark]')?.dataset.logoAuto })];
       if (type === 'image') {
         const what = human((slot ?? 'photo').replace(/^image-/, ''));
         return [add({ id, kind: 'photo', name: /^photo$/i.test(what) ? 'Photo' : `${what} photo`, slot })];

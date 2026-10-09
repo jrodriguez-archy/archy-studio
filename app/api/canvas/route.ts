@@ -26,7 +26,11 @@ export async function POST(req: Request) {
       if (!items.length) throw new Error('Nothing to save.');
       const from = body.from ? await loadSource(String(body.from)) : null;
       const saved = await saveSet(me, items, body.mode === 'replace' ? 'replace' : 'version', from);
-      await Promise.all(items.filter((i) => !isNew(i.piece)).map((i) => clearDraft(i.piece.id)));
+      // The drafts of what was saved; and, when formats were added, the first saved format's draft that
+      // listed them (even if that format itself did not change), so no tab saves them again.
+      const cleared = new Set(items.filter((i) => !isNew(i.piece)).map((i) => i.piece.id));
+      if (from && !isNew(from) && items.some((i) => isNew(i.piece))) cleared.add(from.id);
+      await Promise.all([...cleared].map((id) => clearDraft(id)));
       revalidatePath('/', 'layout');
       return Response.json({ ok: true, saved: saved.map((s) => ({ ref: s.ref, id: s.id })) });
     }

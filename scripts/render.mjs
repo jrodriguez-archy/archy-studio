@@ -38,7 +38,7 @@ function rulesFor(variant, combo) {
   const r = structuredClone(rules);
   for (const [k, o] of Object.entries(r.variants?.[variant]?.slots ?? {})) r.slots[k] = { ...r.slots[k], ...o };
   const d = combo && r.designs?.[manifest.combos[combo].design];
-  if (d) { Object.assign(r.slots, d.slots ?? {}); if (d.containers) r.containers = d.containers; }
+  if (d) { Object.assign(r.slots, d.slots ?? {}); if (d.containers) r.containers = d.containers; if (d.fill !== undefined) r.fill = d.fill; }
   return r;
 }
 

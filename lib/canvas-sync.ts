@@ -1,4 +1,4 @@
-import { RECOLOR, cleanEdits, type Edits, type NodeEdit } from './canvas-shared';
+import { LEFT_OUT, RECOLOR, cleanEdits, type Edits, type NodeEdit } from './canvas-shared';
 
 // The formats of a design kept in step (Canvas artboards). Each format is its own page with its own
 // layer ids; layers are matched by key (components.js __keys: the slot, or the path of layer names).
@@ -20,6 +20,7 @@ function shared(e: NodeEdit | undefined, scale = 1, base?: number): NodeEdit {
   if (e.image) out.image = e.image;
   if (e.icon) out.icon = e.icon;
   if (e.hidden) out.hidden = true;
+  if (e.colors) out.colors = e.colors;
   const s = e.style ?? {};
   const style: NonNullable<NodeEdit['style']> = {};
   if (s.color) style.color = s.color;
@@ -59,10 +60,20 @@ export function follow(prev: Snap, next: Snap, target: Snap, src?: Keys, dst?: K
   if (!sameJson(prev.edits[RECOLOR], next.edits[RECOLOR])) {
     if (next.edits[RECOLOR]) edits[RECOLOR] = next.edits[RECOLOR]; else delete edits[RECOLOR];
   }
+  // What a hidden detail held follows too, so it comes back with one click in every format.
+  if (!sameJson(prev.edits[LEFT_OUT], next.edits[LEFT_OUT])) {
+    const kept = { ...(target.edits[LEFT_OUT]?.slots ?? {}) };
+    const was = prev.edits[LEFT_OUT]?.slots ?? {}, now = next.edits[LEFT_OUT]?.slots ?? {};
+    for (const k of new Set([...Object.keys(was), ...Object.keys(now)])) {
+      if (!(k in target.slots)) continue;
+      if (now[k]) kept[k] = now[k]; else delete kept[k];
+    }
+    edits[LEFT_OUT] = { slots: kept };
+  }
   if (src && dst) {
     const there = byKey(dst);
     for (const id of new Set([...Object.keys(prev.edits), ...Object.keys(next.edits)])) {
-      if (id === RECOLOR || sameJson(shared(prev.edits[id]), shared(next.edits[id]))) continue;
+      if (id === RECOLOR || id === LEFT_OUT || sameJson(shared(prev.edits[id]), shared(next.edits[id]))) continue;
       const key: string | undefined = src[id]?.key;
       const to: string | undefined = key ? there[key] : undefined;
       if (!to) continue;
@@ -78,11 +89,14 @@ export function match(source: Snap, target: Snap, src: Keys, dst: Keys, drawn?: 
   const slots = { ...target.slots };
   for (const k of Object.keys(slots)) { const v = carried(source.slots, k, slots[k], drawn); if (v !== undefined) slots[k] = v ?? null; }
   const edits: Edits = {};
-  for (const [id, e] of Object.entries(target.edits)) if (id !== RECOLOR) edits[id] = withShared(e, {});
+  for (const [id, e] of Object.entries(target.edits)) if (id !== RECOLOR && id !== LEFT_OUT) edits[id] = withShared(e, {});
   if (source.edits[RECOLOR]) edits[RECOLOR] = source.edits[RECOLOR];
+  // Hidden details: the target keeps its own and takes the source's for the slots it has.
+  const kept = { ...(target.edits[LEFT_OUT]?.slots ?? {}), ...Object.fromEntries(Object.entries(source.edits[LEFT_OUT]?.slots ?? {}).filter(([k]) => k in target.slots)) };
+  if (Object.keys(kept).length) edits[LEFT_OUT] = { slots: kept };
   const there = byKey(dst);
   for (const [id, e] of Object.entries(source.edits)) {
-    if (id === RECOLOR) continue;
+    if (id === RECOLOR || id === LEFT_OUT) continue;
     const key: string | undefined = src[id]?.key;
       const to: string | undefined = key ? there[key] : undefined;
     if (!to) continue;

@@ -8,6 +8,8 @@ export type Comp = {
   id: string; kind: Kind; name: string; parent: string | null; slot?: string;
   /** Inner parts edited from a button: its label text and its icon. */
   textId?: string; textSlot?: string; iconId?: string;
+  /** A partner logo: how Studio draws it on its own (one colour, or its own colours). */
+  logoAuto?: 'one' | 'original';
 };
 export type Box = { x: number; y: number; w: number; h: number; name?: string };
 export type Token = { name: string; value: string; hex: string; group: 'Blues' | 'Neutrals' | 'Accents' };

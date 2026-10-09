@@ -1,5 +1,6 @@
 import { zipSync } from 'fflate';
 import { formatLabel, groupSets } from '@/lib/gallery-shared';
+import { signedUrls } from '@/lib/renders';
 import { titleOf } from '@/lib/catalog';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { currentUser } from '@/lib/team';
@@ -9,29 +10,36 @@ export const maxDuration = 60;
 
 const slug = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'archy';
 
-// Every format of one set as a ZIP of the 2x PNGs (signed-in team only).
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+// Every format of one set as a ZIP of the 2x PNGs (signed-in team only). With ?list=1, only the file
+// names and signed links: the browser fetches them side by side straight from storage and zips them
+// itself (lib/download-set.ts), so nothing large passes through this function.
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!(await currentUser())) return new Response('Sign in first.', { status: 401 });
   if (!/^[0-9a-f-]{36}$/i.test(id)) return new Response('Not found.', { status: 404 });
-
   const db = supabaseAdmin();
-  const { data } = await db.from('renders').select('id, set_id, template, format, design, theme, storage_path, width, height, scale, slots, created_at, user_id, project_id').eq('set_id', id);
+  const [me, { data }] = await Promise.all([currentUser(), db.from('renders').select('id, set_id, template, format, design, theme, storage_path, width, height, scale, slots, created_at, user_id, project_id').eq('set_id', id)]);
+  if (!me) return new Response('Sign in first.', { status: 401 });
   if (!data?.length) return new Response('Not found.', { status: 404 });
   type Row = (typeof data)[number] & { storage_path: string };
   const rows = data as Row[];
   const titles = Object.fromEntries(await Promise.all([...new Set(rows.map((r) => r.template))].map(async (t) => [t, await titleOf(t)])));
   const [set] = groupSets(rows.map((r) => ({ ...r, title: titles[r.template], author: '', set_id: id })) as never);
   const path = Object.fromEntries(rows.map((r) => [r.id, r.storage_path]));
+  // Options in other designs or themes get their own name (`…-the-arch-navy-post-1080x1080.png`).
+  const nameOf = (p: (typeof set.pieces)[number]) => {
+    const combo = [p.design, p.theme].filter(Boolean).join('-');
+    return `${slug(set.templates.length > 1 ? `${set.title}-${p.title}` : set.title)}${combo ? `-${slug(combo)}` : ''}-${slug(formatLabel(p.format))}.png`;
+  };
+  if (new URL(req.url).searchParams.get('list')) {
+    const urls = await signedUrls(set.pieces.map((p) => path[p.id]), 60 * 10);
+    return Response.json({ name: `${slug(set.title)}.zip`, files: set.pieces.map((p) => ({ name: nameOf(p), url: urls[path[p.id]] })).filter((f) => f.url) });
+  }
 
   const files: Record<string, Uint8Array> = {};
   await Promise.all(set.pieces.map(async (p) => {
     const { data: blob } = await db.storage.from('renders').download(path[p.id]);
     if (!blob) return;
-    // Options in other designs or themes get their own name (`…-the-arch-navy-post-1080x1080.png`).
-    const combo = [p.design, p.theme].filter(Boolean).join('-');
-    const name = `${slug(set.templates.length > 1 ? `${set.title}-${p.title}` : set.title)}${combo ? `-${slug(combo)}` : ''}-${slug(formatLabel(p.format))}.png`;
-    files[name] = new Uint8Array(await blob.arrayBuffer());
+    files[nameOf(p)] = new Uint8Array(await blob.arrayBuffer());
   }));
   const zip = zipSync(Object.fromEntries(Object.entries(files).map(([k, v]) => [k, [v, { level: 0 }]])));
   return new Response(new Blob([zip as BlobPart]), {

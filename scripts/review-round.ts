@@ -23,9 +23,9 @@ const note = arg('note') ?? null;
 // --small: a short round that shows what was learned (Template review: rounds must be quick to review).
 // A few templates per category, Post and Stories, realistic and short; themes on two templates only.
 const SMALL: Record<string, { formats: string[]; cases: string[] }> = {
-  'booth-icon-list': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:sky', 'theme:light'] },
+  'booth-icon-list': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:blue', 'theme:light'] },
   'booth-invite-photo': { formats: ['post', 'stories', 'cover'], cases: ['realistic', 'short'] },
-  'countdown-mascot': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:sky', 'theme:ice'] },
+  'countdown-mascot': { formats: ['post', 'stories'], cases: ['realistic', 'short', 'theme:dark', 'theme:blue', 'theme:ice'] },
   'night-out-illustration': { formats: ['post', 'stories'], cases: ['realistic', 'short'] },
   'speaker-invite': { formats: ['post', 'stories'], cases: ['short'] },
   'ae-spotlight': { formats: ['post'], cases: ['realistic'] },
@@ -68,7 +68,7 @@ async function main() {
         const format = comboFormat(plain, combo.key);
         for (const c of await casesFor(manifest, config, plain, { themes: !combo.key && plain === formats[0], index })) {
           if (small && !(SMALL[id]?.formats.includes(plain) && SMALL[id].cases.includes(c.case))) continue;
-          if (single && (id !== single || !(['realistic', 'short'].includes(c.case) || (plain === formats[0] && ['theme:dark', 'theme:sky', 'theme:light'].includes(c.case))))) continue;
+          if (single && (id !== single || !(['realistic', 'short'].includes(c.case) || (plain === formats[0] && ['theme:dark', 'theme:blue', 'theme:light'].includes(c.case))))) continue;
           const key = `${id}|${format}|${c.case}`;
           const before = prev.get(key);
           const fingerprint = createHash('sha1').update([engine, ...files, JSON.stringify(c.slots), JSON.stringify(c.edits)].join('\u0000')).digest('hex');

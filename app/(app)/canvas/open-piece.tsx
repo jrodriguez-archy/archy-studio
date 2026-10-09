@@ -4,7 +4,7 @@ import { CanvasEditor, type Board } from '@/components/canvas/editor';
 import { canReplace, editorContext, isNew, loadSet, loadSource, type PieceSource } from '@/lib/canvas';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { formatLabel, titleFromSlots } from '@/lib/gallery-shared';
-import { getDraft } from '@/lib/drafts';
+import { getDraft, type AddedFormat } from '@/lib/drafts';
 import { prepareFill } from '@/lib/fill';
 
 type Who = { id: string; is_admin: boolean };
@@ -23,13 +23,22 @@ export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: Who })
       editorContext(piece),
       supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle().then((r) => (r.data?.mcp_seen_at as string | null | undefined) ?? null),
     ]);
-    const boards = await Promise.all(set.pieces.map((p) => openBoard(p, me)));
-    ready = { set, ctx, seenAt, boards };
+    const opened = await Promise.all(set.pieces.map((p) => openBoard(p, me)));
+    // Formats added and not saved yet (kept with the work in progress): back as new artboards.
+    const added = new Map<string, AddedFormat>();
+    for (const b of opened) for (const a of ('added' in b ? b.added : [])) added.set(a.ref, a);
+    const missing = set.missing.filter((m) => !added.has(m.ref));
+    const extra = await Promise.all([...added.values()].filter((a) => set.missing.some((m) => m.ref === a.ref)).map(async (a) => {
+      const p = await loadSource(a.ref);
+      return p ? openBoard(p, me, a) : null;
+    }));
+    const boards = [...opened, ...extra.filter((b) => b !== null)].map((b) => ('lost' in b ? b : b.board));
+    ready = { set: { ...set, missing }, ctx, seenAt, boards };
   } catch (e) {
     return <CannotOpen back={back} text={(e as Error).message} />;
   }
   const { set, ctx, seenAt, boards } = ready;
-  const mine = boards[set.pieces.findIndex((p) => p.id === piece.id)];
+  const mine = boards[set.pieces.findIndex((p) => p.id === piece.id)] ?? boards[0];
   if ('lost' in mine) return <CannotOpen back={back} text={mine.lost} />;
   return (
     <CanvasEditor
@@ -47,26 +56,28 @@ export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: Who })
   );
 }
 
-// One format as an artboard: its draft if someone was working on it, its fill, what was saved.
-async function openBoard(piece: PieceSource, me: Who): Promise<Board | { lost: string }> {
+// One format as an artboard: its draft if someone was working on it, its fill, what was saved, and the
+// formats added to the set and not saved yet (on its draft). `given`: an added format's kept content.
+async function openBoard(piece: PieceSource, me: Who, given?: AddedFormat): Promise<{ board: Board; added: AddedFormat[] } | { lost: string }> {
   const fresh = isNew(piece);
-  const draft = fresh ? null : await getDraft(piece.id);
+  const draft = fresh ? (given ? { slots: given.slots, edits: given.edits, version: 0, updated_by: 'app', note: null, added: [] } : null) : await getDraft(piece.id);
   // Pieces made before Canvas lost inline logos ('[inline image]'): they cannot be drawn again.
   const lost = Object.entries(draft?.slots ?? piece.slots).filter(([, v]) => v === '[inline image]').map(([k]) => k);
   if (lost.length) return { lost: `Its ${lost.join(', ')} was sent inline before Canvas existed and was not kept. Ask Claude for a new version with the logo, then open that one.` };
   // Work in progress (by hand or by Claude) picks up where it was left.
   // Without a draft, what is open is what was saved: one fill for both.
-  const fill = (slots: PieceSource['slots'], edits: PieceSource['edits']) => prepareFill({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots, edits }, '/api/template-files');
+  const fill = (slots: PieceSource['slots'], edits: PieceSource['edits'], slotsOnly = false) => prepareFill({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots, edits }, '/api/template-files', slotsOnly);
   const [plan, savedSlots, replace] = await Promise.all([
     draft ? fill(draft.slots, draft.edits) : fill(piece.slots, piece.edits),
-    draft ? fill(piece.slots, piece.edits).then((p) => p.slots) : null,
+    draft ? fill(piece.slots, piece.edits, true).then((p) => p.slots) : null,
     canReplace(me, piece),
   ]);
-  return {
+  const board: Board = {
     ref: piece.id, format: piece.format, label: formatLabel(piece.format), width: piece.width, height: piece.height, isNew: fresh, canReplace: replace,
     initial: { slots: plan.slots, edits: draft?.edits ?? piece.edits }, saved: { slots: savedSlots ?? plan.slots, edits: piece.edits }, plan,
-    draft: draft ? { version: draft.version, by: draft.updated_by, note: draft.note } : null,
+    draft: draft && !fresh ? { version: draft.version, by: draft.updated_by, note: draft.note } : null,
   };
+  return { board, added: (!fresh && draft?.added) || [] };
 }
 
 function CannotOpen({ back, text }: { back: string; text: string }) {

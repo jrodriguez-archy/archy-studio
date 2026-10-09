@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { headers } from 'next/headers';
+import { after } from 'next/server';
+import { PUBLIC, previewPath, publicUrl } from './images';
+import { supabaseAdmin } from './supabase/admin';
 import { ROOT, comboFormats, resolveCombo, type Manifest } from './templates';
 
 // A catalog preview's storage key: the template format (and design × theme, on templates that offer
@@ -33,12 +37,64 @@ export async function previewSrc(template: string, format: string, design?: stri
   return `/api/preview/${template}/${format}${q.size ? `?${q}` : ''}`;
 }
 
+// The app's own address, for drawing previews in the background.
+export async function selfOrigin() {
+  const h = await headers();
+  return `${h.get('x-forwarded-proto') ?? 'http'}://${h.get('host')}`;
+}
+
 // Every preview link of the catalog at once ("template/format" → link; "template/format--design--theme"
-// for the other designs and themes of templates that offer several).
-export async function previewSrcs(items: { manifest: Pick<Manifest, 'id' | 'formats' | 'combos'> }[]): Promise<Record<string, string>> {
+// for the other designs and themes of templates that offer several). Straight to the stored image (no
+// hop through the app) when it exists. When the template or the engine changed and the new one is not
+// drawn yet, the newest earlier image of the same format shows meanwhile and the new one is drawn in
+// the background; only a format never drawn goes through /api/preview (drawn on first view).
+export async function previewSrcs(items: { manifest: Pick<Manifest, 'id' | 'formats' | 'combos'> }[], origin?: string): Promise<Record<string, string>> {
   const jobs = items.flatMap((i) => [
     ...Object.keys(i.manifest.formats).map((f) => [`${i.manifest.id}/${f}`, i.manifest.id, f, null, null] as const),
     ...Object.entries(i.manifest.combos ?? {}).flatMap(([k, c]) => Object.keys(c.formats).map((f) => [`${i.manifest.id}/${f}--${k}`, i.manifest.id, f, c.design, c.theme] as const)),
   ]);
-  return Object.fromEntries(await Promise.all(jobs.map(async ([key, t, f, d, th]) => [key, await previewSrc(t, f, d, th)])));
+  const stored = Object.fromEntries(await Promise.all([...new Set(items.map((i) => i.manifest.id))].map(async (t) => [t, await storedPreviews(t)] as const)));
+  const missing: string[] = [];
+  const out = await Promise.all(jobs.map(async ([id, t, f, d, th]) => {
+    const key = await previewKey(t, f, d, th);
+    if (!key) return [id, await previewSrc(t, f, d, th)] as const;
+    const name = key.slice(t.length + 1); // "post--design--theme-<hash>"
+    const files = stored[t] ?? [];
+    if (files.some((x) => x.name === `${name}.webp`)) return [id, publicUrl(previewPath(key))] as const;
+    const base = name.slice(0, name.lastIndexOf('-'));
+    const earlier = files.find((x) => x.name.startsWith(`${base}-`) && x.name.slice(base.length + 1, -5).length === 10 && !x.name.slice(base.length + 1).includes('--'));
+    // No earlier image: the browser's own request draws it (/api/preview). Otherwise drawn here, once.
+    if (!earlier) return [id, await previewSrc(t, f, d, th)] as const;
+    if ((requested.get(key) ?? 0) < Date.now()) {
+      requested.set(key, Date.now() + 15 * 60_000);
+      const q = new URLSearchParams({ ...(d ? { design: d } : {}), ...(th ? { theme: th } : {}) });
+      missing.push(`/api/preview-render/${t}/${f}${q.size ? `?${q}` : ''}`);
+    }
+    return [id, publicUrl(`previews/${t}/${earlier.name}`)] as const;
+  }));
+  // Draw what is missing after the page is sent (each in its own function), a few at a time.
+  if (missing.length && origin) {
+    after(async () => {
+      for (let i = 0; i < missing.length; i += 4) await Promise.allSettled(missing.slice(i, i + 4).map((u) => fetch(new URL(u, origin), { cache: 'no-store', redirect: 'manual' })));
+      // Drawn: the next visit lists them again and links the new images.
+      for (const t of new Set(items.map((i) => i.manifest.id))) listed.delete(t);
+    });
+  }
+  return Object.fromEntries(out);
+}
+
+// Previews already asked to be drawn in the background (key → until when), so visits do not ask again.
+const requested = new Map<string, number>();
+
+// The previews stored for a template, newest first. Kept 10 minutes, so most visits to Templates skip
+// asking storage at all; one drawn meanwhile shows its earlier version until then.
+const listed = new Map<string, { at: number; files: Promise<{ name: string }[]> }>();
+function storedPreviews(template: string) {
+  const hit = listed.get(template);
+  if (hit && Date.now() - hit.at < 10 * 60_000) return hit.files;
+  const files = supabaseAdmin().storage.from(PUBLIC).list(`previews/${template}`, { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } })
+    .then((r) => { if (r.error) throw r.error; return (r.data ?? []).map((f) => ({ name: f.name })); })
+    .catch(() => { listed.delete(template); return []; }); // a failed listing is not kept
+  listed.set(template, { at: Date.now(), files });
+  return files;
 }

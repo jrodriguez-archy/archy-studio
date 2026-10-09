@@ -2,7 +2,7 @@
 
 import { canvasLibrary, isNew, loadSource } from '@/lib/canvas';
 import type { Edits, FillPlan } from '@/lib/canvas-shared';
-import { saveDraft } from '@/lib/drafts';
+import { saveDraft, type AddedFormat } from '@/lib/drafts';
 import { MissingRequired, prepareFill } from '@/lib/fill';
 import { currentUser } from '@/lib/team';
 
@@ -34,10 +34,12 @@ export async function prepareAction(id: string, slots: Record<string, string | n
 }
 
 // The work in progress, kept as people edit so Claude (through the MCP) works on what they see.
-export async function saveDraftAction(id: string, slots: Record<string, string | null>, edits: Edits) {
+// `added`: the formats added and not saved yet (on the set's first saved format only).
+export async function saveDraftAction(id: string, slots: Record<string, string | null>, edits: Edits, added?: AddedFormat[]) {
   return run(id, async (me, piece) => {
     if (isNew(piece)) return { version: 0 };
-    return { version: await saveDraft({ pieceId: piece.id, userId: me.id, slots, edits, by: 'app' }) };
+    const formats = added?.filter((a) => /^new:[a-z0-9:-]+$/.test(a.ref)).slice(0, 8);
+    return { version: await saveDraft({ pieceId: piece.id, userId: me.id, slots, edits, by: 'app', added: formats }) };
   });
 }
 

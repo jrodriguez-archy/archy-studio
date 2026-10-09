@@ -57,7 +57,7 @@ export async function getCanvas(me: Who, ref?: string) {
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,
       ...(d.review.length ? ['Inspector suggestions (fix them yourself: edit_canvas with fix: "all", or your own change):', ...d.review.map((t) => `- ${t.title}: ${t.detail} [id ${t.id}]`)] : []),
-      'Recolour presets: dark, blue, sky, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
+      'Recolour presets: dark, blue, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
       ...(manifest.default ? [`This template also comes in other designs (${Object.keys(manifest.designs ?? {}).join(', ')}) and themes (${Object.keys(manifest.themes ?? {}).join(', ')}): those are drawn by render with design/theme, not by a recolour.`] : []),
     ].join('\n'),
   };
@@ -198,6 +198,8 @@ export async function saveCanvas(me: Who, ref?: string) {
   const { piece, draft } = await findPiece(me, ref);
   const saved = await saveEdited(me, piece, draft?.slots ?? piece.slots, draft?.edits ?? piece.edits, 'version');
   await clearDraft(piece.id);
+  // Formats added in Canvas and not saved yet stay with the work, now on the new version.
+  if (draft?.added?.length) await saveDraft({ pieceId: saved.id, userId: me.id, slots: draft.slots, edits: draft.edits, by: 'app', added: draft.added });
   return saved;
 }
 

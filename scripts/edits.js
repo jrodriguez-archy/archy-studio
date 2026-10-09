@@ -71,6 +71,15 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
 
   const piece = edits?.[':theme'] ?? {};
 
+  // ---- A partner logo in one colour or its own colours, chosen by hand (before the theme, which colours
+  // one-colour marks only) ----
+  for (const [id, e] of Object.entries(edits ?? {})) {
+    if (!e?.colors || id === ':theme') continue;
+    const el = root.querySelector(`[data-node="${CSS.escape(id)}"]`);
+    const mark = el && (el.matches('[data-logo-mark]') ? el : el.querySelector('[data-logo-mark]'));
+    if (mark) { keep(mark); window.__logoMode?.(mark, e.colors); }
+  }
+
   // ---- Theme: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground, by role (text, accent, button,
   // surface, line, icon, the Archy logo's approved colour). Photos and illustrations keep theirs. ----
   // solid: the ground as one colour (for contrast checks). fills: what a pill, badge or container may
@@ -114,7 +123,7 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     });
     for (const p of plan) {
       const st = p.el.style;
-      if (p.mark) { keep(p.el); st.backgroundColor = t.text; continue; }
+      if (p.mark) { if (!st.backgroundImage) { keep(p.el); st.backgroundColor = t.text; } continue; }
       if (p.fill || p.border || p.color) keep(p.el);
       if (p.fill) { if (/gradient|url\(/.test(getComputedStyle(p.el).backgroundImage) && p.fill === t.surface) st.backgroundImage = 'none'; st.backgroundColor = p.fill; }
       if (p.border) st.borderColor = t.border;
@@ -203,7 +212,19 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       if (l.gap != null) s.gap = `${l.gap}px`;
       if (l.align) s.alignItems = flex[l.align];
     }
-    if (e.hidden) s.display = 'none';
+    if (e.hidden) {
+      s.display = 'none';
+      // A partner logo hidden goes like an empty one: the divider beside it too, and a lockup left with
+      // the Archy logo alone in a centred column centres it.
+      if (el.dataset.slotType === 'logo') {
+        for (const sib of [el.previousElementSibling, el.nextElementSibling]) if (sib && /^(Divider|Separator)/.test(nameOf(sib))) { keep(sib); sib.style.display = 'none'; }
+        const lockup = el.closest('[data-name^="Logo Lockup"]');
+        if (lockup && lockup.parentElement && getComputedStyle(lockup.parentElement).alignItems === 'center') {
+          const shown = [...lockup.children].filter((c) => getComputedStyle(c).display !== 'none' && (c.querySelector('svg, [data-logo-mark]') || c.matches('svg')));
+          if (shown.length === 1) { keep(lockup); lockup.style.justifyContent = 'center'; }
+        }
+      }
+    }
   }
 
   // ---- Photos reframed by hand (after every box and layout, so the frame has its final size) ----

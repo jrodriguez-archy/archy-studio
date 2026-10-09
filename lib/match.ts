@@ -4,10 +4,10 @@ import { listTemplates, loadConfig } from './templates';
 export const FACTS = [
   'event-name', 'city', 'venue', 'date', 'time', 'booth', 'city-photo', 'venue-photo', 'ground-photo', 'guest-photo',
   'speaker', 'speaker-photo', 'speaker-role', 'speaker-company', 'partner-logo',
-  'person', 'person-title', 'person-photo',
+  'person', 'person-title', 'person-photo', 'ad-photo',
 ] as const;
 
-export const PURPOSES = ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite', 'event-cover', 'spotlight'] as const;
+export const PURPOSES = ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite', 'event-cover', 'spotlight', 'photo-claim'] as const;
 
 // A city or venue photo can also serve as a cover's ground photo.
 // `event-cover` is not a template's own purpose: it asks for the event page cover format of any template that has one.

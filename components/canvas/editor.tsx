@@ -9,7 +9,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { libraryAction, prepareAction, saveDraftAction } from '@/app/(app)/canvas/actions';
+import type { libraryAction as LibraryCall, prepareAction as PrepareCall, saveDraftAction as DraftCall } from '@/app/(app)/canvas/actions';
 import { useRendersLive } from '@/components/use-renders-live';
 
 // Export and save render with Chromium in their own route (/api/canvas), not in this page's function.
@@ -19,7 +19,7 @@ async function canvasCall<T = { url: string }>(body: Record<string, unknown>): P
 }
 import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { CanvasLibrary } from '@/lib/canvas';
-import { RECOLOR, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
+import { LEFT_OUT, RECOLOR, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import { carried, follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
 import { BoardLabel, GhostBoard } from './artboards';
 import { AssetsTab, withSession } from './assets-tab';
@@ -53,6 +53,17 @@ type Meta = { comps: Comp[]; safe: Box | null; tokens: Token[]; report: RenderRe
 const EMPTY: Meta = { comps: [], safe: null, tokens: [], report: null, keys: null, review: [] };
 const GAP = 120; // between artboards, in design px
 
+// Canvas's light server calls, side by side (server actions would run one at a time): /api/canvas/live.
+async function live(kind: string, args: unknown[]) {
+  const r = await fetch('/api/canvas/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, args }) });
+  // The same answers the actions gave: signed out, or any failure, comes back as { ok: false, error }.
+  if (r.status === 401) return { ok: false, error: 'Sign in again.' };
+  return r.json().catch(() => ({ ok: false, error: 'Something went wrong. Try again.' }));
+}
+const prepareAction = (...a: Parameters<typeof PrepareCall>): ReturnType<typeof PrepareCall> => live('prepare', a);
+const saveDraftAction = (...a: Parameters<typeof DraftCall>): ReturnType<typeof DraftCall> => live('draft', a);
+const libraryAction = (): ReturnType<typeof LibraryCall> => live('library', []);
+
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });
 // Key order ignored: a draft read back from the database (jsonb) compares equal to the one sent.
@@ -70,15 +81,29 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   const [library, setLibrary] = useState<CanvasLibrary | null>(given);
   const [updating, setUpdating] = useState<string[]>([]);
   const reload = useCallback(() => {
-    libraryAction().then((l) => { if (l) { setLibrary(l); setUpdating([]); } }).catch(() => {});
+    libraryAction().then((l) => { if (l && 'assets' in l) { setLibrary(l); setUpdating([]); } }).catch(() => {});
   }, []);
-  useEffect(() => { if (!given) reload(); }, [given, reload]);
-  useRendersLive(reload);
   // ?asset=<id> (Assets page → "Use in a design"): Assets open, that image pointed at.
   const params = useSearchParams();
   const pointAsset = params.get('asset');
   const pointFolder = params.get('folder');
   const [tab, setTab] = useState<PanelTab>(pointAsset ? 'assets' : piece ? 'layers' : 'library');
+  // The library is for the Library and Assets tabs: it loads at once when one is open, else once the
+  // design is drawn (it never competes with the design's own first load). Live changes (anyone's new
+  // designs or images) reload it while one of those tabs is open; otherwise when one opens next.
+  const shown = tab === 'library' || tab === 'assets';
+  const stale = useRef(false);
+  useEffect(() => {
+    if (given) return;
+    if (shown) { reload(); return; }
+    const t = setTimeout(reload, 3000);
+    return () => clearTimeout(t);
+  }, [given, reload]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Opened before it arrived, or changed while hidden: now.
+  useEffect(() => { if (shown && (stale.current || !library)) { stale.current = false; reload(); } }, [shown, reload]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shownRef = useRef(shown);
+  shownRef.current = shown;
+  useRendersLive(useCallback(() => { if (shownRef.current) reload(); else stale.current = true; }, [reload]));
   if (!piece) {
     return (
       <div data-fullbleed className="flex h-dvh flex-col bg-[#F5F5F5] text-[13px]">
@@ -285,14 +310,27 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     if (ok.length) editMany(Object.fromEntries(ok.map((id) => [id, { hidden }])));
   }, [editMany, essential]);
   // An optional detail left out empties its slot (the design closes up); brought back, it gets its copy again.
-  const leftOut = useRef<Record<string, string>>({});
+  // The eye hides an optional detail and keeps what it held (with the work, so a reload keeps it too);
+  // the bin removes it for good.
   const toggleSlot = useCallback((slot: string) => {
-    const v = cur().slots[slot];
-    if (v) { leftOut.current[slot] = v; setSlot(slot, null); return; }
-    const back = leftOut.current[slot] ?? board.saved.slots[slot] ?? board.initial.slots[slot];
-    if (back) setSlot(slot, back);
-    else toast('Click it and write its copy on the right.');
-  }, [cur, setSlot, board]);
+    const s = cur();
+    const kept = { ...(s.edits[LEFT_OUT]?.slots ?? {}) };
+    const v = s.slots[slot];
+    if (v) { commit({ slots: { ...s.slots, [slot]: null }, edits: { ...s.edits, [LEFT_OUT]: { slots: { ...kept, [slot]: v } } } }); return; }
+    const back = kept[slot] ?? board.saved.slots[slot] ?? board.initial.slots[slot];
+    if (!back) { toast('Click it and write its copy on the right.'); return; }
+    delete kept[slot];
+    commit({ slots: { ...s.slots, [slot]: back }, edits: { ...s.edits, [LEFT_OUT]: { slots: kept } } });
+  }, [cur, commit, board]);
+  const removeSlot = useCallback((slot: string) => {
+    const s = cur();
+    const kept = { ...(s.edits[LEFT_OUT]?.slots ?? {}) };
+    delete kept[slot];
+    // A hidden partner logo removed: nothing stays hidden for the next one.
+    const edits: Edits = { ...s.edits, [LEFT_OUT]: { slots: kept } };
+    for (const c of comps) if (c.slot === slot && edits[c.id]?.hidden) edits[c.id] = { ...edits[c.id], hidden: false };
+    commit({ slots: { ...s.slots, [slot]: null }, edits });
+  }, [cur, commit, comps]);
 
   const select = useCallback((ids: string[], mode: SelectMode) => {
     setSelected((now) => {
@@ -312,7 +350,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       setActiveRef(ref);
       activeRef.current = ref;
       setHover(null);
-      if (!ref.startsWith('new:')) window.history.replaceState(null, '', `/canvas/${ref}`);
+      // The browser's own replaceState (not Next's): the address follows without re-rendering the app or
+      // dropping calls in flight.
+      if (!ref.startsWith('new:')) History.prototype.replaceState.call(window.history, window.history.state, '', `/canvas/${ref}`);
     }
     setSelected(pick ? [pick] : []);
   };
@@ -412,7 +452,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     const changes: Record<string, NodeEdit> = { [id]: { style: { backgroundColor: value } } };
     if (hex) {
       const l = luminance(hex);
-      const want: Preset = hex === '#FFFFFF' || hex === '#F7F7F7' ? 'light' : l > 0.6 ? 'ice' : hex === '#0095FF' || hex === '#66BFFF' ? 'sky' : hex === '#013DF5' || hex === '#0000C9' ? 'blue' : 'dark';
+      const want: Preset = hex === '#FFFFFF' || hex === '#F7F7F7' ? 'light' : l > 0.6 ? 'ice' : hex === '#0095FF' || hex === '#66BFFF' || hex === '#013DF5' || hex === '#0000C9' ? 'blue' : 'dark';
       if (want !== (piece.preset ?? null)) changes[RECOLOR] = { preset: want };
     }
     editMany(changes);
@@ -470,38 +510,67 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     return () => window.removeEventListener('keydown', onKey);
   }, [comps, selected, undo, redo, editMany, hideMany, vp, cur]);
 
-  useEffect(() => {
-    if (!changed) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [changed]);
-  const confirmLeave = () => !changed || window.confirm('Leave without saving your changes?');
-
-  // ---- Live with Claude: each saved format's draft is kept as people edit; Claude's edits (and the same
-  // design's edits in another tab or by a teammate) arrive over Realtime ----
+  // ---- The work is kept as people edit (each saved format's draft, with the formats added and not saved
+  // yet on the first one); Claude's edits and the same design's edits in another tab arrive over Realtime.
+  // The gallery's images change only with "Update images". ----
   const saved = boards.filter((b) => !b.isNew);
   const savedIds = saved.map((b) => b.ref).join();
+  // Where the added formats are kept: the set's first saved format (the same in every tab).
+  const home = saved[0]?.ref ?? null;
+  const addedOf = (d: Doc, bs: Board[]) => bs.filter((b) => b.isNew && d[b.ref]).map((b) => ({ ref: b.ref, slots: d[b.ref].slots, edits: cleanEdits(d[b.ref].edits) }));
+  const keyOf = (ref: string, d: Doc, bs: Board[]) => canon(ref === home ? { ...cleanSnap(d[ref]), added: addedOf(d, bs) } : cleanSnap(d[ref]));
   const versions = useRef<Record<string, number>>(Object.fromEntries(firstBoards.map((b) => [b.ref, b.draft?.version ?? 0])));
-  const drafted = useRef<Record<string, string>>(Object.fromEntries(firstBoards.map((b) => [b.ref, canon(cleanSnap(b.initial))])));
+  const drafted = useRef<Record<string, string>>({});
+  if (!Object.keys(drafted.current).length) {
+    const d0 = Object.fromEntries(firstBoards.map((b) => [b.ref, b.initial]));
+    for (const b of firstBoards) if (!b.isNew) drafted.current[b.ref] = keyOf(b.ref, d0, firstBoards);
+  }
   const sent = useRef<Record<string, string[]>>({}); // this tab's recent drafts: their echo is not news
+  // Kept on the server ('saved'), on its way ('saving'), or not kept ('error').
+  const [keeping, setKeeping] = useState<'saved' | 'saving' | 'error'>('saved');
+  const inFlight = useRef(0);
+  const ownSave = useRef(0); // when this tab last saved to the gallery (its drafts are cleared then)
   useEffect(() => {
     const d = firstBoards.find((b) => b.ref === firstActive)?.draft;
-    if (d) toast(d.by === 'claude' ? `Claude’s changes are here: ${d.note ?? 'edited by Claude'}` : 'Your unsaved changes are back.');
+    if (d?.by === 'claude') toast(`Claude’s changes are here: ${d.note ?? 'edited by Claude'}`);
   }, [firstBoards, firstActive]);
+  const due = saved.filter((b) => keyOf(b.ref, doc, boards) !== drafted.current[b.ref]);
   useEffect(() => {
-    const due = boards.filter((b) => !b.isNew && canon(cleanSnap(doc[b.ref])) !== drafted.current[b.ref]);
-    if (!due.length) return;
+    // Nothing left to keep (an edit undone before it went out): kept.
+    if (!due.length) { if (!inFlight.current) setKeeping((k) => (k === 'saving' ? 'saved' : k)); return; }
+    setKeeping('saving');
     const t = setTimeout(() => {
       for (const b of due) {
-        const s = docRef.current[b.ref];
-        drafted.current[b.ref] = canon(cleanSnap(s));
+        const d = docRef.current, s = d[b.ref];
+        const added = b.ref === home ? addedOf(d, boardsRef.current) : undefined;
+        drafted.current[b.ref] = keyOf(b.ref, d, boardsRef.current);
         sent.current[b.ref] = [...(sent.current[b.ref] ?? []).slice(-19), drafted.current[b.ref]];
-        saveDraftAction(b.ref, s.slots, s.edits).then((r) => { if (r.ok) versions.current[b.ref] = Math.max(versions.current[b.ref] ?? 0, r.version); }).catch(() => {});
+        inFlight.current++;
+        saveDraftAction(b.ref, s.slots, s.edits, added)
+          .then((r) => { if (r.ok) versions.current[b.ref] = Math.max(versions.current[b.ref] ?? 0, r.version); else throw new Error(r.error); })
+          .then(() => { if (!--inFlight.current) setKeeping((k) => (k === 'error' ? k : 'saved')); })
+          .catch(() => { inFlight.current--; drafted.current[b.ref] = ''; setKeeping('error'); });
       }
     }, 800);
     return () => clearTimeout(t);
-  }, [doc, boards]);
+  }, [doc, boards]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Failed: tried again a little later (the next edit tries too).
+  useEffect(() => {
+    if (keeping !== 'error') return;
+    const t = setTimeout(() => { setKeeping('saving'); setDoc({ ...docRef.current }); }, 5000);
+    return () => clearTimeout(t);
+  }, [keeping, setDoc]);
+
+  // Leaving is safe once the work is kept; a design new from a template has nowhere to keep it yet.
+  const unkept = (!home && changed) || (!!home && (due.length > 0 || keeping !== 'saved'));
+  useEffect(() => {
+    if (!unkept) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [unkept]);
+  const confirmLeave = () => !unkept || window.confirm('Leave without saving your changes?');
+
   useEffect(() => {
     if (!savedIds) return;
     const db = supabaseBrowser();
@@ -514,9 +583,17 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       db.realtime.setAuth(data.session?.access_token ?? null);
       channel = db.channel(`canvas:${savedIds}`)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=in.(${savedIds})` }, (payload) => {
-          // Saved (the draft is gone): its next draft starts again at version 1.
-          if (payload.eventType === 'DELETE') { const gone = (payload.old as { piece_id?: string })?.piece_id; if (gone) versions.current[gone] = 0; return; }
-          const row = payload.new as { piece_id?: string; slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null };
+          if (payload.eventType === 'DELETE') {
+            const ref = (payload.old as { piece_id?: string })?.piece_id;
+            if (!ref || !docRef.current[ref]) return;
+            // Its next draft starts again at version 1.
+            versions.current[ref] = 0;
+            // Saved to the gallery elsewhere (another tab, or Claude): open what was saved, so added
+            // formats are not saved twice.
+            if (Date.now() - ownSave.current > 90_000) { toast('Saved elsewhere. Opening what was saved…', { id: 'saved-elsewhere' }); setTimeout(() => window.location.assign(`/canvas/${ref}?latest=1`), 1200); }
+            return;
+          }
+          const row = payload.new as { piece_id?: string; slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null; added?: { ref: string; slots: Snap['slots']; edits: Edits }[] };
           const ref = row?.piece_id;
           if (!ref || !docRef.current[ref]) return;
           // Claude at work on this design: shown on its artboard until its edit lands (or 90 s pass).
@@ -526,16 +603,32 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           if (!row.version || row.version < (versions.current[ref] ?? 0)) return;
           versions.current[ref] = row.version;
           const next = { slots: row.slots ?? {}, edits: row.edits ?? {} };
-          const key = canon(cleanSnap(next));
-          if (key === canon(cleanSnap(docRef.current[ref]))) return;
+          // Formats added elsewhere (on the first saved format's draft): new artboards here too.
+          const added = (ref === home ? row.added ?? [] : []).filter((a) => !docRef.current[a.ref] || boardsRef.current.some((b) => b.ref === a.ref && b.isNew));
+          const there = { ...docRef.current, [ref]: next, ...Object.fromEntries(added.map((a) => [a.ref, { slots: a.slots ?? {}, edits: a.edits ?? {} }])) };
+          const newBoards = added.flatMap((a) => {
+            if (boardsRef.current.some((b) => b.ref === a.ref)) return [];
+            const g = ghostsRef.current.find((x) => x.ref === a.ref);
+            return g ? [{ ref: g.ref, format: g.format, label: g.label, width: g.width, height: g.height, isNew: true, canReplace: false, initial: there[g.ref], saved: there[g.ref] }] : [];
+          });
+          const bs = [...boardsRef.current, ...newBoards];
+          const key = keyOf(ref, there, bs);
+          // What the database holds (the row alone): formats added only here are sent again on the next pass.
+          const rowKey = canon(ref === home ? { ...cleanSnap(next), added: (row.added ?? []).map((a) => ({ ref: a.ref, slots: a.slots ?? {}, edits: cleanEdits(a.edits ?? {}) })) } : cleanSnap(next));
+          if (key === keyOf(ref, docRef.current, boardsRef.current)) return;
           if (row.updated_by !== 'claude') {
             // Edited in another tab (or by a teammate): this tab follows. Its own echo is skipped, unless
             // another draft came in since (then the echo is what the database kept). Not an undo step:
             // each format arrives on its own, and undoing one would split synced formats.
-            if (sent.current[ref]?.includes(key)) return;
+            if (sent.current[ref]?.includes(rowKey)) return;
             sent.current[ref] = [];
-            drafted.current[ref] = key;
-            setDoc({ ...docRef.current, [ref]: next });
+            drafted.current[ref] = rowKey;
+            if (newBoards.length) {
+              const order = [...boardsRef.current, ...ghostsRef.current].map((b) => b.format);
+              setBoards(bs.sort((a, b) => order.indexOf(a.format) - order.indexOf(b.format)));
+              setGhosts((gs) => gs.filter((g) => !newBoards.some((b) => b.ref === g.ref)));
+            }
+            setDoc(there);
             toast('Updated from another tab.', { id: 'draft-elsewhere' });
             return;
           }
@@ -545,14 +638,14 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           const ids = new Set(Object.keys({ ...prev.edits, ...next.edits }).filter((id) => id !== RECOLOR && JSON.stringify(prev.edits[id]) !== JSON.stringify(next.edits[id])));
           for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = comps.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
           setFlash({ ref, ids: [...ids], at: Date.now() });
-          drafted.current[ref] = key;
+          drafted.current[ref] = rowKey;
           commitTo(ref, next); // one step: undo takes it back; synced formats follow
           toast(`Claude ${row.note ? row.note.charAt(0).toLowerCase() + row.note.slice(1) : 'edited the design'}`, { action: { label: 'Undo', onClick: () => undo() } });
         })
         .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });
     })();
     return () => { gone = true; if (channel) db.removeChannel(channel); };
-  }, [savedIds, commitTo, undo, setDoc]);
+  }, [savedIds, home, commitTo, undo, setDoc]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The Inspector: its review of the edits, plus copy from the brief the template could not fit.
   // Nothing here blocks Save or Download.
@@ -606,6 +699,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   const existing = pending.filter((b) => !b.isNew);
   const canReplace = existing.every((b) => b.canReplace);
   const save = (mode: 'version' | 'replace') => start(async () => {
+    ownSave.current = Date.now();
     const items = pending.map((b) => ({ id: b.ref, slots: doc[b.ref].slots, edits: doc[b.ref].edits }));
     const from = boards.find((b) => !b.isNew)?.ref ?? null;
     const r = await canvasCall<{ saved: { ref: string; id: string }[] }>({ action: 'save-set', items, mode, from });
@@ -624,8 +718,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     // Open the saved formats from the gallery (new versions and added formats have new ids).
     const next = ids[board.ref] ?? board.ref;
     if (next.startsWith('new:')) return;
-    if (next !== board.ref || Object.entries(ids).some(([ref, id]) => ref !== id)) router.replace(`/canvas/${next}`);
-    router.refresh();
+    // Always through the router: switching formats moves the address natively, so the router may still
+    // be on the format first opened (a refresh would put that one back in the address).
+    router.replace(`/canvas/${next}`);
   });
 
   const imageTarget = one && (one.kind === 'photo' || one.kind === 'partner') ? one : null;
@@ -646,7 +741,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   const pickerImages = (library ? withSession(library.assets).team : []).map((a) => ({ value: a.value, title: a.name, url: a.thumb }));
   const pct = Math.round(vp.zoom * 100);
   const allNew = boards.every((b) => b.isNew);
-  const status = allNew ? ' · New from template' : pending.length ? ` · Unsaved changes${pending.length > 1 ? ` in ${pending.length} formats` : ''}` : '';
+  // The work is kept as it goes; the gallery's images change with "Update images".
+  const status = allNew ? ' · New from template' : keeping === 'error' ? ' · Not saved, trying again' : due.length || keeping === 'saving' ? ' · Saving…' : ' · Saved';
 
   return (
     <div data-fullbleed className="flex h-dvh flex-col bg-[#F5F5F5] text-[13px]">
@@ -685,7 +781,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
         </button>
         <button type="button" onClick={() => (existing.length ? setSaving(true) : save('version'))} disabled={busy || !dirty}
           className="flex h-8 items-center rounded-md bg-primary px-3.5 font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50">
-          {!allNew ? 'Save' : busy ? 'Saving…' : 'Save to gallery'}
+          {!allNew ? (busy ? 'Updating…' : 'Update images') : busy ? 'Saving…' : 'Save to gallery'}
         </button>
       </header>
 
@@ -694,7 +790,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           {tab === 'layers' && !allLayers && (
             <ContentPanel comps={comps} edits={snap.edits} slots={snap.slots} slotMeta={slotMeta} previews={plan?.fill.values ?? {}} preset={piece.preset}
               selected={selected} hover={hover} onHover={setHover} onSelect={(id) => select([id], 'replace')}
-              onSlotToggle={toggleSlot} onSlot={setSlot} onHide={(id) => hideMany([id], !snap.edits[id]?.hidden)} onPreset={setPreset} onAdvanced={() => setAllLayers(true)} />
+              onSlotToggle={toggleSlot} onSlot={setSlot} onHide={(id) => hideMany([id], !snap.edits[id]?.hidden)} onPreset={setPreset} onAdvanced={() => setAllLayers(true)}
+              onLogoColors={(id, colors) => editLayer(id, { colors })} onSlotRemove={removeSlot} />
           )}
           {tab === 'layers' && allLayers && (
             <>
@@ -828,7 +925,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       <Dialog open={saving} onOpenChange={setSaving}>
         <DialogContent className="gap-5 rounded-md p-6 text-[13px] sm:max-w-[420px]">
           <DialogHeader>
-            <DialogTitle className="text-[15px] font-medium">Save changes</DialogTitle>
+            <DialogTitle className="text-[15px] font-medium">Update images</DialogTitle>
             <DialogDescription className="text-[13px]">
               {pending.length > 1 ? `${pending.map((b) => b.label).join(', ')} changed. ` : ''}Keep the original{existing.length > 1 ? 's' : ''}, or put the edited design{existing.length > 1 ? 's' : ''} in {existing.length > 1 ? 'their' : 'its'} place.
               {pending.some((b) => b.isNew) ? ' Added formats join the set either way.' : ''}

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/app-shell';
-import { previewSrcs } from '@/lib/previews';
+import { previewSrcs, selfOrigin } from '@/lib/previews';
 import { catalog, FACT_LABEL, PURPOSE_LABEL } from '@/lib/catalog';
 import { comboFormats, resolveCombo } from '@/lib/templates';
 
@@ -11,7 +11,7 @@ export default async function TemplatePage({ params, searchParams }: { params: P
   if (!item) notFound();
   const { manifest, config, formats, needs, extras } = item;
   const optional = new Set(config.optional ?? []);
-  const srcs = await previewSrcs([item]);
+  const srcs = await previewSrcs([item], await selfOrigin());
   const lead = formats.includes('post') ? 'post' : formats[0];
   // Templates with several designs and themes: the one chosen (?design=&theme=), else the default.
   const q = await searchParams;

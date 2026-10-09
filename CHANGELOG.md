@@ -1,6 +1,6 @@
 # Changelog
 
-## archy-studio 0.14.0 (2026-10-08)
+## archy-studio 0.16.0 (2026-10-09)
 
 - Headlines as big as their room allows: a headline is no longer held to its sample's line count (three big lines rather than two small ones), takes extra lines only while the column still fits its room, and wrapping short of an illustration does not add lines when a little less size keeps them. The Inspector no longer flags a headline's line count. Sparkles never push copy (a date "colliding with a star" was refused).
 - Missing photos never stop a design: Studio fills them with placeholders close to the brief (Unsplash with `UNSPLASH_ACCESS_KEY`, else one made with AI, else a neutral image; a person's photo is a neutral silhouette, never someone else). Templates with photos are eligible without them; the answer lists the placeholders and Claude asks for the real ones; the Inspector flags them in Canvas. The event page cover is always made; its subhead comes from the brief.
@@ -8,6 +8,15 @@
 - Download links from Claude last until the design is archived or deleted (`/api/file/<id>`; signed out, it goes through the login first).
 - Assets: Copy ID on each image; Claude uses it as `asset:<id>`. Dates show in each person's own time zone.
 - MCP: options are different templates, not copy swaps; in Canvas Claude asks where when a change could go in several places, changes only what is asked, and says when synced formats follow a change. The Studio skill loads every tool at once.
+## archy-studio 0.15.0 (2026-10-08)
+
+- Two new hosted-evening templates from `Master - Events`, each in Post, Square, Stories, OG and Cover: `night-out-photo-fade` (a venue photo dissolving into the navy ground; needs the venue photo, whose cover reuses it) and `night-out-scorecard` (an activity illustration, bowling by default, as `image-illustration`, and an optional scorecard with `card-player` / `card-total`; its cover asks for a venue photo). Details columns and the card's cells carry their own limits.
+
+## archy-studio 0.14.0 (2026-10-08)
+
+- New template `photo-headline` (Ads, purpose `photo-claim`, "Photo ads"): one product claim told by a photo. Three designs (`full-photo` default, `photo-bottom`, `split`), two themes (`royal` default, `navy`), formats Square 1080×1080, Post 1080×1350 and Stories 1080×1920 (18 artboards in `Master - Ads`, page `Photo Headline`). Slots: `headline` (two lines, grows when the copy is short), `subline` (optional), `cta`, `image-photo`; in Split `image-left`, `image-right` and the optional `label-left` / `label-right`.
+- New brief fact `ad-photo` (a scene photo that shows a product claim) for `match_templates`.
+- rules.json: a design can now override `fill` (`designs.<design>.fill`), as it already did slots and containers. Photo Bottom uses it so its 115px sample headline does not grow further.
 
 ## archy-studio 0.13.0 (2026-10-08)
 

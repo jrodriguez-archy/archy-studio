@@ -167,7 +167,14 @@ export async function previewExists(key: string) {
   const { data } = await supabaseAdmin().storage.from(PUBLIC).list(dir, { search: name, limit: 1 });
   return !!data?.some((f) => f.name === name);
 }
-export async function previewUrl(key: string, make: () => Promise<Buffer>): Promise<string | null> {
+// One render per preview at a time on this server: requests for a preview being drawn wait for it.
+const drawing = new Map<string, Promise<string | null>>();
+export function previewUrl(key: string, make: () => Promise<Buffer>): Promise<string | null> {
+  let p = drawing.get(key);
+  if (!p) { p = drawPreview(key, make).finally(() => drawing.delete(key)); drawing.set(key, p); }
+  return p;
+}
+async function drawPreview(key: string, make: () => Promise<Buffer>): Promise<string | null> {
   if (!supabaseConfigured()) return null;
   if (await previewExists(key)) return publicUrl(previewPath(key));
   const sharp = await sharpLib();

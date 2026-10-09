@@ -1,4 +1,5 @@
 import 'server-only';
+import { after } from 'next/server';
 import { PUBLIC, publicUrl } from './images';
 import { displayName } from './names';
 import { storeUpload } from './renders';
@@ -73,7 +74,13 @@ async function thumbnail(path: string, body: Buffer) {
 // assets were kept) join the list the first time they look (once per server instance).
 const adopted = new Set<string>();
 export async function listAssets(opts: { ownerId?: string; folderId?: string; search?: string; limit?: number } = {}): Promise<Asset[]> {
-  if (opts.ownerId && !adopted.has(opts.ownerId)) { adopted.add(opts.ownerId); await adoptOldUploads(opts.ownerId).catch(() => {}); }
+  // In the background, after the response: never on the way of the list itself.
+  if (opts.ownerId && !adopted.has(opts.ownerId)) {
+    adopted.add(opts.ownerId);
+    const owner = opts.ownerId;
+    const adopt = () => adoptOldUploads(owner).catch(() => {});
+    try { after(adopt); } catch { void adopt(); }
+  }
   let q = supabaseAdmin().from('assets').select(COLUMNS).is('deleted_at', null).order('created_at', { ascending: false }).limit(opts.limit ?? 300);
   if (opts.ownerId) q = q.eq('owner_id', opts.ownerId);
   // By name: the LIKE wildcards are taken literally (PostgREST reads * as a wildcard and cannot escape it).

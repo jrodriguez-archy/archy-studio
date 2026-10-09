@@ -1,0 +1,374 @@
+{
+  "rootId": "5QF-0",
+  "nodes": {
+    "5QF-0": {
+      "id": "5QF-0",
+      "name": "TPL · Photo Headline · Split · Royal Blue · Stories 1080×1920",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5R5-0",
+        "5R4-0",
+        "5R3-0",
+        "5R2-0",
+        "5R1-0",
+        "5QZ-0",
+        "5QX-0",
+        "5QG-0"
+      ]
+    },
+    "5R5-0": {
+      "id": "5R5-0",
+      "name": "slot-image-left",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5R4-0": {
+      "id": "5R4-0",
+      "name": "slot-image-right",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5R3-0": {
+      "id": "5R3-0",
+      "name": "Shade Top",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5R2-0": {
+      "id": "5R2-0",
+      "name": "Pixel Band",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5R1-0": {
+      "id": "5R1-0",
+      "name": "Shade Bottom",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5QZ-0": {
+      "id": "5QZ-0",
+      "name": "optional-label-left",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5R0-0"
+      ]
+    },
+    "5R0-0": {
+      "id": "5R0-0",
+      "name": "slot-text-label-left",
+      "component": "Text",
+      "visible": true,
+      "text": "Before",
+      "children": []
+    },
+    "5QX-0": {
+      "id": "5QX-0",
+      "name": "optional-label-right",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5QY-0"
+      ]
+    },
+    "5QY-0": {
+      "id": "5QY-0",
+      "name": "slot-text-label-right",
+      "component": "Text",
+      "visible": true,
+      "text": "After",
+      "children": []
+    },
+    "5QG-0": {
+      "id": "5QG-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5QU-0",
+        "5QH-0"
+      ]
+    },
+    "5QU-0": {
+      "id": "5QU-0",
+      "name": "Main",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5QW-0",
+        "5QV-0"
+      ]
+    },
+    "5QW-0": {
+      "id": "5QW-0",
+      "name": "slot-text-headline",
+      "component": "Text",
+      "visible": true,
+      "text": "What your closet looks like after the cloud.",
+      "children": []
+    },
+    "5QV-0": {
+      "id": "5QV-0",
+      "name": "slot-text-subline",
+      "component": "Text",
+      "visible": true,
+      "text": "Archy runs in the cloud. No server closet needed.",
+      "children": []
+    },
+    "5QH-0": {
+      "id": "5QH-0",
+      "name": "Footer",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5QN-0",
+        "5QI-0"
+      ]
+    },
+    "5QN-0": {
+      "id": "5QN-0",
+      "name": "Archy Wordmark",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5QI-0": {
+      "id": "5QI-0",
+      "name": "CTA Button",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5QM-0",
+        "5QJ-0"
+      ]
+    },
+    "5QM-0": {
+      "id": "5QM-0",
+      "name": "slot-text-cta",
+      "component": "Text",
+      "visible": true,
+      "text": "Book a demo",
+      "children": []
+    },
+    "5QJ-0": {
+      "id": "5QJ-0",
+      "name": "Arrow",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    }
+  },
+  "styles": {
+    "5QF-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1920px",
+      "position": "absolute",
+      "left": "2320px",
+      "top": "4160px",
+      "backgroundColor": "var(--color-dark-background)"
+    },
+    "5R5-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": "530px",
+      "width": "540px",
+      "height": "1390px",
+      "backgroundColor": "var(--color-neutral)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/01M4704G94A4V53CAK7FES1AZR.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "5R4-0": {
+      "position": "absolute",
+      "left": "540px",
+      "top": "530px",
+      "width": "540px",
+      "height": "1390px",
+      "paddingBlock": "40px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/01M46M1PSKRKK2HRB9H3P8SM6K.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "5R3-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "530px",
+      "width": "1080px",
+      "height": "360px",
+      "backgroundImage": "linear-gradient(in oklab 180deg, color-mix(var(--color-blue-tint-800) 60%, transparent) 0%, oklab(0% 0 0 / 0%) 100%)"
+    },
+    "5R2-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": 0,
+      "width": "1080px",
+      "height": "736px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/481XS137232VJR0STAN5TDQKPX.png)",
+      "backgroundSize": "100% 100%",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat"
+    },
+    "5R1-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "1430px",
+      "width": "1080px",
+      "height": "490px",
+      "backgroundImage": "linear-gradient(in oklab 180deg, oklab(0% 0 0 / 0%) 0%, color-mix(var(--color-blue-tint-800) 70%, transparent) 100%)"
+    },
+    "5QZ-0": {
+      "position": "absolute",
+      "left": 80,
+      "top": "714px",
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "3px",
+      "paddingInline": "13px",
+      "borderRadius": "8px",
+      "backgroundColor": "var(--color-blue-tint-800)",
+      "borderWidth": "3px",
+      "borderStyle": "solid",
+      "borderColor": "color-mix(var(--color-white) 40%, transparent)"
+    },
+    "5R0-0": {
+      "fontSize": "28px",
+      "lineHeight": "36px",
+      "letterSpacing": "-0.01em",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    },
+    "5QX-0": {
+      "position": "absolute",
+      "left": 620,
+      "top": "714px",
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "3px",
+      "paddingInline": "13px",
+      "borderRadius": "8px",
+      "backgroundColor": "var(--color-royal-blue-500)",
+      "borderWidth": "3px",
+      "borderStyle": "solid",
+      "borderColor": "color-mix(var(--color-white) 40%, transparent)"
+    },
+    "5QY-0": {
+      "fontSize": "28px",
+      "lineHeight": "36px",
+      "letterSpacing": "-0.01em",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    },
+    "5QG-0": {
+      "position": "absolute",
+      "left": "80px",
+      "top": "250px",
+      "width": "920px",
+      "height": "1420px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between"
+    },
+    "5QU-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "gap": "28px",
+      "height": "fit-content",
+      "flexShrink": "0"
+    },
+    "5QW-0": {
+      "width": "100%",
+      "fontSize": "87px",
+      "lineHeight": "96px",
+      "letterSpacing": "var(--tracking-tight)",
+      "flexShrink": "0",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    },
+    "5QV-0": {
+      "width": "100%",
+      "fontSize": "40px",
+      "lineHeight": "48px",
+      "flexShrink": "0",
+      "letterSpacing": "var(--tracking-snug)",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-white)"
+    },
+    "5QH-0": {
+      "display": "flex",
+      "justifyContent": "space-between",
+      "alignItems": "center",
+      "width": "100%",
+      "flexShrink": "0",
+      "height": "fit-content"
+    },
+    "5QN-0": {
+      "height": "104px",
+      "width": "266px",
+      "flexShrink": "0"
+    },
+    "5QI-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "19px",
+      "paddingInline": "29px",
+      "borderRadius": "16px",
+      "gap": "16px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-royal-blue-500)",
+      "borderWidth": "3px",
+      "borderStyle": "solid",
+      "borderColor": "color-mix(var(--color-white) 40%, transparent)"
+    },
+    "5QM-0": {
+      "width": "max-content",
+      "fontSize": "30px",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-white)"
+    },
+    "5QJ-0": {
+      "width": "28px",
+      "height": "28px",
+      "flexShrink": "0",
+      "display": "inline-block"
+    }
+  },
+  "svgs": {
+    "5QN-0": "(\n    <svg width=\"266\" height=\"103.74\" viewBox=\"0 -27.34 335.16 130.34\" xmlns=\"http://www.w3.org/2000/svg\" style={{ height: '104px', width: '266px', flexShrink: '0' }}>\n      <g transform=\"translate(0 21.75)\">\n        <path d=\"M108.13 41.71C108.13 41.71 91.845 41.71 91.845 41.71 91.845 41.71 91.845 4.515 91.845 4.515 91.845-11.806 104.988-25.088 121.143-25.088 121.143-25.088 125.986-25.088 125.986-25.088 125.986-25.088 125.986-8.632 125.986-8.632 125.986-8.632 121.143-8.632 121.143-8.632 113.965-8.632 108.13-2.734 108.13 4.515 108.13 4.515 108.13 41.71 108.13 41.71Z\" fill=\"#FFFFFF\" />\n        <path d=\"M231.294-21.377C225.512-21.377 220.088-19.761 215.391-16.944 215.391-16.944 215.391-49.465 215.391-49.465 215.391-49.465 199.077-49.465 199.077-49.465 199.077-49.465 199.077 41.71 199.077 41.71 199.077 41.71 215.391 41.71 215.391 41.71 215.391 41.71 215.391 12.507 215.391 12.507 215.391 2.915 222.529-4.892 231.294-4.892 240.06-4.892 247.197 2.915 247.197 12.507 247.197 12.507 247.197 41.71 247.197 41.71 247.197 41.71 263.513 41.71 263.513 41.71 263.513 41.71 263.513 12.507 263.513 12.507 263.513-6.173 249.061-21.373 231.294-21.373 231.294-21.373 231.294-21.377 231.294-21.377Z\" fill=\"#FFFFFF\" />\n        <path d=\"M318.846-16.798C318.846-16.798 318.846 8.891 318.846 8.891 318.846 18.847 311.708 26.943 302.942 26.943 294.176 26.943 287.039 18.847 287.039 8.891 287.039 8.891 287.039-16.798 287.039-16.798 287.039-16.798 270.724-16.798 270.724-16.798 270.724-16.798 270.724 8.891 270.724 8.891 270.724 27.928 285.176 43.418 302.942 43.418 308.725 43.418 314.149 41.767 318.846 38.898 318.846 38.898 318.846 47.346 318.846 47.346 318.846 56.931 311.708 64.732 302.942 64.732 294.176 64.732 287.039 56.938 287.039 47.346 287.039 47.346 270.724 47.346 270.724 47.346 270.724 66.015 285.176 81.202 302.942 81.202 320.708 81.202 335.16 66.015 335.16 47.346 335.16 47.346 335.16-16.798 335.16-16.798 335.16-16.798 318.846-16.798 318.846-16.798Z\" fill=\"#FFFFFF\" />\n        <path d=\"M160.156 26.611C150.859 26.611 143.29 18.615 143.29 8.794 143.29-1.03 150.859-9.026 160.156-9.026 167.42-9.026 173.63-4.144 175.996 2.682 175.996 2.682 192.826 2.682 192.826 2.682 190.03-13.364 176.447-25.574 160.156-25.574 141.843-25.574 126.947-10.157 126.947 8.798 126.947 27.755 141.843 43.172 160.156 43.172 176.447 43.172 190.03 30.96 192.826 14.916 192.826 14.916 175.996 14.916 175.996 14.916 173.63 21.742 167.42 26.624 160.156 26.624 160.156 26.624 160.156 26.611 160.156 26.611Z\" fill=\"#FFFFFF\" />\n        <path d=\"M16.336 36.11C16.336 22.175 27.558 10.842 41.354 10.842 55.15 10.842 66.371 22.175 66.371 36.11 66.371 36.11 66.371 41.71 66.371 41.71 66.371 41.71 82.707 41.71 82.707 41.71 82.707 41.71 82.707-7.704 82.707-7.704 82.707-14.61 81.004-21.464 77.77-27.509 70.526-41.05 56.576-49.465 41.347-49.465 40.576-49.465 39.798-49.442 39.025-49.401 25.068-48.616 12.554-40.837 5.539-28.59 5.065-27.764 4.612-26.908 4.195-26.048 1.414-20.302 0-14.13 0-7.704 0-7.704 0 41.71 0 41.71 0 41.71 16.336 41.71 16.336 41.71 16.336 41.71 16.336 36.11 16.336 36.11ZM16.336-7.704C16.336-11.6 17.189-15.328 18.866-18.794 19.119-19.314 19.393-19.834 19.679-20.332 23.924-27.746 31.5-32.457 39.935-32.93 40.404-32.96 40.884-32.972 41.354-32.972 50.567-32.972 59.007-27.88 63.391-19.678 65.342-16.026 66.371-11.889 66.371-7.704 66.371-7.704 66.371 2.883 66.371 2.883 59.419-2.468 50.75-5.652 41.354-5.652 31.959-5.652 23.288-2.468 16.336 2.883 16.336 2.883 16.336-7.704 16.336-7.704Z\" fill=\"#FFFFFF\" />\n      </g>\n    </svg>\n  )",
+    "5QJ-0": "(\n    <svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" style={{ width: '28px', height: '28px', flexShrink: '0', display: 'inline-block' }}>\n      <path d=\"M18.5 12L5 12\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 18C13 18 19 13.581 19 12C19 10.419 13 6 13 6\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

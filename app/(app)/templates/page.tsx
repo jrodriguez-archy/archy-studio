@@ -1,6 +1,6 @@
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
 import { TemplateBrowser, type TemplateCard, type TemplateGroup } from '@/components/template-browser';
-import { previewSrcs } from '@/lib/previews';
+import { previewSrcs, selfOrigin } from '@/lib/previews';
 import { catalog, CATEGORY_LABEL, FACT_LABEL, PURPOSE_LABEL, PURPOSE_PLURAL, TAXONOMY, type CatalogItem } from '@/lib/catalog';
 
 export const metadata = { title: 'Templates · Archy Studio' };
@@ -10,7 +10,7 @@ export const metadata = { title: 'Templates · Archy Studio' };
 export default async function TemplatesPage({ searchParams }: { searchParams: Promise<{ category?: string; purpose?: string }> }) {
   const { category: rawCategory, purpose } = await searchParams;
   const all = await catalog();
-  const srcs = await previewSrcs(all);
+  const srcs = await previewSrcs(all, await selfOrigin());
   const styles = all;
   const hasCover = (i: CatalogItem) => !!i.manifest.formats.cover;
   const taxonomy = TAXONOMY.filter((c) => styles.some((i) => i.config.category === c.key));

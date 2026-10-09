@@ -1,5 +1,10 @@
 # Changelog
 
+## archy-studio 0.13.1 (2026-10-08)
+
+- Render: a headline that wraps short of an illustration (the Night Out cocktail) no longer goes out on more lines than its design ("For Phoenix / Dentists" on a third line, reported ready). It shrinks to its minimum or joins its line break; if it still runs over, the copy does not fit and the answer gives the exact maximum and the smaller-text option.
+- MCP: render's description says the no-photo version exists only where a template has one, and a cover asked for alone without its photos says it needs them; download links say they last 7 days (the Canvas link stays). edit_canvas says when the person also changed the design in Canvas (so Claude does not take a recolour for its own) and which other formats of the set its copy and images follow to.
+
 ## archy-studio 0.13.0 (2026-10-08)
 
 - Canvas: a photo moves and resizes with its frame (what shows it: its clipping frame, or the frame it fills alone), and its selection shows that frame. Pulling an edge resizes the frame, the photo keeps covering it (framed as it was, then free to reframe), and on a frame placed on the artboard what sits against that edge moves with it (a photo band pushes the photo bar and the content under it). The frame grows only as far as what it pushes can go without leaving the artboard; a frame in a column already moves its neighbours.

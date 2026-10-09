@@ -91,7 +91,14 @@ export async function editCanvas(me: Who, input: { piece?: string; changes: Canv
   const working = (status: string | null) => markClaude({ pieceId: piece.id, userId: me.id, slots, edits, status }).catch(() => {});
   await working('Working on the design');
   try {
-    return await applyChanges(me, piece, slots, edits, input, working);
+    const out = await applyChanges(me, piece, slots, edits, input, working);
+    // What Claude did not do: the person's own edits since Claude's last change (a recolour in the app
+    // shows in Claude's image and reads as Claude's), and the formats its copy and images follow to.
+    const was = draft?.slots ?? piece.slots;
+    const syncedSlots = [...Object.keys(slots).filter((k) => slots[k] !== was[k]), ...(input.recolor ? ['the recolour'] : [])];
+    const synced = syncedSlots.length ? (await loadSet(piece)).pieces.filter((p) => p.id !== piece.id).map((p) => p.format) : [];
+    const personEdited = !!draft && draft.updated_by === 'app' && draft.version > 0;
+    return { ...out, personEdited, recolor: personEdited ? draft!.edits[RECOLOR]?.preset ?? null : null, synced, syncedSlots };
   } catch (e) {
     await working(null);
     throw e;

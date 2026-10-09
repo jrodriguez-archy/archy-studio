@@ -848,7 +848,32 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
         if (/^(normal|nowrap|pre)$/.test(getComputedStyle(t).whiteSpace)) t.style.whiteSpace = 'pre-line';
       }
       const fs0 = parseFloat(getComputedStyle(t).fontSize), lh0 = parseFloat(getComputedStyle(t).lineHeight);
-      for (let k = 1; hitting().length && k > 0.8; k = +(k - 0.04).toFixed(2)) { t.style.fontSize = `${(fs0 * k).toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * k)}px`; }
+      const size = (px) => { t.style.fontSize = `${px.toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * (px / fs0))}px`; };
+      for (let k = 1; hitting().length && k > 0.8; k = +(k - 0.04).toFixed(2)) size(fs0 * k);
+      // Wrapping short of the art must not take the text past its lines ("For Phoenix / Dentists" on a
+      // third line): the type shrinks, down to the slot's own minimum; if that is not enough, the copy
+      // does not fit here and the answer gives its exact maximum, like any other copy that does not fit.
+      const maxLines = pick(rr.maxLines) ?? 1;
+      const st = report.slots[role];
+      if (st && st.status !== 'removed' && lines(t) > maxLines) {
+        const base = baseline.get(role)?.fontSize || fs0;
+        const designMin = pick(rr.minScale) ?? 0.85;
+        const minPx = base * (rules.shrinkTo ? Math.min(designMin, Math.max(rules.shrinkTo, 14 / base)) : designMin);
+        // The copy's own line breaks are a wish: joined, it may fit in fewer lines.
+        const text = t.textContent, soft = text.replace(/\s*\n\s*/g, ' ');
+        const fitsAt = () => { for (const v of new Set([text, soft])) { t.textContent = v; if (lines(t) <= maxLines) return true; } t.textContent = text; return false; };
+        for (let px = parseFloat(getComputedStyle(t).fontSize); !fitsAt() && px - base * 0.01 >= minPx - 1e-6;) { px -= base * 0.01; size(px); }
+        if (lines(t) > maxLines) {
+          let lo = 0, hi = text.length - 1;
+          while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); t.textContent = text.slice(0, mid); if (lines(t) <= maxLines) lo = mid; else hi = mid - 1; }
+          t.textContent = text;
+          Object.assign(st, { status: 'overflow' });
+          report.ok = false;
+          report.errors.push({ slot: role, code: 'overflow', reason: 'lines', overflowPx: 0, length: text.length, maxLength: lo,
+            message: `"${text.replace(/\n/g, ' ')}" (${text.length} chars) runs to ${lines(t)} lines beside the illustration even at ${Math.round(minPx / base * 100)}% size (up to ${maxLines}). Keep it to ${lo} characters or fewer.` });
+        }
+      }
+      if (st) Object.assign(st, { lines: lines(t), fontSize: parseFloat(getComputedStyle(t).fontSize), scale: +(parseFloat(getComputedStyle(t).fontSize) / (baseline.get(role)?.fontSize || fs0)).toFixed(2) });
       hits = hitting();
       report.illustrationCleared = [...(report.illustrationCleared ?? []), role + (hits.length ? ':still' : '')];
     }

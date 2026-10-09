@@ -281,7 +281,9 @@ const handler = createMcpHandler(
         try {
           const out = await editCanvas(me, { piece, recolor, changes, fix, note });
           const tips = out.suggestions.length ? ` The Inspector still suggests: ${out.suggestions.join(' | ')}. Fix the ones your change caused (fix: "all", or your own change).` : ' The Inspector has nothing to flag.';
-          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it.${tips} Save with save_canvas only when they ask.` }] };
+          const theirs = out.personEdited ? ` The person has also changed this design in Canvas since Claude's last change${out.recolor ? ` (recolour now: ${out.recolor})` : ''}; the image shows their changes too, so do not take them for yours (get_canvas to see them).` : '';
+          const synced = out.synced.length ? ` While the set is open in Canvas, ${out.syncedSlots.join(', ')} also follow to its other formats (${out.synced.join(', ')}): say so, and check them when the change is only meant for this one.` : '';
+          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it.${theirs}${synced}${tips} Save with save_canvas only when they ask.` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
         }
@@ -311,7 +313,7 @@ const handler = createMcpHandler(
       'render',
       {
         title: 'Render a design',
-        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts; without a photo the no-photo version is used. Copy that does not fit is not delivered: the answer gives two options, shorter copy (with the exact maximum) or smaller text (a preview at down to 70%), for the requester to choose.',
+        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts; a missing optional photo uses the template\'s no-photo version where it has one (get_template, when_missing). Essential content is never left out: the event page cover always needs its ground photo. Copy that does not fit is not delivered: the answer gives two options, shorter copy (with the exact maximum) or smaller text (a preview at down to 70%), for the requester to choose.',
         inputSchema: z.object({
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"], or ["cover"] for the event page cover. Default: all but the cover.'),
@@ -359,6 +361,7 @@ const handler = createMcpHandler(
             if (e instanceof MissingRequired) {
               // Only the cover is missing its own content (its ground photo): say so, keep the other formats.
               if (format === 'cover' && wanted.length > 1) { coverNeeds = e.slots; continue; }
+              if (format === 'cover') return { isError: true, content: [{ type: 'text', text: `The event page cover of ${template} needs ${e.slots.join(', ')} (its own content; it has no version without them). Ask the requester for them, or leave the cover out. Nothing was made.` }] };
               const have = await factsFromSlots(template, slots);
               // Same purpose first (a booth invite suggests booth invites, not reminders).
               const purpose = (await loadConfig(template)).purpose;
@@ -415,7 +418,7 @@ const handler = createMcpHandler(
           content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
           content.push({
             type: 'text',
-            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
+            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG${saved ? ', link valid 7 days' : ''}): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand; this link stays): ${origin}/canvas/${saved.id}` : ''}`,
           });
         }
         if (refused.length) {

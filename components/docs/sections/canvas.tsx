@@ -39,7 +39,9 @@ export function Canvas() {
       <H2 id="images">Photos and logos</H2>
       <ul>
         <li><strong>Replace:</strong> select the photo and choose <Ui>Upload</Ui> or <Ui>Assets</Ui> (or, with it selected, click an image in the Assets tab).</li>
-        <li><strong>Reframe:</strong> double-click the photo (or <Ui>Reframe</Ui>) and drag it; <Ui>Zoom</Ui> to fill more; <Ui>Reset framing</Ui> to go back.</li>
+        <li><strong>Reframe:</strong> double-click the photo (or <Ui>Reframe</Ui>) and drag it; <Ui>Scale</Ui> to make it bigger or smaller inside its frame; <Ui>Reset framing</Ui> to go back.</li>
+        <li><strong>Scale:</strong> pull a corner or edge of the photo to scale it inside its frame (the frame stays); hold <Kbd>⌥</Kbd> to resize the frame instead.</li>
+        <li><strong>Generate content around:</strong> when the photo is smaller than its frame, AI paints the rest of the scene to fill it. The new photo is also saved in Assets; Undo brings the original back.</li>
         <li><strong>Remove:</strong> optional photos and logos can be removed, and the layout closes up.</li>
         <li><strong>Partner logos:</strong> <Ui>Mono</Ui> sets them in the design’s colour, <Ui>Color</Ui> keeps their own.</li>
         <li><strong>The brand logo</strong> can only be moved and scaled: its drawing and colours belong to the brand.</li>

@@ -1,5 +1,10 @@
 # Changelog
 
+## archy-studio 0.17.0 (2026-10-09)
+
+- Canvas: pulling a photo's handle scales the photo inside its frame, from the frame's centre; the frame stays as the template has it. Hold ⌥ to resize the frame instead (as before). The Photo panel’s Scale (was Zoom) does the same, from 20% to 400%, instead of shrinking the whole layer; the photo can be smaller than its frame.
+- Canvas: **Generate content around** (Photo panel, when the photo is smaller than its frame): AI paints the rest of the scene so the photo fills its frame again, with the photo where it was. FLUX.2 [pro] Outpaint on fal.ai (`FAL_KEY`), 30 a day per person; the result is also saved in Assets ("generated"). Undo brings the original photo back.
+
 ## archy-studio 0.16.0 (2026-10-09)
 
 - Headlines as big as their room allows: a headline is no longer held to its sample's line count (three big lines rather than two small ones), takes extra lines only while the column still fits its room, and wrapping short of an illustration does not add lines when a little less size keeps them. The Inspector no longer flags a headline's line count. Sparkles never push copy (a date "colliding with a star" was refused).

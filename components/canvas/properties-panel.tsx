@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
-  AlignBottomIcon, AlignHorizontalCenterIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, AlignVerticalCenterIcon,
+  AiMagicIcon, AlignBottomIcon, AlignHorizontalCenterIcon, AlignLeftIcon, AlignRightIcon, AlignTopIcon, AlignVerticalCenterIcon,
   ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon, ArrowTurnBackwardIcon, ArrowUp01Icon, ArrowUpRight01Icon, Delete02Icon, ImageUploadIcon, LockIcon, Tick02Icon, ViewIcon, ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { Edits, NodeEdit, Preset } from '@/lib/canvas-shared';
+import type { Crop, Edits, NodeEdit, Preset } from '@/lib/canvas-shared';
 import { IconPicker } from './icon-picker';
 import { startReframe } from './stage';
 import type { Comp, LayerInfo, Token } from './model';
@@ -54,14 +54,19 @@ type Props = {
   /** Designer controls (X, Y, W, H, opacity, layout, every weight) instead of the simple ones. */
   advanced: boolean;
   onAdvanced: (on: boolean) => void;
+  /** "Generate content around": AI paints the empty part of a photo's frame (resolves when done). */
+  onOutpaint?: (id: string) => Promise<void>;
+  /** The framing that scales a photo from its frame's centre (null: keep its position as it is). */
+  scaled?: (id: string, zoom: number) => Crop | null;
 };
 
 const NUDGE = 8;
 
 // Right column: what the selected component lets you change, inside the brand (palette colours, the
 // template's weights, sizes within the slot's limits).
-export function PropertiesPanel({ comp, alignIn, preset, onPreset, recolor = true, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign, essential, designFontSize, advanced, onAdvanced }: Props) {
+export function PropertiesPanel({ comp, alignIn, preset, onPreset, recolor = true, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign, essential, designFontSize, advanced, onAdvanced, onOutpaint, scaled }: Props) {
   const edit = edits[comp.id];
+  const [extending, setExtending] = useState(false);
   const box = edit?.box ?? {};
   const me = info(comp.id);
   const edited = [comp.id, comp.textId, comp.iconId].some((id) => id && edits[id] && Object.keys(edits[id]).length);
@@ -151,19 +156,31 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, recolor = tru
                 className="flex h-7 w-full items-center justify-center rounded-md bg-foreground/[0.05] font-medium text-foreground/80 hover:bg-foreground/[0.08] hover:text-foreground">
                 Reframe
               </button>
-              <Row label="Zoom">
-                <SliderField value={Math.round(me.crop.zoom * 100)} min={Math.min(100, Math.round(me.crop.zoom * 100))} max={400} suffix="%"
-                  onChange={(v, commit) => onEdit(comp.id, { crop: { ...me.crop!, zoom: v / 100 } }, commit)} />
+              {/* Scale: the photo grows or shrinks inside its frame; the frame keeps the template's size. */}
+              <Row label="Scale">
+                <SliderField value={Math.round(me.crop.zoom * 100)} min={20} max={400} suffix="%"
+                  onChange={(v, commit) => onEdit(comp.id, { crop: scaled?.(comp.id, v / 100) ?? { ...me.crop!, zoom: v / 100 } }, commit)} />
               </Row>
               {edit?.crop && (
                 <button type="button" onClick={() => onEdit(comp.id, { crop: undefined })} className="flex h-7 w-full items-center justify-center rounded-md text-foreground/60 hover:bg-foreground/[0.05] hover:text-foreground">
                   Reset framing
                 </button>
               )}
+              {/* Smaller than its frame: AI paints the rest of the scene so the photo fills the frame again. */}
+              {onOutpaint && me.crop.zoom < 0.999 && (
+                <button type="button" disabled={extending}
+                  onClick={async () => { setExtending(true); try { await onOutpaint(comp.id); } finally { setExtending(false); } }}
+                  title="AI fills the empty part of the frame, matching the photo"
+                  className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md bg-foreground/[0.05] font-medium text-foreground/80 hover:bg-foreground/[0.08] hover:text-foreground disabled:pointer-events-none disabled:opacity-60">
+                  <HugeiconsIcon icon={AiMagicIcon} className={`size-3.5 ${extending ? 'animate-pulse' : ''}`} />
+                  {extending ? 'Generating…' : 'Generate content around'}
+                </button>
+              )}
             </>
           )}
-          {comp.kind === 'photo' && (advanced || !me?.crop) && (
-            <Row label="Scale">
+          {/* A photo that cannot be reframed scales as a layer; one scaled that way before can still come back. */}
+          {comp.kind === 'photo' && (!me?.crop || (box.scale ?? 1) !== 1) && (
+            <Row label={me?.crop ? 'Layer scale' : 'Scale'}>
               <SliderField value={Math.round((box.scale ?? 1) * 100)} min={50} max={250} suffix="%" onChange={(v, commit) => onEdit(comp.id, { box: { scale: v / 100 } }, commit)} />
             </Row>
           )}

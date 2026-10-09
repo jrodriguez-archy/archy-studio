@@ -153,7 +153,7 @@ async function adoptOldUploads(ownerId: string) {
 }
 
 // ---- Paid AI calls: counted when they start, so daily limits hold for failures and parallel calls ----
-export const DAILY = { generate: 30, cutout: 60 } as const;
+export const DAILY = { generate: 30, cutout: 60, outpaint: 30 } as const;
 export async function useAi(userId: string, kind: keyof typeof DAILY): Promise<boolean> {
   const db = supabaseAdmin();
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();

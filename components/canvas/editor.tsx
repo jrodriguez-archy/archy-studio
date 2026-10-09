@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
-  Alert02Icon, ArrowLeft02Icon, Cursor01Icon, SearchVisualIcon, Download04Icon, HandGrabIcon, MinusSignIcon, PlusSignIcon, Redo02Icon, Undo02Icon,
+  Alert02Icon, ArrowLeft02Icon, CloudSavingDone01Icon, CloudUploadIcon, Loading03Icon, Cursor01Icon, SearchVisualIcon, Download04Icon, HandGrabIcon, MinusSignIcon, PlusSignIcon, Redo02Icon, Undo02Icon,
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -290,6 +290,25 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     if ((s.slots[name] ?? null) === value) return;
     commit({ ...s, slots: { ...s.slots, [name]: value } });
   }, [commit, cur]);
+
+  // "Generate content around": the photo smaller than its frame comes back with the scene painted on
+  // past its edges, framed so the photo stays where it was. New photo and framing are one history step.
+  const outpaint = useCallback(async (id: string) => {
+    const comp = meta[activeRef.current]?.comps.find((c) => c.id === id), s = cur(), p = plans[activeRef.current];
+    const image = comp?.slot ? s.slots[comp.slot] : null;
+    const job = stages.current[activeRef.current]?.outpaint(id);
+    if (!comp?.slot || !image || !p) { toast.error('Pick a photo first.'); return; }
+    if (!job) { toast.message('The photo already fills its frame.'); return; }
+    const res = await fetch('/api/canvas/outpaint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ template: p.template, image, expand: job.expand }) });
+    const out = await res.json().catch(() => ({ error: `The server did not answer (${res.status}).` }));
+    if (!res.ok || !out.value) { toast.error(out.error ?? 'The photo could not be extended. Try again.'); return; }
+    const now = cur();
+    const edits = { ...now.edits };
+    const one = cleanEdits({ [id]: merge(now.edits[id], { crop: job.cropFor(out.width, out.height) }) });
+    if (one[id]) edits[id] = one[id];
+    commit({ ...now, slots: { ...now.slots, [comp.slot]: out.value }, edits });
+    toast.success('Done. The new photo is also in Assets.');
+  }, [meta, plans, cur, commit]);
 
   // Simple by default (made for people who are not designers); every layer and designer control is one
   // click away, and the choice is remembered.
@@ -744,7 +763,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   const pct = Math.round(vp.zoom * 100);
   const allNew = boards.every((b) => b.isNew);
   // The work is kept as it goes; the gallery's images change with "Update images".
-  const status = allNew ? ' · New from template' : keeping === 'error' ? ' · Not saved, trying again' : due.length || keeping === 'saving' ? ' · Saving…' : ' · Saved';
+  const saveState = allNew ? 'new' : keeping === 'error' ? 'error' : due.length || keeping === 'saving' ? 'saving' : 'saved';
 
   return (
     <div data-fullbleed className="flex h-dvh flex-col bg-[#F5F5F5] text-[13px]">
@@ -754,8 +773,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
         </Link>
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{title}</p>
-          <p className="truncate text-[11px] text-foreground/40">{board.label} · {board.width}×{board.height}{status}</p>
+          <p className="truncate text-[11px] text-foreground/40">{board.label} · {board.width}×{board.height}</p>
         </div>
+        <SaveStatus state={saveState} />
         <div className="flex items-center gap-0.5">
           <ToolButton label="Undo (⌘Z)" icon={Undo02Icon} disabled={!past.length} onClick={undo} />
           <ToolButton label="Redo (⇧⌘Z)" icon={Redo02Icon} disabled={!future.length} onClick={redo} />
@@ -917,6 +937,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
               designFontSize={meta[board.ref]?.keys?.[one.id]?.fontSize}
               advanced={advanced}
               onAdvanced={setAdvanced}
+              onOutpaint={outpaint}
+              scaled={(id, z) => stage.current?.scaled(id, z) ?? null}
             />
           ) : (
             <PiecePanel pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />
@@ -977,4 +999,32 @@ function useStored(key: string): [boolean, (v: boolean) => void] {
   const [v, setV] = useState(false);
   useEffect(() => { try { setV(localStorage.getItem(key) === '1'); } catch {} }, [key]);
   return [v, (next: boolean) => { setV(next); try { localStorage.setItem(key, next ? '1' : '0'); } catch {} }];
+}
+
+// Whether the work is kept, plain to see next to the title: saving, saved (a short flash when it lands),
+// not saved (trying again), or a design new from a template that is not in the gallery yet.
+function SaveStatus({ state }: { state: 'new' | 'error' | 'saving' | 'saved' }) {
+  const [flash, setFlash] = useState(false);
+  const was = useRef(state);
+  useEffect(() => {
+    const landed = was.current === 'saving' && state === 'saved';
+    was.current = state;
+    if (!landed) return;
+    setFlash(true);
+    const t = setTimeout(() => setFlash(false), 1600);
+    return () => clearTimeout(t);
+  }, [state]);
+  const look = {
+    saving: { icon: Loading03Icon, text: 'Saving…', cls: 'bg-[#E6F4FF] text-primary', spin: true, tip: 'Your changes are being saved' },
+    saved: { icon: CloudSavingDone01Icon, text: 'Saved', cls: flash ? 'bg-[#16A34A] text-white' : 'bg-[#E9F7EF] text-[#15803D]', spin: false, tip: 'Every change is saved. You can close Canvas; “Update images” refreshes the gallery.' },
+    error: { icon: Alert02Icon, text: 'Not saved · retrying', cls: 'bg-[#FDECEF] text-[#C81E45]', spin: false, tip: 'Your last changes are not saved yet. Studio keeps trying; stay on this page.' },
+    new: { icon: CloudUploadIcon, text: 'Not in the gallery yet', cls: 'bg-[#FFF4E5] text-[#B45309]', spin: false, tip: 'New from a template: “Save to gallery” to keep it.' },
+  }[state];
+  return (
+    <span role="status" aria-live="polite" title={look.tip}
+      className={`flex h-7 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-medium whitespace-nowrap transition-colors duration-300 ${look.cls}`}>
+      <HugeiconsIcon icon={look.icon} className={`size-3.5 ${look.spin ? 'animate-spin' : ''}`} strokeWidth={2} />
+      {look.text}
+    </span>
+  );
 }

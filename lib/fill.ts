@@ -172,7 +172,7 @@ async function resolveLogo(template: string, v: string, origin = ORIGIN): Promis
 const remoteLogos = new Map<string, string>();
 const signed = new Map<string, { url: string; until: number }>();
 
-async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
+export async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
   // Neutral stand-ins in the template's brand (DOC's are grey, never Archy blue).
   if (v.startsWith('placeholder:')) return `${origin}/library/placeholders/${v.slice(12) === 'person' ? 'person' : 'scene'}${(await templateBrand(template)) === 'doc' ? '-doc' : ''}.png`;
   if (v.startsWith('asset:')) {

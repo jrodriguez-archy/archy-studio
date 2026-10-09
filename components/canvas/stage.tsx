@@ -22,6 +22,11 @@ type Win = Window & {
   __photoWindow: (el: Element) => { x: number; y: number; w: number; h: number };
 };
 
+/** Where a photo sits in its window (px, relative to the photo layer, like __setCrop): window and image. */
+type Fit = { W: { x: number; y: number; w: number; h: number }; iw: number; ih: number; bw: number; bh: number; px: number; py: number };
+/** What "Generate content around" needs: the pixels to paint on each side, and the framing for the result. */
+export type Outpaint = { expand: { top: number; right: number; bottom: number; left: number }; cropFor: (w: number, h: number) => Crop };
+
 /** Asks the Stage showing this photo to start reframing it (the Photo panel's button). */
 export const REFRAME_EVENT = 'canvas:reframe';
 export const startReframe = (id: string) => window.dispatchEvent(new CustomEvent(REFRAME_EVENT, { detail: id }));
@@ -56,6 +61,10 @@ export type StageHandle = {
   alignBox: (id: string) => Box | null;
   /** The edits with every automatic Inspector fix applied (worked out in the page, several rounds). */
   autofix: (edits: Edits) => Edits | null;
+  /** The framing that scales a photo to `zoom` from its frame's centre (the Photo panel's Scale). */
+  scaled: (id: string, zoom: number) => Crop | null;
+  /** A photo smaller than its frame: what to paint around it to fill the frame (null when it already fills it). */
+  outpaint: (id: string) => Outpaint | null;
 };
 
 export type SelectMode = 'replace' | 'toggle';
@@ -99,7 +108,17 @@ type Drag = {
   bases: Record<string, NodeEdit>; box: Box; w: number; h: number; targets: Box[];
   /** Resizing a photo's frame: the photo (kept covering its frame) and what sits against the edges being pulled. */
   photo?: { id: string; crop: Crop | null; push: { id: string; side: 'n' | 's' | 'e' | 'w'; base: NodeEdit }[]; room: Record<'n' | 's' | 'e' | 'w', number> };
+  /** Scaling a photo inside its frame (the frame stays as designed): the photo and where it was. */
+  scale?: { id: string; crop: Crop; fit: Fit };
 };
+
+// The crop that scales a photo to `zoom` around its frame's centre (the point of the photo there stays put).
+function scaleAround(f: Fit, crop: Crop, zoom: number): Crop {
+  const z = Math.max(0.2, Math.min(5, zoom)), k = z / crop.zoom, bw = f.bw * k, bh = f.bh * k;
+  const cx = f.W.x + f.W.w / 2, cy = f.W.y + f.W.h / 2;
+  const px = cx - ((cx - f.px) / f.bw) * bw, py = cy - ((cy - f.py) / f.bh) * bh;
+  return { ...crop, zoom: z, x: Math.abs(f.W.w - bw) < 0.5 ? 50 : ((px - f.W.x) / (f.W.w - bw)) * 100, y: Math.abs(f.W.h - bh) < 0.5 ? 50 : ((py - f.W.y) / (f.W.h - bh)) * 100 };
+}
 
 // The design itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
@@ -137,6 +156,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const reframeRef = useRef<string | null>(null);
   reframeRef.current = reframe;
   const pan = useRef<{ x: number; y: number; crop: Crop; room: { w: number; h: number } } | null>(null);
+  // Scaling a photo inside its frame (a handle pulled): the whole photo shows faint, as in Reframe.
+  const [scaling, setScaling] = useState<string | null>(null);
   const overlay = useRef<HTMLDivElement>(null);
 
   const doc = () => frame.current?.contentDocument ?? null;
@@ -171,6 +192,14 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const c = { x: +Math.max(0, Math.min(100, crop.x)).toFixed(2), y: +Math.max(0, Math.min(100, crop.y)).toFixed(2), zoom: +Math.max(0.2, Math.min(5, crop.zoom)).toFixed(3), ...(src ? { src } : {}) };
     onEdit({ [id]: { crop: c } }, commit);
   }, [el, onEdit]);
+  // Where a photo sits in its window for a crop (the same sums as __setCrop in edits.js).
+  const fitOf = useCallback((id: string, crop: Crop): Fit | null => {
+    const n = el(id), w = win();
+    if (!n || !w?.__canCrop?.(n)) return null;
+    const W = w.__photoWindow(n), iw = +n.dataset.imgW!, ih = +n.dataset.imgH!;
+    const k = Math.max(W.w / iw, W.h / ih) * crop.zoom, bw = iw * k, bh = ih * k;
+    return { W, iw, ih, bw, bh, px: W.x + (W.w - bw) * (crop.x / 100), py: W.y + (W.h - bh) * (crop.y / 100) };
+  }, [el]);
   // A photo's frame: the box that shows it (its clipping frame, or the frame it fills alone), else the photo.
   const maskOf = useCallback((id: string): string => {
     const n = el(id), r = root();
@@ -246,7 +275,32 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       const w = win(), p = live.current.plan;
       return w?.__autofix ? w.__autofix(e, p.fill.rules, p.format, p.imageUrls, p.iconSvgs) : null;
     },
-  }), [el, boxOf]);
+    scaled: (id, zoom) => {
+      const c = cropNow(id), f = c && fitOf(id, c);
+      return f ? { ...scaleAround(f, c, zoom), ...(el(id)?.dataset.slotSrc ? { src: el(id)!.dataset.slotSrc } : {}) } : null;
+    },
+    outpaint: (id) => {
+      const c = cropNow(id), f = c && fitOf(id, c);
+      if (!f) return null;
+      // The empty bands of the frame (artboard px), in the photo's own pixels: a hair more, so no seam shows.
+      const gap = { left: Math.max(0, f.px - f.W.x), right: Math.max(0, f.W.x + f.W.w - (f.px + f.bw)), top: Math.max(0, f.py - f.W.y), bottom: Math.max(0, f.W.y + f.W.h - (f.py + f.bh)) };
+      const s = f.iw / f.bw;
+      const px = (g: number) => (g > 0.5 ? Math.ceil(g * s) + 2 : 0);
+      const expand = { top: px(gap.top), right: px(gap.right), bottom: px(gap.bottom), left: px(gap.left) };
+      if (!expand.top && !expand.right && !expand.bottom && !expand.left) return null;
+      return {
+        expand,
+        // The result framed so the photo stays exactly where it was and the new edges reach the frame.
+        cropFor: (rw, rh) => {
+          const nbw = f.bw * (f.iw + expand.left + expand.right) / f.iw, nbh = f.bh * (f.ih + expand.top + expand.bottom) / f.ih;
+          const nx = f.px - expand.left / s, ny = f.py - expand.top / s;
+          const zoom = (nbw / rw) / Math.max(f.W.w / rw, f.W.h / rh);
+          const pct = (p: number, room: number) => (Math.abs(room) < 0.5 ? 50 : Math.max(0, Math.min(100, (p / room) * 100)));
+          return { x: +pct(nx - f.W.x, f.W.w - nbw).toFixed(2), y: +pct(ny - f.W.y, f.W.h - nbh).toFixed(2), zoom: +Math.max(0.2, Math.min(5, zoom)).toFixed(3), src: `${rw}x${rh}` };
+        },
+      };
+    },
+  }), [el, boxOf, cropNow, fitOf]);
 
   // A new fill (copy, slot image, variant) reloads the page; edits alone are re-applied in place.
   // Computed once per fill (not on every render: hover, selection and zoom redraw the stage often).
@@ -370,6 +424,17 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     // A photo moves and resizes with its frame (what shows it), not inside it.
     const photoId = picked.length === 1 && kindOf(picked[0]) === 'photo' ? picked[0] : null;
     const ids = photoId ? [maskOf(photoId)] : picked;
+    // A handle scales the photo inside its frame (the frame stays as the template has it); with ⌥ it
+    // resizes the frame instead.
+    if (photoId && handle !== 'move' && handle !== 'marquee' && !e.altKey) {
+      const crop = cropNow(photoId), fit = crop && fitOf(photoId, crop), box = boxOf(ids[0]);
+      if (crop && fit && box) {
+        drag.current = { ids, handle, x: e.clientX, y: e.clientY, moved: false, bases: {}, box, w: box.w, h: box.h, targets: [], scale: { id: photoId, crop, fit } };
+        setScaling(photoId);
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+        return;
+      }
+    }
     const boxes = ids.map(boxOf).filter((b): b is Box => !!b);
     if (handle !== 'marquee' && !boxes.length) return;
     const box = handle === 'marquee' ? { ...local(e), w: 0, h: 0 } : union(boxes);
@@ -439,6 +504,17 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       return;
     }
 
+    if (g.scale) {
+      // The photo grows or shrinks around the frame's centre: the edge being pulled follows the pointer.
+      const { crop, fit: f } = g.scale, h = g.handle;
+      const ax = h.includes('e') ? dx : h.includes('w') ? -dx : null, ay = h.includes('s') ? dy : h.includes('n') ? -dy : null;
+      const parts = [ax !== null ? (2 * ax) / f.bw : null, ay !== null ? (2 * ay) / f.bh : null].filter((v): v is number => v !== null);
+      const next = scaleAround(f, crop, crop.zoom * (1 + parts.reduce((a, b) => a + b, 0) / parts.length));
+      setCrop(g.scale.id, next, final);
+      setBadge(final ? null : `${Math.round(next.zoom * 100)}%   ⌥ resizes the frame`);
+      return;
+    }
+
     let lines: Guide[] = [];
     const logo = g.ids.length === 1 && kindOf(g.ids[0]) === 'archy';
     if (g.handle === 'move' && e.shiftKey) { if (Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; } // one axis
@@ -480,7 +556,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     }
     if (g.photo) {
       const b = changes[g.ids[0]]?.box ?? {};
-      if (g.photo.crop) changes[g.photo.id] = { crop: { ...g.photo.crop, ...(el(g.photo.id)?.dataset.slotSrc ? { src: el(g.photo.id)!.dataset.slotSrc } : {}) } };
+      // Merged, not replaced: a photo that is its own frame gets its new size and its framing together.
+      if (g.photo.crop) changes[g.photo.id] = { ...changes[g.photo.id], crop: { ...g.photo.crop, ...(el(g.photo.id)?.dataset.slotSrc ? { src: el(g.photo.id)!.dataset.slotSrc } : {}) } };
       const dw = (b.width ?? g.w) - g.w, dh = (b.height ?? g.h) - g.h;
       for (const p of g.photo.push) {
         const bb = p.base.box ?? {};
@@ -545,6 +622,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const g = drag.current;
     if (g?.moved) dragTo(e, true);
     drag.current = null;
+    setScaling(null);
     setGuides([]);
     setBadge(null);
     setMarquee(null);
@@ -624,9 +702,10 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   // While typing, one thin frame around the text being edited, nothing else.
   const frameBox = editing || reframe ? null : (single ?? (group ? { r: group } : null))?.r;
   // Reframing: the photo's window, and the whole photo faint beyond it (what the frame cuts away).
+  const ghostOf = reframe ?? scaling;
   const refr = (() => {
-    if (!reframe || !ready) return null;
-    const n = el(reframe), w = win(), r0 = root()?.getBoundingClientRect();
+    if (!ghostOf || !ready) return null;
+    const n = el(ghostOf), w = win(), r0 = root()?.getBoundingClientRect();
     if (!n || !w || !r0) return null;
     const E = n.getBoundingClientRect(), W = w.__photoWindow(n), cs = w.getComputedStyle(n);
     const [bw, bh] = cs.backgroundSize.split(' ').map(parseFloat), [px, py] = cs.backgroundPosition.split(' ').map(parseFloat);
@@ -709,9 +788,11 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
             <div className="pointer-events-none absolute opacity-35" style={{ left: refr.img.x, top: refr.img.y, width: refr.img.w, height: refr.img.h, backgroundImage: refr.bg, backgroundSize: '100% 100%',
               clipPath: `polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, ${refr.win.x - refr.img.x}px ${refr.win.y - refr.img.y}px, ${refr.win.x - refr.img.x}px ${refr.win.y - refr.img.y + refr.win.h}px, ${refr.win.x - refr.img.x + refr.win.w}px ${refr.win.y - refr.img.y + refr.win.h}px, ${refr.win.x - refr.img.x + refr.win.w}px ${refr.win.y - refr.img.y}px, ${refr.win.x - refr.img.x}px ${refr.win.y - refr.img.y}px)` }} />
             <div className="pointer-events-none absolute outline-1 outline-dashed outline-[#FF2BD6]/70" style={{ left: refr.img.x, top: refr.img.y, width: refr.img.w, height: refr.img.h }} />
-            <div className="pointer-events-none absolute ring-2 ring-[#FF2BD6]" style={{ left: refr.win.x, top: refr.win.y, width: refr.win.w, height: refr.win.h }}>
-              <Tag>Reframe · drag to move · scroll to zoom · Enter when done</Tag>
-            </div>
+            {reframe && (
+              <div className="pointer-events-none absolute ring-2 ring-[#FF2BD6]" style={{ left: refr.win.x, top: refr.win.y, width: refr.win.w, height: refr.win.h }}>
+                <Tag>Reframe · drag to move · scroll to zoom · Enter when done</Tag>
+              </div>
+            )}
           </>
         )}
         {editBox && <div className="pointer-events-none absolute ring-1 ring-[#FF2BD6]" style={{ left: editBox.x, top: editBox.y, width: editBox.w, height: editBox.h }} />}

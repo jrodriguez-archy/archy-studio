@@ -8,7 +8,7 @@ const MODEL = 'google/gemini-3.1-flash-image-preview';
 export const RATIOS: Record<string, [number, number]> = { '1:1': [1, 1], '4:5': [4, 5], '9:16': [9, 16], '16:9': [16, 9] };
 // A guide for the model, not a wall: Studio is for scenes, places, objects and textures; photos of the
 // team are uploaded, never made up.
-const GUIDE = 'You make images for Archy, a dental practice software company, used in marketing designs. Photographic, natural light, clean and modern. Do not depict real, identifiable people or add text, logos or watermarks unless asked.';
+const GUIDE = 'You make images for Archy, a dental practice software company, used in marketing designs. Photographic, natural light, clean and modern. Do not add text, logos or watermarks unless asked.';
 
 // A PNG at exactly the ratio asked for (centre crop). `source`: an image to edit instead.
 export async function generateImage(prompt: string, ratio: string, source?: { body: Buffer; type: string } | null): Promise<Buffer> {

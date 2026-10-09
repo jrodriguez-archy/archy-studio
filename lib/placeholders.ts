@@ -48,7 +48,7 @@ export async function photoPlaceholder(input: { slot: string; fact: string | nul
   } catch { /* next source */ }
   try {
     if (input.userId && (await useAi(input.userId, 'generate'))) {
-      const png = await generateImage(`A photo for a placeholder: ${query}. No recognisable faces.`, '4:5');
+      const png = await generateImage(`A photo for a placeholder: ${query}.`, '4:5');
       const path = await store(key, 'ai', png);
       return { slot, value: `upload:${path}`, source: 'ai', query };
     }

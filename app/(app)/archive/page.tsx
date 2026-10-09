@@ -17,7 +17,7 @@ export default async function ArchivePage() {
     <>
       <PageHeader title="Archive" description="Archived designs are hidden from the gallery. Restore them, or delete them for good." />
       <GalleryFeed
-        initial={pieces} filter={{ archived: true }} manageOnly projects={projects} me={me}
+        initial={pieces} filter={{ archived: true }} manageOnly selectable projects={projects} me={me}
         empty={
       <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
         <p className="font-medium">Nothing archived</p>

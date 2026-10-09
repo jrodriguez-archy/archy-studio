@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Download04Icon, PackageIcon, PaintBoardIcon } from '@hugeicons/core-free-icons';
+import { Download04Icon, PackageIcon, PaintBoardIcon, Tick02Icon } from '@hugeicons/core-free-icons';
 import { DATE_TIME, DAY, LocalDate } from '@/components/local-date';
 import { InfoRows, Inspector, StageImage, useInspector } from '@/components/inspector';
 import type { ProjectLink } from '@/components/projects-nav';
@@ -17,7 +17,10 @@ const formatsOf = (s: PieceSet) => [...new Set(s.pieces.map((p) => formatLabel(p
 
 // Masonry of sets: everything made from one brief is one stacked card. A click opens the set in place
 // with all its formats; right-click (or the ··· button) has every action for the set.
-export function PieceGrid({ sets, projects, me, showProject = true }: { sets: PieceSet[]; projects: ProjectLink[]; me: { id: string; is_admin: boolean }; showProject?: boolean }) {
+// With `selection` (Archive), ⌘/Shift-click picks sets, and while picking a click toggles instead of opening.
+export type Selection = { active: boolean; ids: Set<string>; toggle: (id: string, range: boolean) => void };
+
+export function PieceGrid({ sets, projects, me, showProject = true, selection }: { sets: PieceSet[]; projects: ProjectLink[]; me: { id: string; is_admin: boolean }; showProject?: boolean; selection?: Selection }) {
   const names = Object.fromEntries(projects.map((p) => [p.id, p.name]));
   const { openId, open, close, step } = useInspector('set', sets.map((s) => s.id));
   const current = sets.find((s) => s.id === openId);
@@ -30,12 +33,16 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
   const openRef = useRef(open);
   openRef.current = open;
   const onOpen = useCallback((id: string) => openRef.current(id), []);
+  const toggleRef = useRef(selection?.toggle);
+  toggleRef.current = selection?.toggle;
+  const onToggle = useCallback((id: string, range: boolean) => toggleRef.current?.(id, range), []);
 
   return (
     <>
       <div className="columns-2 gap-4 md:columns-3 xl:columns-4">
         {sets.map((s, i) => (
-          <SetCard key={s.id} set={s} eager={i < 8} projects={projects} canManage={canManageSet(s, me, projects)} project={showProject && s.project_id ? names[s.project_id] : undefined} onOpen={onOpen} />
+          <SetCard key={s.id} set={s} eager={i < 8} projects={projects} canManage={canManageSet(s, me, projects)} project={showProject && s.project_id ? names[s.project_id] : undefined} onOpen={onOpen}
+            selected={selection ? (selection.active ? selection.ids.has(s.id) : undefined) : undefined} onToggle={selection ? onToggle : undefined} />
         ))}
       </div>
 
@@ -60,8 +67,14 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
   );
 }
 
-const SetCard = memo(function SetCard({ set: s, eager, projects, canManage, project, onOpen: openSet }: { set: PieceSet; eager: boolean; projects: ProjectLink[]; canManage: boolean; project?: string; onOpen: (id: string) => void }) {
+// `selected` is undefined when the grid is not picking; `onToggle` is there when it can pick.
+const SetCard = memo(function SetCard({ set: s, eager, projects, canManage, project, onOpen: openSet, selected, onToggle }: { set: PieceSet; eager: boolean; projects: ProjectLink[]; canManage: boolean; project?: string; onOpen: (id: string) => void; selected?: boolean; onToggle?: (id: string, range: boolean) => void }) {
   const onOpen = () => openSet(s.id);
+  const picking = selected !== undefined;
+  const onClick = (e: React.MouseEvent) => {
+    if (onToggle && (picking || e.metaKey || e.ctrlKey || e.shiftKey)) { e.preventDefault(); onToggle(s.id, e.shiftKey); }
+    else onOpen();
+  };
   const { actions, dialogs } = useSetActions({ set: s, projects, canManage, onOpen });
   const r = s.lead;
   const n = s.pieces.length;
@@ -69,20 +82,26 @@ const SetCard = memo(function SetCard({ set: s, eager, projects, canManage, proj
     <figure className={`group mb-4 break-inside-avoid ${stackPad(n)}`}>
       <ContextActions actions={actions} className="relative block">
         <StackLayers n={n} />
-        <div className="relative overflow-hidden rounded-lg bg-foreground/[0.04] ring-1 ring-foreground/[0.06]">
+        <div className={`relative overflow-hidden rounded-lg bg-foreground/[0.04] ring-1 transition-shadow ${selected ? 'ring-2 ring-primary' : 'ring-foreground/[0.06]'}`}>
           {/* The large image starts loading on hover, so it is there when the set opens. */}
-          <button type="button" onClick={onOpen} onPointerEnter={() => { if (r.large) new Image().src = r.large; }} className="block w-full cursor-zoom-in" aria-label={`Open ${s.title}, ${n} format${n > 1 ? 's' : ''}`}>
+          <button type="button" onClick={onClick} onPointerEnter={() => { if (r.large && !picking) new Image().src = r.large; }} className={`block w-full select-none ${picking ? 'cursor-pointer' : 'cursor-zoom-in'}`}
+            aria-pressed={picking ? selected : undefined} aria-label={picking ? `Select ${s.title}` : `Open ${s.title}, ${n} format${n > 1 ? 's' : ''}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={r.thumb} alt="" width={r.width} height={r.height} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" className={`block h-auto w-full ${s.archived_at ? 'opacity-60 grayscale' : ''}`} style={{ aspectRatio: `${r.width} / ${r.height}` }} />
           </button>
           <StackBadge n={n} />
-          <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 max-lg:opacity-100">
+          {picking && (
+            <span aria-hidden className={`pointer-events-none absolute top-2 right-2 z-10 flex size-5 items-center justify-center rounded-full shadow-sm ring-1 transition-colors ${selected ? 'bg-primary text-primary-foreground ring-primary' : 'bg-background/80 ring-foreground/20 backdrop-blur'}`}>
+              {selected && <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="size-3" />}
+            </span>
+          )}
+          {!picking && <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 max-lg:opacity-100">
             <a href={n > 1 ? `/api/sets/${s.id}/zip` : r.file} onClick={(e) => { if (n > 1) { e.preventDefault(); downloadSet(s.id); } }} aria-label={n > 1 ? 'Download all formats' : 'Download PNG'} title={n > 1 ? 'Download all formats' : 'Download PNG'}
               className="flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur">
               <HugeiconsIcon icon={Download04Icon} className="size-3.5" />
             </a>
             <MoreActions actions={actions} />
-          </div>
+          </div>}
         </div>
       </ContextActions>
       <figcaption className="mt-1.5 px-0.5 text-[13px]">

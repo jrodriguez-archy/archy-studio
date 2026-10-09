@@ -1,0 +1,935 @@
+{
+  "id": "doc-apology",
+  "title": "DOC Apology",
+  "description": "A Bold apology for interrupting, a tagline and the lockup in a solid block off the corner",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "headline": {
+      "type": "text",
+      "default": "Sorry to interrupt\nyour charting, but\nit's the only time",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "114px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "118px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "130px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to interrupt\nyour charting,\nbut it's the only\ntime you're"
+        },
+        "post--apology--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to call during\nyour build-out, but\nthe contractor won't"
+        },
+        "square--apology--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to call during\nyour build-out, but\nthe contractor won't"
+        },
+        "stories--apology--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "111px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "122px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to call\nduring your\nbuild-out, but the\ncontractor won't"
+        },
+        "post--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "102px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "112px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to email you\nat midnight, but\nyou should read this"
+        },
+        "square--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to email you\nat midnight, but\nyou should read this"
+        },
+        "stories--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "127px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "140px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to email\nyou at midnight,\nbut you should\nread this before"
+        },
+        "post--apology--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "110px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "121px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to reach you\nafter hours, but it's\nwhen you finally"
+        },
+        "square--apology--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to reach you\nafter hours, but it's\nwhen you finally"
+        },
+        "stories--apology--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "131px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "144px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to reach\nyou after hours,\nbut it's when\nyou finally have"
+        },
+        "post--apology--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "114px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to interrupt\nyour lunch, but it's\nthe only time you're"
+        },
+        "square--apology--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to interrupt\nyour lunch, but it's\nthe only time you're"
+        },
+        "stories--apology--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "118px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "130px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Sorry to interrupt\nyour lunch, but\nit's the only time\nyou're not with"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 21,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 104,
+            "min": 73
+          },
+          "roomPx": 936
+        },
+        "square": {
+          "maxCharsPerLine": 21,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories": {
+          "maxCharsPerLine": 18,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 118,
+            "min": 83
+          },
+          "roomPx": 936
+        },
+        "post--apology--startup": {
+          "maxCharsPerLine": 21,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "square--apology--startup": {
+          "maxCharsPerLine": 21,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--startup": {
+          "maxCharsPerLine": 18,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 111,
+            "min": 78
+          },
+          "roomPx": 936
+        },
+        "post--apology--acquisition": {
+          "maxCharsPerLine": 20,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 102,
+            "min": 71
+          },
+          "roomPx": 936
+        },
+        "square--apology--acquisition": {
+          "maxCharsPerLine": 20,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--acquisition": {
+          "maxCharsPerLine": 16,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 127,
+            "min": 89
+          },
+          "roomPx": 936
+        },
+        "post--apology--dark": {
+          "maxCharsPerLine": 19,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 110,
+            "min": 77
+          },
+          "roomPx": 936
+        },
+        "square--apology--dark": {
+          "maxCharsPerLine": 21,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--dark": {
+          "maxCharsPerLine": 16,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 131,
+            "min": 92
+          },
+          "roomPx": 936
+        },
+        "post--apology--light": {
+          "maxCharsPerLine": 21,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 104,
+            "min": 73
+          },
+          "roomPx": 936
+        },
+        "square--apology--light": {
+          "maxCharsPerLine": 21,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--light": {
+          "maxCharsPerLine": 18,
+          "maxLines": 4,
+          "fontSize": {
+            "max": 118,
+            "min": 83
+          },
+          "roomPx": 936
+        }
+      }
+    },
+    "headline-end": {
+      "type": "text",
+      "default": "you're sitting down",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "114px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "118px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "130px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "sitting down"
+        },
+        "post--apology--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "wait for you either"
+        },
+        "square--apology--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "wait for you either"
+        },
+        "stories--apology--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "111px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "122px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "wait for you either"
+        },
+        "post--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "102px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "112px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you sign"
+        },
+        "square--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you sign"
+        },
+        "stories--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "127px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "140px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "you sign"
+        },
+        "post--apology--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "110px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "121px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "have time to think"
+        },
+        "square--apology--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "have time to think"
+        },
+        "stories--apology--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "131px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "144px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "time to think"
+        },
+        "post--apology--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "104px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "114px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "not with a patient"
+        },
+        "square--apology--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "100px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "110px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "not with a patient"
+        },
+        "stories--apology--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "118px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "130px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "a patient"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 104,
+            "min": 73
+          },
+          "roomPx": 936
+        },
+        "square": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories": {
+          "maxCharsPerLine": 17,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 118,
+            "min": 83
+          },
+          "roomPx": 936
+        },
+        "post--apology--startup": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "square--apology--startup": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--startup": {
+          "maxCharsPerLine": 19,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 111,
+            "min": 78
+          },
+          "roomPx": 936
+        },
+        "post--apology--acquisition": {
+          "maxCharsPerLine": 19,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 102,
+            "min": 71
+          },
+          "roomPx": 936
+        },
+        "square--apology--acquisition": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--acquisition": {
+          "maxCharsPerLine": 15,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 127,
+            "min": 89
+          },
+          "roomPx": 936
+        },
+        "post--apology--dark": {
+          "maxCharsPerLine": 19,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 110,
+            "min": 77
+          },
+          "roomPx": 936
+        },
+        "square--apology--dark": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--dark": {
+          "maxCharsPerLine": 16,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 131,
+            "min": 92
+          },
+          "roomPx": 936
+        },
+        "post--apology--light": {
+          "maxCharsPerLine": 20,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 104,
+            "min": 73
+          },
+          "roomPx": 936
+        },
+        "square--apology--light": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 100,
+            "min": 70
+          },
+          "roomPx": 936
+        },
+        "stories--apology--light": {
+          "maxCharsPerLine": 18,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 118,
+            "min": 83
+          },
+          "roomPx": 936
+        }
+      }
+    },
+    "tagline": {
+      "type": "text",
+      "default": "Learn the numbers between patients.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 500,
+          "lineHeight": "38px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--apology--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn to open it right the first time."
+        },
+        "square--apology--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 500,
+          "lineHeight": "38px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn to open it right the first time."
+        },
+        "stories--apology--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn to open it right the first time."
+        },
+        "post--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn what to check before you buy."
+        },
+        "square--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 500,
+          "lineHeight": "38px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn what to check before you buy."
+        },
+        "stories--apology--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn what to check before you buy."
+        },
+        "post--apology--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn the business on your own time."
+        },
+        "square--apology--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 500,
+          "lineHeight": "38px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn the business on your own time."
+        },
+        "stories--apology--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn the business on your own time."
+        },
+        "post--apology--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": 500,
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn the business, one lunch at a time."
+        },
+        "square--apology--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": 500,
+          "lineHeight": "38px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn the business, one lunch at a time."
+        },
+        "stories--apology--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": 500,
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Learn the business, one lunch at a time."
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 560
+        },
+        "square": {
+          "maxCharsPerLine": 64,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 27,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 560
+        },
+        "post--apology--startup": {
+          "maxCharsPerLine": 34,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 560
+        },
+        "square--apology--startup": {
+          "maxCharsPerLine": 74,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "stories--apology--startup": {
+          "maxCharsPerLine": 31,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 560
+        },
+        "post--apology--acquisition": {
+          "maxCharsPerLine": 30,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 560
+        },
+        "square--apology--acquisition": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "stories--apology--acquisition": {
+          "maxCharsPerLine": 27,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 560
+        },
+        "post--apology--dark": {
+          "maxCharsPerLine": 30,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 560
+        },
+        "square--apology--dark": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "stories--apology--dark": {
+          "maxCharsPerLine": 28,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 560
+        },
+        "post--apology--light": {
+          "maxCharsPerLine": 32,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 560
+        },
+        "square--apology--light": {
+          "maxCharsPerLine": 69,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "stories--apology--light": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 560
+        }
+      }
+    }
+  },
+  "optionals": {},
+  "designs": {
+    "apology": {
+      "label": "Apology"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "apology",
+    "theme": "foundations"
+  },
+  "combos": {
+    "apology--startup": {
+      "design": "apology",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--apology--startup.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--apology--startup.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--apology--startup.html"
+        }
+      }
+    },
+    "apology--acquisition": {
+      "design": "apology",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--apology--acquisition.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--apology--acquisition.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--apology--acquisition.html"
+        }
+      }
+    },
+    "apology--dark": {
+      "design": "apology",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--apology--dark.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--apology--dark.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--apology--dark.html"
+        }
+      }
+    },
+    "apology--light": {
+      "design": "apology",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--apology--light.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--apology--light.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--apology--light.html"
+        }
+      }
+    }
+  }
+}

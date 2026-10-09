@@ -1,0 +1,16 @@
+{
+ "name": "doc-familiar-thread",
+ "slots": {
+  "headline-1": "If this text looks familiar,",
+  "headline-2": "you're ready for DOC.",
+  "contact": "Landlord",
+  "contact-initial": "L",
+  "time": "Today, 9:41 AM",
+  "message-1": "Morning, Doc.",
+  "message-2": "Quick note on the renewal.",
+  "message-3": "Rent goes up 12% in March.",
+  "message-4": "It's all in section 14.",
+  "reply": "What is section 14?",
+  "cta": "Apply today"
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "name": "doc-apology",
+ "slots": {
+  "headline": "Sorry to interrupt your lunch, but it was",
+  "headline-end": "the only open slot",
+  "tagline": "Learn the business between patients."
+ }
+}

@@ -1,0 +1,14 @@
+{
+ "name": "doc-checklist",
+ "slots": {
+  "headline-1": "Before you sign,",
+  "headline-2": "check the lease.",
+  "done-1": "Term",
+  "done-2": "Rent",
+  "todo-1": "Relocation clause",
+  "todo-2": "Assignment",
+  "todo-3": "Personal guarantee",
+  "caption": "We'll walk you through the rest.",
+  "cta": "Enroll now"
+ }
+}

@@ -123,6 +123,10 @@ export type TemplateConfig = {
   /** A slot filled from another when empty: its first word plus a suffix, or one line of a headline split in two (`line` 0 or 1, as the cover's headline-1 / headline-2). */
   derive?: Record<string, { from: string; firstWord?: boolean; suffix?: string; line?: 0 | 1 }>;
   variants?: Record<string, { label: string; when?: { empty?: string[] } }>;
+  /** An optional photo that gets a placeholder when the slot it belongs to is given (photo → that slot). */
+  photoWith?: Record<string, string>;
+  /** Image slots that take the person cut out (transparent PNG): a photo sent through a photo link is cut out. */
+  cutout?: string[];
 };
 
 export async function loadConfig(id: string): Promise<TemplateConfig> {

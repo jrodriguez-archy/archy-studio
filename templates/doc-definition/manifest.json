@@ -1,0 +1,1931 @@
+{
+  "id": "doc-definition",
+  "title": "DOC Definition",
+  "description": "A dictionary entry from the DOC Glossary: headword, pronunciation and two senses",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "series-number": {
+      "type": "text",
+      "default": "No. 02",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "28px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "post--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 03"
+        },
+        "square--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "28px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 03"
+        },
+        "stories--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 03"
+        },
+        "post--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 04"
+        },
+        "square--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "28px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 04"
+        },
+        "stories--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 04"
+        },
+        "post--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 05"
+        },
+        "square--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "28px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 05"
+        },
+        "stories--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 05"
+        },
+        "post--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 01"
+        },
+        "square--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "22px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "28px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 01"
+        },
+        "stories--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)",
+          "sample": "No. 01"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 78,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "post--definition--startup": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "square--definition--startup": {
+          "maxCharsPerLine": 79,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--startup": {
+          "maxCharsPerLine": 67,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "post--definition--acquisition": {
+          "maxCharsPerLine": 71,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "square--definition--acquisition": {
+          "maxCharsPerLine": 77,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--acquisition": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "post--definition--dark": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "square--definition--dark": {
+          "maxCharsPerLine": 78,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--dark": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "post--definition--light": {
+          "maxCharsPerLine": 76,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "square--definition--light": {
+          "maxCharsPerLine": 83,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 22,
+            "min": 19
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--light": {
+          "maxCharsPerLine": 70,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "headword": {
+      "type": "text",
+      "default": "P&L",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "260px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "238px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "260px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "238px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "260px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "238px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "220px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "202px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Build-out"
+        },
+        "square--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "220px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "202px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Build-out"
+        },
+        "stories--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "220px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "202px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Build-out"
+        },
+        "post--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "228px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "209px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Goodwill"
+        },
+        "square--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "228px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "209px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Goodwill"
+        },
+        "stories--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "228px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "209px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Goodwill"
+        },
+        "post--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "260px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "238px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Owner"
+        },
+        "square--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "260px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "238px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Owner"
+        },
+        "stories--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "260px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "238px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Owner"
+        },
+        "post--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "240px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "220px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "EBITDA"
+        },
+        "square--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "240px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "220px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "EBITDA"
+        },
+        "stories--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "240px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "220px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "EBITDA"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 6,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 260,
+            "min": 221
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 6,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 260,
+            "min": 221
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 6,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 260,
+            "min": 221
+          },
+          "roomPx": 1080
+        },
+        "post--definition--startup": {
+          "maxCharsPerLine": 10,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 220,
+            "min": 187
+          },
+          "roomPx": 1080
+        },
+        "square--definition--startup": {
+          "maxCharsPerLine": 10,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 220,
+            "min": 187
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--startup": {
+          "maxCharsPerLine": 10,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 220,
+            "min": 187
+          },
+          "roomPx": 1080
+        },
+        "post--definition--acquisition": {
+          "maxCharsPerLine": 9,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 228,
+            "min": 194
+          },
+          "roomPx": 1080
+        },
+        "square--definition--acquisition": {
+          "maxCharsPerLine": 9,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 228,
+            "min": 194
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--acquisition": {
+          "maxCharsPerLine": 9,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 228,
+            "min": 194
+          },
+          "roomPx": 1080
+        },
+        "post--definition--dark": {
+          "maxCharsPerLine": 6,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 260,
+            "min": 221
+          },
+          "roomPx": 1080
+        },
+        "square--definition--dark": {
+          "maxCharsPerLine": 6,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 260,
+            "min": 221
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--dark": {
+          "maxCharsPerLine": 6,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 260,
+            "min": 221
+          },
+          "roomPx": 1080
+        },
+        "post--definition--light": {
+          "maxCharsPerLine": 7,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 240,
+            "min": 204
+          },
+          "roomPx": 1080
+        },
+        "square--definition--light": {
+          "maxCharsPerLine": 7,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 240,
+            "min": 204
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--light": {
+          "maxCharsPerLine": 7,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 240,
+            "min": 204
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "pronunciation": {
+      "type": "text",
+      "default": "pee·and·el",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "46px"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "42px"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "50px"
+        },
+        "post--definition--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "46px",
+          "sample": "bild·out"
+        },
+        "square--definition--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "42px",
+          "sample": "bild·out"
+        },
+        "stories--definition--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "50px",
+          "sample": "bild·out"
+        },
+        "post--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "46px",
+          "sample": "good·wil"
+        },
+        "square--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "42px",
+          "sample": "good·wil"
+        },
+        "stories--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "50px",
+          "sample": "good·wil"
+        },
+        "post--definition--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "46px",
+          "sample": "oh·ner"
+        },
+        "square--definition--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "42px",
+          "sample": "oh·ner"
+        },
+        "stories--definition--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "50px",
+          "sample": "oh·ner"
+        },
+        "post--definition--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "46px",
+          "sample": "ee·bit·dah"
+        },
+        "square--definition--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "42px",
+          "sample": "ee·bit·dah"
+        },
+        "stories--definition--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "50px",
+          "sample": "ee·bit·dah"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 68,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 58,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--startup": {
+          "maxCharsPerLine": 69,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--startup": {
+          "maxCharsPerLine": 77,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--startup": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--acquisition": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--acquisition": {
+          "maxCharsPerLine": 67,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--acquisition": {
+          "maxCharsPerLine": 57,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--dark": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--dark": {
+          "maxCharsPerLine": 67,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--dark": {
+          "maxCharsPerLine": 57,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--light": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--light": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--light": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "part-of-speech": {
+      "type": "text",
+      "default": "noun",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "46px"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "42px"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px"
+        },
+        "post--definition--startup": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "46px"
+        },
+        "square--definition--startup": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "42px"
+        },
+        "stories--definition--startup": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px"
+        },
+        "post--definition--acquisition": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "46px"
+        },
+        "square--definition--acquisition": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "42px"
+        },
+        "stories--definition--acquisition": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px"
+        },
+        "post--definition--dark": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "46px"
+        },
+        "square--definition--dark": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "42px"
+        },
+        "stories--definition--dark": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px"
+        },
+        "post--definition--light": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "38px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "46px"
+        },
+        "square--definition--light": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "42px"
+        },
+        "stories--definition--light": {
+          "fontFamily": "\"Satoshi-MediumItalic\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--startup": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--startup": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--startup": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--acquisition": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--acquisition": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--acquisition": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--dark": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--dark": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--dark": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--light": {
+          "maxCharsPerLine": 49,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 38,
+            "min": 32
+          },
+          "roomPx": 1080
+        },
+        "square--definition--light": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--light": {
+          "maxCharsPerLine": 47,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "sense-1": {
+      "type": "text",
+      "default": "The one-page story of your practice.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--definition--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Turning an empty shell into an operatory."
+        },
+        "square--definition--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Turning an empty shell into an operatory."
+        },
+        "stories--definition--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Turning an empty shell into an operatory."
+        },
+        "post--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "What you pay for that you can't touch."
+        },
+        "square--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "What you pay for that you can't touch."
+        },
+        "stories--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "What you pay for that you can't touch."
+        },
+        "post--definition--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The dentist who signs the lease,\nthe payroll and the loan."
+        },
+        "square--definition--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The dentist who signs the lease,\nthe payroll and the loan."
+        },
+        "stories--definition--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The dentist who signs the lease,\nthe payroll and the loan."
+        },
+        "post--definition--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The number a buyer asks about first."
+        },
+        "square--definition--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The number a buyer asks about first."
+        },
+        "stories--definition--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The number a buyer asks about first."
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 52,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--startup": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--startup": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--startup": {
+          "maxCharsPerLine": 53,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--acquisition": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--acquisition": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--acquisition": {
+          "maxCharsPerLine": 53,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--dark": {
+          "maxCharsPerLine": 56,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--dark": {
+          "maxCharsPerLine": 62,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--dark": {
+          "maxCharsPerLine": 54,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--light": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--light": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--light": {
+          "maxCharsPerLine": 52,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "sense-2": {
+      "type": "text",
+      "default": "Most owners read it once a year.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--definition--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Always longer and pricier than the quote."
+        },
+        "square--definition--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Always longer and pricier than the quote."
+        },
+        "stories--definition--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Always longer and pricier than the quote."
+        },
+        "post--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Usually the biggest line in the price."
+        },
+        "square--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Usually the biggest line in the price."
+        },
+        "stories--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Usually the biggest line in the price."
+        },
+        "post--definition--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Rarely taught how to do any of it."
+        },
+        "square--definition--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Rarely taught how to do any of it."
+        },
+        "stories--definition--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Rarely taught how to do any of it."
+        },
+        "post--definition--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "56px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The number most dentists can't find\non their own P&L."
+        },
+        "square--definition--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "50px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The number most dentists can't find\non their own P&L."
+        },
+        "stories--definition--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "46px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "58px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "The number most dentists can't find\non their own P&L."
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 52,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--startup": {
+          "maxCharsPerLine": 55,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--startup": {
+          "maxCharsPerLine": 61,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--startup": {
+          "maxCharsPerLine": 53,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--acquisition": {
+          "maxCharsPerLine": 59,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--acquisition": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--acquisition": {
+          "maxCharsPerLine": 57,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--dark": {
+          "maxCharsPerLine": 57,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--dark": {
+          "maxCharsPerLine": 63,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--dark": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        },
+        "post--definition--light": {
+          "maxCharsPerLine": 53,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 1080
+        },
+        "square--definition--light": {
+          "maxCharsPerLine": 59,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--light": {
+          "maxCharsPerLine": 51,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 46,
+            "min": 39
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "cta": {
+      "type": "text",
+      "default": "Join the waitlist",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "square--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "stories--definition--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "post--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "square--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "stories--definition--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "post--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "square--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "stories--definition--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "post--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "square--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "stories--definition--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 81,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--startup": {
+          "maxCharsPerLine": 62,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--definition--startup": {
+          "maxCharsPerLine": 70,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--startup": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--acquisition": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--definition--acquisition": {
+          "maxCharsPerLine": 68,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--acquisition": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--dark": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--definition--dark": {
+          "maxCharsPerLine": 67,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--dark": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--definition--light": {
+          "maxCharsPerLine": 64,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--definition--light": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--definition--light": {
+          "maxCharsPerLine": 58,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        }
+      }
+    }
+  },
+  "optionals": {},
+  "designs": {
+    "definition": {
+      "label": "Definition"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "definition",
+    "theme": "foundations"
+  },
+  "combos": {
+    "definition--startup": {
+      "design": "definition",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--definition--startup.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--definition--startup.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--definition--startup.html"
+        }
+      }
+    },
+    "definition--acquisition": {
+      "design": "definition",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--definition--acquisition.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--definition--acquisition.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--definition--acquisition.html"
+        }
+      }
+    },
+    "definition--dark": {
+      "design": "definition",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--definition--dark.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--definition--dark.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--definition--dark.html"
+        }
+      }
+    },
+    "definition--light": {
+      "design": "definition",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--definition--light.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--definition--light.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--definition--light.html"
+        }
+      }
+    }
+  }
+}

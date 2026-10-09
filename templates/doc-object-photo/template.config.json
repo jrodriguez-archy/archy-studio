@@ -1,0 +1,145 @@
+{
+  "id": "doc-object-photo",
+  "brand": "doc",
+  "title": "DOC Object Photo",
+  "category": "ads",
+  "purpose": "claim",
+  "description": "A full-bleed staged photo that carries the idea, with the headline over it",
+  "useWhen": "DOC has an absurd staged photo that makes the point (a P&L framed like a diploma).",
+  "notWhen": "there is no such photo (use `DOC Claim Bar`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "image-photo: the staged photo, shot or sourced for the piece. Never generate a real person. A neutral grey ground holds its place until it comes.",
+    "headline-1 is the setup, in Regular; headline-2 the payoff, in Bold. Break at a sense unit so the weight change lands at a line end.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "CX2-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "CVU-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "CYA-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "object-photo": {
+      "label": "Object Photo"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "object-photo",
+    "theme": "foundations"
+  },
+  "combos": {
+    "object-photo--startup": {
+      "design": "object-photo",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "D0Q-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "CZI-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "D1Y-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "object-photo--acquisition": {
+      "design": "object-photo",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "D4E-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "D36-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "D5M-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "object-photo--dark": {
+      "design": "object-photo",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "D6U-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4OH-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "D82-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "object-photo--light": {
+      "design": "object-photo",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "DAI-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "D9A-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "DBQ-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "image-photo",
+    "headline-1",
+    "headline-2",
+    "cta"
+  ],
+  "optional": [],
+  "facts": {
+    "image-photo": "object-photo",
+    "headline-1": null,
+    "headline-2": null,
+    "cta": null
+  }
+}

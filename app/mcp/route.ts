@@ -10,7 +10,8 @@ import { createProject, findProject, listProjects } from '@/lib/projects';
 import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
-import { listAssets, listFolders } from '@/lib/assets';
+import { getAsset, listAssets, listFolders } from '@/lib/assets';
+import { createPhotoRequest, getPhotoRequest } from '@/lib/photo-requests';
 import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo, templateBrand } from '@/lib/templates';
 import { BRAND_IDS } from '@/lib/brands';
 
@@ -42,7 +43,7 @@ Brands: Studio makes work for two brands that never mix. Archy (default) and DOC
 
 Brand rules:
 - All copy on the design is in US English, even when the conversation is not.
-- Photos of people are always the person's real photo, from the team's images (list_assets; a cutout without background works best) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo; until the person's photo comes, a neutral silhouette holds its place.
+- Photos of people are always the person's real photo, from the team's images (list_assets; a cutout without background works best) or provided by the requester as an https link to a cutout PNG. When they attach a photo in the chat (Studio cannot read it) or have it on their computer, make the design with its placeholder, then give one photo link for every photo still missing (request_photos) and, when they say they are done, get_photos and render again with the same set. Never generate a person or use someone else's photo; until the person's photo comes, a neutral silhouette holds its place.
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
@@ -152,7 +153,7 @@ const handler = createMcpHandler(
         title: 'Match templates to a brief',
         description: 'Which templates can be made with the facts a brief brings, best first, and what each other template is missing. Call it after reading the brief, and again after asking for missing facts.',
         inputSchema: z.object({
-          facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue; ad-photo = a scene photo that shows a product claim (photo-led ads).'),
+          facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue; ad-photo = a scene photo that shows a product claim (photo-led ads); stat = a real, sourced figure (DOC); object-photo = a staged photo that is the idea of a DOC ad.'),
           purpose: z.enum(PURPOSES).optional().describe('What the design is for, when clear from the brief.'),
           brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'),
         }),
@@ -191,6 +192,53 @@ const handler = createMcpHandler(
           .slice(0, 60)
           .map((a) => ({ id: shortId(a.id), value: a.value, name: a.name, kind: a.kind, folder: a.folderId ? folderName.get(a.folderId) ?? null : null, by: a.author, size: a.width && a.height ? `${a.width}×${a.height}` : null, added: a.createdAt }));
         return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
+      },
+    );
+
+    server.registerTool(
+      'request_photos',
+      {
+        title: 'Ask for photos with a link',
+        description: 'A link where the requester drops the photos a design needs (one drop zone per photo), when they attached them in the chat or have them on their computer: Studio cannot read chat attachments. The photos join Assets in the design\'s brand, named with each label, and are cut out when the template wants a cutout. Give the link in one short line, then call get_photos when they say they are done.',
+        inputSchema: z.object({
+          template: z.string().optional().describe('The template the photos are for (sets the brand and which photos are cut out).'),
+          photos: z.array(z.object({
+            label: z.string().min(1).max(80).describe('What the photo is, as the requester knows it: the person\'s name ("Jordan Ellis") or the scene ("Staged P&L photo").'),
+            slot: z.string().optional().describe('The image slot it goes in (e.g. "image-speaker-1"), from get_template.'),
+          })).min(1).max(6),
+          brand: z.enum(BRAND_IDS).default('archy').describe('Only when there is no template: archy (default) or doc.'),
+        }),
+      },
+      async ({ template, photos, brand }, ctx) => {
+        const me = await whoIs(ctx);
+        if (!me) return { isError: true, content: [{ type: 'text', text: 'Photo links need a signed-in Studio account.' }] };
+        try {
+          const req = await createPhotoRequest(me.id, { template: template ?? null, brand, photos });
+          return { content: [{ type: 'text', text: `Photo link (valid 1 hour): ${publicOrigin(ctx)}/u/${req.id}\nRequest: ${req.id}\nAsks for: ${req.items.map((i) => `${i.label}${i.slot ? ` (${i.slot})` : ''}${i.cutout ? ', cut out' : ''}`).join('; ')}.` }] };
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
+      },
+    );
+
+    server.registerTool(
+      'get_photos',
+      {
+        title: 'Get the photos from a photo link',
+        description: 'The photos dropped on a link from request_photos: for each, asset:<id> to use in its image slot (render again with the same set), or that it has not arrived yet.',
+        inputSchema: z.object({ request: z.string().describe('The request id from request_photos (or the link).') }),
+        annotations: { readOnlyHint: true },
+      },
+      async ({ request }) => {
+        const id = request.match(/[0-9a-f-]{36}/i)?.[0] ?? '';
+        const req = await getPhotoRequest(id);
+        if (!req) return { isError: true, content: [{ type: 'text', text: 'No photo link with that id.' }] };
+        const items = await Promise.all(req.items.map(async (i) => {
+          const a = i.asset_id ? await getAsset(i.asset_id) : null;
+          return { label: i.label, slot: i.slot, photo: a ? `asset:${shortId(a.id)}` : null, cut_out: a ? a.kind === 'cutout' : undefined, status: a ? 'arrived' : 'not yet' };
+        }));
+        const waiting = items.filter((i) => !i.photo).length;
+        return { content: [{ type: 'text', text: JSON.stringify({ items, ...(waiting ? { note: `${waiting} not arrived yet${req.expired ? '; the link has expired, make a new one' : ''}.` } : {}) }, null, 2) }] };
       },
     );
 

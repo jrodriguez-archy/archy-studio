@@ -16,7 +16,11 @@ export const PURPOSE_LABEL: Record<string, string> = {
   'photo-claim': 'Photo ad',
   claim: 'Claim and CTA',
   stat: 'One number',
-  'save-the-date': 'Save the date',
+  list: 'List',
+  explainer: 'Explainer',
+  'scroll-stopper': 'Scroll stopper',
+  faculty: 'Faculty',
+  event: 'Event',
 };
 
 // The catalog's two levels: big categories (where a template comes from) and, inside each, what the
@@ -25,14 +29,14 @@ export const PURPOSE_LABEL: Record<string, string> = {
 export const TAXONOMY: { brand: Brand; key: string; label: string; description: string; purposes: string[] }[] = [
   { brand: 'archy', key: 'events', label: 'Events', description: 'Trade shows, booths, talks and evenings Archy hosts.', purposes: ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite'] },
   { brand: 'archy', key: 'ads', label: 'Ads', description: 'Paid social: person-led and photo-led ads.', purposes: ['spotlight', 'photo-claim'] },
-  { brand: 'doc', key: 'ads', label: 'Ads', description: 'DOC paid social in five themes: the three tracks, Dark and Light.', purposes: ['claim', 'stat', 'save-the-date'] },
+  { brand: 'doc', key: 'ads', label: 'Ads', description: 'DOC paid social in five themes: the three tracks, Dark and Light.', purposes: ['claim', 'stat', 'list', 'explainer', 'scroll-stopper', 'faculty', 'event'] },
 ];
 
 // Section titles on the Templates page.
 export const PURPOSE_PLURAL: Record<string, string> = {
   'booth-invite': 'Booth invites', reminder: 'Day-before reminders', 'hosted-evening': 'Hosted evenings',
   'speaker-invite': 'Speaker invites', 'event-cover': 'Event page covers', spotlight: 'Spotlights', 'photo-claim': 'Photo ads',
-  claim: 'Claims', stat: 'Numbers', 'save-the-date': 'Save the dates',
+  claim: 'Claims', stat: 'Numbers', list: 'Lists', explainer: 'Explainers', 'scroll-stopper': 'Scroll stoppers', faculty: 'Faculty', event: 'Events',
 };
 
 export const FACT_LABEL: Record<string, string> = {
@@ -41,7 +45,7 @@ export const FACT_LABEL: Record<string, string> = {
   speaker: 'Speaker name', 'speaker-photo': 'Speaker photo', 'speaker-role': 'Speaker role', 'speaker-company': 'Speaker company',
   'partner-logo': 'Partner logo',
   person: 'Name', 'person-title': 'Title', 'person-photo': 'Photo (cutout)', 'ad-photo': 'Ad photo (a scene)',
-  stat: 'Figure (a real number)',
+  stat: 'Figure (a real number)', 'object-photo': 'Staged object photo',
 };
 
 export type CatalogItem = { manifest: Manifest; config: TemplateConfig; formats: string[]; needs: string[]; extras: string[] };

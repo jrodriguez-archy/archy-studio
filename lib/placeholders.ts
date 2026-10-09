@@ -12,6 +12,8 @@ import { supabaseAdmin } from './supabase/admin';
 // Neutral images in library/placeholders (the last resort, and every person's photo).
 export const STATIC: Record<'scene' | 'person', string> = { scene: 'placeholder:scene', person: 'placeholder:person' };
 const PERSON = new Set(['person-photo', 'speaker-photo']);
+// A staged photo that is the idea of the piece (DOC's Object Photo) is never a stock stand-in: a neutral image.
+const NEUTRAL = new Set(['object-photo']);
 // Stored placeholders live apart from the team's images (never in Assets).
 const DIR = 'placeholders';
 
@@ -33,7 +35,7 @@ export type Placeholder = { slot: string; value: string; source: 'unsplash' | 'a
 
 export async function photoPlaceholder(input: { slot: string; fact: string | null; slots: Record<string, string | null>; purpose?: string; userId?: string | null }): Promise<Placeholder> {
   const { slot, fact } = input;
-  if (!fact || PERSON.has(fact)) return { slot, value: staticPlaceholder(fact), source: 'neutral' };
+  if (!fact || PERSON.has(fact) || NEUTRAL.has(fact)) return { slot, value: staticPlaceholder(fact), source: 'neutral' };
   const query = queryFor(fact, input.slots, input.purpose);
   const key = crypto.createHash('sha1').update(query).digest('hex').slice(0, 16);
   // The same search gives the same photo (stored once).

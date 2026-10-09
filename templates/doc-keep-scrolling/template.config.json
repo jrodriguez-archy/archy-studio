@@ -1,0 +1,140 @@
+{
+  "id": "doc-keep-scrolling",
+  "brand": "doc",
+  "title": "DOC Keep Scrolling",
+  "category": "ads",
+  "purpose": "scroll-stopper",
+  "description": "Reverse psychology: a setup line, then \"Keep scrolling.\" on a tilted block",
+  "useWhen": "a dry reverse-psychology line fits (\"If you enjoy reading the lease after you sign it,\").",
+  "notWhen": "a direct claim is better (use `DOC Claim Bar`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "headline: the setup, three short lines ending with a comma; \"Keep scrolling.\" is the design's and stays.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "BFP-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "4OF-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "BGV-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "keep-scrolling": {
+      "label": "Keep Scrolling"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "keep-scrolling",
+    "theme": "foundations"
+  },
+  "combos": {
+    "keep-scrolling--startup": {
+      "design": "keep-scrolling",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "BJ7-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "BI1-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "BKD-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "keep-scrolling--acquisition": {
+      "design": "keep-scrolling",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "BMP-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "BLJ-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "BNV-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "keep-scrolling--dark": {
+      "design": "keep-scrolling",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "BQ7-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "BP1-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "BRD-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "keep-scrolling--light": {
+      "design": "keep-scrolling",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "BTP-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "BSJ-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "BUV-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline",
+    "cta"
+  ],
+  "optional": [],
+  "facts": {
+    "headline": null,
+    "cta": null
+  }
+}

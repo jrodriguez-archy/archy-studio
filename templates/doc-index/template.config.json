@@ -1,0 +1,153 @@
+{
+  "id": "doc-index",
+  "brand": "doc",
+  "title": "DOC Index",
+  "category": "ads",
+  "purpose": "list",
+  "description": "A two-weight headline over five numbered rows",
+  "useWhen": "DOC has a list of exactly five things (numbers to know, steps, mistakes).",
+  "notWhen": "the list is not five items, or some are done and some are not (use `DOC Checklist`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "headline-1 is the setup, in Regular; headline-2 the payoff, in Bold. Break at a sense unit so the weight change lands at a line end.",
+    "item-1 … item-5: one short line each, parallel in form (\"Production per hour\"). Always five.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "6G8-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "694-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "6NC-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "index": {
+      "label": "Index"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "index",
+    "theme": "foundations"
+  },
+  "combos": {
+    "index--startup": {
+      "design": "index",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "6I0-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "6AW-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "6P4-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "index--acquisition": {
+      "design": "index",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "6JS-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "6CO-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "6QW-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "index--dark": {
+      "design": "index",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "6LK-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "6EG-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "6SO-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "index--light": {
+      "design": "index",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "3AM-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "2BC-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "67C-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline-1",
+    "headline-2",
+    "item-1",
+    "item-2",
+    "item-3",
+    "item-4",
+    "item-5",
+    "cta"
+  ],
+  "optional": [],
+  "facts": {
+    "headline-1": null,
+    "headline-2": null,
+    "item-1": null,
+    "item-2": null,
+    "item-3": null,
+    "item-4": null,
+    "item-5": null,
+    "cta": null
+  }
+}

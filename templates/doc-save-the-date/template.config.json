@@ -3,11 +3,11 @@
   "brand": "doc",
   "title": "DOC Save the Date",
   "category": "ads",
-  "purpose": "save-the-date",
+  "purpose": "event",
   "description": "The date as a numeral at poster size, one line under it and an offer line",
   "useWhen": "DOC announces a date (a session, a cohort start, an event) before the details are out.",
   "notWhen": "there is no date yet.",
-  "paperFileId": "01M4GTETFE50NWP2RVCNHFAF0X",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
   "guidance": [
     "date: the compact graphic numeral M.DD (\"10.12\" for October 12). Only a real date from the brief.",
     "headline: one short line under the date (\"You'll see why.\").",

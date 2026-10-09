@@ -6,7 +6,7 @@ import { iconMarkup } from './icons';
 import { isPlaceholder, staticPlaceholder } from './placeholders';
 import { supabaseAdmin } from './supabase/admin';
 import { findAsset } from './asset-ids';
-import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo } from './templates';
+import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo, templateBrand } from './templates';
 
 // Deciding a piece before any page is opened: slot values, variant, fit rules, resolved images and
 // icons. No browser here, so pages and actions that only need the fill stay light (the renderer, with
@@ -86,6 +86,9 @@ export async function prepareFill({ template, format, design, theme, slots: give
   // A missing photo never holds a design back: a neutral placeholder takes its place until the real one
   // comes (the MCP's render brings one closer to the brief first; see lib/placeholders.ts).
   if (!fillDefaults) for (const k of missingEssential) if (manifest.slots[k].type === 'image') slots[k] = staticPlaceholder(config.facts?.[k]);
+  // An optional photo that belongs to something given (a second speaker's name): a placeholder too, so the
+  // speaker never shows without a face; with nothing given, it goes with its block.
+  if (!fillDefaults) for (const [k, by] of Object.entries(config.photoWith ?? {})) if (!slots[k] && slots[by] && manifest.slots[k]) slots[k] = staticPlaceholder(config.facts?.[k]);
   const stillMissing = missingEssential.filter((k) => !slots[k]);
   if (stillMissing.length && !fillDefaults) throw new MissingRequired(stillMissing);
 
@@ -170,7 +173,8 @@ const remoteLogos = new Map<string, string>();
 const signed = new Map<string, { url: string; until: number }>();
 
 async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
-  if (v.startsWith('placeholder:')) return `${origin}/library/placeholders/${v.slice(12) === 'person' ? 'person' : 'scene'}.png`;
+  // Neutral stand-ins in the template's brand (DOC's are grey, never Archy blue).
+  if (v.startsWith('placeholder:')) return `${origin}/library/placeholders/${v.slice(12) === 'person' ? 'person' : 'scene'}${(await templateBrand(template)) === 'doc' ? '-doc' : ''}.png`;
   if (v.startsWith('asset:')) {
     const id = v.slice(6).trim();
     const asset = (await loadLibrary()).find((a) => a.id === id);

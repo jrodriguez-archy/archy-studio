@@ -1,0 +1,142 @@
+{
+  "id": "doc-myth-fact",
+  "brand": "doc",
+  "title": "DOC Myth / Fact",
+  "category": "ads",
+  "purpose": "explainer",
+  "description": "A belief, faded, over the fact that corrects it, in Bold",
+  "useWhen": "DOC corrects a belief dentists hold about owning a practice.",
+  "notWhen": "there is no belief to correct (use `DOC Claim Bar`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "myth: the belief as people say it (\"Good dentists make good owners.\"). fact: the correction, same shape (\"Good owners learn the business.\"). Two short lines each.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "EMG-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "4OM-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "ENN-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "myth-fact": {
+      "label": "Myth / Fact"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "myth-fact",
+    "theme": "foundations"
+  },
+  "combos": {
+    "myth-fact--startup": {
+      "design": "myth-fact",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "EQ1-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "EOU-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "ER8-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "myth-fact--acquisition": {
+      "design": "myth-fact",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "ETM-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "ESF-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "EUT-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "myth-fact--dark": {
+      "design": "myth-fact",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "EX7-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "EW0-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "EYE-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "myth-fact--light": {
+      "design": "myth-fact",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "F0S-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "EZL-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "F1Z-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "myth",
+    "fact",
+    "cta"
+  ],
+  "optional": [],
+  "facts": {
+    "myth": null,
+    "fact": null,
+    "cta": null
+  }
+}

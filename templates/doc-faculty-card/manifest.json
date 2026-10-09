@@ -1,0 +1,1220 @@
+{
+  "id": "doc-faculty-card",
+  "title": "DOC Faculty Card",
+  "description": "A ticket for one faculty member: portrait, name, role and what they teach",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-portrait": {
+      "type": "image",
+      "default": "assets/5YKY4BK4PKDJPSDXW064N0P905.png",
+      "perFormat": {
+        "post": {
+          "nodes": 1
+        },
+        "square": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 1
+        },
+        "post--faculty-card--startup": {
+          "nodes": 1
+        },
+        "square--faculty-card--startup": {
+          "nodes": 1
+        },
+        "stories--faculty-card--startup": {
+          "nodes": 1
+        },
+        "post--faculty-card--acquisition": {
+          "nodes": 1
+        },
+        "square--faculty-card--acquisition": {
+          "nodes": 1
+        },
+        "stories--faculty-card--acquisition": {
+          "nodes": 1
+        },
+        "post--faculty-card--dark": {
+          "nodes": 1
+        },
+        "square--faculty-card--dark": {
+          "nodes": 1
+        },
+        "stories--faculty-card--dark": {
+          "nodes": 1
+        },
+        "post--faculty-card--light": {
+          "nodes": 1
+        },
+        "square--faculty-card--light": {
+          "nodes": 1
+        },
+        "stories--faculty-card--light": {
+          "nodes": 1
+        }
+      }
+    },
+    "name": {
+      "type": "text",
+      "default": "Faculty Name",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "80px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "64px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "64px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "80px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "64px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "64px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "80px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "64px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "64px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "80px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "64px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "64px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "80px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "80px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "64px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "64px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 32,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--startup": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--startup": {
+          "maxCharsPerLine": 32,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--startup": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--acquisition": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--acquisition": {
+          "maxCharsPerLine": 32,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--acquisition": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--dark": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--dark": {
+          "maxCharsPerLine": 32,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--dark": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--light": {
+          "maxCharsPerLine": 26,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 80,
+            "min": 68
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--light": {
+          "maxCharsPerLine": 32,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 64,
+            "min": 54
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--light": {
+          "maxCharsPerLine": 21,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "role": {
+      "type": "text",
+      "default": "Owner, Practice Name",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "34px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "post--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "square--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "stories--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "34px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "post--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "square--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "stories--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "34px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "post--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "square--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "stories--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "34px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "post--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "26px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "32px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "square--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "24px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "30px",
+          "letterSpacing": "var(--tracking-label)"
+        },
+        "stories--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "28px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "34px",
+          "letterSpacing": "var(--tracking-label)"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--startup": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--startup": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--startup": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--acquisition": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--acquisition": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--acquisition": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--dark": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--dark": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--dark": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--light": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 26,
+            "min": 22
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--light": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 24,
+            "min": 20
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--light": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 28,
+            "min": 24
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "session": {
+      "type": "text",
+      "default": "Reading a P&L before you sign",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "52px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Choosing a location that fills chairs"
+        },
+        "square--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Choosing a location that fills chairs"
+        },
+        "stories--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "52px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Choosing a location that fills chairs"
+        },
+        "post--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Valuing a practice before you buy"
+        },
+        "square--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Valuing a practice before you buy"
+        },
+        "stories--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "52px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Valuing a practice before you buy"
+        },
+        "post--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Leading a team you inherited"
+        },
+        "square--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Leading a team you inherited"
+        },
+        "stories--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "52px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Leading a team you inherited"
+        },
+        "post--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Negotiating your first lease"
+        },
+        "square--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Negotiating your first lease"
+        },
+        "stories--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "44px",
+          "fontWeight": "var(--font-weight-medium)",
+          "lineHeight": "52px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Negotiating your first lease"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 552
+        },
+        "square": {
+          "maxCharsPerLine": 34,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 586
+        },
+        "stories": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 517
+        },
+        "post--faculty-card--startup": {
+          "maxCharsPerLine": 38,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 633
+        },
+        "square--faculty-card--startup": {
+          "maxCharsPerLine": 44,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 658
+        },
+        "stories--faculty-card--startup": {
+          "maxCharsPerLine": 33,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 608
+        },
+        "post--faculty-card--acquisition": {
+          "maxCharsPerLine": 33,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 593
+        },
+        "square--faculty-card--acquisition": {
+          "maxCharsPerLine": 38,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 622
+        },
+        "stories--faculty-card--acquisition": {
+          "maxCharsPerLine": 28,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 563
+        },
+        "post--faculty-card--dark": {
+          "maxCharsPerLine": 33,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 609
+        },
+        "square--faculty-card--dark": {
+          "maxCharsPerLine": 38,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 636
+        },
+        "stories--faculty-card--dark": {
+          "maxCharsPerLine": 28,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 581
+        },
+        "post--faculty-card--light": {
+          "maxCharsPerLine": 37,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 622
+        },
+        "square--faculty-card--light": {
+          "maxCharsPerLine": 42,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 648
+        },
+        "stories--faculty-card--light": {
+          "maxCharsPerLine": 32,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 44,
+            "min": 37
+          },
+          "roomPx": 595
+        }
+      }
+    },
+    "cta": {
+      "type": "text",
+      "default": "Join the waitlist",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "square--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "stories--faculty-card--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "post--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "square--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "stories--faculty-card--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "post--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "square--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "stories--faculty-card--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "post--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "square--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "stories--faculty-card--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 81,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--startup": {
+          "maxCharsPerLine": 62,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--startup": {
+          "maxCharsPerLine": 70,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--startup": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--acquisition": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--acquisition": {
+          "maxCharsPerLine": 68,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--acquisition": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--dark": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--dark": {
+          "maxCharsPerLine": 67,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--dark": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--faculty-card--light": {
+          "maxCharsPerLine": 64,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--faculty-card--light": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--faculty-card--light": {
+          "maxCharsPerLine": 58,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        }
+      }
+    }
+  },
+  "optionals": {},
+  "designs": {
+    "faculty-card": {
+      "label": "Faculty Card"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "faculty-card",
+    "theme": "foundations"
+  },
+  "combos": {
+    "faculty-card--startup": {
+      "design": "faculty-card",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--faculty-card--startup.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--faculty-card--startup.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--faculty-card--startup.html"
+        }
+      }
+    },
+    "faculty-card--acquisition": {
+      "design": "faculty-card",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--faculty-card--acquisition.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--faculty-card--acquisition.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--faculty-card--acquisition.html"
+        }
+      }
+    },
+    "faculty-card--dark": {
+      "design": "faculty-card",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--faculty-card--dark.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--faculty-card--dark.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--faculty-card--dark.html"
+        }
+      }
+    },
+    "faculty-card--light": {
+      "design": "faculty-card",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--faculty-card--light.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--faculty-card--light.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--faculty-card--light.html"
+        }
+      }
+    }
+  }
+}

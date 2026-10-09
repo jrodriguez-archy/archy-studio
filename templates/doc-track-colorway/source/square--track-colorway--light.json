@@ -1,0 +1,198 @@
+{
+  "rootId": "7DM-0",
+  "nodes": {
+    "7DM-0": {
+      "id": "7DM-0",
+      "name": "TPL · Track Colorway · Light · Square 1080×1080",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "7DS-0",
+        "7DN-0"
+      ]
+    },
+    "7DS-0": {
+      "id": "7DS-0",
+      "name": "Footer Band",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "7DU-0",
+        "7DT-0"
+      ]
+    },
+    "7DU-0": {
+      "id": "7DU-0",
+      "name": "Asset · Lockup — Cream",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "7DV-0"
+      ]
+    },
+    "7DV-0": {
+      "id": "7DV-0",
+      "name": "DOC Lockup",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "7DT-0": {
+      "id": "7DT-0",
+      "name": "slot-text-cta",
+      "component": "Text",
+      "visible": true,
+      "text": "Get started →",
+      "children": []
+    },
+    "7DN-0": {
+      "id": "7DN-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "7DR-0",
+        "7DO-0"
+      ]
+    },
+    "7DR-0": {
+      "id": "7DR-0",
+      "name": "Track Label",
+      "component": "Text",
+      "visible": true,
+      "text": "DOC — THREE TRACKS",
+      "children": []
+    },
+    "7DO-0": {
+      "id": "7DO-0",
+      "name": "Body",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "7DQ-0",
+        "7DP-0"
+      ]
+    },
+    "7DQ-0": {
+      "id": "7DQ-0",
+      "name": "slot-text-headline",
+      "component": "Text",
+      "visible": true,
+      "text": "Own what\nyou build.",
+      "children": []
+    },
+    "7DP-0": {
+      "id": "7DP-0",
+      "name": "slot-text-body",
+      "component": "Text",
+      "visible": true,
+      "text": "Foundations, Startup and Acquisition, taught by dentists who own practices.",
+      "children": []
+    }
+  },
+  "styles": {
+    "7DM-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1080px",
+      "left": "15304px",
+      "top": "7666px",
+      "position": "absolute",
+      "backgroundColor": "var(--color-cream-200)"
+    },
+    "7DS-0": {
+      "position": "absolute",
+      "left": "0px",
+      "right": "0px",
+      "bottom": "0px",
+      "height": "200px",
+      "display": "flex",
+      "alignItems": "center",
+      "justifyContent": "space-between",
+      "paddingInline": "var(--spacing-16)",
+      "backgroundColor": "var(--color-red-500)"
+    },
+    "7DU-0": {
+      "display": "flex",
+      "overflow": "clip",
+      "width": "275px",
+      "height": "100px",
+      "left": 280,
+      "top": -360,
+      "flexDirection": "column",
+      "flexShrink": "0"
+    },
+    "7DV-0": {
+      "height": "100px",
+      "width": "275px",
+      "flexShrink": "0"
+    },
+    "7DT-0": {
+      "width": "max-content",
+      "fontSize": "44px",
+      "lineHeight": "44px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "var(--tracking-heading)",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+      "color": "var(--color-cream-200)"
+    },
+    "7DN-0": {
+      "position": "absolute",
+      "left": "64px",
+      "top": "64px",
+      "right": "64px",
+      "bottom": "304px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between"
+    },
+    "7DR-0": {
+      "width": "max-content",
+      "fontSize": "28px",
+      "lineHeight": "28px",
+      "fontWeight": "var(--font-weight-medium)",
+      "letterSpacing": "var(--tracking-label)",
+      "whiteSpace": "pre",
+      "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+      "color": "var(--color-red-500)"
+    },
+    "7DO-0": {
+      "alignSelf": "stretch",
+      "flexShrink": "0",
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "var(--spacing-12)"
+    },
+    "7DQ-0": {
+      "alignSelf": "stretch",
+      "fontSize": "190px",
+      "lineHeight": "200px",
+      "fontWeight": "var(--font-weight-bold)",
+      "letterSpacing": "var(--tracking-display)",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+      "color": "var(--color-ink)"
+    },
+    "7DP-0": {
+      "alignSelf": "stretch",
+      "fontSize": "50px",
+      "lineHeight": "60px",
+      "fontWeight": "var(--font-weight-medium)",
+      "textWrap": "balance",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Satoshi-Medium\", \"Satoshi\", system-ui, sans-serif",
+      "color": "var(--color-neutral-500)"
+    }
+  },
+  "svgs": {
+    "7DV-0": "(\n    <svg viewBox=\"0 0.082 166.2 60.436\" xmlns=\"http://www.w3.org/2000/svg\" width=\"277\" height=\"100.72727272727275\" style={{ height: '100px', width: '275px', flexShrink: '0' }}>\n      <path d=\"M0 60.6V0H56.475V60.6H0ZM8.68 41.592H16.659V9.789H8.68V41.592Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M68.719 16.19V1.145H73.627C78.138 1.145 81.187 4.182 81.187 8.678 81.187 13.173 78.179 16.19 73.71 16.19H68.719ZM70.766 3.017V14.296H73.564C76.927 14.296 79.057 12.132 79.057 8.678 79.057 5.223 76.927 3.017 73.481 3.017H70.766Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M82.462 11.112C82.462 7.928 84.488 5.723 87.453 5.723 90.419 5.723 92.257 7.72 92.257 10.737V11.466L84.362 11.487C84.509 13.631 85.636 14.816 87.579 14.816 89.103 14.816 90.106 14.193 90.44 13.028H92.278C91.776 15.212 90.064 16.44 87.537 16.44 84.529 16.44 82.462 14.276 82.462 11.112ZM84.404 10.176H90.293C90.293 8.49 89.186 7.366 87.453 7.366 85.72 7.366 84.655 8.387 84.404 10.176Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M94.132 16.19V6.014H95.907L96.116 7.575C96.764 6.409 98.059 5.723 99.5 5.723 102.194 5.723 103.427 7.366 103.427 9.968V16.19H101.464V10.405C101.464 8.345 100.503 7.513 98.999 7.513 97.162 7.513 96.096 8.823 96.096 10.8V16.19H94.132Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M106.48 16.19V7.658H104.476V6.014H106.48V2.83H108.444V6.014H110.449V7.658H108.444V16.19H106.48Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M111.192 13.36C111.192 11.487 112.592 10.322 114.994 10.134L118.21 9.885V9.594C118.21 7.887 117.186 7.283 115.807 7.283 114.158 7.283 113.219 8.012 113.219 9.24H111.505C111.505 7.116 113.26 5.723 115.892 5.723 118.523 5.723 120.131 7.055 120.131 9.802V16.19H118.46L118.251 14.546C117.73 15.712 116.33 16.44 114.681 16.44 112.487 16.44 111.192 15.212 111.192 13.36ZM118.231 11.799V11.259L115.62 11.466C113.886 11.632 113.176 12.299 113.176 13.298 113.176 14.38 113.97 14.921 115.245 14.921 117.103 14.921 118.231 13.714 118.231 11.799Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M122.458 16.19V0.873H124.421V16.19H122.458Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M75.047 38.083C70.786 38.083 67.821 34.878 67.821 30.3 67.821 25.722 70.807 22.516 75.068 22.516 79.329 22.516 82.336 25.722 82.336 30.3 82.336 34.878 79.329 38.083 75.047 38.083ZM75.068 24.494C71.997 24.494 69.971 26.804 69.971 30.3 69.971 33.796 71.997 36.126 75.068 36.126 78.138 36.126 80.185 33.775 80.185 30.3 80.185 26.824 78.138 24.494 75.068 24.494Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M83.26 27.657H85.286L86.977 32.942C87.207 33.692 87.416 34.462 87.604 35.357 87.771 34.462 88.042 33.609 88.272 32.942L89.985 27.657H91.989L93.681 32.942C93.849 33.442 94.183 34.629 94.35 35.357 94.517 34.546 94.705 33.837 94.997 32.942L96.71 27.657H98.757L95.269 37.833H93.409L91.634 32.38C91.3 31.362 91.091 30.57 90.987 30.008 90.882 30.508 90.695 31.173 90.318 32.402L88.543 37.833H86.602L83.26 27.657Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M100.039 37.833V27.657H101.814L102.023 29.218C102.67 28.053 103.966 27.366 105.407 27.366 108.101 27.366 109.333 29.009 109.333 31.61V37.833H107.37V32.048C107.37 29.988 106.41 29.155 104.905 29.155 103.068 29.155 102.003 30.466 102.003 32.443V37.833H100.039Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M111.025 32.755C111.025 29.571 113.051 27.366 116.016 27.366 118.983 27.366 120.821 29.363 120.821 32.38V33.109L112.925 33.13C113.071 35.274 114.2 36.46 116.142 36.46 117.667 36.46 118.669 35.836 119.003 34.671H120.841C120.34 36.855 118.628 38.083 116.101 38.083 113.093 38.083 111.025 35.919 111.025 32.755ZM112.967 31.819H118.857C118.857 30.133 117.75 29.009 116.016 29.009 114.283 29.009 113.219 30.03 112.967 31.819Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M128.541 29.363H127.663C125.803 29.363 124.655 30.487 124.655 32.443V37.833H122.692V27.678H124.53L124.655 29.218C125.073 28.156 126.097 27.449 127.496 27.449 127.851 27.449 128.143 27.491 128.541 27.574V29.363Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M131.167 34.878C131.167 35.919 131.962 36.543 133.256 36.543 134.635 36.543 135.428 35.981 135.428 35.044 135.428 34.357 135.094 33.942 134.029 33.671L132.232 33.255C130.415 32.817 129.559 31.923 129.559 30.425 129.559 28.551 131.147 27.366 133.402 27.366 135.658 27.366 137.099 28.614 137.14 30.55H135.262C135.219 29.53 134.53 28.885 133.339 28.885 132.149 28.885 131.418 29.426 131.418 30.362 131.418 31.048 131.919 31.507 132.922 31.757L134.718 32.194C136.451 32.61 137.308 33.4 137.308 34.919 137.308 36.855 135.637 38.083 133.214 38.083 130.792 38.083 129.287 36.813 129.287 34.878H131.167Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M139.15 37.813V22.516H141.113V29.218C141.761 28.114 142.992 27.366 144.58 27.366 147.191 27.366 148.444 29.009 148.444 31.61V37.833H146.481V32.048C146.481 29.988 145.499 29.155 144.037 29.155 142.136 29.155 141.113 30.528 141.113 32.277V37.813H139.15Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M150.395 23.953C150.395 23.225 150.98 22.663 151.69 22.663 152.4 22.663 152.985 23.225 152.985 23.953 152.985 24.68 152.4 25.242 151.69 25.242 150.98 25.242 150.395 24.66 150.395 23.953ZM150.73 27.657H152.692V37.833H150.73V27.657Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M155.077 27.657H156.853L156.999 29.488C157.689 28.094 159.067 27.366 160.695 27.366 163.62 27.366 165.437 29.551 165.437 32.672 165.437 35.794 163.725 38.103 160.695 38.103 159.067 38.103 157.709 37.416 157.041 36.168V42.391H155.077V27.657ZM160.278 36.335C162.283 36.335 163.474 34.836 163.474 32.755 163.474 30.675 162.283 29.155 160.278 29.155 158.273 29.155 157.062 30.633 157.062 32.755 157.062 34.878 158.273 36.335 160.278 36.335Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M67.862 52.026C67.862 47.447 70.745 44.326 74.964 44.326 78.179 44.326 80.708 46.262 81.313 49.216H79.704C79.078 47.073 77.24 45.762 74.901 45.762 71.622 45.762 69.429 48.259 69.429 52.026 69.429 55.792 71.622 58.269 74.901 58.269 77.26 58.269 79.14 56.999 79.789 55.002H81.396C80.708 57.811 78.096 59.705 74.879 59.705 70.703 59.705 67.862 56.604 67.862 52.026Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M87.838 49.134C90.803 49.134 92.975 51.36 92.975 54.44 92.975 57.519 90.803 59.726 87.838 59.726 84.872 59.726 82.7 57.499 82.7 54.44 82.7 51.381 84.872 49.134 87.838 49.134ZM87.838 58.436C89.988 58.436 91.513 56.791 91.513 54.419 91.513 52.046 89.988 50.424 87.838 50.424 85.686 50.424 84.161 52.088 84.161 54.419 84.161 56.75 85.665 58.436 87.838 58.436Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M94.909 59.476V44.305H96.351V59.476H94.909Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M98.881 59.476V44.305H100.323V59.476H98.881Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M102.236 54.44C102.236 51.298 104.2 49.134 107.082 49.134 109.964 49.134 111.676 51.069 111.676 53.92V54.627H103.636C103.74 57.082 105.035 58.498 107.208 58.498 108.857 58.498 109.922 57.791 110.299 56.459H111.676C111.134 58.581 109.567 59.726 107.186 59.726 104.22 59.726 102.236 57.603 102.236 54.44ZM103.677 53.587H110.236C110.236 51.651 108.982 50.361 107.082 50.361 105.181 50.361 103.928 51.61 103.677 53.587Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M117.909 49.134C120.248 49.134 121.961 50.486 122.357 52.566H120.917C120.54 51.173 119.329 50.403 117.93 50.403 115.883 50.403 114.443 51.963 114.443 54.44 114.443 56.916 115.778 58.436 117.826 58.436 119.329 58.436 120.54 57.603 120.938 56.312H122.4C121.919 58.373 120.122 59.726 117.826 59.726 114.964 59.726 113.022 57.624 113.022 54.46 113.022 51.298 114.964 49.134 117.909 49.134Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M125.073 59.476V50.611H123.047V49.404H125.073V46.22H126.493V49.404H128.519V50.611H126.493V59.476H125.073Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M129.525 45.575C129.525 44.991 130.006 44.493 130.59 44.493 131.176 44.493 131.677 44.991 131.677 45.575 131.677 46.157 131.176 46.637 130.59 46.637 130.006 46.637 129.525 46.157 129.525 45.575ZM129.88 49.404H131.322V59.476H129.88V49.404Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M132.584 49.404H134.128L136.74 55.897C137.012 56.625 137.282 57.312 137.471 57.978 137.659 57.291 137.931 56.625 138.223 55.897L140.875 49.404H142.358L138.16 59.476H136.718L132.584 49.404Z\" fill=\"var(--color-cream-500)\" />\n      <path d=\"M142.588 54.44C142.588 51.298 144.551 49.134 147.433 49.134 150.315 49.134 152.028 51.069 152.028 53.92V54.627H143.987C144.092 57.082 145.386 58.498 147.559 58.498 149.209 58.498 150.274 57.791 150.65 56.459H152.028C151.485 58.581 149.919 59.726 147.538 59.726 144.571 59.726 142.588 57.603 142.588 54.44ZM144.029 53.587H150.587C150.587 51.651 149.334 50.361 147.433 50.361 145.533 50.361 144.279 51.61 144.029 53.587Z\" fill=\"var(--color-cream-500)\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-red-400: #FF0600;\n  --color-red-500: #ED0606;\n  --color-red-600: #CC0000;\n  --color-red-700: #990000;\n  --color-red-800: #660000;\n  --color-red-900: #330000;\n  --color-cream-100: #FDFCF5;\n  --color-cream-200: #FAF9EE;\n  --color-cream-300: #F8F6E8;\n  --color-cream-400: #F6F4E1;\n  --color-cream-500: #F3F1D9;\n  --color-purple: #69228F;\n  --color-purple-dark: #5B1D7C;\n  --color-purple-light: #E8CDFF;\n  --color-green: #00593E;\n  --color-yellow: #FBF900;\n  --color-ink: #222222;\n  --color-ink-soft: #3A3A3A;\n  --color-neutral-900: #111111;\n  --color-neutral-800: #222222;\n  --color-neutral-700: #444444;\n  --color-neutral-500: #666666;\n  --color-neutral-400: #AAAAAA;\n  --color-neutral-300: #CCCCCC;\n  --color-neutral-200: #EEEEEE;\n  --color-white: #FFFFFF;\n  --color-track-foundations: #ED0606;\n  --color-track-startup: #69228F;\n  --color-track-acquisition: #00593E;\n  --color-cream-200-a10: #FAF9EE1A;\n  --color-cream-200-a15: #FAF9EE26;\n  --color-cream-200-a20: #FAF9EE33;\n  --color-cream-200-a25: #FAF9EE40;\n  --color-cream-200-a30: #FAF9EE4D;\n  --color-cream-200-a35: #FAF9EE59;\n  --color-cream-200-a45: #FAF9EE73;\n  --color-cream-200-a55: #FAF9EE8C;\n  --color-cream-500-a35: #F3F1D959;\n  --color-red-500-a06: #ED06060F;\n  --color-red-500-a10: #ED06061A;\n  --color-red-500-a14: #ED060624;\n  --color-red-500-a22: #ED060638;\n  --color-red-tint: #F9A8A8;\n  --color-purple-tint: #CBB2D8;\n  --color-green-tint: #A6C5BB;\n  --font-sans: Satoshi;\n  --text-display: 64px;\n  --text-heading: 48px;\n  --text-lead: 24px;\n  --text-body-lg: 20px;\n  --text-body: 18px;\n  --text-label: 16px;\n  --font-weight-light: 300;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-bold: 700;\n  --font-weight-black: 900;\n  --tracking-display: -0.016em;\n  --tracking-heading: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-label: 0.063em;\n  --leading-display: 70px;\n  --leading-heading: 58px;\n  --leading-lead: 34px;\n  --leading-body-lg: 31px;\n  --leading-body: 27px;\n  --leading-label: 24px;\n  --breakpoint-sm: 480px;\n  --breakpoint-md: 768px;\n  --breakpoint-lg: 1024px;\n  --breakpoint-xl: 1440px;\n  --container-content: 1280px;\n  --container-narrow: 800px;\n  --spacing-1: 4px;\n  --spacing-2: 8px;\n  --spacing-3: 12px;\n  --spacing-4: 16px;\n  --spacing-5: 20px;\n  --spacing-6: 24px;\n  --spacing-8: 32px;\n  --spacing-10: 40px;\n  --spacing-12: 48px;\n  --spacing-16: 64px;\n  --spacing-24: 96px;\n  --spacing-32: 128px;\n  --radius-none: 0px;\n  --radius-tag: 4px;\n  --radius-full: 9999px;\n  --radius-tail: 8px;\n  --radius-button: 10px;\n  --radius-card: 12px;\n  --radius-bubble: 28px;\n}\n"
+}

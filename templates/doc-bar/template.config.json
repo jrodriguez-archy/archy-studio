@@ -7,7 +7,7 @@
   "description": "One claim in two weights, a short body line and a CTA bar",
   "useWhen": "DOC has one claim to make (a setup and its payoff) and an action to take.",
   "notWhen": "the piece is about one number (use `DOC Stat Hero`) or a date (use `DOC Save the Date`).",
-  "paperFileId": "01M4GTETFE50NWP2RVCNHFAF0X",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
   "guidance": [
     "headline-1 is the setup, in Regular; headline-2 the payoff, in Bold (\"Dental school taught you teeth.\" / \"We teach you business.\"). Each about two lines; break at a sense unit so the weight change lands at a line end.",
     "body: one or two lines, two sense units broken after the comma. Optional.",

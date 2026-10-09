@@ -1,0 +1,13 @@
+{
+ "name": "doc-index",
+ "slots": {
+  "headline-1": "Five mistakes",
+  "headline-2": "new owners make.",
+  "item-1": "Signing the lease first",
+  "item-2": "Hiring before the systems",
+  "item-3": "Guessing the overhead",
+  "item-4": "Skipping the payor mix",
+  "item-5": "Paying yourself last",
+  "cta": "Enroll now"
+ }
+}

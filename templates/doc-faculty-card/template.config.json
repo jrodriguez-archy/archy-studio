@@ -1,0 +1,147 @@
+{
+  "id": "doc-faculty-card",
+  "brand": "doc",
+  "title": "DOC Faculty Card",
+  "category": "ads",
+  "purpose": "faculty",
+  "description": "A ticket for one faculty member: portrait, name, role and what they teach",
+  "useWhen": "DOC introduces one faculty member and their session.",
+  "notWhen": "there are several speakers (use `DOC Live Session`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "image-portrait: the person's real photo, from Assets or a link. Never generated; a grey silhouette holds its place until it comes.",
+    "name and role: only as the requester gives them (\"Owner, Practice Name\"). session: what they teach, one line.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "9XP-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "9W9-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "9Z5-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "faculty-card": {
+      "label": "Faculty Card"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "faculty-card",
+    "theme": "foundations"
+  },
+  "combos": {
+    "faculty-card--startup": {
+      "design": "faculty-card",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "9TD-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4OD-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "9UT-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "faculty-card--acquisition": {
+      "design": "faculty-card",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "A21-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "A0L-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "A3H-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "faculty-card--dark": {
+      "design": "faculty-card",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "A6D-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "A4X-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "A7T-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "faculty-card--light": {
+      "design": "faculty-card",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "AAP-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "A99-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "AC5-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "image-portrait",
+    "name",
+    "role",
+    "session",
+    "cta"
+  ],
+  "optional": [],
+  "facts": {
+    "image-portrait": "person-photo",
+    "name": "person",
+    "role": "person-title",
+    "session": null,
+    "cta": null
+  }
+}

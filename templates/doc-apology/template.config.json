@@ -1,0 +1,142 @@
+{
+  "id": "doc-apology",
+  "brand": "doc",
+  "title": "DOC Apology",
+  "category": "ads",
+  "purpose": "scroll-stopper",
+  "description": "A Bold apology for interrupting, a tagline and the lockup in a solid block off the corner",
+  "useWhen": "a wry interruption fits the moment (\"Sorry to interrupt your charting…\").",
+  "notWhen": "the piece needs a CTA (this one has none).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "headline: the apology, three short lines (\"Sorry to interrupt / your charting, but / it's the only time\"). headline-end: its last line without the full stop (\"you're sitting down\"); the full stop is the design's.",
+    "tagline: one line that says what DOC offers (\"Learn the numbers between patients.\").",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "B3S-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "B2P-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "B4V-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "apology": {
+      "label": "Apology"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "apology",
+    "theme": "foundations"
+  },
+  "combos": {
+    "apology--startup": {
+      "design": "apology",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "B71-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "B5Y-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "B84-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "apology--acquisition": {
+      "design": "apology",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "BAA-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "B97-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "BBD-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "apology--dark": {
+      "design": "apology",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "BDJ-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "BCG-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "BEM-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "apology--light": {
+      "design": "apology",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "B0J-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4OE-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "B1M-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline",
+    "headline-end",
+    "tagline"
+  ],
+  "optional": [],
+  "facts": {
+    "headline": null,
+    "headline-end": null,
+    "tagline": null
+  }
+}

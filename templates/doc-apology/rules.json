@@ -1,0 +1,7 @@
+{
+  "_comment": "The apology is one unit: its lines, last line and the full stop (its own node, red on Light) scale together.",
+  "slots": {
+    "headline": { "within": "Content", "maxLines": 4, "sampleLines": 4, "minScale": 0.7, "scaleGroup": "Headline" },
+    "headline-end": { "within": "Content", "maxLines": 1, "minScale": 0.7, "scaleGroup": "Headline" }
+  }
+}

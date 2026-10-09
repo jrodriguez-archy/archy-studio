@@ -1,0 +1,145 @@
+{
+  "id": "doc-track-colorway",
+  "brand": "doc",
+  "title": "DOC Track Colorway",
+  "category": "ads",
+  "purpose": "claim",
+  "description": "A track label, a huge two-line headline and a full-bleed footer band with the lockup and CTA",
+  "useWhen": "the piece is about one track (Foundations, Startup or Acquisition) and has one strong line.",
+  "notWhen": "it is about the collective as a whole (use `DOC Claim Bar` on Dark or Light).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "The theme is the track: the track label (\"TRACK — FOUNDATIONS\") comes with it. Dark and Light say the collective.",
+    "headline: two short lines at poster size (\"Learn the / business.\").",
+    "body: one or two lines under it. Optional.",
+    "cta: the label in the footer band, with its arrow (\"Join the waitlist →\").",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "3FM-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "4KC-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "79M-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "track-colorway": {
+      "label": "Track Colorway"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "track-colorway",
+    "theme": "foundations"
+  },
+  "combos": {
+    "track-colorway--startup": {
+      "design": "track-colorway",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "3GT-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4LB-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "7AM-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "track-colorway--acquisition": {
+      "design": "track-colorway",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "3HS-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4MA-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "7BM-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "track-colorway--dark": {
+      "design": "track-colorway",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "7EM-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "7CM-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "7GM-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "track-colorway--light": {
+      "design": "track-colorway",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "7FM-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "7DM-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "7HM-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline",
+    "cta"
+  ],
+  "optional": [
+    "body"
+  ],
+  "facts": {
+    "headline": null,
+    "cta": null,
+    "body": null
+  }
+}

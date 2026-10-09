@@ -1,0 +1,6 @@
+{
+  "_comment": "The session title wraps to two lines before it pushes the CTA out of the stub.",
+  "slots": {
+    "session": { "within": "Session", "maxLines": 2, "sampleLines": 2, "minScale": 0.85 }
+  }
+}

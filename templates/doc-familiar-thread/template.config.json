@@ -1,0 +1,161 @@
+{
+  "id": "doc-familiar-thread",
+  "brand": "doc",
+  "title": "DOC Familiar Thread",
+  "category": "ads",
+  "purpose": "scroll-stopper",
+  "description": "A chat from a broker, landlord or seller; the reader's reply is the punchline",
+  "useWhen": "a situation the reader has lived can be told as a text thread.",
+  "notWhen": "there is no conversation to show.",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "headline-1 is the setup, in Regular; headline-2 the payoff, in Bold. Break at a sense unit so the weight change lands at a line end.",
+    "contact: who writes (Broker, Contractor, Seller, Office Manager, Landlord); contact-initial: its first letter. time: \"Today, 4:12 PM\"; optional.",
+    "message-1 … message-4: their messages, short, as people text; message-4 is optional and the Square shows three. reply: the reader's answer, the punchline (\"What does standard mean?\").",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "8Z9-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "4OA-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "90V-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "familiar-thread": {
+      "label": "Familiar Thread"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "familiar-thread",
+    "theme": "foundations"
+  },
+  "combos": {
+    "familiar-thread--startup": {
+      "design": "familiar-thread",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "943-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "92H-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "95P-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "familiar-thread--acquisition": {
+      "design": "familiar-thread",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "98X-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "97B-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "9AJ-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "familiar-thread--dark": {
+      "design": "familiar-thread",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "9DR-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "9C5-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "9FD-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "familiar-thread--light": {
+      "design": "familiar-thread",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "9IL-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "9GZ-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "9K7-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline-1",
+    "headline-2",
+    "contact",
+    "contact-initial",
+    "message-1",
+    "message-2",
+    "message-3",
+    "reply",
+    "cta"
+  ],
+  "optional": [
+    "time",
+    "message-4"
+  ],
+  "facts": {
+    "headline-1": null,
+    "headline-2": null,
+    "contact": null,
+    "contact-initial": null,
+    "message-1": null,
+    "message-2": null,
+    "message-3": null,
+    "reply": null,
+    "cta": null,
+    "time": null,
+    "message-4": null
+  }
+}

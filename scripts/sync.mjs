@@ -168,8 +168,11 @@ async function build(key, label, d) {
       attrs.push(`data-slot="${role}"`, 'data-slot-type="logo"');
       slots[role] ??= { type: 'logo', default: null };
     }
-    if (u && imageSlotByUrl[u]) {
-      const role = `image-${imageSlotByUrl[u]}`;
+    // A layer named slot-image-<role> is that slot even when another slot shows the same picture (three
+    // speakers with one placeholder); other layers showing a slot's picture follow it by URL.
+    const own = u && n.name.match(/^slot-image-([\w-]+)/)?.[1];
+    if (u && (own || imageSlotByUrl[u])) {
+      const role = `image-${own ?? imageSlotByUrl[u]}`;
       attrs.push(`data-slot="${role}"`, 'data-slot-type="image"');
       slots[role] ??= { type: 'image', default: assetMap[u], nodes: 0 };
       slots[role].nodes++;

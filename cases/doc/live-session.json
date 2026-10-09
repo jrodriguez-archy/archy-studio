@@ -1,0 +1,17 @@
+{
+ "name": "doc-live-session",
+ "slots": {
+  "headline-1": "How do you value",
+  "headline-2": "a practice you want?",
+  "event-name": "DOC Live session",
+  "datetime": "Nov 18 • 7:00 PM ET",
+  "speaker-1-name": "Jordan Ellis",
+  "speaker-1-role": "Acquisition track",
+  "speaker-2-name": "Sam Rivera",
+  "speaker-2-role": "Foundations track",
+  "speaker-3-name": null,
+  "speaker-3-role": null,
+  "cta": "Save your seat",
+  "image-speaker-3": null
+ }
+}

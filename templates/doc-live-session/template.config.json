@@ -1,0 +1,171 @@
+{
+  "id": "doc-live-session",
+  "brand": "doc",
+  "title": "DOC Live Session",
+  "category": "ads",
+  "purpose": "event",
+  "description": "A question headline, the event line and up to three speakers",
+  "useWhen": "DOC announces a live session with its speakers.",
+  "notWhen": "there is only a date so far (use `DOC Save the Date`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "headline-1, headline-2: the question the session answers, in two weights (\"What does a P&L / actually tell you?\").",
+    "event-name (\"DOC Live session\") and datetime (\"Sept 28 • 7:00 PM ET\"): only real details from the brief.",
+    "Speakers: one to three. Each has a real photo (a grey silhouette until it comes), a name and a role or track. Speakers 2 and 3 are optional; leave them out to drop them.",
+    "cta: \"Save your seat\" on every theme.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "AII-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "AGV-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "AK5-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "live-session": {
+      "label": "Live Session"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "live-session",
+    "theme": "foundations"
+  },
+  "combos": {
+    "live-session--startup": {
+      "design": "live-session",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "ANF-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "ALS-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "AP2-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "live-session--acquisition": {
+      "design": "live-session",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "ASC-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "AQP-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "ATZ-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "live-session--dark": {
+      "design": "live-session",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "ADL-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4OB-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "AF8-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "live-session--light": {
+      "design": "live-session",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "AX9-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "AVM-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "AYW-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline-1",
+    "headline-2",
+    "event-name",
+    "datetime",
+    "image-speaker-1",
+    "speaker-1-name",
+    "speaker-1-role",
+    "cta"
+  ],
+  "optional": [
+    "image-speaker-2",
+    "speaker-2-name",
+    "speaker-2-role",
+    "image-speaker-3",
+    "speaker-3-name",
+    "speaker-3-role"
+  ],
+  "facts": {
+    "headline-1": null,
+    "headline-2": null,
+    "event-name": "event-name",
+    "datetime": "date",
+    "image-speaker-1": "speaker-photo",
+    "speaker-1-name": "speaker",
+    "speaker-1-role": "speaker-role",
+    "cta": null,
+    "image-speaker-2": "speaker-photo",
+    "speaker-2-name": "speaker",
+    "speaker-2-role": "speaker-role",
+    "image-speaker-3": "speaker-photo",
+    "speaker-3-name": "speaker",
+    "speaker-3-role": "speaker-role"
+  },
+  "photoWith": {
+    "image-speaker-2": "speaker-2-name",
+    "image-speaker-3": "speaker-3-name"
+  }
+}

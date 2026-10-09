@@ -1,0 +1,8 @@
+{
+ "name": "doc-myth-fact",
+ "slots": {
+  "myth": "Buying a practice means buying patients.",
+  "fact": "You buy the systems that keep them.",
+  "cta": "Register now"
+ }
+}

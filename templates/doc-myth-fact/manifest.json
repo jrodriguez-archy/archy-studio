@@ -1,0 +1,933 @@
+{
+  "id": "doc-myth-fact",
+  "title": "DOC Myth / Fact",
+  "description": "A belief, faded, over the fact that corrects it, in Bold",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "myth": {
+      "type": "text",
+      "default": "Good dentists\nmake good owners.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "If you build it,\npatients will come."
+        },
+        "square--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "If you build it,\npatients will come."
+        },
+        "stories--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "If you build it,\npatients will come."
+        },
+        "post--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "The seller's numbers\nare the numbers."
+        },
+        "square--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "The seller's numbers\nare the numbers."
+        },
+        "stories--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "The seller's numbers\nare the numbers."
+        },
+        "post--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You'll figure out\nthe business later."
+        },
+        "square--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You'll figure out\nthe business later."
+        },
+        "stories--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You'll figure out\nthe business later."
+        },
+        "post--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You need an MBA\nto own a practice."
+        },
+        "square--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You need an MBA\nto own a practice."
+        },
+        "stories--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You need an MBA\nto own a practice."
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--startup": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--startup": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--startup": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--acquisition": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--acquisition": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--acquisition": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--dark": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--dark": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--dark": {
+          "maxCharsPerLine": 29,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--light": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--light": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--light": {
+          "maxCharsPerLine": 24,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "fact": {
+      "type": "text",
+      "default": "Good owners\nlearn the business.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "They come when\nyou market it."
+        },
+        "square--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "They come when\nyou market it."
+        },
+        "stories--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "They come when\nyou market it."
+        },
+        "post--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "They're the seller's\nnumbers."
+        },
+        "square--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "They're the seller's\nnumbers."
+        },
+        "stories--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "They're the seller's\nnumbers."
+        },
+        "post--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Later is the\nexpensive part."
+        },
+        "square--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Later is the\nexpensive part."
+        },
+        "stories--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Later is the\nexpensive part."
+        },
+        "post--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You need people\nwho've done it."
+        },
+        "square--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You need people\nwho've done it."
+        },
+        "stories--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "96px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "96px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "You need people\nwho've done it."
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--startup": {
+          "maxCharsPerLine": 22,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--startup": {
+          "maxCharsPerLine": 22,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--startup": {
+          "maxCharsPerLine": 22,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--acquisition": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--acquisition": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--acquisition": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--dark": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--dark": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--dark": {
+          "maxCharsPerLine": 25,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--light": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--light": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--light": {
+          "maxCharsPerLine": 23,
+          "maxLines": 2,
+          "fontSize": {
+            "max": 96,
+            "min": 82
+          },
+          "roomPx": 1080
+        }
+      }
+    },
+    "cta": {
+      "type": "text",
+      "default": "Join the waitlist",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "square--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "stories--myth-fact--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "post--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "square--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "stories--myth-fact--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "post--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "square--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "stories--myth-fact--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "post--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "44px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "square--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "32px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "stories--myth-fact--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "40px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "48px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 81,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 65,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--startup": {
+          "maxCharsPerLine": 62,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--startup": {
+          "maxCharsPerLine": 70,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--startup": {
+          "maxCharsPerLine": 56,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--acquisition": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--acquisition": {
+          "maxCharsPerLine": 68,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--acquisition": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--dark": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--dark": {
+          "maxCharsPerLine": 67,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--dark": {
+          "maxCharsPerLine": 54,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        },
+        "post--myth-fact--light": {
+          "maxCharsPerLine": 64,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "square--myth-fact--light": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 32,
+            "min": 27
+          },
+          "roomPx": 1080
+        },
+        "stories--myth-fact--light": {
+          "maxCharsPerLine": 58,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 40,
+            "min": 34
+          },
+          "roomPx": 1080
+        }
+      }
+    }
+  },
+  "optionals": {},
+  "designs": {
+    "myth-fact": {
+      "label": "Myth / Fact"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "myth-fact",
+    "theme": "foundations"
+  },
+  "combos": {
+    "myth-fact--startup": {
+      "design": "myth-fact",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--myth-fact--startup.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--myth-fact--startup.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--myth-fact--startup.html"
+        }
+      }
+    },
+    "myth-fact--acquisition": {
+      "design": "myth-fact",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--myth-fact--acquisition.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--myth-fact--acquisition.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--myth-fact--acquisition.html"
+        }
+      }
+    },
+    "myth-fact--dark": {
+      "design": "myth-fact",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--myth-fact--dark.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--myth-fact--dark.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--myth-fact--dark.html"
+        }
+      }
+    },
+    "myth-fact--light": {
+      "design": "myth-fact",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--myth-fact--light.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--myth-fact--light.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--myth-fact--light.html"
+        }
+      }
+    }
+  }
+}

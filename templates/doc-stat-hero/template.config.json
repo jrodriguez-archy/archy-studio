@@ -7,7 +7,7 @@
   "description": "One real number at poster size, an eyebrow above and a line that explains it",
   "useWhen": "DOC has one sourced figure that carries the message (\"$80,000\", \"36 modules\").",
   "notWhen": "there is no real number (never invent one: use `DOC Claim Bar`).",
-  "paperFileId": "01M4GTETFE50NWP2RVCNHFAF0X",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
   "guidance": [
     "stat: the figure as it should read (\"$80,000\", \"189 lessons\"). Only a real, sourced number; a short non-numeric stat (\"Day one\") is fine when there is none. Keep it short: it is set at poster size on one line.",
     "kicker: what the number is, in a few words (\"The gap nobody budgets for\"). Optional.",

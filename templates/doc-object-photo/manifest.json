@@ -1,0 +1,984 @@
+{
+  "id": "doc-object-photo",
+  "title": "DOC Object Photo",
+  "description": "A full-bleed staged photo that carries the idea, with the headline over it",
+  "formats": {
+    "post": {
+      "label": "Post 1080×1350",
+      "width": 1080,
+      "height": 1350,
+      "html": "post.html"
+    },
+    "square": {
+      "label": "Square 1080×1080",
+      "width": 1080,
+      "height": 1080,
+      "html": "square.html"
+    },
+    "stories": {
+      "label": "Stories 1080×1920",
+      "width": 1080,
+      "height": 1920,
+      "html": "stories.html"
+    }
+  },
+  "variants": {},
+  "slots": {
+    "image-photo": {
+      "type": "image",
+      "default": "assets/45S3BS5T9W7EB4TW6ZF88T8RZY.png",
+      "perFormat": {
+        "post": {
+          "nodes": 1
+        },
+        "square": {
+          "nodes": 1
+        },
+        "stories": {
+          "nodes": 1
+        },
+        "post--object-photo--startup": {
+          "nodes": 1
+        },
+        "square--object-photo--startup": {
+          "nodes": 1
+        },
+        "stories--object-photo--startup": {
+          "nodes": 1
+        },
+        "post--object-photo--acquisition": {
+          "nodes": 1
+        },
+        "square--object-photo--acquisition": {
+          "nodes": 1
+        },
+        "stories--object-photo--acquisition": {
+          "nodes": 1
+        },
+        "post--object-photo--dark": {
+          "nodes": 1
+        },
+        "square--object-photo--dark": {
+          "nodes": 1
+        },
+        "stories--object-photo--dark": {
+          "nodes": 1
+        },
+        "post--object-photo--light": {
+          "nodes": 1
+        },
+        "square--object-photo--light": {
+          "nodes": 1
+        },
+        "stories--object-photo--light": {
+          "nodes": 1
+        }
+      }
+    },
+    "headline-1": {
+      "type": "text",
+      "default": "The business side of dentistry,",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "76px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "76px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Build the practice"
+        },
+        "square--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "76px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "76px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Build the practice"
+        },
+        "stories--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "76px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "76px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Build the practice"
+        },
+        "post--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Look under the hood"
+        },
+        "square--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Look under the hood"
+        },
+        "stories--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Look under the hood"
+        },
+        "post--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "78px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "78px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Numbers that will make you"
+        },
+        "square--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "78px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "78px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Numbers that will make you"
+        },
+        "stories--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "78px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "78px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Numbers that will make you"
+        },
+        "post--object-photo--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "88px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "88px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Ownership,"
+        },
+        "square--object-photo--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "88px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "88px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Ownership,"
+        },
+        "stories--object-photo--light": {
+          "fontFamily": "\"Satoshi-Regular\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "88px",
+          "fontWeight": "var(--font-weight-regular)",
+          "lineHeight": "88px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "Ownership,"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 31,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "square": {
+          "maxCharsPerLine": 31,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "stories": {
+          "maxCharsPerLine": 31,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--startup": {
+          "maxCharsPerLine": 30,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 76,
+            "min": 53
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--startup": {
+          "maxCharsPerLine": 30,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 76,
+            "min": 53
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--startup": {
+          "maxCharsPerLine": 30,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 76,
+            "min": 53
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--acquisition": {
+          "maxCharsPerLine": 27,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--acquisition": {
+          "maxCharsPerLine": 27,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--acquisition": {
+          "maxCharsPerLine": 27,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--dark": {
+          "maxCharsPerLine": 26,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 78,
+            "min": 55
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--dark": {
+          "maxCharsPerLine": 26,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 78,
+            "min": 55
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--dark": {
+          "maxCharsPerLine": 26,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 78,
+            "min": 55
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--light": {
+          "maxCharsPerLine": 22,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 88,
+            "min": 62
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--light": {
+          "maxCharsPerLine": 22,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 88,
+            "min": 62
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--light": {
+          "maxCharsPerLine": 22,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 88,
+            "min": 62
+          },
+          "roomPx": 936
+        }
+      }
+    },
+    "headline-2": {
+      "type": "text",
+      "default": "finally explained.",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)"
+        },
+        "post--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "76px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "76px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you build the office."
+        },
+        "square--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "76px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "76px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you build the office."
+        },
+        "stories--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "76px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "76px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you build the office."
+        },
+        "post--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you buy the practice."
+        },
+        "square--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you buy the practice."
+        },
+        "stories--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "73px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "73px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "before you buy the practice."
+        },
+        "post--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "78px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "78px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "love your practice again."
+        },
+        "square--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "78px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "78px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "love your practice again."
+        },
+        "stories--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "78px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "78px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "love your practice again."
+        },
+        "post--object-photo--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "88px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "88px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "without the guesswork."
+        },
+        "square--object-photo--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "88px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "88px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "without the guesswork."
+        },
+        "stories--object-photo--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "88px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "88px",
+          "letterSpacing": "var(--tracking-display)",
+          "sample": "without the guesswork."
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 30,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "square": {
+          "maxCharsPerLine": 30,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "stories": {
+          "maxCharsPerLine": 30,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--startup": {
+          "maxCharsPerLine": 28,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 76,
+            "min": 53
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--startup": {
+          "maxCharsPerLine": 28,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 76,
+            "min": 53
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--startup": {
+          "maxCharsPerLine": 28,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 76,
+            "min": 53
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--acquisition": {
+          "maxCharsPerLine": 28,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--acquisition": {
+          "maxCharsPerLine": 28,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--acquisition": {
+          "maxCharsPerLine": 28,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 73,
+            "min": 51
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--dark": {
+          "maxCharsPerLine": 27,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 78,
+            "min": 55
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--dark": {
+          "maxCharsPerLine": 27,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 78,
+            "min": 55
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--dark": {
+          "maxCharsPerLine": 27,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 78,
+            "min": 55
+          },
+          "roomPx": 936
+        },
+        "post--object-photo--light": {
+          "maxCharsPerLine": 22,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 88,
+            "min": 62
+          },
+          "roomPx": 936
+        },
+        "square--object-photo--light": {
+          "maxCharsPerLine": 22,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 88,
+            "min": 62
+          },
+          "roomPx": 936
+        },
+        "stories--object-photo--light": {
+          "maxCharsPerLine": 22,
+          "maxLines": 3,
+          "fontSize": {
+            "max": 88,
+            "min": 62
+          },
+          "roomPx": 936
+        }
+      }
+    },
+    "cta": {
+      "type": "text",
+      "default": "Join the waitlist",
+      "perFormat": {
+        "post": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "square": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "stories": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "42px",
+          "letterSpacing": "var(--tracking-heading)"
+        },
+        "post--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "square--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "stories--object-photo--startup": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "42px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Enroll now"
+        },
+        "post--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "square--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "stories--object-photo--acquisition": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "42px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Register now"
+        },
+        "post--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "square--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "stories--object-photo--dark": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "42px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Apply today"
+        },
+        "post--object-photo--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "34px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "40px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "square--object-photo--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "30px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "36px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        },
+        "stories--object-photo--light": {
+          "fontFamily": "\"Satoshi-Bold\", \"Satoshi\", system-ui, sans-serif",
+          "fontSize": "36px",
+          "fontWeight": "var(--font-weight-bold)",
+          "lineHeight": "42px",
+          "letterSpacing": "var(--tracking-heading)",
+          "sample": "Get started"
+        }
+      },
+      "limits": {
+        "post": {
+          "maxCharsPerLine": 76,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "square": {
+          "maxCharsPerLine": 86,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 1080
+        },
+        "stories": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "post--object-photo--startup": {
+          "maxCharsPerLine": 66,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "square--object-photo--startup": {
+          "maxCharsPerLine": 75,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 1080
+        },
+        "stories--object-photo--startup": {
+          "maxCharsPerLine": 62,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "post--object-photo--acquisition": {
+          "maxCharsPerLine": 64,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "square--object-photo--acquisition": {
+          "maxCharsPerLine": 73,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 1080
+        },
+        "stories--object-photo--acquisition": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "post--object-photo--dark": {
+          "maxCharsPerLine": 63,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "square--object-photo--dark": {
+          "maxCharsPerLine": 72,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 1080
+        },
+        "stories--object-photo--dark": {
+          "maxCharsPerLine": 60,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        },
+        "post--object-photo--light": {
+          "maxCharsPerLine": 68,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 34,
+            "min": 29
+          },
+          "roomPx": 1080
+        },
+        "square--object-photo--light": {
+          "maxCharsPerLine": 77,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 30,
+            "min": 26
+          },
+          "roomPx": 1080
+        },
+        "stories--object-photo--light": {
+          "maxCharsPerLine": 64,
+          "maxLines": 1,
+          "fontSize": {
+            "max": 36,
+            "min": 31
+          },
+          "roomPx": 1080
+        }
+      }
+    }
+  },
+  "optionals": {},
+  "designs": {
+    "object-photo": {
+      "label": "Object Photo"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "object-photo",
+    "theme": "foundations"
+  },
+  "combos": {
+    "object-photo--startup": {
+      "design": "object-photo",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--object-photo--startup.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--object-photo--startup.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--object-photo--startup.html"
+        }
+      }
+    },
+    "object-photo--acquisition": {
+      "design": "object-photo",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--object-photo--acquisition.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--object-photo--acquisition.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--object-photo--acquisition.html"
+        }
+      }
+    },
+    "object-photo--dark": {
+      "design": "object-photo",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--object-photo--dark.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--object-photo--dark.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--object-photo--dark.html"
+        }
+      }
+    },
+    "object-photo--light": {
+      "design": "object-photo",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "label": "Post 1080×1350",
+          "width": 1080,
+          "height": 1350,
+          "html": "post--object-photo--light.html"
+        },
+        "square": {
+          "label": "Square 1080×1080",
+          "width": 1080,
+          "height": 1080,
+          "html": "square--object-photo--light.html"
+        },
+        "stories": {
+          "label": "Stories 1080×1920",
+          "width": 1080,
+          "height": 1920,
+          "html": "stories--object-photo--light.html"
+        }
+      }
+    }
+  }
+}

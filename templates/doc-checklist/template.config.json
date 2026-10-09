@@ -1,0 +1,157 @@
+{
+  "id": "doc-checklist",
+  "brand": "doc",
+  "title": "DOC Checklist",
+  "category": "ads",
+  "purpose": "list",
+  "description": "Two items ticked and struck through, three still open, and a caption offering help with the rest",
+  "useWhen": "DOC shows the steps before a decision, some done and some not.",
+  "notWhen": "nothing is done yet or the list is not five (use `DOC Index`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "headline-1 is the setup, in Regular; headline-2 the payoff, in Bold. Break at a sense unit so the weight change lands at a line end.",
+    "done-1, done-2: what the reader already does (ticked, struck through). todo-1 … todo-3: what DOC teaches (open, Bold). One or two words each.",
+    "caption: the offer for the open ones (\"We'll teach you the other three.\"). Optional.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "DYZ-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "DX6-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "E0S-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "checklist": {
+      "label": "Checklist"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "checklist",
+    "theme": "foundations"
+  },
+  "combos": {
+    "checklist--startup": {
+      "design": "checklist",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "E4E-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "E2L-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "E67-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "checklist--acquisition": {
+      "design": "checklist",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "E9T-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "E80-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "EBM-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "checklist--dark": {
+      "design": "checklist",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "EF8-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "EDF-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "EH1-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "checklist--light": {
+      "design": "checklist",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "EIU-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4OL-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "EKN-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline-1",
+    "headline-2",
+    "done-1",
+    "done-2",
+    "todo-1",
+    "todo-2",
+    "todo-3",
+    "cta"
+  ],
+  "optional": [
+    "caption"
+  ],
+  "facts": {
+    "headline-1": null,
+    "headline-2": null,
+    "done-1": null,
+    "done-2": null,
+    "todo-1": null,
+    "todo-2": null,
+    "todo-3": null,
+    "cta": null,
+    "caption": null
+  }
+}

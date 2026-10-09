@@ -1,0 +1,153 @@
+{
+  "id": "doc-definition",
+  "brand": "doc",
+  "title": "DOC Definition",
+  "category": "ads",
+  "purpose": "explainer",
+  "description": "A dictionary entry from the DOC Glossary: headword, pronunciation and two senses",
+  "useWhen": "DOC explains a term an owner should know (P&L, EBITDA, LOI).",
+  "notWhen": "it is not a term (use `DOC Myth / Fact` or `DOC Claim Bar`).",
+  "paperFileId": "01M4GYN0DT5HC9MZK7YVRYA3CW",
+  "guidance": [
+    "series-number: the glossary number (\"No. 02\"); keep the series consistent and ask which number comes next.",
+    "headword: the term, short. pronunciation: how it sounds, with middle dots (\"pee·and·el\"); optional. part-of-speech: \"noun\", \"verb\".",
+    "sense-1: the plain meaning; sense-2: the owner's reality. One line each.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "DEE-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "DCY-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "DFU-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "definition": {
+      "label": "Definition"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "definition",
+    "theme": "foundations"
+  },
+  "combos": {
+    "definition--startup": {
+      "design": "definition",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "DIQ-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "DHA-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "DK6-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "definition--acquisition": {
+      "design": "definition",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "DN2-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "DLM-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "DOI-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "definition--dark": {
+      "design": "definition",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "DRE-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "DPY-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "DSU-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "definition--light": {
+      "design": "definition",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "DUA-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4OJ-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "DVQ-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "series-number",
+    "headword",
+    "part-of-speech",
+    "sense-1",
+    "sense-2",
+    "cta"
+  ],
+  "optional": [
+    "pronunciation"
+  ],
+  "facts": {
+    "series-number": null,
+    "headword": null,
+    "part-of-speech": null,
+    "sense-1": null,
+    "sense-2": null,
+    "cta": null,
+    "pronunciation": null
+  }
+}

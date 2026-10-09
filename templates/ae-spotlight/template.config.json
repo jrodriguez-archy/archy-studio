@@ -277,5 +277,8 @@
     "ae-name": "person",
     "ae-title": "person-title",
     "ae-first-name": "person"
-  }
+  },
+  "cutout": [
+    "image-ae"
+  ]
 }

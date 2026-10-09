@@ -1,0 +1,57 @@
+{
+  "_comment": "Authored by design. One white headline that may grow to about 115/87 when the copy is short (fill), at most two lines; the band and shades are fixed, so Main must not grow past two lines. Photo Bottom's sample headline is set at 115 (short copy): it may shrink to the 87 base for long copy and does not grow further.",
+  "slots": {
+    "headline": {
+      "within": "Content",
+      "maxLines": 2,
+      "minScale": 0.85
+    },
+    "subline": {
+      "within": "Content",
+      "maxLines": 1,
+      "minScale": 0.85
+    },
+    "cta": {
+      "within": "Content",
+      "maxLines": 1,
+      "minScale": 0.9,
+      "avoid": [
+        {
+          "node": "Archy Wordmark",
+          "gap": 40
+        }
+      ]
+    },
+    "label-left": {
+      "maxLines": 1,
+      "minScale": 0.85,
+      "block": "optional-label-left",
+      "within": "slot-image-left"
+    },
+    "label-right": {
+      "maxLines": 1,
+      "minScale": 0.85,
+      "block": "optional-label-right",
+      "within": "slot-image-right"
+    }
+  },
+  "fill": {
+    "slot": "headline",
+    "maxScale": 1.32
+  },
+  "designs": {
+    "photo-bottom": {
+      "slots": {
+        "headline": {
+          "within": "Content",
+          "maxLines": 2,
+          "minScale": 0.75
+        }
+      },
+      "fill": {
+        "slot": "headline",
+        "maxScale": 1.0
+      }
+    }
+  }
+}

@@ -31,8 +31,8 @@ export type Rules = Record<string, unknown> & {
   slots: Record<string, unknown>;
   optionals?: Manifest['optionals'];
   variants?: Record<string, { slots?: Record<string, object> }>;
-  /** A design replaces the slot rules it names (and the containers when given): its layers differ. */
-  designs?: Record<string, { slots?: Record<string, object>; containers?: unknown[] }>;
+  /** A design replaces the slot rules it names (and the containers and fill when given): its layers differ. */
+  designs?: Record<string, { slots?: Record<string, object>; containers?: unknown[]; fill?: unknown }>;
 };
 
 export type Combo = { design: string; theme: string; key: string | null };

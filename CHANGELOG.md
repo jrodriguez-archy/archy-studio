@@ -1,5 +1,11 @@
 # Changelog
 
+## archy-studio 0.14.0 (2026-10-08)
+
+- New template `photo-headline` (Ads, purpose `photo-claim`, "Photo ads"): one product claim told by a photo. Three designs (`full-photo` default, `photo-bottom`, `split`), two themes (`royal` default, `navy`), formats Square 1080×1080, Post 1080×1350 and Stories 1080×1920 (18 artboards in `Master - Ads`, page `Photo Headline`). Slots: `headline` (two lines, grows when the copy is short), `subline` (optional), `cta`, `image-photo`; in Split `image-left`, `image-right` and the optional `label-left` / `label-right`.
+- New brief fact `ad-photo` (a scene photo that shows a product claim) for `match_templates`.
+- rules.json: a design can now override `fill` (`designs.<design>.fill`), as it already did slots and containers. Photo Bottom uses it so its 115px sample headline does not grow further.
+
 ## archy-studio 0.13.0 (2026-10-08)
 
 - Canvas: a photo moves and resizes with its frame (what shows it: its clipping frame, or the frame it fills alone), and its selection shows that frame. Pulling an edge resizes the frame, the photo keeps covering it (framed as it was, then free to reframe), and on a frame placed on the artboard what sits against that edge moves with it (a photo band pushes the photo bar and the content under it). The frame grows only as far as what it pushes can go without leaving the artboard; a frame in a column already moves its neighbours.

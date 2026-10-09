@@ -1,0 +1,171 @@
+{
+  "id": "photo-headline",
+  "title": "Photo Headline",
+  "category": "ads",
+  "description": "Photo-led ad: one product claim told by a photo, with a big headline, a subline and a demo CTA. Three designs (Full Photo, Photo Bottom, Split) in two themes (Royal Blue, Navy).",
+  "paperFileId": "01M4697421B4576AVJ6RKSRGE3",
+  "paperPage": "Photo Headline",
+  "formats": {
+    "square": {
+      "nodeId": "5KE-0",
+      "label": "Square 1080×1080"
+    },
+    "post": {
+      "nodeId": "5N8-0",
+      "label": "Post 1080×1350"
+    },
+    "stories": {
+      "nodeId": "5P7-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "full-photo": {
+      "label": "Full Photo"
+    },
+    "photo-bottom": {
+      "label": "Photo Bottom"
+    },
+    "split": {
+      "label": "Split"
+    }
+  },
+  "themes": {
+    "royal": {
+      "label": "Royal Blue"
+    },
+    "navy": {
+      "label": "Navy"
+    }
+  },
+  "default": {
+    "design": "full-photo",
+    "theme": "royal"
+  },
+  "combos": {
+    "full-photo--navy": {
+      "design": "full-photo",
+      "theme": "navy",
+      "formats": {
+        "square": {
+          "nodeId": "5R6-0",
+          "label": "Square 1080×1080"
+        },
+        "post": {
+          "nodeId": "5RS-0",
+          "label": "Post 1080×1350"
+        },
+        "stories": {
+          "nodeId": "5SE-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "photo-bottom--royal": {
+      "design": "photo-bottom",
+      "theme": "royal",
+      "formats": {
+        "square": {
+          "nodeId": "5L0-0",
+          "label": "Square 1080×1080"
+        },
+        "post": {
+          "nodeId": "5NU-0",
+          "label": "Post 1080×1350"
+        },
+        "stories": {
+          "nodeId": "5PT-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "photo-bottom--navy": {
+      "design": "photo-bottom",
+      "theme": "navy",
+      "formats": {
+        "square": {
+          "nodeId": "5T0-0",
+          "label": "Square 1080×1080"
+        },
+        "post": {
+          "nodeId": "5TM-0",
+          "label": "Post 1080×1350"
+        },
+        "stories": {
+          "nodeId": "5U8-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "split--royal": {
+      "design": "split",
+      "theme": "royal",
+      "formats": {
+        "square": {
+          "nodeId": "5LK-0",
+          "label": "Square 1080×1080"
+        },
+        "post": {
+          "nodeId": "5OG-0",
+          "label": "Post 1080×1350"
+        },
+        "stories": {
+          "nodeId": "5QF-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "split--navy": {
+      "design": "split",
+      "theme": "navy",
+      "formats": {
+        "square": {
+          "nodeId": "5UU-0",
+          "label": "Square 1080×1080"
+        },
+        "post": {
+          "nodeId": "5VL-0",
+          "label": "Post 1080×1350"
+        },
+        "stories": {
+          "nodeId": "5WC-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "useWhen": "The message is one product claim a photo can carry: the problem, the result, or a before and after.",
+  "notWhen": "A person is the message (ae-spotlight), or the piece announces an event.",
+  "guidance": [
+    "Designs: full-photo (default) puts the headline on navy over a full-frame photo; photo-bottom puts headline and subline on the gradient above the photo; split shows two photos side by side with a label on each (a before and after, or any comparison). Themes: royal (default), navy. Use the default unless the requester asks for another or for options; for options, render two or three designs in the same set.",
+    "headline: one claim, at most two lines (about 22 characters per line). Short copy grows to fill the column. A line break in the copy is fine (\"Full schedule.\\nFrozen server.\").",
+    "subline: one line, about 48 characters. Leave it out if there is none; the column closes up.",
+    "cta: the button label, about 24 characters (\"Book a demo\").",
+    "image-photo (full-photo, photo-bottom): a real scene that shows the claim, landscape or square, subject near the centre. It is cropped to the frame (tall on Stories).",
+    "image-left and image-right (split only): the two photos compared; both are needed for split. label-left and label-right: one or two words each (\"Before\", \"After\"); leave them out when there is no comparison.",
+    "Photos come from the requester or the team's approved ad photos. Never invent a scene that misstates the product."
+  ],
+  "purpose": "photo-claim",
+  "essential": [
+    "headline",
+    "cta",
+    "image-photo"
+  ],
+  "optional": [
+    "subline",
+    "image-left",
+    "image-right",
+    "label-left",
+    "label-right"
+  ],
+  "facts": {
+    "headline": null,
+    "subline": null,
+    "cta": null,
+    "label-left": null,
+    "label-right": null,
+    "image-photo": "ad-photo",
+    "image-left": "ad-photo",
+    "image-right": "ad-photo"
+  }
+}

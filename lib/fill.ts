@@ -101,6 +101,7 @@ export async function prepareFill({ template, format, design, theme, slots: give
   if (byDesign) {
     Object.assign(rules.slots, byDesign.slots ?? {});
     if (byDesign.containers) rules.containers = byDesign.containers;
+    if (byDesign.fill !== undefined) (rules as { fill?: unknown }).fill = byDesign.fill;
   }
   // Images and logos resolve together (signed links, remote logos), not one after another.
   const values: Record<string, string | null> = Object.fromEntries(await Promise.all(Object.entries(slots).map(async ([k, v]) => {

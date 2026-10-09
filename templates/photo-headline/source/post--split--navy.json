@@ -1,0 +1,374 @@
+{
+  "rootId": "5VL-0",
+  "nodes": {
+    "5VL-0": {
+      "id": "5VL-0",
+      "name": "TPL · Photo Headline · Split · Navy · Post 1080×1350",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5WB-0",
+        "5WA-0",
+        "5W9-0",
+        "5W8-0",
+        "5W7-0",
+        "5W5-0",
+        "5W3-0",
+        "5VM-0"
+      ]
+    },
+    "5WB-0": {
+      "id": "5WB-0",
+      "name": "slot-image-left",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5WA-0": {
+      "id": "5WA-0",
+      "name": "slot-image-right",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5W9-0": {
+      "id": "5W9-0",
+      "name": "Shade Top",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5W8-0": {
+      "id": "5W8-0",
+      "name": "Pixel Band",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5W7-0": {
+      "id": "5W7-0",
+      "name": "Shade Bottom",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5W5-0": {
+      "id": "5W5-0",
+      "name": "optional-label-left",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5W6-0"
+      ]
+    },
+    "5W6-0": {
+      "id": "5W6-0",
+      "name": "slot-text-label-left",
+      "component": "Text",
+      "visible": true,
+      "text": "Before",
+      "children": []
+    },
+    "5W3-0": {
+      "id": "5W3-0",
+      "name": "optional-label-right",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5W4-0"
+      ]
+    },
+    "5W4-0": {
+      "id": "5W4-0",
+      "name": "slot-text-label-right",
+      "component": "Text",
+      "visible": true,
+      "text": "After",
+      "children": []
+    },
+    "5VM-0": {
+      "id": "5VM-0",
+      "name": "Content",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5W0-0",
+        "5VN-0"
+      ]
+    },
+    "5W0-0": {
+      "id": "5W0-0",
+      "name": "Main",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5W2-0",
+        "5W1-0"
+      ]
+    },
+    "5W2-0": {
+      "id": "5W2-0",
+      "name": "slot-text-headline",
+      "component": "Text",
+      "visible": true,
+      "text": "What your closet looks like after the cloud.",
+      "children": []
+    },
+    "5W1-0": {
+      "id": "5W1-0",
+      "name": "slot-text-subline",
+      "component": "Text",
+      "visible": true,
+      "text": "Archy runs in the cloud. No server closet needed.",
+      "children": []
+    },
+    "5VN-0": {
+      "id": "5VN-0",
+      "name": "Footer",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5VT-0",
+        "5VO-0"
+      ]
+    },
+    "5VT-0": {
+      "id": "5VT-0",
+      "name": "Archy Wordmark",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    },
+    "5VO-0": {
+      "id": "5VO-0",
+      "name": "CTA Button",
+      "component": "Frame",
+      "visible": true,
+      "text": null,
+      "children": [
+        "5VS-0",
+        "5VP-0"
+      ]
+    },
+    "5VS-0": {
+      "id": "5VS-0",
+      "name": "slot-text-cta",
+      "component": "Text",
+      "visible": true,
+      "text": "Book a demo",
+      "children": []
+    },
+    "5VP-0": {
+      "id": "5VP-0",
+      "name": "Arrow",
+      "component": "SVG",
+      "visible": true,
+      "text": null,
+      "children": []
+    }
+  },
+  "styles": {
+    "5VL-0": {
+      "overflow": "clip",
+      "width": "1080px",
+      "height": "1350px",
+      "position": "absolute",
+      "left": "4640px",
+      "top": "4160px",
+      "backgroundColor": "var(--color-dark-background)"
+    },
+    "5WB-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": "360px",
+      "width": "540px",
+      "height": "990px",
+      "backgroundColor": "var(--color-neutral)",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/01M4704G94A4V53CAK7FES1AZR.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "5WA-0": {
+      "position": "absolute",
+      "left": "540px",
+      "top": "360px",
+      "width": "540px",
+      "height": "990px",
+      "paddingBlock": "40px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/01M46M1PSKRKK2HRB9H3P8SM6K.png)",
+      "backgroundSize": "cover",
+      "backgroundPosition": "50%"
+    },
+    "5W9-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "360px",
+      "width": "1080px",
+      "height": "360px",
+      "backgroundImage": "linear-gradient(in oklab 180deg, color-mix(var(--color-blue-tint-800) 60%, transparent) 0%, oklab(0% 0 0 / 0%) 100%)"
+    },
+    "5W8-0": {
+      "position": "absolute",
+      "left": 0,
+      "top": 0,
+      "width": "1080px",
+      "height": "568px",
+      "backgroundImage": "url(https://app.paper.design/file-assets/01M4697421B4576AVJ6RKSRGE3/5EHE2422HQ01PVCWWCX7S5ZA5N.png)",
+      "backgroundSize": "100% 100%",
+      "backgroundPosition": "50%",
+      "backgroundRepeat": "no-repeat"
+    },
+    "5W7-0": {
+      "position": "absolute",
+      "left": "0px",
+      "top": "1030px",
+      "width": "1080px",
+      "height": "320px",
+      "backgroundImage": "linear-gradient(in oklab 180deg, oklab(0% 0 0 / 0%) 0%, color-mix(var(--color-blue-tint-800) 70%, transparent) 100%)"
+    },
+    "5W5-0": {
+      "position": "absolute",
+      "left": 80,
+      "top": 544,
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "3px",
+      "paddingInline": "13px",
+      "borderRadius": "8px",
+      "backgroundColor": "var(--color-blue-tint-800)",
+      "borderWidth": "3px",
+      "borderStyle": "solid",
+      "borderColor": "color-mix(var(--color-white) 40%, transparent)"
+    },
+    "5W6-0": {
+      "fontSize": "28px",
+      "lineHeight": "36px",
+      "letterSpacing": "-0.01em",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    },
+    "5W3-0": {
+      "position": "absolute",
+      "left": 620,
+      "top": 544,
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "3px",
+      "paddingInline": "13px",
+      "borderRadius": "8px",
+      "backgroundColor": "var(--color-royal-blue-500)",
+      "borderWidth": "3px",
+      "borderStyle": "solid",
+      "borderColor": "color-mix(var(--color-white) 40%, transparent)"
+    },
+    "5W4-0": {
+      "fontSize": "28px",
+      "lineHeight": "36px",
+      "letterSpacing": "-0.01em",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    },
+    "5VM-0": {
+      "position": "absolute",
+      "left": "80px",
+      "top": "80px",
+      "width": "920px",
+      "height": "1190px",
+      "display": "flex",
+      "flexDirection": "column",
+      "justifyContent": "space-between"
+    },
+    "5W0-0": {
+      "display": "flex",
+      "flexDirection": "column",
+      "width": "100%",
+      "gap": "28px",
+      "height": "fit-content",
+      "flexShrink": "0"
+    },
+    "5W2-0": {
+      "width": "100%",
+      "fontSize": "87px",
+      "lineHeight": "96px",
+      "letterSpacing": "var(--tracking-tight)",
+      "flexShrink": "0",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-SemiBold\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 600,
+      "color": "var(--color-white)"
+    },
+    "5W1-0": {
+      "width": "100%",
+      "fontSize": "40px",
+      "lineHeight": "48px",
+      "flexShrink": "0",
+      "letterSpacing": "var(--tracking-snug)",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Onest-Medium\", \"Onest\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-white)"
+    },
+    "5VN-0": {
+      "display": "flex",
+      "justifyContent": "space-between",
+      "alignItems": "center",
+      "width": "100%",
+      "flexShrink": "0",
+      "height": "fit-content"
+    },
+    "5VT-0": {
+      "height": "92px",
+      "width": "233px",
+      "flexShrink": "0"
+    },
+    "5VO-0": {
+      "display": "flex",
+      "alignItems": "center",
+      "paddingBlock": "19px",
+      "paddingInline": "29px",
+      "borderRadius": "16px",
+      "gap": "16px",
+      "flexShrink": "0",
+      "backgroundColor": "var(--color-royal-blue-500)",
+      "borderWidth": "3px",
+      "borderStyle": "solid",
+      "borderColor": "color-mix(var(--color-white) 40%, transparent)"
+    },
+    "5VS-0": {
+      "width": "max-content",
+      "fontSize": "30px",
+      "lineHeight": "36px",
+      "whiteSpace": "pre-wrap",
+      "fontFamily": "\"Inter-Regular_Medium\", \"Inter\", system-ui, sans-serif",
+      "fontWeight": 500,
+      "color": "var(--color-white)"
+    },
+    "5VP-0": {
+      "width": "28px",
+      "height": "28px",
+      "flexShrink": "0",
+      "display": "inline-block"
+    }
+  },
+  "svgs": {
+    "5VT-0": "(\n    <svg width=\"233\" height=\"90.86999999999999\" viewBox=\"0 -11.17 293.58 114.17\" xmlns=\"http://www.w3.org/2000/svg\" style={{ height: '92px', width: '233px', flexShrink: '0' }}>\n      <g transform=\"translate(0 21.75)\">\n        <path d=\"M94.716 46.669C94.716 46.669 80.45 46.669 80.45 46.669 80.45 46.669 80.45 14.124 80.45 14.124 80.45-0.157 91.963-11.779 106.114-11.779 106.114-11.779 110.356-11.779 110.356-11.779 110.356-11.779 110.356 2.62 110.356 2.62 110.356 2.62 106.114 2.62 106.114 2.62 99.827 2.62 94.716 7.781 94.716 14.124 94.716 14.124 94.716 46.669 94.716 46.669Z\" fill=\"#FFFFFF\" />\n        <path d=\"M202.599-8.532C197.535-8.532 192.784-7.118 188.669-4.653 188.669-4.653 188.669-33.109 188.669-33.109 188.669-33.109 174.38-33.109 174.38-33.109 174.38-33.109 174.38 46.669 174.38 46.669 174.38 46.669 188.669 46.669 188.669 46.669 188.669 46.669 188.669 21.117 188.669 21.117 188.669 12.724 194.922 5.893 202.599 5.893 210.278 5.893 216.529 12.724 216.529 21.117 216.529 21.117 216.529 46.669 216.529 46.669 216.529 46.669 230.821 46.669 230.821 46.669 230.821 46.669 230.821 21.117 230.821 21.117 230.821 4.772 218.163-8.528 202.599-8.528 202.599-8.528 202.599-8.532 202.599-8.532Z\" fill=\"#FFFFFF\" />\n        <path d=\"M279.29-4.525C279.29-4.525 279.29 17.953 279.29 17.953 279.29 26.664 273.038 33.748 265.359 33.748 257.681 33.748 251.429 26.664 251.429 17.953 251.429 17.953 251.429-4.525 251.429-4.525 251.429-4.525 237.138-4.525 237.138-4.525 237.138-4.525 237.138 17.953 237.138 17.953 237.138 34.61 249.797 48.164 265.359 48.164 270.424 48.164 275.175 46.719 279.29 44.209 279.29 44.209 279.29 51.601 279.29 51.601 279.29 59.988 273.038 66.814 265.359 66.814 257.681 66.814 251.429 59.994 251.429 51.601 251.429 51.601 237.138 51.601 237.138 51.601 237.138 67.936 249.797 81.225 265.359 81.225 280.921 81.225 293.58 67.936 293.58 51.601 293.58 51.601 293.58-4.525 293.58-4.525 293.58-4.525 279.29-4.525 279.29-4.525Z\" fill=\"#FFFFFF\" />\n        <path d=\"M140.287 33.458C132.144 33.458 125.514 26.461 125.514 17.868 125.514 9.272 132.144 2.275 140.287 2.275 146.65 2.275 152.09 6.547 154.162 12.52 154.162 12.52 168.904 12.52 168.904 12.52 166.455-1.52 154.557-12.204 140.287-12.204 124.246-12.204 111.198 1.286 111.198 17.871 111.198 34.459 124.246 47.949 140.287 47.949 154.557 47.949 166.455 37.263 168.904 23.225 168.904 23.225 154.162 23.225 154.162 23.225 152.09 29.197 146.65 33.469 140.287 33.469 140.287 33.469 140.287 33.458 140.287 33.458Z\" fill=\"#FFFFFF\" />\n        <path d=\"M14.31 41.769C14.31 29.576 24.139 19.66 36.223 19.66 48.308 19.66 58.137 29.576 58.137 41.769 58.137 41.769 58.137 46.669 58.137 46.669 58.137 46.669 72.447 46.669 72.447 46.669 72.447 46.669 72.447 3.432 72.447 3.432 72.447-2.611 70.954-8.608 68.122-13.897 61.776-25.746 49.557-33.109 36.218-33.109 35.542-33.109 34.86-33.089 34.183-33.053 21.958-32.366 10.996-25.559 4.852-14.843 4.436-14.12 4.04-13.371 3.674-12.619 1.238-7.591 0-2.191 0 3.432 0 3.432 0 46.669 0 46.669 0 46.669 14.31 46.669 14.31 46.669 14.31 46.669 14.31 41.769 14.31 41.769ZM14.31 3.432C14.31 0.023 15.056-3.239 16.526-6.272 16.747-6.727 16.987-7.182 17.237-7.617 20.956-14.105 27.592-18.227 34.98-18.641 35.392-18.667 35.812-18.677 36.223-18.677 44.293-18.677 51.686-14.222 55.526-7.045 57.235-3.85 58.137-0.23 58.137 3.432 58.137 3.432 58.137 12.696 58.137 12.696 52.048 8.014 44.454 5.228 36.223 5.228 27.994 5.228 20.399 8.014 14.31 12.696 14.31 12.696 14.31 3.432 14.31 3.432Z\" fill=\"#FFFFFF\" />\n      </g>\n    </svg>\n  )",
+    "5VP-0": "(\n    <svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" style={{ width: '28px', height: '28px', flexShrink: '0', display: 'inline-block' }}>\n      <path d=\"M18.5 12L5 12\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n      <path d=\"M13 18C13 18 19 13.581 19 12C19 10.419 13 6 13 6\" fill=\"none\" stroke=\"var(--color-white)\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" />\n    </svg>\n  )"
+  },
+  "tokensCss": ":root {\n  --color-royal-blue-500: #013DF5;\n  --color-primary-blue-600: #0000C9;\n  --color-sky-blue-400: #0095FF;\n  --color-blue-tint-800: #00004E;\n  --color-blue-tint-700: #000484;\n  --color-blue-tint-300: #66BFFF;\n  --color-blue-tint-200: #CCEAFF;\n  --color-blue-tint-100: #E6F4FF;\n  --color-blue-tint-50: #F3F9FF;\n  --color-blue-tint-25: #F9FDFF;\n  --color-black: #000000;\n  --color-white: #FFFFFF;\n  --color-neutral-darker: #222222;\n  --color-neutral-dark: #444444;\n  --color-neutral: #666666;\n  --color-neutral-light: #AAAAAA;\n  --color-neutral-lighter: #CCCCCC;\n  --color-neutral-lightest: #EEEEEE;\n  --color-neutral-super-light: #F7F7F7;\n  --color-light-background: #FFFFFF;\n  --color-light-foreground: #F7F7F7;\n  --color-light-text: #00004E;\n  --color-light-accent: #013DF5;\n  --color-light-border: #EEEEEE;\n  --color-dark-background: #00004E;\n  --color-dark-foreground: #000484;\n  --color-dark-text: #FFFFFF;\n  --color-dark-accent: #0095FF;\n  --color-dark-border: #0000C9;\n  --font-heading: Onest;\n  --font-body: Inter;\n  --font-weight-regular: 400;\n  --font-weight-medium: 500;\n  --font-weight-semibold: 600;\n  --font-weight-bold: 700;\n  --tracking-tight: -0.02em;\n  --tracking-snug: -0.01em;\n  --tracking-normal: 0em;\n  --tracking-wide: 0.05em;\n  --radius-small: 3px;\n  --radius-medium: 9px;\n  --radius-large: 12px;\n  --radius-button: 8px;\n  --radius-card: 12px;\n  --radius-pill: 999px;\n}\n"
+}

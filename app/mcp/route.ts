@@ -146,7 +146,7 @@ const handler = createMcpHandler(
         title: 'Match templates to a brief',
         description: 'Which templates can be made with the facts a brief brings, best first, and what each other template is missing. Call it after reading the brief, and again after asking for missing facts.',
         inputSchema: z.object({
-          facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue.'),
+          facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue; ad-photo = a scene photo that shows a product claim (photo-led ads).'),
           purpose: z.enum(PURPOSES).optional().describe('What the design is for, when clear from the brief.'),
         }),
         annotations: { readOnlyHint: true },

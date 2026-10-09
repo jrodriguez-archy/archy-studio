@@ -54,7 +54,7 @@ export function MobileNav({ sections, admin, projects, me, email, brand }: { sec
                 </button>
               ))}
               <div className="h-3" />
-              <NavLink href="/install" icon="install" onNavigate={close}>Install</NavLink>
+              <NavLink href="/docs" icon="docs" onNavigate={close}>Docs</NavLink>
               {admin && (
                 <>
                   <p className="px-2 pt-3 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/35">Admin</p>

@@ -144,3 +144,7 @@ body { font-size: 13px; line-height: 1.4; letter-spacing: -0.003em; }
   from { transform: translateX(-100%); }
   to { transform: translateX(300%); }
 }
+
+/* Docs: a searched term highlighted in the page (components/docs/page-highlight.tsx). */
+::highlight(docs-search) { background-color: #FFE58F; color: inherit; }
+::highlight(docs-search-current) { background-color: #FFB224; color: inherit; }

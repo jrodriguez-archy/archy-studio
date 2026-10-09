@@ -334,7 +334,7 @@ export function PiecePanel({ pieceId, title, seenAt }: { pieceId?: string; title
             Open Claude <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3" />
           </button>
         ) : (
-          <Link href="/install" className="flex h-8 items-center justify-center gap-1 rounded-md bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.09]">
+          <Link href="/docs/connect-claude" className="flex h-8 items-center justify-center gap-1 rounded-md bg-foreground/[0.05] text-foreground/80 hover:bg-foreground/[0.09]">
             Install the connector <HugeiconsIcon icon={ArrowRight01Icon} className="size-3.5" />
           </Link>
         )}

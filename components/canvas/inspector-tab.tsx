@@ -43,7 +43,7 @@ export function InspectorTab({ items, onPick, onFix, onRevert, onFixAll, pieceId
             <HugeiconsIcon icon={AiChat02Icon} className="size-3.5" /> Ask Claude to fix <HugeiconsIcon icon={ArrowUpRight01Icon} className="size-3" />
           </button>
         ) : pieceId ? (
-          <Link href="/install" className="mt-2 block text-primary underline-offset-4 hover:underline">Connect Claude first →</Link>
+          <Link href="/docs/connect-claude" className="mt-2 block text-primary underline-offset-4 hover:underline">Connect Claude first →</Link>
         ) : (
           <p className="mt-1.5 text-foreground/40">Save the design first, so Claude can find it.</p>
         )}

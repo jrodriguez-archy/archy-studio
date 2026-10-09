@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
+import { GalleryEmpty } from '@/components/gallery-empty';
 import { GalleryFeed } from '@/components/gallery-feed';
+import { GetStarted } from '@/components/get-started';
+import { EXAMPLE_BRIEFS } from '@/lib/example-briefs';
+import { onboardingState } from '@/lib/onboarding';
 import { TYPES, loadPieces } from '@/lib/gallery';
 import { currentBrand, followRecord } from '@/lib/brand';
 import { BRANDS } from '@/lib/brands';
@@ -13,17 +17,23 @@ export async function generateMetadata() {
 }
 export const dynamic = 'force-dynamic';
 
-export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ all?: string; type?: string; set?: string }> }) {
-  const { all, type, set } = await searchParams;
+export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ all?: string; type?: string; set?: string; preview?: string }> }) {
+  const { all, type, set, preview } = await searchParams;
+  // ?preview=welcome: the Gallery as someone new sees it (nothing done, no designs), changing nothing.
+  const welcome = preview === 'welcome';
   // A shared set link (?set=) of the other brand switches to it first.
   if (set) await followRecord('renders', set, `/?${new URLSearchParams({ ...(all ? { all } : {}), ...(type ? { type } : {}), set })}`, true);
   const me = (await currentUser())!;
   const mine = !all; // default: the signed-in person's own pieces
   const kind = TYPES.find((t) => t.key === type);
-  const [pieces, projects] = await Promise.all([
-    loadPieces({ userId: mine ? me.id : undefined }),
+  const brand = await currentBrand();
+  const [loaded, projects, real] = await Promise.all([
+    welcome ? [] : loadPieces({ userId: mine ? me.id : undefined }),
     listProjects(me).catch(() => []),
+    welcome ? null : onboardingState(me),
   ]);
+  const pieces = loaded;
+  const onboarding = real ?? { show: true, complete: false, steps: { claude: false, design: false, canvas: false }, latestPieceId: null };
 
   const href = (p: { all?: boolean; type?: string }) => {
     const s = new URLSearchParams();
@@ -52,14 +62,16 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
         </div>
       </PageHeader>
 
+      {onboarding.show && <GetStarted state={onboarding} brief={EXAMPLE_BRIEFS[brand][0]} preview={welcome} />}
+
       <GalleryFeed
         initial={pieces} filter={{ userId: mine ? me.id : undefined }} leadFormats={kind?.formats} projects={projects} me={me}
-        empty={
-      <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
-        <p className="font-medium">{mine ? 'You have no designs yet' : 'Nothing here yet'}</p>
-        <p className="mt-1 text-muted-foreground">Ask Claude for a design with the Archy Studio plugin. <Link href="/install" className="text-foreground underline underline-offset-4">Install it</Link></p>
-      </div>
-        }
+        empty={mine ? <GalleryEmpty brand={brand} claudeConnected={onboarding.steps.claude} /> : (
+          <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
+            <p className="font-medium">Nothing here yet</p>
+            <p className="mt-1 text-muted-foreground">Designs the team makes show up here. <Link href="/docs/make-designs" className="text-foreground underline underline-offset-4">How to make one</Link></p>
+          </div>
+        )}
       />
     </>
   );

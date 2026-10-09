@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CanvasEditor, type Board } from '@/components/canvas/editor';
 import { canReplace, editorContext, isNew, loadSet, loadSource, type PieceSource } from '@/lib/canvas';
+import { markOnboarding } from '@/lib/onboarding';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { formatLabel, titleFromSlots } from '@/lib/gallery-shared';
 import { getDraft, type AddedFormat } from '@/lib/drafts';
@@ -22,6 +23,8 @@ export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: Who })
       loadSet(piece),
       editorContext(piece),
       supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle().then((r) => (r.data?.mcp_seen_at as string | null | undefined) ?? null),
+      // "Open it in Canvas", the Gallery's last Get started step (once).
+      fresh ? null : markOnboarding(me, 'canvas_at').catch(() => {}),
     ]);
     const opened = await Promise.all(set.pieces.map((p) => openBoard(p, me)));
     // Formats added and not saved yet (kept with the work in progress): back as new artboards.

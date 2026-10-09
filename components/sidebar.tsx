@@ -93,7 +93,7 @@ export function Sidebar({ sections, admin, projects, me, email, name, brand }: {
       </nav>
       <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
         <BrandMenu brand={brand} />
-        <NavLink href="/install" icon="install">Install</NavLink>
+        <NavLink href="/docs" icon="docs">Docs</NavLink>
         {admin && <AdminMenu items={admin} />}
         <AccountMenu name={name} email={email} />
       </div>

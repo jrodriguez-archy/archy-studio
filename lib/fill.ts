@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { Edits, FillPlan } from './canvas-shared';
 import { boothLike, splitHeadline } from './canvas-sync';
 import { iconMarkup } from './icons';
-import { isPlaceholder, staticPlaceholder } from './placeholders';
+import { STATIC, isPlaceholder, staticPlaceholder } from './placeholders';
 import { supabaseAdmin } from './supabase/admin';
 import { findAsset } from './asset-ids';
 import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo, templateBrand } from './templates';
@@ -190,6 +190,9 @@ async function resolveImage(template: string, v: string, origin = ORIGIN): Promi
     const hit = signed.get(v);
     if (hit && hit.until > Date.now()) return hit.url;
     const { data, error } = await supabaseAdmin().storage.from('uploads').createSignedUrl(v.slice(7), 60 * 60);
+    // A stand-in photo whose file is gone (a placeholder is never the real photo): the neutral one takes
+    // its place, so the design still opens and renders.
+    if ((error || !data) && v.startsWith('upload:placeholders/')) return resolveImage(template, STATIC.scene, origin);
     if (error || !data) throw new Error(`Could not open the image ${v}: ${error?.message}`);
     if (signed.size > 500) signed.delete(signed.keys().next().value!);
     signed.set(v, { url: data.signedUrl, until: Date.now() + 50 * 60 * 1000 });

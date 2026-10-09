@@ -76,13 +76,15 @@ export async function previewSrcs(items: { manifest: Pick<Manifest, 'id' | 'form
   return Object.fromEntries(out);
 }
 
-// The previews stored for a template, newest first (one listing per template, kept a minute).
+// The previews stored for a template, newest first. Kept 10 minutes, so most visits to Templates skip
+// asking storage at all; one drawn meanwhile shows its earlier version until then.
 const listed = new Map<string, { at: number; files: Promise<{ name: string }[]> }>();
 function storedPreviews(template: string) {
   const hit = listed.get(template);
-  if (hit && Date.now() - hit.at < 60_000) return hit.files;
+  if (hit && Date.now() - hit.at < 10 * 60_000) return hit.files;
   const files = supabaseAdmin().storage.from(PUBLIC).list(`previews/${template}`, { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } })
-    .then((r) => (r.data ?? []).map((f) => ({ name: f.name }))).catch(() => []);
+    .then((r) => { if (r.error) throw r.error; return (r.data ?? []).map((f) => ({ name: f.name })); })
+    .catch(() => { listed.delete(template); return []; }); // a failed listing is not kept
   listed.set(template, { at: Date.now(), files });
   return files;
 }

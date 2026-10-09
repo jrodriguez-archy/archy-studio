@@ -50,7 +50,8 @@ export class MissingRequired extends Error {
 // Everything decided before the page opens: slot values (given, sample or derived), the variant, the
 // fit rules and limits, and every image resolved to a URL under `origin`. The renderer and the Canvas
 // editor share it, so both draw the same piece.
-export async function prepareFill({ template, format, design, theme, slots: given, fillDefaults = false, edits = {}, smallerText = false }: Omit<RenderInput, 'scale'>, origin = ORIGIN): Promise<FillPlan> {
+// `slotsOnly`: just the slot values (no images, rules or limits), for comparing with what was saved.
+export async function prepareFill({ template, format, design, theme, slots: given, fillDefaults = false, edits = {}, smallerText = false }: Omit<RenderInput, 'scale'>, origin = ORIGIN, slotsOnly = false): Promise<FillPlan> {
   const [manifest, config] = await Promise.all([loadManifest(template), loadConfig(template)]);
   const combo = resolveCombo(manifest, design, theme);
   const files = comboFormats(manifest, combo);
@@ -85,6 +86,7 @@ export async function prepareFill({ template, format, design, theme, slots: give
   // Variant: the first one whose condition matches (e.g. no photo → "no-photo").
   // A chosen design × theme has no automatic variants.
   const variant = combo?.key ? null : Object.entries(manifest.variants ?? {}).find(([, v]) => (v.when?.empty ?? []).every((k) => !slots[k]))?.[0] ?? null;
+  if (slotsOnly) return { slots } as FillPlan;
 
   const f = combo?.key ? files[format] : variant ? manifest.variants![variant].formats[format] : manifest.formats[format];
   if (!f) throw new Error(`Template ${template} variant ${variant} has no format "${format}"`);
@@ -143,7 +145,9 @@ async function resolveLogo(template: string, v: string, origin = ORIGIN): Promis
     return `data:${MIME[path.extname(file)] ?? 'image/png'};base64,${body.toString('base64')}`;
   }
   // A partner logo from the web is fetched once per server instance (Canvas opens every format with it).
-  const known = remoteLogos.get(src);
+  // Uploaded logos are known by their path (their signed link changes).
+  const id = v.startsWith('upload:') ? v : src;
+  const known = remoteLogos.get(id);
   if (known) return known;
   const res = await fetch(src, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' } });
   if (!res.ok) throw new Error(`Could not load the logo at ${v} (${res.status})`);
@@ -152,10 +156,11 @@ async function resolveLogo(template: string, v: string, origin = ORIGIN): Promis
   const type = res.headers.get('content-type')?.split(';')[0] || 'image/png';
   const data = `data:${type};base64,${buf.toString('base64')}`;
   if (remoteLogos.size > 50) remoteLogos.delete(remoteLogos.keys().next().value!);
-  remoteLogos.set(src, data);
+  remoteLogos.set(id, data);
   return data;
 }
 const remoteLogos = new Map<string, string>();
+const signed = new Map<string, { url: string; until: number }>();
 
 async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
   if (v.startsWith('asset:')) {
@@ -164,8 +169,14 @@ async function resolveImage(template: string, v: string, origin = ORIGIN): Promi
     return `${origin}/library/${asset.file}`;
   }
   if (v.startsWith('upload:')) {
+    // One link per image for most of its hour: the same link each time, so the browser keeps the image
+    // and Canvas does not redraw a format whose images did not change.
+    const hit = signed.get(v);
+    if (hit && hit.until > Date.now()) return hit.url;
     const { data, error } = await supabaseAdmin().storage.from('uploads').createSignedUrl(v.slice(7), 60 * 60);
     if (error || !data) throw new Error(`Could not open the image ${v}: ${error?.message}`);
+    if (signed.size > 500) signed.delete(signed.keys().next().value!);
+    signed.set(v, { url: data.signedUrl, until: Date.now() + 50 * 60 * 1000 });
     return data.signedUrl;
   }
   if (/^https:\/\//.test(v)) return v;

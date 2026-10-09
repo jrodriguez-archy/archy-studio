@@ -212,7 +212,19 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       if (l.gap != null) s.gap = `${l.gap}px`;
       if (l.align) s.alignItems = flex[l.align];
     }
-    if (e.hidden) s.display = 'none';
+    if (e.hidden) {
+      s.display = 'none';
+      // A partner logo hidden goes like an empty one: the divider beside it too, and a lockup left with
+      // the Archy logo alone in a centred column centres it.
+      if (el.dataset.slotType === 'logo') {
+        for (const sib of [el.previousElementSibling, el.nextElementSibling]) if (sib && /^(Divider|Separator)/.test(nameOf(sib))) { keep(sib); sib.style.display = 'none'; }
+        const lockup = el.closest('[data-name^="Logo Lockup"]');
+        if (lockup && lockup.parentElement && getComputedStyle(lockup.parentElement).alignItems === 'center') {
+          const shown = [...lockup.children].filter((c) => getComputedStyle(c).display !== 'none' && (c.querySelector('svg, [data-logo-mark]') || c.matches('svg')));
+          if (shown.length === 1) { keep(lockup); lockup.style.justifyContent = 'center'; }
+        }
+      }
+    }
   }
 
   // ---- Photos reframed by hand (after every box and layout, so the frame has its final size) ----

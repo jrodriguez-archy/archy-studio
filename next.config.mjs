@@ -6,7 +6,7 @@ const renderFiles = [
 // Routes that render with Chromium (Canvas export and save go through /api/canvas).
 const rendering = ['/api/render', '/mcp', '/api/preview-render/[template]/[format]', '/api/canvas'];
 // Canvas pages prepare the fill (manifests, configs, rules, the library list); images come through /api/template-files.
-const canvasPages = ['/canvas/[id]', '/canvas/new', '/canvas', '/api/template-files/[...path]'];
+const canvasPages = ['/canvas/[id]', '/canvas/new', '/canvas', '/api/canvas/live', '/api/template-files/[...path]'];
 const canvasFiles = ['./templates/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js'];
 const notNeeded = ['./templates/*/reference/**', './templates/*/source/**'];
 // Pages that only list templates and designs read manifests and configs, never template images.
@@ -29,4 +29,10 @@ export default {
   // Paper references and sources are for designers, never read by the app: no function carries them.
   outputFileTracingExcludes: { '**': notNeeded, ...Object.fromEntries(listing.map((r) => [r, noImages])) },
   experimental: { optimizePackageImports: ['@hugeicons/core-free-icons'] },
+  // Template files (pages, fonts, images, page scripts) change only with a deploy: the browser keeps them
+  // an hour without asking and uses its copy while it checks for a newer one, so Canvas opens without
+  // going back to the network for every font and image.
+  async headers() {
+    return [{ source: '/api/template-files/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=604800' }] }];
+  },
 };

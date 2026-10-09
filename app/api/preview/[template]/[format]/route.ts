@@ -24,5 +24,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ template
   // A versioned link (?v= from previewSrc) always means this image: kept for a year. Without it (or with
   // an old version), only briefly, so a changed template or engine shows up at once.
   const current = new URL(req.url).searchParams.get('v') === key.split('-').pop();
-  return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': current ? 'public, max-age=31536000, immutable' : 'public, max-age=60' } });
+  // The CDN keeps the redirect too, so the next person skips the function.
+  return new Response(null, { status: 302, headers: { Location: url, 'Cache-Control': current ? 'public, max-age=31536000, immutable' : 'public, max-age=60', 'CDN-Cache-Control': current ? 'public, max-age=31536000' : 'public, max-age=60' } });
 }

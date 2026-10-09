@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Download04Icon, PackageIcon, PaintBoardIcon } from '@hugeicons/core-free-icons';
@@ -9,6 +9,7 @@ import type { ProjectLink } from '@/components/projects-nav';
 import { ContextActions, MoreActions } from '@/components/action-menu';
 import { useSetActions } from '@/components/set-actions';
 import { StackBadge, StackLayers, stackPad } from '@/components/stack';
+import { downloadSet } from '@/lib/download-set';
 import { canManageSet, formatLabel, humanize, type Piece, type PieceSet } from '@/lib/gallery-shared';
 
 const day = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -24,12 +25,18 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
   const [pick, setPick] = useState<string | null>(null);
   useEffect(() => setPick(null), [openId]);
   const shown = current ? current.pieces.find((p) => p.id === pick) ?? current.lead : null;
+  // The open set's other formats load large in the background, so stepping through them is instant.
+  useEffect(() => { for (const p of current?.pieces ?? []) if (p.large) new Image().src = p.large; }, [current]);
+  // Stable, so opening a set does not redraw every card.
+  const openRef = useRef(open);
+  openRef.current = open;
+  const onOpen = useCallback((id: string) => openRef.current(id), []);
 
   return (
     <>
       <div className="columns-2 gap-4 md:columns-3 xl:columns-4">
         {sets.map((s, i) => (
-          <SetCard key={s.id} set={s} eager={i < 8} projects={projects} canManage={canManageSet(s, me, projects)} project={showProject && s.project_id ? names[s.project_id] : undefined} onOpen={() => open(s.id)} />
+          <SetCard key={s.id} set={s} eager={i < 8} projects={projects} canManage={canManageSet(s, me, projects)} project={showProject && s.project_id ? names[s.project_id] : undefined} onOpen={onOpen} />
         ))}
       </div>
 
@@ -54,7 +61,8 @@ export function PieceGrid({ sets, projects, me, showProject = true }: { sets: Pi
   );
 }
 
-function SetCard({ set: s, eager, projects, canManage, project, onOpen }: { set: PieceSet; eager: boolean; projects: ProjectLink[]; canManage: boolean; project?: string; onOpen: () => void }) {
+const SetCard = memo(function SetCard({ set: s, eager, projects, canManage, project, onOpen: openSet }: { set: PieceSet; eager: boolean; projects: ProjectLink[]; canManage: boolean; project?: string; onOpen: (id: string) => void }) {
+  const onOpen = () => openSet(s.id);
   const { actions, dialogs } = useSetActions({ set: s, projects, canManage, onOpen });
   const r = s.lead;
   const n = s.pieces.length;
@@ -63,13 +71,14 @@ function SetCard({ set: s, eager, projects, canManage, project, onOpen }: { set:
       <ContextActions actions={actions} className="relative block">
         <StackLayers n={n} />
         <div className="relative overflow-hidden rounded-lg bg-foreground/[0.04] ring-1 ring-foreground/[0.06]">
-          <button type="button" onClick={onOpen} className="block w-full cursor-zoom-in" aria-label={`Open ${s.title}, ${n} format${n > 1 ? 's' : ''}`}>
+          {/* The large image starts loading on hover, so it is there when the set opens. */}
+          <button type="button" onClick={onOpen} onPointerEnter={() => { if (r.large) new Image().src = r.large; }} className="block w-full cursor-zoom-in" aria-label={`Open ${s.title}, ${n} format${n > 1 ? 's' : ''}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={r.thumb} alt="" width={r.width} height={r.height} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" className={`block h-auto w-full ${s.archived_at ? 'opacity-60 grayscale' : ''}`} style={{ aspectRatio: `${r.width} / ${r.height}` }} />
           </button>
           <StackBadge n={n} />
           <div className="absolute right-2 bottom-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100 has-[[aria-expanded=true]]:opacity-100 max-lg:opacity-100">
-            <a href={n > 1 ? `/api/sets/${s.id}/zip` : r.file} aria-label={n > 1 ? 'Download all formats' : 'Download PNG'} title={n > 1 ? 'Download all formats' : 'Download PNG'}
+            <a href={n > 1 ? `/api/sets/${s.id}/zip` : r.file} onClick={(e) => { if (n > 1) { e.preventDefault(); downloadSet(s.id); } }} aria-label={n > 1 ? 'Download all formats' : 'Download PNG'} title={n > 1 ? 'Download all formats' : 'Download PNG'}
               className="flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur">
               <HugeiconsIcon icon={Download04Icon} className="size-3.5" />
             </a>
@@ -89,7 +98,7 @@ function SetCard({ set: s, eager, projects, canManage, project, onOpen }: { set:
       {dialogs}
     </figure>
   );
-}
+});
 
 // Thumbnails of every format in the set, to switch the one on the stage.
 function Strip({ set, shown, onPick }: { set: PieceSet; shown: Piece; onPick: (id: string) => void }) {
@@ -120,7 +129,7 @@ function SetInfo({ set, shown, project, projects, canManage }: { set: PieceSet; 
     <div className="space-y-6">
       <div className={`grid gap-1.5 [&>*]:justify-center ${many ? 'grid-cols-2' : 'grid-cols-2'}`}>
         {many ? (
-          <a href={`/api/sets/${set.id}/zip`} className="col-span-2 flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90">
+          <a href={`/api/sets/${set.id}/zip`} onClick={(e) => { e.preventDefault(); downloadSet(set.id); }} className="col-span-2 flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-opacity hover:opacity-90">
             <HugeiconsIcon icon={PackageIcon} className="size-3.5" /> Download all ({set.pieces.length})
           </a>
         ) : null}

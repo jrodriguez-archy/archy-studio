@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { createProjectAction } from '@/app/(app)/projects/actions';
 import { archiveSetAction, deleteSetAction, moveSetAction, renameSetAction, restoreSetAction } from '@/app/(app)/sets/actions';
 import { formatLabel, humanize, type PieceSet } from '@/lib/gallery-shared';
+import { downloadSet } from '@/lib/download-set';
 
 const download = (url?: string) => { if (url) window.location.href = url; };
 
@@ -60,7 +61,7 @@ export function useSetActions({ set, projects, canManage, onOpen }: { set: Piece
   // Canvas opens the lead design with the set's other formats beside it, as artboards.
   const edit: Action[] = [{ label: 'Edit in Canvas', icon: PaintBoardIcon, onSelect: () => router.push(`/canvas/${set.lead.id}`) }];
   const downloads: Action[] = [
-    { label: many ? `Download all (${set.pieces.length})` : 'Download', icon: many ? PackageIcon : Download04Icon, onSelect: () => download(many ? `/api/sets/${set.id}/zip` : set.lead.file) },
+    { label: many ? `Download all (${set.pieces.length})` : 'Download', icon: many ? PackageIcon : Download04Icon, onSelect: () => (many ? downloadSet(set.id) : download(set.lead.file)) },
     ...(many ? [{ label: 'Download format', icon: Download04Icon, items: set.pieces.map((p) => ({ label: formatLabel(p.format), hint: set.templates.length > 1 ? p.title : `${p.width}×${p.height}`, onSelect: () => download(p.file) })) }] : []),
   ];
 

@@ -9,7 +9,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { libraryAction, prepareAction, saveDraftAction } from '@/app/(app)/canvas/actions';
+import type { libraryAction as LibraryCall, prepareAction as PrepareCall, saveDraftAction as DraftCall } from '@/app/(app)/canvas/actions';
 import { useRendersLive } from '@/components/use-renders-live';
 
 // Export and save render with Chromium in their own route (/api/canvas), not in this page's function.
@@ -53,6 +53,16 @@ type Meta = { comps: Comp[]; safe: Box | null; tokens: Token[]; report: RenderRe
 const EMPTY: Meta = { comps: [], safe: null, tokens: [], report: null, keys: null, review: [] };
 const GAP = 120; // between artboards, in design px
 
+// Canvas's light server calls, side by side (server actions would run one at a time): /api/canvas/live.
+async function live(kind: string, args: unknown[]) {
+  const r = await fetch('/api/canvas/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, args }) });
+  if (!r.ok && r.status !== 400) throw new Error(`Canvas call failed (${r.status})`);
+  return r.json();
+}
+const prepareAction = (...a: Parameters<typeof PrepareCall>): ReturnType<typeof PrepareCall> => live('prepare', a);
+const saveDraftAction = (...a: Parameters<typeof DraftCall>): ReturnType<typeof DraftCall> => live('draft', a);
+const libraryAction = (): ReturnType<typeof LibraryCall> => live('library', []);
+
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });
 // Key order ignored: a draft read back from the database (jsonb) compares equal to the one sent.
@@ -72,13 +82,26 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   const reload = useCallback(() => {
     libraryAction().then((l) => { if (l) { setLibrary(l); setUpdating([]); } }).catch(() => {});
   }, []);
-  useEffect(() => { if (!given) reload(); }, [given, reload]);
-  useRendersLive(reload);
   // ?asset=<id> (Assets page → "Use in a design"): Assets open, that image pointed at.
   const params = useSearchParams();
   const pointAsset = params.get('asset');
   const pointFolder = params.get('folder');
   const [tab, setTab] = useState<PanelTab>(pointAsset ? 'assets' : piece ? 'layers' : 'library');
+  // The library is for the Library and Assets tabs: it loads at once when one is open, else once the
+  // design is drawn (it never competes with the design's own first load). Live changes (anyone's new
+  // designs or images) reload it while one of those tabs is open; otherwise when one opens next.
+  const shown = tab === 'library' || tab === 'assets';
+  const stale = useRef(false);
+  useEffect(() => {
+    if (given) return;
+    if (shown) { reload(); return; }
+    const t = setTimeout(reload, 3000);
+    return () => clearTimeout(t);
+  }, [given, reload]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (shown && stale.current) { stale.current = false; reload(); } }, [shown, reload]);
+  const shownRef = useRef(shown);
+  shownRef.current = shown;
+  useRendersLive(useCallback(() => { if (shownRef.current) reload(); else stale.current = true; }, [reload]));
   if (!piece) {
     return (
       <div data-fullbleed className="flex h-dvh flex-col bg-[#F5F5F5] text-[13px]">
@@ -325,7 +348,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       setActiveRef(ref);
       activeRef.current = ref;
       setHover(null);
-      if (!ref.startsWith('new:')) window.history.replaceState(null, '', `/canvas/${ref}`);
+      // The browser's own replaceState (not Next's): the address follows without re-rendering the app or
+      // dropping calls in flight.
+      if (!ref.startsWith('new:')) History.prototype.replaceState.call(window.history, window.history.state, '', `/canvas/${ref}`);
     }
     setSelected(pick ? [pick] : []);
   };
@@ -422,7 +447,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     const changes: Record<string, NodeEdit> = { [id]: { style: { backgroundColor: value } } };
     if (hex) {
       const l = luminance(hex);
-      const want: Preset = hex === '#FFFFFF' || hex === '#F7F7F7' ? 'light' : l > 0.6 ? 'ice' : hex === '#0095FF' || hex === '#66BFFF' ? 'sky' : hex === '#013DF5' || hex === '#0000C9' ? 'blue' : 'dark';
+      const want: Preset = hex === '#FFFFFF' || hex === '#F7F7F7' ? 'light' : l > 0.6 ? 'ice' : hex === '#0095FF' || hex === '#66BFFF' || hex === '#013DF5' || hex === '#0000C9' ? 'blue' : 'dark';
       if (want !== (piece.preset ?? null)) changes[RECOLOR] = { preset: want };
     }
     editMany(changes);
@@ -506,7 +531,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   }, [firstBoards, firstActive]);
   const due = saved.filter((b) => keyOf(b.ref, doc, boards) !== drafted.current[b.ref]);
   useEffect(() => {
-    if (!due.length) return;
+    // Nothing left to keep (an edit undone before it went out): kept.
+    if (!due.length) { if (!inFlight.current) setKeeping((k) => (k === 'saving' ? 'saved' : k)); return; }
     setKeeping('saving');
     const t = setTimeout(() => {
       for (const b of due) {
@@ -559,7 +585,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
             versions.current[ref] = 0;
             // Saved to the gallery elsewhere (another tab, or Claude): open what was saved, so added
             // formats are not saved twice.
-            if (Date.now() - ownSave.current > 90_000) { toast('Saved elsewhere. Opening what was saved…', { id: 'saved-elsewhere' }); setTimeout(() => window.location.reload(), 1200); }
+            if (Date.now() - ownSave.current > 90_000) { toast('Saved elsewhere. Opening what was saved…', { id: 'saved-elsewhere' }); setTimeout(() => window.location.assign(`/canvas/${ref}?latest=1`), 1200); }
             return;
           }
           const row = payload.new as { piece_id?: string; slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null; added?: { ref: string; slots: Snap['slots']; edits: Edits }[] };
@@ -582,14 +608,16 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           });
           const bs = [...boardsRef.current, ...newBoards];
           const key = keyOf(ref, there, bs);
+          // What the database holds (the row alone): formats added only here are sent again on the next pass.
+          const rowKey = canon(ref === home ? { ...cleanSnap(next), added: (row.added ?? []).map((a) => ({ ref: a.ref, slots: a.slots ?? {}, edits: cleanEdits(a.edits ?? {}) })) } : cleanSnap(next));
           if (key === keyOf(ref, docRef.current, boardsRef.current)) return;
           if (row.updated_by !== 'claude') {
             // Edited in another tab (or by a teammate): this tab follows. Its own echo is skipped, unless
             // another draft came in since (then the echo is what the database kept). Not an undo step:
             // each format arrives on its own, and undoing one would split synced formats.
-            if (sent.current[ref]?.includes(key)) return;
+            if (sent.current[ref]?.includes(rowKey)) return;
             sent.current[ref] = [];
-            drafted.current[ref] = key;
+            drafted.current[ref] = rowKey;
             if (newBoards.length) {
               const order = [...boardsRef.current, ...ghostsRef.current].map((b) => b.format);
               setBoards(bs.sort((a, b) => order.indexOf(a.format) - order.indexOf(b.format)));
@@ -605,7 +633,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           const ids = new Set(Object.keys({ ...prev.edits, ...next.edits }).filter((id) => id !== RECOLOR && JSON.stringify(prev.edits[id]) !== JSON.stringify(next.edits[id])));
           for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = comps.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
           setFlash({ ref, ids: [...ids], at: Date.now() });
-          drafted.current[ref] = key;
+          drafted.current[ref] = rowKey;
           commitTo(ref, next); // one step: undo takes it back; synced formats follow
           toast(`Claude ${row.note ? row.note.charAt(0).toLowerCase() + row.note.slice(1) : 'edited the design'}`, { action: { label: 'Undo', onClick: () => undo() } });
         })

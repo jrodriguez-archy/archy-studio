@@ -85,6 +85,14 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
     window.history.replaceState(null, '', `${location.pathname}?t=${all[(i + d + all.length) % all.length].id}`);
   };
   const shown = current ? current.formats.find((f) => f.key === (format ?? (viaCover ? 'cover' : null))) ?? lead(current) : null;
+  // The open template's other formats, designs and themes load in the background, so switching is instant.
+  useEffect(() => {
+    if (!current) return;
+    const t = setTimeout(() => {
+      for (const src of new Set([...current.formats.map((f) => f.src), ...Object.values(current.comboSrcs ?? {})])) new Image().src = src;
+    }, 300);
+    return () => clearTimeout(t);
+  }, [current]);
 
   return (
     <>
@@ -151,7 +159,7 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
           title={current.title}
           onClose={close}
           onStep={stepAny}
-          stage={<StageImage src={preview(shown, pick, shown.templateId === current.id, current)} alt={`${current.title} ${shown.label}`} width={shown.width} height={shown.height} />}
+          stage={<StageImage src={preview(shown, pick, shown.templateId === current.id, current)} placeholder={shown.src} alt={`${current.title} ${shown.label}`} width={shown.width} height={shown.height} />}
           info={
             <div className="space-y-6">
               {current.description && !current.description.toLowerCase().startsWith(current.purposeLabel.toLowerCase()) && <p className="text-foreground/70">{current.description}</p>}

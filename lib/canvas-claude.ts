@@ -191,6 +191,8 @@ export async function saveCanvas(me: Who, ref?: string) {
   const { piece, draft } = await findPiece(me, ref);
   const saved = await saveEdited(me, piece, draft?.slots ?? piece.slots, draft?.edits ?? piece.edits, 'version');
   await clearDraft(piece.id);
+  // Formats added in Canvas and not saved yet stay with the work, now on the new version.
+  if (draft?.added?.length) await saveDraft({ pieceId: saved.id, userId: me.id, slots: draft.slots, edits: draft.edits, by: 'app', added: draft.added });
   return saved;
 }
 

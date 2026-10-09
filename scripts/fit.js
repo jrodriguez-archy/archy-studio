@@ -379,11 +379,11 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     const allowed = new Map(containersOk().map((c) => [keyOf(c), c.overflowPx]));
     el.textContent = current;
     const containersFine = () => containersOk().every((c) => c.overflowPx <= (allowed.get(keyOf(c)) ?? 0) + 0.5);
-    // A headline on more lines than its sample only while the column still fits its room (the copy under it
-    // keeps its place and its breathing room).
+    // A headline on more lines than its sample: one more at most, and only while the column still fits its
+    // room (the copy under it keeps its place and its breathing room).
     const below = () => Object.entries(rules.slots).filter(([k]) => k !== role).map(([k, r2]) => [k, r2, root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`)]).filter(([, , e]) => e?.isConnected && !(e.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING));
     const roomy = () => lines(el) <= (r.sampleLines ?? maxLines)
-      || (!(frame?.el.isConnected && frame.el.contains(el) && usedOf(frame.el) > frame.area + 0.5)
+      || (lines(el) <= (r.sampleLines ?? maxLines) + 1 && !(frame?.el.isConnected && frame.el.contains(el) && usedOf(frame.el) > frame.area + 0.5)
         && below().every(([k, r2, e]) => overflow(k, r2, e) <= (baseline.get(k)?.tol ?? 0) + 0.5));
     const fits = () => overflow(role, r, el) === 0 && lines(el) <= maxLines && containersFine() && wordsWhole(el) && noOrphan(el) && roomy();
     const state = { status: 'fit', scale: 1, wrapped: false };
@@ -455,6 +455,12 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       const soft = text.replace(/\s*\n\s*/g, ' ');
       const again = tryFit(soft);
       if (again) { ok = again; text = soft; } else el.textContent = text;
+    } else if (ok && /\n/.test(text) && lines(el) > text.split('\n').length) {
+      // A copy line that does not fit whole breaks on its own ("A Free Night / Out"): the copy's break gives
+      // way when the text joined fits as big, on no more lines.
+      const hard = lines(el), soft = text.replace(/\s*\n\s*/g, ' ');
+      const again = tryFit(soft);
+      if (again && again.scale >= ok.scale - 1e-9 && lines(el) <= hard) { ok = again; text = soft; } else ok = tryFit(text);
     }
     if (ok) { Object.assign(state, ok); if (el.textContent !== text) el.textContent = text; }
     else {
@@ -858,7 +864,10 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       }
       const fs0 = parseFloat(getComputedStyle(t).fontSize), lh0 = parseFloat(getComputedStyle(t).lineHeight);
       for (let k = 1; hitting().length && k > 0.8; k = +(k - 0.04).toFixed(2)) { t.style.fontSize = `${(fs0 * k).toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * k)}px`; }
-      // Wrapping short of the art does not add lines when a little less size keeps them (down to 85%).
+      // Wrapping short of the art does not add lines: the copy's own line break gives way first (it would
+      // leave a word alone, "A Free Night / Out"), then a little less size (down to 85%).
+      const text = t.textContent, soft = text.replace(/\s*\n\s*/g, ' ');
+      if (lines(t) > had && soft !== text) { t.textContent = soft; if (lines(t) > had) t.textContent = text; }
       for (let k = parseFloat(getComputedStyle(t).fontSize) / fs0; lines(t) > had && k > 0.85; k = +(k - 0.01).toFixed(2)) { t.style.fontSize = `${(fs0 * (k - 0.01)).toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * (k - 0.01))}px`; }
       if (report.slots[role]) Object.assign(report.slots[role], { lines: lines(t), fontSize: parseFloat(getComputedStyle(t).fontSize) });
       hits = hitting();

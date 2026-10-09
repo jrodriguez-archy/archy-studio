@@ -325,9 +325,12 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     let d = { ...docRef.current };
     const added: Board[] = [];
     for (const g of list) {
-      // What the designs already say (an event's headline becomes its cover's two lines), else the sample.
+      // What the designs already say (an event's headline becomes its cover's two lines); else what the set
+      // holds for it even where no format draws it (the brief's cover photos); else the format's default
+      // (no photo or brief line ever comes from the template's sample: see loadSet).
       const slots = Object.fromEntries(Object.entries(g.defaults).map(([k, v]) => {
         for (const [r, s] of [[from, src] as const, ...Object.entries(d)]) { const c = carried(s.slots, k, v, drawnBy(r)); if (c !== undefined) return [k, c ?? null]; }
+        for (const s of [src, ...Object.values(d)]) if (s.slots[k]) return [k, s.slots[k]];
         return [k, v];
       }));
       const initial: Snap = { slots, edits: src.edits[RECOLOR] ? { [RECOLOR]: src.edits[RECOLOR] } : {} };

@@ -51,6 +51,8 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       if (x === root || x.contains(el) || el.contains(x) || getComputedStyle(x).position !== 'absolute') return false;
       const xr = x.getBoundingClientRect();
       if (xr.width < 2 || xr.height < 2) return false;
+      // Sparkles never push copy: one under a text is hidden (clearIllustrations).
+      if (x.matches('svg[data-name="Star"], svg[data-name^="Stars"], svg[data-name^="Stars"] *')) return false;
       return !textRects.some((t) => intersects(t, xr, 0));
     }) : [];
     baseline.set(role, {
@@ -377,7 +379,13 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     const allowed = new Map(containersOk().map((c) => [keyOf(c), c.overflowPx]));
     el.textContent = current;
     const containersFine = () => containersOk().every((c) => c.overflowPx <= (allowed.get(keyOf(c)) ?? 0) + 0.5);
-    const fits = () => overflow(role, r, el) === 0 && lines(el) <= maxLines && containersFine() && wordsWhole(el) && noOrphan(el);
+    // A headline on more lines than its sample only while the column still fits its room (the copy under it
+    // keeps its place and its breathing room).
+    const below = () => Object.entries(rules.slots).filter(([k]) => k !== role).map(([k, r2]) => [k, r2, root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`)]).filter(([, , e]) => e?.isConnected && !(e.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING));
+    const roomy = () => lines(el) <= (r.sampleLines ?? maxLines)
+      || (!(frame?.el.isConnected && frame.el.contains(el) && usedOf(frame.el) > frame.area + 0.5)
+        && below().every(([k, r2, e]) => overflow(k, r2, e) <= (baseline.get(k)?.tol ?? 0) + 0.5));
+    const fits = () => overflow(role, r, el) === 0 && lines(el) <= maxLines && containersFine() && wordsWhole(el) && noOrphan(el) && roomy();
     const state = { status: 'fit', scale: 1, wrapped: false };
 
     // scaleGroup: every text node in that layer scales with the slot, so a headline stays one unit
@@ -693,7 +701,8 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       const sparse = info.before < room * 0.72 || shortCopy;
       const verySparse = info.before < room * 0.55 || (shortCopy && lead.el.textContent.replace(/\s/g, '').length <= 14);
       const maxScale = pick(opts.maxScale) ?? (verySparse ? 2.4 : sparse ? 1.8 : 1.25);
-      const maxLines = sparse ? Math.max(lines(lead.el), pick(r.maxLines) ?? 1, 2) : lines(lead.el);
+      // Growing may take one more line than it has now (a headline's own limit is its room), never more.
+      const maxLines = sparse ? Math.max(lines(lead.el), Math.min(pick(r.maxLines) ?? 1, lines(lead.el) + 1), 2) : lines(lead.el);
       // Nothing else may get worse: every other text keeps fitting, no frame overflows more.
       const others = Object.keys(rules.slots).filter((k) => k !== lead.role && report.slots[k]?.status === 'fit')
         .map((k) => [k, root.querySelector(`[data-slot="${k}"][data-slot-type="text"]`)]).filter(([, n]) => n?.isConnected);
@@ -840,7 +849,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       const hitting = () => leaves.filter((l) => glyphs(t).some((g) => gapBetween(g, l.getBoundingClientRect()) < need(l)));
       let hits = hitting();
       if (!hits.length) continue;
-      const L = rectOf(t).left;
+      const L = rectOf(t).left, had = lines(t);
       const edge = Math.min(...hits.map((l) => l.getBoundingClientRect().left));
       const w = Math.floor(edge - 24 - L);
       if (w > rectOf(t).width * 0.45) {
@@ -848,32 +857,10 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
         if (/^(normal|nowrap|pre)$/.test(getComputedStyle(t).whiteSpace)) t.style.whiteSpace = 'pre-line';
       }
       const fs0 = parseFloat(getComputedStyle(t).fontSize), lh0 = parseFloat(getComputedStyle(t).lineHeight);
-      const size = (px) => { t.style.fontSize = `${px.toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * (px / fs0))}px`; };
-      for (let k = 1; hitting().length && k > 0.8; k = +(k - 0.04).toFixed(2)) size(fs0 * k);
-      // Wrapping short of the art must not take the text past its lines ("For Phoenix / Dentists" on a
-      // third line): the type shrinks, down to the slot's own minimum; if that is not enough, the copy
-      // does not fit here and the answer gives its exact maximum, like any other copy that does not fit.
-      const maxLines = pick(rr.maxLines) ?? 1;
-      const st = report.slots[role];
-      if (st && st.status !== 'removed' && lines(t) > maxLines) {
-        const base = baseline.get(role)?.fontSize || fs0;
-        const designMin = pick(rr.minScale) ?? 0.85;
-        const minPx = base * (rules.shrinkTo ? Math.min(designMin, Math.max(rules.shrinkTo, 14 / base)) : designMin);
-        // The copy's own line breaks are a wish: joined, it may fit in fewer lines.
-        const text = t.textContent, soft = text.replace(/\s*\n\s*/g, ' ');
-        const fitsAt = () => { for (const v of new Set([text, soft])) { t.textContent = v; if (lines(t) <= maxLines) return true; } t.textContent = text; return false; };
-        for (let px = parseFloat(getComputedStyle(t).fontSize); !fitsAt() && px - base * 0.01 >= minPx - 1e-6;) { px -= base * 0.01; size(px); }
-        if (lines(t) > maxLines) {
-          let lo = 0, hi = text.length - 1;
-          while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); t.textContent = text.slice(0, mid); if (lines(t) <= maxLines) lo = mid; else hi = mid - 1; }
-          t.textContent = text;
-          Object.assign(st, { status: 'overflow' });
-          report.ok = false;
-          report.errors.push({ slot: role, code: 'overflow', reason: 'lines', overflowPx: 0, length: text.length, maxLength: lo,
-            message: `"${text.replace(/\n/g, ' ')}" (${text.length} chars) runs to ${lines(t)} lines beside the illustration even at ${Math.round(minPx / base * 100)}% size (up to ${maxLines}). Keep it to ${lo} characters or fewer.` });
-        }
-      }
-      if (st) Object.assign(st, { lines: lines(t), fontSize: parseFloat(getComputedStyle(t).fontSize), scale: +(parseFloat(getComputedStyle(t).fontSize) / (baseline.get(role)?.fontSize || fs0)).toFixed(2) });
+      for (let k = 1; hitting().length && k > 0.8; k = +(k - 0.04).toFixed(2)) { t.style.fontSize = `${(fs0 * k).toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * k)}px`; }
+      // Wrapping short of the art does not add lines when a little less size keeps them (down to 85%).
+      for (let k = parseFloat(getComputedStyle(t).fontSize) / fs0; lines(t) > had && k > 0.85; k = +(k - 0.01).toFixed(2)) { t.style.fontSize = `${(fs0 * (k - 0.01)).toFixed(2)}px`; t.style.lineHeight = `${Math.round(lh0 * (k - 0.01))}px`; }
+      if (report.slots[role]) Object.assign(report.slots[role], { lines: lines(t), fontSize: parseFloat(getComputedStyle(t).fontSize) });
       hits = hitting();
       report.illustrationCleared = [...(report.illustrationCleared ?? []), role + (hits.length ? ':still' : '')];
     }
@@ -1039,6 +1026,7 @@ window.__calibrate = function calibrate({ format, formats, rules }) {
 // Default rules for slots the template's rules.json does not cover: stay inside the nearest
 // "Content" frame (else the artboard), keep the sample's line count, shrink at most to 85%;
 // the outer Content frame must not overflow nor run past its mirrored bottom margin.
+const HEADLINE_LINES = 6;
 function withDefaults(root, rules) {
   const lines = (el) => {
     const range = document.createRange();
@@ -1055,7 +1043,10 @@ function withDefaults(root, rules) {
     let box = el.parentElement;
     while (box && box !== root && !/^\d+(\.\d+)?px$/.test(box.style.width)) box = box.parentElement;
     const content = el.parentElement.closest('[data-name="Content"]');
-    rules.slots[role] = { within: box && box !== root ? box : content ?? '@artboard', maxLines: Math.max(1, lines(el)), minScale: 0.85, auto: true, ...rules.slots[role] };
+    // The headline is not held to the sample's line count: it stays as big as it can and takes the lines
+    // its room allows (three big lines read better than two small ones). Its room still limits it.
+    const maxLines = role === 'headline' ? HEADLINE_LINES : Math.max(1, lines(el));
+    rules.slots[role] = { within: box && box !== root ? box : content ?? '@artboard', maxLines, sampleLines: Math.max(1, lines(el)), minScale: 0.85, auto: true, ...rules.slots[role] };
   }
   if (!rules.containers) {
     const outer = [...root.children].find((c) => c.dataset.name === 'Content');

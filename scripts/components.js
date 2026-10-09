@@ -287,7 +287,8 @@
       if (c.kind === 'text') {
         const allowed = Math.max(Number(el.dataset.baseLines) || 1, (c.slot && pick(rules?.slots?.[c.slot]?.maxLines)) || 0);
         const now = lines(el);
-        if (now > allowed) out.push({ id: c.id, level: 'warn', title: `${c.name} runs to ${now} lines`, detail: `The design uses ${allowed}. A wider box or a smaller size keeps it tidy.`, ...revertOn(el, ['box.width', 'style.fontSize', 'style.fontWeight'], 'Undo size change') });
+        // A headline takes the lines its room allows: only overflow and overlaps are problems there.
+        if (now > allowed && c.slot !== 'headline') out.push({ id: c.id, level: 'warn', title: `${c.name} runs to ${now} lines`, detail: `The design uses ${allowed}. A wider box or a smaller size keeps it tidy.`, ...revertOn(el, ['box.width', 'style.fontSize', 'style.fontWeight'], 'Undo size change') });
         const size = parseFloat(getComputedStyle(el).fontSize), size0 = Number(el.dataset.baseFont) || size;
         const forced = edits?.[c.id]?.style?.fontSize;
         if (c.slot && forced && forced < size0 * 0.85 && !out.some((x) => x.id === c.id)) out.push({ id: c.id, level: 'warn', title: `${c.name} is smaller than the design`, detail: `${Math.round(forced)} px; the design sets it at ${Math.round(size0)} px and never goes below ${Math.round(size0 * 0.85)}.`, revert: { id: c.id, fields: ['style.fontSize'], label: 'Back to design size' }, auto: true });
@@ -378,6 +379,13 @@
       // Only worse than as designed counts (no baseline yet: nothing to compare with).
       const ratio0 = Number(el.dataset.baseContrast);
       if (ratio0 && ratio < 3 && ratio < ratio0 - 0.2) out.push({ id: c.id, level: 'warn', title: `${c.name} is hard to read`, detail: `Low contrast with what is behind it (${ratio.toFixed(1)}:1). Try another colour or theme.`, ...revertOn(el, ['style.color', 'style.backgroundColor'], 'Use the theme colour') });
+    }
+    // A placeholder photo (lib/placeholders.ts) holds the place of the real one: never published as is.
+    for (const c of comps) {
+      const el = node(c.id);
+      if (!el || c.kind !== 'photo') continue;
+      const shown = [el, ...el.querySelectorAll('[style*="background-image"], img')].map((n) => n.tagName === 'IMG' ? n.src : n.style.backgroundImage).join(' ');
+      if (/\/placeholders\//.test(shown)) out.push({ id: c.id, level: 'warn', title: `${c.name} is a placeholder`, detail: 'Swap in the real photo before publishing: drop one from Assets or ask Claude.' });
     }
     return out;
   };

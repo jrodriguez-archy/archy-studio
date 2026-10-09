@@ -3,6 +3,8 @@ import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
 import { editCanvas, getCanvas, saveCanvas } from '@/lib/canvas-claude';
 import { MissingRequired, render } from '@/lib/renderer';
+import { shortId } from '@/lib/asset-ids';
+import { photoPlaceholder, placeholderNote, type Placeholder } from '@/lib/placeholders';
 import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
 import { createProject, findProject, listProjects } from '@/lib/projects';
 import { resolveSet, saveRender } from '@/lib/renders';
@@ -21,15 +23,15 @@ Template ID given: when the requester names a template ID (e.g. "booth-icon-list
 Brief first, then the best template:
 1. Read the whole brief and list the facts it brings (event name, city, venue, date, time, booth, photos, logos, speaker...). Use the fact names of match_templates.
 2. Call match_templates with those facts (and the purpose if clear). It returns the templates that can be made with them, best first, and for the others what is missing.
-3. Ask once, in one short message, for what would unlock a better template or is missing (a city photo, the partner logo, the time...). Never invent facts.
-4. With the answers, call match_templates again and pick the best eligible template (offer two when they are equally good). If none is eligible, say what is missing; never force a template.
+3. Ask once, in one short message, for what would unlock a better template or is missing (the partner logo, the time...). Never invent facts. Photos never hold a design back: a template that shows photos is made anyway, with placeholder photos close to the brief, and the real ones are asked for in that same message (photos_to_ask_for).
+4. With the answers, call match_templates again and pick the best eligible template (offer two when they are equally good). When the requester asks for options, make each option a different template (or design or theme), not the same design with other copy; a copy-only variation only when they ask for one, and then without set, so it stands on its own in the gallery. If none is eligible, say what is missing; never force a template.
 5. get_template for its slots and limits, then render. Each template has essential content (always filled) and minor optional details: an optional detail you do not have is left out with its label (no time: the date stays alone).
-6. If copy does not fit, the format is not delivered and the answer brings two options: shorter copy (with the exact maximum) and, when it works, smaller text (a preview, down to 70%). Show both and let the requester choose; offer a shorter version written by you (same facts, their wording). If they choose smaller text, render again with smaller_text: true. Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline grows up to 125%, the logo stays at the bottom), so never add words just to fill space.
-7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, and what was left out.
+6. If copy does not fit, the format is not delivered and the answer brings two options: shorter copy (with the exact maximum) and, when it works, smaller text (a preview, down to 70%). Show both and let the requester choose; offer a shorter version written by you (same facts, their wording). If they choose smaller text, render again with smaller_text: true. Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline takes the size and lines its room allows, the logo stays at the bottom), so never add words just to fill space. A headline on three or four big lines is right, not a problem.
+7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, what was left out, and which photos are placeholders.
 
 Designs and themes: some templates (list_templates shows designs and themes) come in several designs (layouts) and themes (White, Royal Blue, Navy grounds) with the same slots. Use the default unless the requester asks for one or for options; to offer options, render two or three different designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits, and some slots exist only in some designs (only_in_designs). Changing the design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
 
-Event page covers: the event templates have a cover format (1200×900, the Webflow event page thumbnail) next to Post, Square, Stories and OG. It is never part of "all formats": after making the social formats, offer the cover in one short line; never force it. If they want it, render the same template with formats: ["cover"], the same facts, design, theme and set, so it stacks with the social formats. The cover splits the headline in two and prints "Booth" with the number by itself; it needs a city or venue photo for its ground (and a few covers a guest photo or a short cover-subhead): get_template lists them as only_in_formats ["cover"]; ask for them only then.
+Event page covers: the event templates have a cover format (1200×900, the Webflow event page thumbnail) next to Post, Square, Stories and OG. It is never part of "all formats": after making the social formats, offer the cover in one short line; never force it. If they want it, render the same template with formats: ["cover"], the same facts, design, theme and set, so it stacks with the social formats. The cover splits the headline in two and prints "Booth" with the number by itself; its own photos (a city or venue photo for its ground, on a few covers a guest photo) come as placeholders when the brief has none: ask for the real ones. Its short cover-subhead is written from the brief, never the template's sample.
 
 Projects: designs can be filed into project folders in the Studio gallery (one project per design). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
 
@@ -37,11 +39,11 @@ Sets: every render answer ends with "Set: <id>". All designs from one brief (mor
 
 Brand rules:
 - All copy on the design is in US English, even when the conversation is not.
-- Photos of people are always the person's real photo, from the team's images (list_assets; a cutout without background works best) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo.
+- Photos of people are always the person's real photo, from the team's images (list_assets; a cutout without background works best) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo; until the person's photo comes, a neutral silhouette holds its place.
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
-Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. Brand colours only; the Archy logo can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
+Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, naming the places in plain words, before you make it. Change only what they ask: copy on the design that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other in Canvas while it is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the Archy logo can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 
@@ -51,7 +53,7 @@ const handler = createMcpHandler(
       'list_templates',
       {
         title: 'List templates',
-        description: 'The Archy templates available, with what each is for, its formats, designs and themes (when it offers several), versions and editable slots.',
+        description: 'The Archy templates available, with what each is for, its formats, designs and themes (when it offers several) and editable slots.',
         inputSchema: z.object({}),
         annotations: { readOnlyHint: true },
       },
@@ -70,7 +72,6 @@ const handler = createMcpHandler(
             designs: m.designs && Object.fromEntries(Object.entries(m.designs).map(([k, d]) => [k, d.label])),
             themes: m.themes && Object.fromEntries(Object.entries(m.themes).map(([k, t]) => [k, t.label])),
             default: m.default,
-            versions: Object.fromEntries(Object.entries(m.variants ?? {}).map(([k, v]) => [k, `used automatically when ${v.when?.empty?.join(', ')} is missing`])),
             slots: Object.keys(m.slots),
           };
         }));
@@ -106,7 +107,6 @@ const handler = createMcpHandler(
         const derivedFrom = (k: string) => c.derive?.[k]?.from;
         // Slots only some formats draw (the cover's ground photo, an OG without the venue line).
         const formatsWith = (k: string) => Object.keys(formats).filter((f) => !m.slots[k].perFormat || keyOf(f) in m.slots[k].perFormat!);
-        const variantFor = (k: string) => Object.entries(m.variants ?? {}).find(([, v]) => v.when?.empty?.includes(k))?.[0];
         const slots = Object.fromEntries(Object.entries(m.slots).filter(([k]) => inCombo(k)).map(([k, s]) => [k, {
           type: s.type,
           only_in_designs: m.default && designsWith(k)!.length < Object.keys(m.designs ?? {}).length ? designsWith(k) : undefined,
@@ -114,11 +114,15 @@ const handler = createMcpHandler(
           example: s.type === 'text' ? (Object.entries(s.perFormat ?? {}).find(([f]) => f === keyOf('post'))?.[1] as { sample?: string } | undefined)?.sample ?? s.default : undefined,
           essential: !optional.has(k),
           fact: c.facts?.[k] ?? 'copy written from the brief',
-          when_missing: !optional.has(k)
+          when_missing: s.type === 'image' && !optional.has(k)
+            ? derivedFrom(k) ? `derived from ${derivedFrom(k)}; otherwise a placeholder photo until the real one comes` : 'a placeholder photo until the real one comes: render anyway and ask for it'
+            : !optional.has(k)
             ? derivedFrom(k) ? `derived from ${derivedFrom(k)}; otherwise ask, or use another template` : 'ask for it, or use another template (match_templates)'
-            : s.type === 'image' && variantFor(k) ? `the "${variantFor(k)}" version is used` : 'left out with its label, the layout closes up',
+            : 'left out with its label, the layout closes up',
           limits: s.limits && Object.fromEntries(Object.keys(formats).filter((f) => s.limits![keyOf(f)]).map((f) => [f, s.limits![keyOf(f)]] as const).map(([f, l]) => [f,
-            `${l.maxCharsPerLine} characters per line at full size, up to ${l.maxLines} line${l.maxLines > 1 ? 's' : ''}; the type can shrink to ${l.fontSize.min}px (from ${l.fontSize.max}px) to fit a bit more`])),
+            k === 'headline'
+              ? `about ${l.maxCharsPerLine} characters per line at full size; it takes as many lines as its room allows (the sample uses ${l.maxLines}) and stays as big as it can, shrinking to ${l.fontSize.min}px (from ${l.fontSize.max}px) only when the room runs out`
+              : `${l.maxCharsPerLine} characters per line at full size, up to ${l.maxLines} line${l.maxLines > 1 ? 's' : ''}; the type can shrink to ${l.fontSize.min}px (from ${l.fontSize.max}px) to fit a bit more`])),
         }]));
         return {
           content: [{
@@ -131,7 +135,6 @@ const handler = createMcpHandler(
                 themes: Object.fromEntries(Object.entries(m.themes ?? {}).map(([k, t]) => [k, t.label])),
               } : {}),
               formats: Object.fromEntries(Object.entries(formats).map(([k, f]) => [k, `${f.width}×${f.height}`])),
-              versions: Object.fromEntries(Object.entries(m.variants ?? {}).map(([k, v]) => [k, `${v.label}: used automatically when ${v.when?.empty?.join(', ')} is missing`])),
               slots, guidance: c.guidance,
               notes: 'Limits are measured guides; render is the final check and reports the exact maximum when copy does not fit.',
             }, null, 2),
@@ -153,7 +156,7 @@ const handler = createMcpHandler(
       },
       async ({ facts, purpose }) => {
         const all = await matchTemplates(facts, purpose);
-        const eligible = all.filter((m) => m.eligible).slice(0, 6).map((m) => ({ template: m.template, title: m.title, purpose: m.purpose, shows: m.shows, not_shown: m.unused }));
+        const eligible = all.filter((m) => m.eligible).slice(0, 6).map((m) => ({ template: m.template, title: m.title, purpose: m.purpose, shows: m.shows, not_shown: m.unused, ...(m.photos.length ? { photos_to_ask_for: m.photos } : {}) }));
         const almost = all.filter((m) => !m.eligible && m.missing.length <= 2).slice(0, 6).map((m) => ({ template: m.template, title: m.title, needs: m.missing }));
         return { content: [{ type: 'text', text: JSON.stringify({ eligible, would_fit_with_more_info: almost }, null, 2) }] };
       },
@@ -163,7 +166,7 @@ const handler = createMcpHandler(
       'list_assets',
       {
         title: 'List the team\'s images',
-        description: 'Images the team brought to Studio (Canvas → Assets): uploaded photos and logos, cutouts without background, pixel effects and generated images, newest first. Use one in an image slot with its "value" (upload:<path>). For a person\'s photo use an upload or a cutout of that person; "generated" images are scenes, places and objects, never a real person.',
+        description: 'Images the team brought to Studio (Canvas → Assets): uploaded photos and logos, cutouts without background, pixel effects and generated images, newest first. Use one in an image slot as asset:<id> (the ID people copy from Studio → Assets) or its "value" (upload:<path>). Placeholder photos are not listed. For a person\'s photo use an upload or a cutout of that person; "generated" images are scenes, places and objects, never a real person.',
         inputSchema: z.object({
           search: z.string().optional().describe('Only images whose name contains this (e.g. a person\'s name)'),
           kind: z.enum(['upload', 'cutout', 'pixel', 'generated']).optional().describe('Only this kind (cutout: a person or object without background)'),
@@ -181,7 +184,7 @@ const handler = createMcpHandler(
         const items = assets
           .filter((a) => (!q || a.name.toLowerCase().includes(q)) && (!kind || a.kind === kind) && (!inFolder || a.folderId === inFolder))
           .slice(0, 60)
-          .map((a) => ({ value: a.value, name: a.name, kind: a.kind, folder: a.folderId ? folderName.get(a.folderId) ?? null : null, by: a.author, size: a.width && a.height ? `${a.width}×${a.height}` : null, added: a.createdAt.slice(0, 10) }));
+          .map((a) => ({ id: shortId(a.id), value: a.value, name: a.name, kind: a.kind, folder: a.folderId ? folderName.get(a.folderId) ?? null : null, by: a.author, size: a.width && a.height ? `${a.width}×${a.height}` : null, added: a.createdAt }));
         return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
       },
     );
@@ -259,7 +262,7 @@ const handler = createMcpHandler(
             move: z.object({ x: z.number().optional(), y: z.number().optional() }).optional().describe('Nudge in px from where it is'),
             align: z.enum(['left', 'center', 'right', 'top', 'middle', 'bottom']).optional().describe('Align inside its container (its padding kept)'),
             scale: z.number().optional().describe('Scale, 1 = as designed (photos, the Archy logo)'),
-            image: z.string().optional().describe('For a photo or logo: asset:<id> (list_assets) or an https URL'),
+            image: z.string().optional().describe('For a photo or logo: asset:<id> (the ID from Studio → Assets or list_assets), its upload:<path> value, or an https URL'),
             layout: z.object({
               distribute: z.enum(['packed', 'space-between']).optional(),
               gap: z.number().optional().describe('px between items when packed'),
@@ -302,7 +305,7 @@ const handler = createMcpHandler(
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
           const saved = await saveCanvas(me, piece);
-          return { content: [{ type: 'text', text: `Saved as a new version. Download (2x PNG): ${saved.url} · Edit in Canvas: ${publicOrigin(ctx)}/canvas/${saved.id}` }] };
+          return { content: [{ type: 'text', text: `Saved as a new version. Download (2x PNG): ${publicOrigin(ctx)}/api/file/${saved.id} · Edit in Canvas: ${publicOrigin(ctx)}/canvas/${saved.id}` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
         }
@@ -313,14 +316,14 @@ const handler = createMcpHandler(
       'render',
       {
         title: 'Render a design',
-        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts; a missing optional photo uses the template\'s no-photo version where it has one (get_template, when_missing). Essential content is never left out: the event page cover always needs its ground photo. Copy that does not fit is not delivered: the answer gives two options, shorter copy (with the exact maximum) or smaller text (a preview at down to 70%), for the requester to choose.',
+        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts. A missing photo never stops it: a placeholder photo close to the brief takes its place (a neutral silhouette for a person) and the answer lists them, to ask for the real ones. Copy that does not fit is not delivered: the answer gives two options, shorter copy (with the exact maximum) or smaller text (a preview at down to 70%), for the requester to choose.',
         inputSchema: z.object({
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"], or ["cover"] for the event page cover. Default: all but the cover.'),
           design: z.string().optional().describe('Design id, on templates that offer several (list_templates), e.g. "the-arch". Default: the template\'s default design.'),
           theme: z.string().optional().describe('Theme id, on templates that offer several (list_templates), e.g. "navy". Default: the template\'s default theme.'),
           smaller_text: z.boolean().optional().describe('Only when the requester chose "smaller text" after a render said the copy does not fit: the copy keeps its wording and may shrink to 70% (never under 14px).'),
-          slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" or an https URL to a cutout PNG. Leave out (or null) what you do not have.'),
+          slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" (the ID from Studio → Assets), an upload:<path> value from list_assets, or an https URL (a cutout PNG for a person). Leave out (or null) what you do not have.'),
           project: z.string().optional().describe('Project to file the designs in (name or id from list_projects). Only when the requester mentions one.'),
           set: z.string().optional().describe('Set id returned by an earlier render of the same brief. Pass it for every later render of that brief (other formats, retries, other templates or options) so the gallery stacks them together.'),
         }),
@@ -340,6 +343,21 @@ const handler = createMcpHandler(
         const files = comboFormats(m, combo);
         // "All formats" are the social ones: the event page cover is made only when asked for.
         const wanted = formats?.length ? formats : Object.keys(files).filter((f) => f !== 'cover');
+        // Photos the brief does not have yet: placeholders close to it (Unsplash, else AI, else neutral; a
+        // person's photo is a neutral silhouette), for the formats asked for. The real ones replace them later.
+        const config = await loadConfig(template);
+        const optionalSlots = new Set(config.optional ?? []);
+        const keys = wanted.map((f) => (combo?.key ? `${f}--${combo.key}` : f));
+        const placeholders: Placeholder[] = [];
+        for (const [k, s] of Object.entries(m.slots)) {
+          if (s.type !== 'image' || slots[k] || optionalSlots.has(k)) continue;
+          if (s.perFormat && !keys.some((f) => f in s.perFormat!)) continue;
+          // Made from another photo (the cover's ground from the city photo): that one is filled instead.
+          const from = config.derive?.[k]?.from;
+          if (from && (slots[from] || m.slots[from]?.type === 'image')) continue;
+          placeholders.push(await photoPlaceholder({ slot: k, fact: config.facts?.[k] ?? null, slots, purpose: config.purpose, userId: userIdOf(ctx) }));
+        }
+        if (placeholders.length) slots = { ...slots, ...Object.fromEntries(placeholders.map((p) => [p.slot, p.value])) };
         const setId = await resolveSet({ userId: userIdOf(ctx), template, slots, requested: set });
         // New pieces of a set that is already filed in a project join that project.
         if (!projectId && supabaseConfigured()) {
@@ -361,7 +379,6 @@ const handler = createMcpHandler(
             if (e instanceof MissingRequired) {
               // Only the cover is missing its own content (its ground photo): say so, keep the other formats.
               if (format === 'cover' && wanted.length > 1) { coverNeeds = e.slots; continue; }
-              if (format === 'cover') return { isError: true, content: [{ type: 'text', text: `The event page cover of ${template} needs ${e.slots.join(', ')} (its own content; it has no version without them). Ask the requester for them, or leave the cover out. Nothing was made.` }] };
               const have = await factsFromSlots(template, slots);
               // Same purpose first (a booth invite suggests booth invites, not reminders).
               const purpose = (await loadConfig(template)).purpose;
@@ -397,7 +414,8 @@ const handler = createMcpHandler(
                 design: hi.design, theme: hi.theme, smallerText,
               }))
             : null;
-          if (saved) download = saved.url;
+          // A link that lasts (for people signed in to Studio) until the design is archived or deleted.
+          if (saved) download = `${origin}/api/file/${saved.id}`;
           else {
             const q = new URLSearchParams({ template, format, scale: '2', ...(combo ? { design: combo.design, theme: combo.theme } : {}), ...(smallerText ? { smaller_text: '1' } : {}) });
             for (const [k, v] of Object.entries(used)) q.set(`slot.${k}`, v ?? '');
@@ -413,12 +431,12 @@ const handler = createMcpHandler(
           if (left.length) notes.push(`left out: ${left.join(', ')}`);
           const fitted = Object.entries(report.slots)
             .filter(([, s]) => s.status !== 'removed' && ((s.scale && s.scale < 1) || s.wrapped || s.groupWrapped))
-            .map(([k, s]) => `${k} ${[s.scale && s.scale < 1 ? `at ${Math.round(s.scale * 100)}%` : '', s.wrapped || s.groupWrapped ? 'on two lines' : ''].filter(Boolean).join(', ')}`);
+            .map(([k, s]) => `${k} ${[s.scale && s.scale < 1 ? `at ${Math.round(s.scale * 100)}%` : '', s.wrapped || s.groupWrapped ? `on ${s.lines ?? 2} lines` : ''].filter(Boolean).join(', ')}`);
           if (fitted.length) notes.push(`fitted: ${fitted.join('; ')}`);
           content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
           content.push({
             type: 'text',
-            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG${saved ? ', link valid 7 days' : ''}): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand; this link stays): ${origin}/canvas/${saved.id}` : ''}`,
+            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
           });
         }
         if (refused.length) {
@@ -430,7 +448,8 @@ const handler = createMcpHandler(
               : '- Smaller text does not make it fit either: only shorter copy works here.',
           ].join('\n') });
         }
-        if (coverNeeds) content.push({ type: 'text', text: `Cover not made: it needs ${coverNeeds.join(', ')} (the event page cover's own content). Ask the requester for it, then render formats: ["cover"] with the same set.` });
+        if (coverNeeds) content.push({ type: 'text', text: `Cover not made: it needs ${coverNeeds.join(', ')} (the event page cover's own copy). Ask the requester for it, then render formats: ["cover"] with the same set.` });
+        if (placeholders.length && content.some((c) => c.type === 'image')) content.push({ type: 'text', text: placeholderNote(placeholders) });
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the designs stay together in the gallery).` });
         return { isError: refused.length + (coverNeeds ? 1 : 0) === wanted.length && !smallerOption.length, content };
       },

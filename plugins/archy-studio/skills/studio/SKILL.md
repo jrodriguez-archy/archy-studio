@@ -11,18 +11,22 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 
 ## Steps
 
+When the Archy Studio tools are deferred (they appear only by name), load them all at once with one `ToolSearch` call: `select:` followed by every Archy Studio tool name (match_templates, get_template, list_templates, list_assets, render, get_canvas, edit_canvas, save_canvas, list_projects, create_project), not one at a time.
+
 0. **A template ID or a Studio prompt.** When the person gives a template ID (like `booth-icon-list`, copied from the Studio app) or a `/templates?t=` link, use that template directly: skip `match_templates`, call `get_template`, ask once only for missing essential facts, then render. A prompt copied from the gallery ("Make a new version of… Keep it in set <id>") renders in that `set`.
 1. **Read the whole brief first.** List the facts it brings: event name, city, venue, dates, time, booth, photos (city, venue, speaker, person), logos (partner, offer), speaker name, role, company. Facts are things that must come from the requester; headlines and subheads you write from the brief.
 2. **Find the templates that fit.** Call `match_templates` with those facts (and the purpose when clear: booth invite, day-before reminder, hosted evening, speaker invite, event cover, spotlight; `event cover` finds the event templates whose cover format can be made). It lists the templates that can be made with what there is, best first, and what the others are missing.
-3. **Ask once, well.** In one short message, ask for what would unlock a better template or complete the design: a city photo, the partner logo, the booth number, the time. Say why in a few words ("with a city photo I can use the photo version"). Never invent facts, names, titles or numbers.
+3. **Ask once, well.** In one short message, ask for what would complete the design: the partner logo, the booth number, the time. Never invent facts, names, titles or numbers.
+   - **Photos never hold a design back.** A template with photos is made anyway: missing photos come as placeholders close to the brief (a neutral silhouette for a person), and you ask for the real ones in the same message (`photos_to_ask_for`). They can send a link, upload the photo in Studio → Assets and give you its ID, or swap it in Canvas.
 4. **Choose the template.** With the answers, call `match_templates` again and pick the best eligible one; offer two when they are equally good. Every template has **essential content** that is always filled; if no template is eligible, say what is missing instead of forcing one.
+   - **Options are different designs.** When they ask for options, make each one a different template (or design or theme), not the same design with other copy. A copy-only variation only when they ask for it, rendered without `set` so it shows on its own in the gallery.
    - **Designs and themes.** Some templates come in several designs (layouts) and themes (White, Royal Blue, Navy), all with the same slots; `list_templates` shows them. Use the default unless the requester asks for a design or a colour. When they want options, render two or three different designs in the same `set` and say which is which ("The Arch, Navy").
 5. **Read its slots.** Call `get_template` (with the design and theme you will use) for the slots, the limits and which details are optional. Some slots exist only in some designs (`only_in_designs`): the AE Spotlight's first-name headline is only in Meet Name.
    - An optional detail you do not have is left out with its label and the layout closes up (no time: the date stays alone; no venue: only the city). Just leave the slot out.
-   - **Photos of people** are always that person's real photo: one the team added to Studio (`list_assets`; a cutout without background works best), or a link to a cutout PNG from the requester. Never use another person's photo, never generate one.
+   - **Photos of people** are always that person's real photo: one the team added to Studio (`list_assets`, or the ID they copy from Assets as `asset:<id>`; a cutout without background works best), or a link to a cutout PNG from the requester. Never use another person's photo, never generate one; until it comes, a neutral silhouette holds its place.
    - **Logos** (partner, sponsor) come as https links. They are set in the design's colour at a size that balances with the Archy wordmark; nothing to adjust.
 6. **Write the copy in US English**, even when the conversation is in another language. Keep the requester's wording.
-   - Short copy needs no padding: the design fills its room by itself (the headline grows, the logo stays at the bottom). Never add words just to fill space.
+   - Short copy needs no padding: the design fills its room by itself (the headline grows, the logo stays at the bottom). Never add words just to fill space. A headline on three or four big lines is right.
    - Dates in house style, short: `Jan 28 – 30, 2027` (abbreviated month, no weekday, the month once when it repeats). Use the full form only when the brief asks for it and it fits.
 7. **Render.** Call `render` with the template, the slots, the formats they asked for (all formats when they did not say; "all" never includes the event page cover) and the `design` and `theme` when not the default.
    - If a format comes back **not rendered** because the copy does not fit, give them the choice, in one short message:
@@ -31,12 +35,13 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
      Render what they choose: the shorter copy, or the same copy with `smaller_text: true`. When smaller text does not fit either, only shorter copy works: say so, and ask before changing a fact (a name, a title).
    - Never deliver a format that was not rendered.
    - **One brief, one set.** Every render answer ends with `Set: <id>`. Pass that id as `set` to every later render of the same brief (more formats, a retry after shortening copy, another template or option), so the gallery stacks them as one card. A new brief starts without `set`.
-   - **Event page cover.** When the template has a `cover` format in `list_templates`, offer the event page cover (1200×900, for the Webflow event page) in one line after delivering. If they want it, render the same template with `formats: ["cover"]`, the same facts, design, theme and `set`. It splits the headline and prints "Booth" by itself; it only adds what `get_template` marks `only_in_formats: ["cover"]` (its city or venue photo, and on the Night Out covers a guest photo and a short `cover-subhead`).
+   - **Event page cover.** When the template has a `cover` format in `list_templates`, offer the event page cover (1200×900, for the Webflow event page) in one line after delivering. If they want it, render the same template with `formats: ["cover"]`, the same facts, design, theme and `set`. It splits the headline and prints "Booth" by itself. Its own photos (`only_in_formats: ["cover"]`) come as placeholders when there are none yet; its short `cover-subhead` is written from the brief.
    - **Projects.** When the requester names a project or campaign ("save it in Chicago Midwinter"), call `list_projects` and pass it to `render` as `project`. If it does not exist, create it with `create_project`: shared with the team unless they say it is only for them. When they do not mention a project, do not ask.
 8. **Deliver.**
    - Show the images.
    - Save the high-resolution files: when you can run commands, download each `Download (2x PNG)` link into the working folder as `<template>-<format>.png` (for example with `curl -L -o ae-spotlight-post.png "<link>"`). Otherwise give them the links.
    - Give the **Edit in Canvas** link of each format: there they can fix copy, colours, images or sizes by hand and download again, without a new render.
+   - Say which photos are placeholders and how to replace them. The download links last (for people signed in to Studio) until the design is archived or deleted.
 
 ## Live editing in Canvas
 
@@ -45,6 +50,9 @@ When the requester has a design open in Studio's Canvas and asks you to change i
 1. `get_canvas` (no arguments: the design they have open) shows its components with their ids, the copy, its design and theme, any recolour, the brand colours, the Inspector's suggestions and the other formats of the same design. They see you working on the artboard. While Canvas is open, copy, images, recolour and styles follow between the formats they keep synced.
 2. `edit_canvas` with the changes, referring to components by id. Each change appears live in Canvas and can be undone. Brand colours only; the Archy logo can only be moved, aligned or scaled. `recolor` redraws the whole design on another ground (dark, blue, sky, ice, light). On a template with themes, another theme or design is a new `render` with the same facts and `set`, not a recolour. You can also `reset` a component to its design, change `font_weight`, `opacity`, `size`, `layout`, and pass `fix: "all"` to apply the Inspector's exact fixes.
 3. Read the Inspector's suggestions in the answer and fix the ones your change caused, then check again. Never tell the person how to do something by hand when you can do it.
+   - When a change could go in more than one place (a photo, on a design with a ground photo and a guest photo), ask once where, in plain words, before making it.
+   - Change only what they ask. Copy that does not come from the brief (a template sample, another event's details) is pointed out with a version from the brief, not rewritten on your own.
+   - When they ask for a change in one format only, say the synced formats change too unless they unsync it (its label in Canvas), and say when formats end up different.
 4. `save_canvas` only when they ask to save. It keeps the original and saves a new version.
 
 ## When something fails

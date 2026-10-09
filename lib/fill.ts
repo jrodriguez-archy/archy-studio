@@ -3,7 +3,9 @@ import path from 'node:path';
 import type { Edits, FillPlan } from './canvas-shared';
 import { boothLike, splitHeadline } from './canvas-sync';
 import { iconMarkup } from './icons';
+import { isPlaceholder, staticPlaceholder } from './placeholders';
 import { supabaseAdmin } from './supabase/admin';
+import { findAsset } from './asset-ids';
 import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo } from './templates';
 
 // Deciding a piece before any page is opened: slot values, variant, fit rules, resolved images and
@@ -80,7 +82,11 @@ export async function prepareFill({ template, format, design, theme, slots: give
   // Everything not marked optional is essential: a template never goes out half empty.
   const optional = new Set(config.optional ?? []);
   const missingEssential = Object.keys(manifest.slots).filter((k) => !optional.has(k) && !slots[k] && slotInFormat(manifest, k, fileKey));
-  if (missingEssential.length && !fillDefaults) throw new MissingRequired(missingEssential);
+  // A missing photo never holds a design back: a neutral placeholder takes its place until the real one
+  // comes (the MCP's render brings one closer to the brief first; see lib/placeholders.ts).
+  if (!fillDefaults) for (const k of missingEssential) if (manifest.slots[k].type === 'image') slots[k] = staticPlaceholder(config.facts?.[k]);
+  const stillMissing = missingEssential.filter((k) => !slots[k]);
+  if (stillMissing.length && !fillDefaults) throw new MissingRequired(stillMissing);
 
   // Variant: the first one whose condition matches (e.g. no photo → "no-photo").
   // A chosen design × theme has no automatic variants.
@@ -122,7 +128,8 @@ export async function prepareFill({ template, format, design, theme, slots: give
     }),
   ]);
   return {
-    template, format, design: combo?.design ?? null, theme: combo?.theme ?? null, variant, slots, html: `templates/${template}/${f.html}`, width: f.width, height: f.height,
+    template, format, design: combo?.design ?? null, theme: combo?.theme ?? null, variant, slots,
+    placeholders: Object.keys(slots).filter((k) => manifest.slots[k].type === 'image' && slotInFormat(manifest, k, fileKey) && isPlaceholder(slots[k])), html: `templates/${template}/${f.html}`, width: f.width, height: f.height,
     fill: { format, formats: Object.keys(manifest.formats), values, rules, limits }, imageUrls, iconSvgs,
   };
 }
@@ -157,10 +164,15 @@ async function resolveLogo(template: string, v: string, origin = ORIGIN): Promis
 const remoteLogos = new Map<string, string>();
 
 async function resolveImage(template: string, v: string, origin = ORIGIN): Promise<string> {
+  if (v.startsWith('placeholder:')) return `${origin}/library/placeholders/${v.slice(12) === 'person' ? 'person' : 'scene'}.png`;
   if (v.startsWith('asset:')) {
-    const asset = (await loadLibrary()).find((a) => a.id === v.slice(6));
-    if (!asset) throw new Error(`Unknown asset: ${v.slice(6)}. Use an image from list_assets (upload:<path>) instead.`);
-    return `${origin}/library/${asset.file}`;
+    const id = v.slice(6).trim();
+    const asset = (await loadLibrary()).find((a) => a.id === id);
+    if (asset) return `${origin}/library/${asset.file}`;
+    // A team image by its ID in Assets (the short one shown there, or the whole one).
+    const team = await findAsset(id);
+    if (!team) throw new Error(`Unknown asset: ${id}. Use the ID shown in Studio → Assets, or an image from list_assets.`);
+    v = `upload:${team.path}`;
   }
   if (v.startsWith('upload:')) {
     const { data, error } = await supabaseAdmin().storage.from('uploads').createSignedUrl(v.slice(7), 60 * 60);

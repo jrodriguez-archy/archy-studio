@@ -1,5 +1,6 @@
 'use client';
 
+import { DATE_TIME, DAY, LocalDate } from '@/components/local-date';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -11,8 +12,6 @@ import { useSetActions } from '@/components/set-actions';
 import { StackBadge, StackLayers, stackPad } from '@/components/stack';
 import { canManageSet, formatLabel, humanize, type Piece, type PieceSet } from '@/lib/gallery-shared';
 
-const day = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-const when = (d: string) => new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 const formatsOf = (s: PieceSet) => [...new Set(s.pieces.map((p) => formatLabel(p.format)))].join(', ');
 
 // Masonry of sets: everything made from one brief is one stacked card. A click opens the set in place
@@ -81,8 +80,7 @@ function SetCard({ set: s, eager, projects, canManage, project, onOpen }: { set:
         <div className="truncate">{s.title}</div>
         <div className="truncate text-foreground/40">{s.templates.length > 1 ? `${s.templates.length} templates` : r.title} · {formatsOf(s)}</div>
         <div className="truncate text-foreground/40">
-          {/* Dates are in the viewer's time zone; the server renders UTC. */}
-          {s.author} · <span suppressHydrationWarning>{day(s.archived_at ?? s.created_at)}</span>{s.archived_at ? ' · archived' : ''}
+          {s.author} · <LocalDate iso={s.archived_at ?? s.created_at} opts={DAY} />{s.archived_at ? ' · archived' : ''}
           {project && <> · {project}</>}
         </div>
       </figcaption>
@@ -159,7 +157,7 @@ function SetInfo({ set, shown, project, projects, canManage }: { set: PieceSet; 
           ['File', `PNG @${shown.scale}x`],
           ['Project', project ?? '—'],
           ['Made by', set.author],
-          ['Created', <span key="c" suppressHydrationWarning>{when(set.created_at)}</span>],
+          ['Created', <LocalDate key="c" iso={set.created_at} opts={DATE_TIME} />],
         ]}
       />
 

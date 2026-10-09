@@ -76,6 +76,9 @@
     "headline-2": {
       "from": "headline",
       "line": 1
+    },
+    "cover-subhead": {
+      "from": "subhead"
     }
   }
 }

@@ -38,6 +38,8 @@ export type FillPlan = {
   design: string | null;
   theme: string | null;
   variant: string | null;
+  /** Image slots holding a placeholder photo until the real one comes. */
+  placeholders?: string[];
   slots: Record<string, string | null>;
   /** Path of the template HTML under the file root (templates/<id>/<file>.html). */
   html: string;

@@ -107,7 +107,7 @@ export default async function TemplatePage({ params, searchParams }: { params: P
                   <span className="text-foreground/40">{optional.has(k) ? 'Optional' : 'Essential'}</span>
                 </span>
                 <span className="min-w-0 break-words text-foreground/60">{s.type === 'text' ? s.default : s.type === 'logo' ? 'Link to a logo' : 'Link to an image'}</span>
-                <span className="text-right whitespace-nowrap text-foreground/60">{lim ? `${lim.maxCharsPerLine} × ${lim.maxLines}` : '—'}</span>
+                <span className="text-right whitespace-nowrap text-foreground/60">{lim ? `${lim.maxCharsPerLine} × ${k === 'headline' ? 'room' : lim.maxLines}` : '—'}</span>
               </div>
             );
           })}

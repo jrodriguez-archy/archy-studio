@@ -73,6 +73,7 @@ export async function familyOf(template: string): Promise<string[]> {
 export async function loadSet(piece: PieceSource) {
   const family = await familyOf(piece.template);
   const manifests = Object.fromEntries(await Promise.all(family.map(async (t) => [t, await loadManifest(t)] as const)));
+  const configs = Object.fromEntries(await Promise.all(family.map(async (t) => [t, await loadConfig(t)] as const)));
   // The piece's own template in its design × theme; the rest of the family (event or cover) as designed.
   const files = Object.fromEntries(family.map((t) => [t, filesOf(manifests[t], t === piece.template ? piece : { design: null, theme: null })]));
   const order = family.flatMap((t) => Object.keys(files[t]).map((f) => `${t}:${f}`));
@@ -97,8 +98,10 @@ export async function loadSet(piece: PieceSource) {
   const have = new Set(siblings.map((p) => p.format));
   const missing = family.flatMap((t) => Object.entries(files[t]).filter(([f]) => !have.has(f)).map(([f, fm]) => ({
     ref: t === piece.template ? newRef(t, f, piece.design, piece.theme) : newRef(t, f), format: f, width: fm.width, height: fm.height,
-    // The format's own sample where it has one (the cover's "Booth #1039").
-    defaults: Object.fromEntries(Object.entries(manifests[t].slots).map(([k, v]) => [k, (v.perFormat?.[f] as { sample?: string } | undefined)?.sample ?? v.default])) as Record<string, string | null>,
+    // The format's own sample where it has one (the cover's "Booth #1039"), only as the shape of what the
+    // set says: a photo or a line made from the brief (the cover's subhead) never starts as the template's
+    // sample (another event's venue photo and golf), it starts empty and takes the set's or a placeholder.
+    defaults: Object.fromEntries(Object.entries(manifests[t].slots).map(([k, v]) => [k, v.type === 'image' || configs[t].derive?.[k] ? null : (v.perFormat?.[f] as { sample?: string } | undefined)?.sample ?? v.default])) as Record<string, string | null>,
   })));
   return { pieces: siblings, missing };
 }

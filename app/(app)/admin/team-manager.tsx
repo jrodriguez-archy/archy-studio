@@ -1,5 +1,6 @@
 'use client';
 
+import { DAY, LocalDate } from '@/components/local-date';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import {
@@ -49,7 +50,7 @@ export function TeamManager({ team, me }: { team: Member[]; me: string }) {
             <span className="min-w-0 truncate">{m.email}</span>
             {m.is_admin && <span className="text-foreground/40">Admin</span>}
             <span className="text-foreground/40">
-              {m.status === 'active' ? (m.last_sign_in ? `Last in ${new Date(m.last_sign_in).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : 'Active') : 'Waiting for first sign-in'}
+              {m.status === 'active' ? (m.last_sign_in ? <>Last in <LocalDate iso={m.last_sign_in} opts={DAY} /></> : 'Active') : 'Waiting for first sign-in'}
             </span>
             {m.email !== me && (
               <span className="ml-auto flex gap-1">

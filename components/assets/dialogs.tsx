@@ -1,5 +1,6 @@
 'use client';
 
+import { LocalDate } from '@/components/local-date';
 import { useEffect, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { AiMagicIcon, ArrowLeft01Icon, ArrowRight01Icon, Download04Icon, SparklesIcon } from '@hugeicons/core-free-icons';
@@ -184,7 +185,6 @@ export function AssetViewer({ list, id, onId, actions, working, onJob }: {
     if (OWN_DIALOG.test(label)) onId(null); else onJob();
     f?.();
   };
-  const when = a ? new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
   return (
     <Dialog open={!!a} onOpenChange={(o) => !o && onId(null)}>
       <DialogContent className="flex h-[88vh] w-[92vw] max-w-[1400px] gap-0 overflow-hidden rounded-md p-0 text-[13px] sm:max-w-[1400px]">
@@ -229,7 +229,7 @@ export function AssetViewer({ list, id, onId, actions, working, onJob }: {
               <div className="space-y-1 pr-6">
                 <DialogTitle className="text-[15px] leading-snug font-medium break-words">{a.name}</DialogTitle>
                 <DialogDescription className="text-[12px] text-foreground/50">{KIND[a.kind]}{a.width && a.height ? ` · ${a.width}×${a.height}` : ''}</DialogDescription>
-                <p className="text-[12px] text-foreground/50">Added by {a.author} · {when}</p>
+                <p className="text-[12px] text-foreground/50">Added by {a.author} · <LocalDate iso={a.createdAt} /></p>
               </div>
               {a.prompt && <p className="rounded-md bg-foreground/[0.04] p-3 text-[12px] text-foreground/70">“{a.prompt}”</p>}
               <div className="space-y-1">

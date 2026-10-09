@@ -1,9 +1,13 @@
 # Changelog
 
-## archy-studio 0.13.1 (2026-10-08)
+## archy-studio 0.14.0 (2026-10-08)
 
-- Render: a headline that wraps short of an illustration (the Night Out cocktail) no longer goes out on more lines than its design ("For Phoenix / Dentists" on a third line, reported ready). It shrinks to its minimum or joins its line break; if it still runs over, the copy does not fit and the answer gives the exact maximum and the smaller-text option.
-- MCP: render's description says the no-photo version exists only where a template has one, and a cover asked for alone without its photos says it needs them; download links say they last 7 days (the Canvas link stays). edit_canvas says when the person also changed the design in Canvas (so Claude does not take a recolour for its own) and which other formats of the set its copy and images follow to.
+- Headlines as big as their room allows: a headline is no longer held to its sample's line count (three big lines rather than two small ones), takes extra lines only while the column still fits its room, and wrapping short of an illustration does not add lines when a little less size keeps them. The Inspector no longer flags a headline's line count. Sparkles never push copy (a date "colliding with a star" was refused).
+- Missing photos never stop a design: Studio fills them with placeholders close to the brief (Unsplash with `UNSPLASH_ACCESS_KEY`, else one made with AI, else a neutral image; a person's photo is a neutral silhouette, never someone else). Templates with photos are eligible without them; the answer lists the placeholders and Claude asks for the real ones; the Inspector flags them in Canvas. The event page cover is always made; its subhead comes from the brief.
+- Canvas: a format added to a set never takes the template's sample photos or lines (another event's venue and golf): it takes what the set holds, else placeholders.
+- Download links from Claude last until the design is archived or deleted (`/api/file/<id>`; signed out, it goes through the login first).
+- Assets: Copy ID on each image; Claude uses it as `asset:<id>`. Dates show in each person's own time zone.
+- MCP: options are different templates, not copy swaps; in Canvas Claude asks where when a change could go in several places, changes only what is asked, and says when synced formats follow a change. The Studio skill loads every tool at once.
 
 ## archy-studio 0.13.0 (2026-10-08)
 

@@ -1,12 +1,14 @@
 'use client';
 
+import { LocalDate } from '@/components/local-date';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
-  AiMagicIcon, Cancel01Icon, Download04Icon, Folder01Icon, FolderAddIcon, ImageUploadIcon, Image02Icon, Search01Icon, SparklesIcon,
+  AiMagicIcon, Cancel01Icon, Copy01Icon, Download04Icon, Folder01Icon, FolderAddIcon, ImageUploadIcon, Image02Icon, Search01Icon, SparklesIcon,
 } from '@hugeicons/core-free-icons';
-import { ContextActions, type Action } from '@/components/action-menu';
+import { ContextActions, copy, type Action } from '@/components/action-menu';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Asset, Folder } from '@/lib/assets';
 import { StackBadge, StackLayers, stackPad } from '@/components/stack';
@@ -137,7 +139,6 @@ function Detail({ lib, a, onClose }: { lib: AssetLibrary; a: Asset; onClose: () 
   const [name, setName] = useState(a.name);
   useEffect(() => setName(a.name), [a.id, a.name]);
   const mine = lib.mineIds.has(a.id);
-  const when = new Date(a.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const folderName = a.folderId ? lib.folders.find((f) => f.id === a.folderId)?.name : null;
   const working = lib.working.some((w) => w.folder === (a.folderId ?? null));
   return (
@@ -162,10 +163,16 @@ function Detail({ lib, a, onClose }: { lib: AssetLibrary; a: Asset; onClose: () 
         <input value={name} onChange={(e) => setName(e.target.value)} onBlur={() => lib.renameTo(a, name)} onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
           aria-label="Name" className="mt-3 h-9 w-full rounded-md px-2 text-[15px] font-medium outline-none hover:bg-foreground/[0.04] focus:bg-foreground/[0.04] focus:ring-1 focus:ring-primary/40" />
       ) : <p className="mt-3 px-2 text-[15px] font-medium break-words">{a.name}</p>}
-      <p className="px-2 text-[12px] text-foreground/45">{a.author} · {when}{folderName ? ` · ${folderName}` : ''}</p>
+      <p className="px-2 text-[12px] text-foreground/45">{a.author} · <LocalDate iso={a.createdAt} />{folderName ? ` · ${folderName}` : ''}</p>
       {a.prompt && <p className="mx-2 mt-3 rounded-md bg-foreground/[0.04] p-2.5 text-[12px] text-foreground/65">“{a.prompt}”</p>}
       <div className="mt-4 space-y-0.5 border-t border-foreground/[0.06] pt-3">
         <ActionRows actions={lib.actions(a, true)} />
+        {/* The ID to give Claude ("use asset a7f3k2q9"): the start of its id (lib/asset-ids.ts). */}
+        <button type="button" onClick={async () => { (await copy(a.id.slice(0, 8))) ? toast.success('Image ID copied') : toast.error('Could not copy'); }}
+          className="flex h-8 w-full items-center gap-2 rounded-md px-2 hover:bg-foreground/[0.04]">
+          <HugeiconsIcon icon={Copy01Icon} className="size-4 text-foreground/45" strokeWidth={1.6} /> Copy ID
+          <span className="ml-auto font-mono text-[12px] text-foreground/40">{a.id.slice(0, 8)}</span>
+        </button>
         <a href={`/api/assets/${a.id}/file?download=1`} className="flex h-8 items-center gap-2 rounded-md px-2 hover:bg-foreground/[0.04]">
           <HugeiconsIcon icon={Download04Icon} className="size-4 text-foreground/45" strokeWidth={1.6} /> Download
         </a>

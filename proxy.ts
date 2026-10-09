@@ -22,7 +22,8 @@ export async function proxy(req: NextRequest) {
   const signedIn = !!data?.claims?.sub;
   const path = req.nextUrl.pathname;
   if (!signedIn && !PUBLIC.some((r) => r.test(path))) {
-    if (path.startsWith('/api/')) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
+    // A download link (/api/file/<id>, shared from Claude or the gallery) goes through the login first.
+    if (path.startsWith('/api/') && !path.startsWith('/api/file/')) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
     const url = req.nextUrl.clone();
     url.pathname = '/login';
     url.search = `?next=${encodeURIComponent(path + req.nextUrl.search)}`;

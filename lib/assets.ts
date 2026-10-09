@@ -26,9 +26,15 @@ const YEAR = '31536000';
 // The light thumbnail for the grid (public, unguessable path, never changes).
 const thumbOf = (path: string) => `assets/${path.replace(/\.\w+$/, '')}.webp`;
 
+// An image kept from a link (lib/keep-image.ts) remembers its address to be reused; people see where from.
+const promptOf = (p: string | null) => {
+  if (!p?.startsWith('link:')) return p;
+  try { return `From a link (${new URL(p.slice(5)).host})`; } catch { return 'From a link'; }
+};
+
 const toAsset = (r: Row): Asset => ({
   id: r.id, name: r.name, kind: r.kind, value: `upload:${r.path}`, thumb: publicUrl(thumbOf(r.path)),
-  width: r.width, height: r.height, ownerId: r.owner_id, author: r.profiles ? displayName(r.profiles.full_name, r.profiles.email) : 'Studio', prompt: r.prompt, createdAt: r.created_at,
+  width: r.width, height: r.height, ownerId: r.owner_id, author: r.profiles ? displayName(r.profiles.full_name, r.profiles.email) : 'Studio', prompt: promptOf(r.prompt), createdAt: r.created_at,
   folderId: r.folder_id,
 });
 

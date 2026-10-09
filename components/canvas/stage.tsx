@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRe
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
-import type { Crop, Edits, FillPlan, NodeEdit, RenderReport, Suggestion } from '@/lib/canvas-shared';
+import { outpaintFor, type Crop, type Edits, type FillPlan, type NodeEdit, type Outpaint, type PhotoFit, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import type { Keys } from '@/lib/canvas-sync';
 import { movingEdges, snap, type Guide } from './guides';
 import { componentAt, innermostAt, parentOf, readInfo, readTokens, within, type Box, type Comp, type LayerInfo, type Token } from './model';
@@ -22,10 +22,8 @@ type Win = Window & {
   __photoWindow: (el: Element) => { x: number; y: number; w: number; h: number };
 };
 
-/** Where a photo sits in its window (px, relative to the photo layer, like __setCrop): window and image. */
-type Fit = { W: { x: number; y: number; w: number; h: number }; iw: number; ih: number; bw: number; bh: number; px: number; py: number };
-/** What "Generate content around" needs: the pixels to paint on each side, and the framing for the result. */
-export type Outpaint = { expand: { top: number; right: number; bottom: number; left: number }; cropFor: (w: number, h: number) => Crop };
+type Fit = PhotoFit;
+export type { Outpaint };
 
 /** Asks the Stage showing this photo to start reframing it (the Photo panel's button). */
 export const REFRAME_EVENT = 'canvas:reframe';
@@ -281,24 +279,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     },
     outpaint: (id) => {
       const c = cropNow(id), f = c && fitOf(id, c);
-      if (!f) return null;
-      // The empty bands of the frame (artboard px), in the photo's own pixels: a hair more, so no seam shows.
-      const gap = { left: Math.max(0, f.px - f.W.x), right: Math.max(0, f.W.x + f.W.w - (f.px + f.bw)), top: Math.max(0, f.py - f.W.y), bottom: Math.max(0, f.W.y + f.W.h - (f.py + f.bh)) };
-      const s = f.iw / f.bw;
-      const px = (g: number) => (g > 0.5 ? Math.ceil(g * s) + 2 : 0);
-      const expand = { top: px(gap.top), right: px(gap.right), bottom: px(gap.bottom), left: px(gap.left) };
-      if (!expand.top && !expand.right && !expand.bottom && !expand.left) return null;
-      return {
-        expand,
-        // The result framed so the photo stays exactly where it was and the new edges reach the frame.
-        cropFor: (rw, rh) => {
-          const nbw = f.bw * (f.iw + expand.left + expand.right) / f.iw, nbh = f.bh * (f.ih + expand.top + expand.bottom) / f.ih;
-          const nx = f.px - expand.left / s, ny = f.py - expand.top / s;
-          const zoom = (nbw / rw) / Math.max(f.W.w / rw, f.W.h / rh);
-          const pct = (p: number, room: number) => (Math.abs(room) < 0.5 ? 50 : Math.max(0, Math.min(100, (p / room) * 100)));
-          return { x: +pct(nx - f.W.x, f.W.w - nbw).toFixed(2), y: +pct(ny - f.W.y, f.W.h - nbh).toFixed(2), zoom: +Math.max(0.2, Math.min(5, zoom)).toFixed(3), src: `${rw}x${rh}` };
-        },
-      };
+      return f ? outpaintFor(f) : null;
     },
   }), [el, boxOf, cropNow, fitOf]);
 

@@ -9,7 +9,10 @@
     },
     "app/mcp/route.ts": {
       "memory": 2048,
-      "maxDuration": 60
+      "maxDuration": 300
+    },
+    "app/api/canvas/outpaint/route.ts": {
+      "maxDuration": 120
     },
     "app/api/preview-render/[template]/[format]/route.ts": {
       "memory": 2048,

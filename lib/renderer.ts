@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { Browser } from 'playwright-core';
-import type { Edits, RenderReport, Suggestion } from './canvas-shared';
+import type { Edits, PhotoFit, RenderReport, Suggestion } from './canvas-shared';
 import { MIME, ORIGIN, prepareFill, type RenderInput } from './fill';
 import { ROOT } from './templates';
 
@@ -41,8 +41,8 @@ let componentsJs: string | null = null;
 
 export type { RenderReport };
 
-export async function render({ template, format, design, theme, slots: given, scale = 1, fillDefaults = false, edits = {}, inspect = false, autofix = false, smallerText = false }: RenderInput) {
-  const plan = await prepareFill({ template, format, design, theme, slots: given, fillDefaults, edits, smallerText });
+export async function render({ template, format, design, theme, slots: given, scale = 1, fillDefaults = false, edits: handEdits = {}, framing, inspect = false, autofix = false, smallerText = false }: RenderInput) {
+  const plan = await prepareFill({ template, format, design, theme, slots: given, fillDefaults, edits: handEdits, smallerText });
   const { variant, slots, width, height } = plan;
   fitJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'fit.js'), 'utf8');
   editsJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'edits.js'), 'utf8');
@@ -85,9 +85,20 @@ export async function render({ template, format, design, theme, slots: given, sc
       (a) => window.__fill(a),
       plan.fill,
     )) as RenderReport;
+    // Framing asked for by slot: worked out on the photos as drawn, kept as crop edits (what Canvas shows
+    // and reframes), and where each photo sits (for "Generate content around").
+    let edits = handEdits;
+    let framed: Edits = {};
+    let fits: Record<string, { node: string; fit: PhotoFit }> = {};
+    const scripted = !!(framing && Object.keys(framing).length);
+    if (scripted) {
+      await page.addScriptTag({ content: editsJs });
+      ({ framed, fits } = (await page.evaluate(frameSlots, framing!)) as { framed: Edits; fits: typeof fits });
+      edits = { ...framed, ...handEdits };
+    }
     // Inspecting needs edits.js even without edits: it keeps the design's baseline for the Inspector.
     if (Object.keys(edits).length || inspect || autofix) {
-      await page.addScriptTag({ content: editsJs });
+      if (!scripted) await page.addScriptTag({ content: editsJs });
       // @ts-expect-error __applyEdits is defined by edits.js inside the page
       await page.evaluate(([e, u, i]) => window.__applyEdits(e, u, i), [edits, plan.imageUrls, plan.iconSvgs] as const);
       await page.evaluate(() => document.fonts.ready);
@@ -124,10 +135,41 @@ export async function render({ template, format, design, theme, slots: given, sc
     mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
     mark('screenshot');
-    return { png, report, design: plan.design, theme: plan.theme, variant, slots, width, height, timing: t, inspected, fixed };
+    return { png, report, design: plan.design, theme: plan.theme, variant, slots, width, height, timing: t, inspected, fixed, framed, fits };
   } finally {
     await context.close();
   }
+}
+
+// In the page (edits.js loaded): each framed slot's photos, placed so the focus point sits at the frame's
+// centre as far as the photo allows (never leaving a gap at zoom 1 or more).
+function frameSlots(framing: Record<string, { focusX?: number; focusY?: number; zoom?: number }>) {
+  type W = { __canCrop: (n: Element) => boolean; __photoWindow: (n: Element) => { x: number; y: number; w: number; h: number } };
+  const w = window as unknown as W;
+  const framed: Record<string, { crop: { x: number; y: number; zoom: number; src?: string } }> = {};
+  const fits: Record<string, { node: string; fit: unknown }> = {};
+  for (const [slot, f] of Object.entries(framing)) {
+    for (const n of document.querySelectorAll<HTMLElement>(`[data-slot="${CSS.escape(slot)}"][data-slot-type="image"]`)) {
+      if (!w.__canCrop(n) || !n.dataset.node) continue;
+      const { x, y, w: ww, h } = w.__photoWindow(n), iw = +n.dataset.imgW!, ih = +n.dataset.imgH!;
+      const zoom = Math.max(0.2, Math.min(5, f.zoom ?? 1));
+      const k = Math.max(ww / iw, h / ih) * zoom, bw = iw * k, bh = ih * k;
+      // As background-position %: where the focus lands at the centre, kept inside what the photo allows.
+      const pos = (w0: number, size: number, img: number, focus: number) => {
+        const room = size - img;
+        if (Math.abs(room) < 0.5) return 50;
+        const want = w0 + size / 2 - (focus / 100) * img;
+        return Math.max(0, Math.min(100, ((want - w0) / room) * 100));
+      };
+      const cx = pos(x, ww, bw, f.focusX ?? 50), cy = pos(y, h, bh, f.focusY ?? 50);
+      // Plain code only: this function runs in the page as written (no bundler helpers in scope).
+      const crop: { x: number; y: number; zoom: number; src?: string } = { x: +cx.toFixed(2), y: +cy.toFixed(2), zoom: +zoom.toFixed(3) };
+      if (n.dataset.slotSrc) crop.src = n.dataset.slotSrc;
+      framed[n.dataset.node] = { crop };
+      if (!fits[slot]) fits[slot] = { node: n.dataset.node, fit: { W: { x, y, w: ww, h }, iw, ih, bw, bh, px: x + (ww - bw) * (cx / 100), py: y + (h - bh) * (cy / 100) } };
+    }
+  }
+  return { framed, fits };
 }
 
 function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {

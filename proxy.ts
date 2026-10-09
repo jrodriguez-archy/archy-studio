@@ -22,6 +22,8 @@ export async function proxy(req: NextRequest) {
   const signedIn = !!data?.claims?.sub;
   const path = req.nextUrl.pathname;
   if (!signedIn && !PUBLIC.some((r) => r.test(path))) {
+    // A direct file link from Claude (signed, checked by the route) needs no session.
+    if (path.startsWith('/api/file/') && req.nextUrl.searchParams.has('sig')) return res;
     // A download link (/api/file/<id>, shared from Claude or the gallery) goes through the login first.
     if (path.startsWith('/api/') && !path.startsWith('/api/file/')) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
     const url = req.nextUrl.clone();

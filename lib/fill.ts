@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { Edits, FillPlan } from './canvas-shared';
+import type { Edits, FillPlan, Framing } from './canvas-shared';
 import { boothLike, splitHeadline } from './canvas-sync';
 import { iconMarkup } from './icons';
 import { STATIC, isPlaceholder, staticPlaceholder } from './placeholders';
@@ -34,6 +34,8 @@ export type RenderInput = {
   smallerText?: boolean;
   /** Hand edits from Canvas, applied after the fill. */
   edits?: Edits;
+  /** Per image slot: where its photo sits in its frame. Becomes crop edits (returned as `framed`). */
+  framing?: Record<string, Framing>;
   /** Also describe the piece's components (scripts/components.js), for the Canvas tools of the MCP. */
   inspect?: boolean;
   /** Apply the Inspector's automatic fixes in the page (several rounds) and return the fixed edits. */

@@ -10,13 +10,17 @@ import { createProject, findProject, listProjects } from '@/lib/projects';
 import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
-import { getAsset, listAssets, listFolders } from '@/lib/assets';
+import { DAILY, getAsset, listAssets, listFolders, useAi } from '@/lib/assets';
+import { outpaintFor, type Edits, type Framing } from '@/lib/canvas-shared';
+import { directFileLink, DIRECT_DAYS } from '@/lib/file-links';
+import { keepLinkedImage } from '@/lib/keep-image';
+import { extendPhoto } from '@/lib/outpaint';
 import { createPhotoRequest, getPhotoRequest } from '@/lib/photo-requests';
 import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo, templateBrand } from '@/lib/templates';
 import { BRAND_IDS } from '@/lib/brands';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const INSTRUCTIONS = `Archy Studio: Archy marketing templates. Turn a brief ("we have booth #1211 at the Chicago Midwinter Meeting, Feb 18 to 20") into finished PNGs built from Archy's approved Paper templates.
 
@@ -30,6 +34,12 @@ Brief first, then the best template:
 5. get_template for its slots and limits, then render. Each template has essential content (always filled) and minor optional details: an optional detail you do not have is left out with its label (no time: the date stays alone).
 6. If copy does not fit, the format is not delivered and the answer brings two options: shorter copy (with the exact maximum) and, when it works, smaller text (a preview, down to 70%). Show both and let the requester choose; offer a shorter version written by you (same facts, their wording). If they choose smaller text, render again with smaller_text: true. Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline takes the size and lines its room allows, the logo stays at the bottom), so never add words just to fill space. A headline on three or four big lines is right, not a problem.
 7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, what was left out, and which photos are placeholders.
+
+Framing photos: a photo is cropped to its frame from its centre unless you say otherwise. Look at every render: when what matters in a photo (a face, a tattoo, a product) is cut off or hidden behind the design (a pixel band, the copy), render again with framing for that slot: focus_x / focus_y (0–100 %, where that subject is in the photo, across and down) keep it at the frame's centre as far as the photo allows; zoom above 1 comes closer. When the photo is too tall or too wide for the frame to show the subject whole, use zoom below 1 with fill_around: true: AI paints the rest of the scene around the photo so it fills the frame (it can invent details: look at the result and say it was extended). Framing is kept in the design, so Canvas opens it as rendered.
+
+Images from links: an https image (a Notion, Drive or other signed link) is kept in Assets the first time it is used, so the design keeps working after the link expires. If the link no longer opens, ask for the photo with request_photos.
+
+Downloads: each format gives "Download (2x PNG)" (the lasting link for people signed in to Studio, to share) and "File" (works without signing in for a few days): save files with the File link.
 
 Designs and themes: some templates (list_templates shows designs and themes) come in several designs (layouts) and themes (White, Royal Blue, Navy grounds) with the same slots. Use the default unless the requester asks for one or for options; to offer options, render two or three different designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits, and some slots exist only in some designs (only_in_designs). Changing the design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
 
@@ -359,7 +369,7 @@ const handler = createMcpHandler(
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
           const saved = await saveCanvas(me, piece);
-          return { content: [{ type: 'text', text: `Saved as a new version. Download (2x PNG): ${publicOrigin(ctx)}/api/file/${saved.id} · Edit in Canvas: ${publicOrigin(ctx)}/canvas/${saved.id}` }] };
+          return { content: [{ type: 'text', text: `Saved as a new version. Download (2x PNG): ${publicOrigin(ctx)}/api/file/${saved.id} · File (no sign-in, ${DIRECT_DAYS} days): ${directFileLink(publicOrigin(ctx), saved.id)} · Edit in Canvas: ${publicOrigin(ctx)}/canvas/${saved.id}` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
         }
@@ -380,10 +390,16 @@ const handler = createMcpHandler(
           slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" (the ID from Studio → Assets), an upload:<path> value from list_assets, or an https URL (a cutout PNG for a person). Leave out (or null) what you do not have.'),
           project: z.string().optional().describe('Project to file the designs in (name or id from list_projects). Only when the requester mentions one.'),
           set: z.string().optional().describe('Set id returned by an earlier render of the same brief. Pass it for every later render of that brief (other formats, retries, other templates or options) so the gallery stacks them together.'),
+          framing: z.record(z.string(), z.object({
+            focus_x: z.number().min(0).max(100).optional().describe('Where the subject is in the photo, across (0 left, 100 right). Default 50.'),
+            focus_y: z.number().min(0).max(100).optional().describe('Where the subject is in the photo, down (0 top, 100 bottom). Default 50.'),
+            zoom: z.number().min(0.2).max(5).optional().describe('1 = the photo covers its frame (default); above 1 closer; below 1 smaller than the frame (empty bands unless fill_around).'),
+            fill_around: z.boolean().optional().describe('With zoom below 1: AI paints the rest of the scene around the photo so it fills the frame (a new image in Assets; it can invent details).'),
+          })).optional().describe('Per image slot (e.g. "image-photo"): where its photo sits in its frame. Use it when a render cuts off or hides what matters in the photo.'),
         }),
         annotations: { readOnlyHint: true, openWorldHint: false },
       },
-      async ({ template, formats, design, theme, slots, project, set, smaller_text: smallerText = false }, ctx) => {
+      async ({ template, formats, design, theme, slots, project, set, framing, smaller_text: smallerText = false }, ctx) => {
         let projectId: string | null = null;
         if (project) {
           const me = await whoIs(ctx);
@@ -402,6 +418,19 @@ const handler = createMcpHandler(
         // person's photo is a neutral silhouette), for the formats asked for. The real ones replace them later.
         const config = await loadConfig(template);
         const optionalSlots = new Set(config.optional ?? []);
+        // Photos and logos given as links are kept in Assets first: a signed link expires, the design stays.
+        const owner = userIdOf(ctx);
+        const brand = await templateBrand(template).catch(() => 'archy' as const);
+        try {
+          for (const [k, s] of Object.entries(m.slots)) {
+            const v = slots[k];
+            if ((s.type === 'image' || s.type === 'logo') && v && /^https:\/\//i.test(v)) slots = { ...slots, [k]: await keepLinkedImage(v, { ownerId: owner, brand, name: `${k.replace(/^(image|logo)-/, '').replace(/-/g, ' ')} (from a link)` }) };
+          }
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
+        const asked: Record<string, Framing> | undefined = framing && Object.keys(framing).length
+          ? Object.fromEntries(Object.entries(framing).map(([k, f]) => [k, { focusX: f.focus_x, focusY: f.focus_y, zoom: f.zoom }])) : undefined;
         const keys = wanted.map((f) => (combo?.key ? `${f}--${combo.key}` : f));
         const placeholders: Placeholder[] = [];
         for (const [k, s] of Object.entries(m.slots)) {
@@ -426,10 +455,35 @@ const handler = createMcpHandler(
         let coverNeeds: string[] | null = null;
         // Formats whose copy fits in smaller text (offered as an option).
         const smallerOption: string[] = [];
+        const extendNotes: string[] = [];
         for (const format of wanted) {
           let out;
+          // This format's photos and framing: framing becomes crop edits, and a photo extended with
+          // fill_around is this format's own (a new asset) with the crop that keeps it where it was.
+          let fslots = slots;
+          let fedits: Edits = {};
           try {
-            out = await render({ template, format, design, theme, slots, smallerText });
+            out = await render({ template, format, design, theme, slots, smallerText, framing: asked });
+            fedits = out.framed;
+            const extended: string[] = [];
+            for (const [slot, f] of Object.entries(framing ?? {})) {
+              const at = f.fill_around ? out.fits[slot] : undefined;
+              const plan = at && outpaintFor(at.fit);
+              if (!at || !plan || !fslots[slot]) continue;
+              if (!owner || !(await useAi(owner, 'outpaint'))) { extendNotes.push(`${format}: ${slot} not extended (the daily limit of ${DAILY.outpaint} is reached)`); continue; }
+              try {
+                const ext = await extendPhoto({ template, image: fslots[slot]!, expand: plan.expand, ownerId: owner, brand });
+                fslots = { ...fslots, [slot]: ext.value };
+                fedits = { ...fedits, [at.node]: { crop: plan.cropFor(ext.width, ext.height) } };
+                extended.push(slot);
+              } catch (e) {
+                extendNotes.push(`${format}: ${slot} not extended (${(e as Error).message})`);
+              }
+            }
+            if (extended.length) {
+              out = await render({ template, format, design, theme, slots: fslots, smallerText, edits: fedits });
+              extendNotes.push(`${format}: ${extended.join(', ')} extended with AI to fill the frame (look at it: it can invent details)`);
+            }
           } catch (e) {
             if (e instanceof MissingRequired) {
               // Only the cover is missing its own content (its ground photo): say so, keep the other formats.
@@ -451,7 +505,7 @@ const handler = createMcpHandler(
             // The other option: the same copy in smaller text. A preview only (not saved): the requester
             // chooses, and "smaller text" renders again with smaller_text.
             if (!smallerText) {
-              const small = await render({ template, format, design, theme, slots, smallerText: true }).catch(() => null);
+              const small = await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText: true }).catch(() => null);
               if (small?.report.ok) {
                 const shrunk = Object.entries(small.report.slots).filter(([, x]) => x.scale && x.scale < 1).map(([k, x]) => `${k} at ${Math.round(x.scale! * 100)}%`);
                 content.push({ type: 'image', data: small.png.toString('base64'), mimeType: 'image/png' });
@@ -465,9 +519,9 @@ const handler = createMcpHandler(
           // Without Supabase configured, the link re-renders the same piece (every decision explicit).
           let download: string;
           const saved = supabaseConfigured()
-            ? await render({ template, format, design, theme, slots, smallerText, scale: 2 }).then((hi) => saveRender({
+            ? await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText, scale: 2 }).then((hi) => saveRender({
                 userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId, setId, variant: hi.variant,
-                design: hi.design, theme: hi.theme, smallerText,
+                design: hi.design, theme: hi.theme, smallerText, ...(Object.keys(fedits).length ? { edits: fedits } : {}),
               }))
             : null;
           // A link that lasts (for people signed in to Studio) until the design is archived or deleted.
@@ -481,7 +535,7 @@ const handler = createMcpHandler(
           if (combo) notes.push(`${m.designs![combo.design].label} design, ${m.themes![combo.theme].label} theme`);
           if (smallerText) notes.push('smaller text, as chosen');
           if (variant) notes.push(`${m.variants?.[variant]?.label ?? variant} version`);
-          const derived = Object.entries(used).filter(([k, v]) => v && !slots[k] && m.slots[k].type === 'text').map(([k, v]) => `${k} "${v}" (derived)`);
+          const derived = Object.entries(used).filter(([k, v]) => v && !fslots[k] && m.slots[k].type === 'text').map(([k, v]) => `${k} "${v}" (derived)`);
           if (derived.length) notes.push(...derived);
           const left = Object.entries(report.slots).filter(([, s]) => s.status === 'removed').map(([k]) => k);
           if (left.length) notes.push(`left out: ${left.join(', ')}`);
@@ -492,7 +546,7 @@ const handler = createMcpHandler(
           content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
           content.push({
             type: 'text',
-            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
+            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, saved.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
           });
         }
         if (refused.length) {
@@ -505,6 +559,7 @@ const handler = createMcpHandler(
           ].join('\n') });
         }
         if (coverNeeds) content.push({ type: 'text', text: `Cover not made: it needs ${coverNeeds.join(', ')} (the event page cover's own copy). Ask the requester for it, then render formats: ["cover"] with the same set.` });
+        if (extendNotes.length) content.push({ type: 'text', text: extendNotes.join('\n') });
         if (placeholders.length && content.some((c) => c.type === 'image')) content.push({ type: 'text', text: placeholderNote(placeholders) });
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the designs stay together in the gallery).` });
         return { isError: refused.length + (coverNeeds ? 1 : 0) === wanted.length && !smallerOption.length, content };

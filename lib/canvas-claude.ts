@@ -7,7 +7,8 @@ import { render, type InspectedComp } from './renderer';
 import { storeExport } from './renders';
 import { supabaseAdmin } from './supabase/admin';
 import { clearDraft, getDraft, markClaude, saveDraft, type Draft } from './drafts';
-import { loadConfig, loadManifest } from './templates';
+import { loadConfig, loadManifest, templateBrand } from './templates';
+import { keepLinkedImage } from './keep-image';
 
 export { clearDraft, getDraft, saveDraft };
 
@@ -170,7 +171,9 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
     if (ch.scale) edit(c.id, { box: { scale: Math.max(0.3, Math.min(3, ch.scale)) } });
     if (ch.image) {
       if (!/^(asset:|upload:|https:\/\/)/.test(ch.image)) throw new Error('Images are asset:<id> (list_assets), an upload: value or an https URL.');
-      if (c.slot) slots[c.slot] = ch.image; else edit(c.id, { image: ch.image });
+      // A link is kept in Assets first (a signed link expires; the design must keep opening).
+      const image = await keepLinkedImage(ch.image, { ownerId: me.id, brand: await templateBrand(piece.template).catch(() => 'archy' as const), name: `${c.slot ? c.slot.replace(/^(image|logo)-/, '').replace(/-/g, ' ') : 'image'} (from a link)` });
+      if (c.slot) slots[c.slot] = image; else edit(c.id, { image });
     }
     const b = edits[c.id]?.box ?? {};
     if (ch.move) edit(c.id, { box: { dx: (b.dx ?? 0) + (ch.move.x ?? 0), dy: (b.dy ?? 0) + (ch.move.y ?? 0) } });

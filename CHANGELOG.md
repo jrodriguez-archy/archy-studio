@@ -1,5 +1,12 @@
 # Changelog
 
+## archy-studio 0.18.0 (2026-10-09)
+
+- MCP `render`: `framing` per image slot. `focus_x` / `focus_y` keep the subject at the frame's centre, `zoom` comes closer or makes the photo smaller than its frame, and `fill_around: true` paints the rest of the scene with AI (as Canvas's Generate content around; counted in its daily limit). The framing is saved as crop edits, so Canvas opens the design as rendered. The MCP route may run up to 300 s (an extended photo takes up to a minute).
+- Photos and logos given as https links (in `render` and `edit_canvas`) are kept in Assets the first time they are used, so designs keep working when a signed link (Notion, Drive, S3) expires; the same file is reused, and Studio's own signed links go back to the upload they point to.
+- Downloads for Claude: each format also gives a **File** link that works without signing in for 7 days (signed with the server's secret; `FILE_LINK_SECRET` if set), so Claude can save the PNGs; the lasting Download link (signed in) stays the one to share.
+- Plugin and marketplace versions follow the changelog again (were 0.15.0).
+
 ## archy-studio 0.17.1 (2026-10-09)
 
 - Uploads: a photo larger than 4 MB (straight from a phone or a camera) is no longer refused in Assets or Canvas; it is made smaller in the browser as it uploads (upright, up to 2800 px on its long side; a JPG, or a PNG/WebP when it has transparency, so cutouts and logos keep it), as photo links already did (they now share the same code and also take big PNG exports). SVGs still go as they are, under 4 MB.

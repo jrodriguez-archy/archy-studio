@@ -34,14 +34,16 @@ When the Archy Studio tools are deferred (they appear only by name), load them a
      - **Smaller text**: when the answer includes its preview, show it and say how much the text shrank ("the name at 81%"). It keeps their wording.
      Render what they choose: the shorter copy, or the same copy with `smaller_text: true`. When smaller text does not fit either, only shorter copy works: say so, and ask before changing a fact (a name, a title).
    - Never deliver a format that was not rendered.
+   - **Look at every photo.** When what matters in a photo (a face, a tattoo, a product) is cut off or hidden behind the design (the pixel band, the copy), render again with `framing` for that slot: `focus_x` / `focus_y` (0–100 %, where the subject is in the photo) keep it at the frame's centre; `zoom` above 1 comes closer. When the photo is too tall or too wide to show the subject whole, use `zoom` below 1 with `fill_around: true`: AI paints the rest of the scene around it (look at the result, and tell them it was extended; it can invent details). The framing stays in the design, so Canvas opens it as rendered.
+   - **Photo links.** An https photo (Notion, Drive, any signed link) is kept in Assets the first time it is used, so the design keeps working once the link expires. If the link no longer opens, ask for the photo with `request_photos`.
    - **One brief, one set.** Every render answer ends with `Set: <id>`. Pass that id as `set` to every later render of the same brief (more formats, a retry after shortening copy, another template or option), so the gallery stacks them as one card. A new brief starts without `set`.
    - **Event page cover.** When the template has a `cover` format in `list_templates`, offer the event page cover (1200×900, for the Webflow event page) in one line after delivering. If they want it, render the same template with `formats: ["cover"]`, the same facts, design, theme and `set`. It splits the headline and prints "Booth" by itself. Its own photos (`only_in_formats: ["cover"]`) come as placeholders when there are none yet; its short `cover-subhead` is written from the brief.
    - **Projects.** When the requester names a project or campaign ("save it in Chicago Midwinter"), call `list_projects` and pass it to `render` as `project`. If it does not exist, create it with `create_project`: shared with the team unless they say it is only for them. When they do not mention a project, do not ask.
 8. **Deliver.**
    - Show the images.
-   - Save the high-resolution files: when you can run commands, download each `Download (2x PNG)` link into the working folder as `<template>-<format>.png` (for example with `curl -L -o ae-spotlight-post.png "<link>"`). Otherwise give them the links.
+   - Save the high-resolution files: when you can run commands, download each format's **File** link (it works without signing in for 7 days) into the working folder as `<template>-<format>.png` (for example with `curl -L -o ae-spotlight-post.png "<File link>"`). Otherwise give them the links.
    - Give the **Edit in Canvas** link of each format: there they can fix copy, colours, images or sizes by hand and download again, without a new render.
-   - Say which photos are placeholders and how to replace them. The download links last (for people signed in to Studio) until the design is archived or deleted.
+   - Say which photos are placeholders and how to replace them. Give the **Download (2x PNG)** links to share: they last (for people signed in to Studio) until the design is archived or deleted.
 
 ## Live editing in Canvas
 

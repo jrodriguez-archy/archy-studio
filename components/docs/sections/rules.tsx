@@ -41,7 +41,7 @@ export function Rules() {
         ['The first design is slow', 'The first render after a quiet while takes a little longer. The next ones are quick.'],
         ['I cannot find a design', 'Check the brand (Archy or DOC) at the bottom of the sidebar, Mine vs Team, and Archive.'],
         ['I cannot move or archive a design', 'Only the person who made it, the project owner or an admin can.'],
-        ['An image will not upload', 'Use PNG, JPG, WebP or SVG under 4 MB.'],
+        ['An image will not upload', 'Use PNG, JPG, WebP or SVG. Large photos are made smaller as they upload; an SVG must be under 4 MB.'],
       ]} />
 
       <H2 id="account">Your account</H2>

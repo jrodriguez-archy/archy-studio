@@ -3,26 +3,10 @@
 import { useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { CheckmarkCircle02Icon, ImageUploadIcon, Loading03Icon } from '@hugeicons/core-free-icons';
+import { shrinkImage } from '@/lib/shrink-image';
 
 type Item = { key: string; label: string; cutout: boolean; thumb: string | null };
 type State = { thumb: string | null; busy: boolean; error: string | null; cutout?: boolean };
-
-// The server takes 4 MB at most: a larger photo (straight from a phone) is redrawn smaller, upright.
-const MAX_BYTES = 3_800_000, MAX_SIDE = 2800;
-async function shrink(file: File): Promise<Blob> {
-  if (file.size <= MAX_BYTES || file.type === 'image/svg+xml') return file;
-  const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
-  const k = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
-  const canvas = Object.assign(document.createElement('canvas'), { width: Math.round(bmp.width * k), height: Math.round(bmp.height * k) });
-  canvas.getContext('2d')!.drawImage(bmp, 0, 0, canvas.width, canvas.height);
-  // A PNG keeps its transparency (a cutout); anything else goes as JPEG.
-  const type = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-  for (const q of [0.9, 0.8, 0.7]) {
-    const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, type, q));
-    if (blob && blob.size <= MAX_BYTES) return blob;
-  }
-  throw new Error('The photo is too large. Export it smaller and try again.');
-}
 
 export function PhotoDrop({ id, items }: { id: string; items: Item[] }) {
   const [state, setState] = useState<Record<string, State>>(() => Object.fromEntries(items.map((i) => [i.key, { thumb: i.thumb, busy: false, error: null }])));
@@ -33,8 +17,8 @@ export function PhotoDrop({ id, items }: { id: string; items: Item[] }) {
     setState((s) => ({ ...s, [key]: { ...s[key], busy: true, error: null } }));
     try {
       const body = new FormData();
-      const blob = await shrink(file);
-      body.append('file', blob, file.name);
+      const small = await shrinkImage(file);
+      body.append('file', small, small.name);
       const r = await fetch(`/api/photo-requests/${id}/${key}`, { method: 'POST', body });
       const j = await r.json().catch(() => ({ error: 'Something went wrong.' }));
       if (!r.ok) throw new Error(j.error);

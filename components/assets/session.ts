@@ -44,4 +44,3 @@ export function foldersWithSession(base: Folder[]): Folder[] {
     .map((f) => ({ ...f, count: Math.max(0, f.count + (session.counts.get(f.id) ?? 0)), ...(session.folderNames.has(f.id) ? { name: session.folderNames.get(f.id)! } : {}) }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
-export const MAX_UPLOAD = 4_000_000;

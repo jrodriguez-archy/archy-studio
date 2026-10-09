@@ -6,11 +6,12 @@ import {
   MagicWand01Icon, PaintBoardIcon, PencilEdit02Icon, Scissor01Icon, UserIcon, ZoomInAreaIcon,
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
+import { shrinkImage } from '@/lib/shrink-image';
 import type { Action } from '@/components/action-menu';
 import type { Asset, Folder } from '@/lib/assets';
 import { PALETTES, pixelBackground, pixelDissolve, pixelTone, type Tone } from '@/lib/pixel-effects';
 import { AiDialog, AssetViewer, ConfirmDialog, NameDialog, PixelBackgroundDialog, RenameDialog } from './dialogs';
-import { MAX_UPLOAD, bump, foldersWithSession, session, withSession, type Lists } from './session';
+import { bump, foldersWithSession, session, withSession, type Lists } from './session';
 
 /** Where the list is: one folder, the images in no folder (null), or every image ('all', the page only). */
 export type Place = string | null | 'all';
@@ -209,10 +210,10 @@ export function useAssetLibrary({ assets, folders: baseFolders, target = null, o
   };
 
   const upload = (file: File, into: string | null = landing, place = true) => {
-    if (file.size > MAX_UPLOAD) { toast.error(`${file.name} is larger than 4 MB. Export it smaller and try again.`); return Promise.resolve(); }
     return job(file.name.replace(/\.\w+$/, ''), async () => {
       const body = new FormData();
-      body.set('file', file);
+      // Larger than the server takes: redrawn smaller first (a phone photo goes in as it is).
+      body.set('file', await shrinkImage(file));
       if (into) body.set('folder', into);
       const a = await send(body);
       if (place && target) onPick(a.value);

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { shrinkImage } from '@/lib/shrink-image';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowDown01Icon, ArrowRight01Icon, Delete02Icon, Image02Icon, Layers01Icon, LockIcon, ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
 import { LEFT_OUT, type Edits, type Preset } from '@/lib/canvas-shared';
@@ -220,7 +221,7 @@ function AddImage({ name, logo, className, onPick }: { name: string; logo: boole
     setBusy(true);
     try {
       const body = new FormData();
-      body.set('file', file);
+      body.set('file', await shrinkImage(file));
       const res = await fetch('/api/uploads', { method: 'POST', body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Could not upload the image.');

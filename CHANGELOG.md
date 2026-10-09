@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.17.1 (2026-10-09)
+
+- Uploads: a photo larger than 4 MB (straight from a phone or a camera) is no longer refused in Assets or Canvas; it is made smaller in the browser as it uploads (upright, up to 2800 px on its long side; a JPG, or a PNG/WebP when it has transparency, so cutouts and logos keep it), as photo links already did (they now share the same code and also take big PNG exports). SVGs still go as they are, under 4 MB.
+
 ## archy-studio 0.17.0 (2026-10-09)
 
 - Canvas: pulling a photo's handle scales the photo inside its frame, from the frame's centre; the frame stays as the template has it. Hold ⌥ to resize the frame instead (as before). The Photo panel’s Scale (was Zoom) does the same, from 20% to 400%, instead of shrinking the whole layer; the photo can be smaller than its frame.

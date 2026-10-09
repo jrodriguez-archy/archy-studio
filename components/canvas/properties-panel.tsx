@@ -8,6 +8,7 @@ import {
   ArrowDown01Icon, ArrowLeft01Icon, ArrowRight01Icon, ArrowTurnBackwardIcon, ArrowUp01Icon, ArrowUpRight01Icon, Delete02Icon, ImageUploadIcon, LockIcon, Tick02Icon, ViewIcon, ViewOffSlashIcon,
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
+import { shrinkImage } from '@/lib/shrink-image';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
@@ -621,7 +622,7 @@ function ImagePicker({ kind, preview, library, onPick }: { kind: Comp['kind']; p
     setBusy(true);
     try {
       const body = new FormData();
-      body.set('file', file);
+      body.set('file', await shrinkImage(file));
       const res = await fetch('/api/uploads', { method: 'POST', body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Could not upload the image.');
@@ -662,7 +663,7 @@ function ImagePicker({ kind, preview, library, onPick }: { kind: Comp['kind']; p
         )}
       </div>
       <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-      <p className="text-foreground/40">{kind === 'partner' ? 'A PNG or SVG with a transparent background. It takes the colour of the design.' : 'PNG, JPG or WebP up to 4 MB. Cutouts look best with a transparent background.'}</p>
+      <p className="text-foreground/40">{kind === 'partner' ? 'A PNG or SVG with a transparent background. It takes the colour of the design.' : 'PNG, JPG or WebP; large photos are made smaller to fit. Cutouts look best with a transparent background.'}</p>
     </div>
   );
 }

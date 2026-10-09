@@ -7,7 +7,7 @@ export function Assets() {
       <p>Assets holds the team’s images: photos and logos people upload, and what Studio makes from them (cutouts, pixel effects, generated images). Everyone on the team sees and uses them.</p>
 
       <H2 id="upload">Upload</H2>
-      <p><Ui>Upload</Ui>, or drag files onto the page (into the folder you are in). PNG, JPG, WebP or SVG, up to 4 MB each. Images go to the brand you are working in.</p>
+      <p><Ui>Upload</Ui>, or drag files onto the page (into the folder you are in). PNG, JPG, WebP or SVG. A photo larger than 4 MB (straight from a phone) is made smaller as it uploads, up to 2800 px on its long side. Images go to the brand you are working in.</p>
 
       <H2 id="folders">Folders</H2>
       <p><Ui>New folder</Ui> makes a team folder (“Speakers”, “Partner logos”). Drag images onto a folder, or use <Ui>Move to</Ui> with several selected. Deleting a folder keeps its images.</p>

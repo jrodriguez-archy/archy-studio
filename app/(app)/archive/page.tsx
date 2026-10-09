@@ -4,7 +4,7 @@ import { loadPieces } from '@/lib/gallery';
 import { listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 
-export const metadata = { title: 'Archive · Archy Studio' };
+export const metadata = { title: 'Archive' };
 export const dynamic = 'force-dynamic';
 
 // Archived sets the person can manage (theirs, those in projects they own, all for admins):

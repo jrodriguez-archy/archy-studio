@@ -1,13 +1,14 @@
+import type { Brand } from './brands';
 import { listTemplates, loadConfig } from './templates';
 
 // Facts a brief can bring. Copy (headlines, subheads, CTAs) is written from the brief, so it is not a fact.
 export const FACTS = [
   'event-name', 'city', 'venue', 'date', 'time', 'booth', 'city-photo', 'venue-photo', 'ground-photo', 'guest-photo',
   'speaker', 'speaker-photo', 'speaker-role', 'speaker-company', 'partner-logo',
-  'person', 'person-title', 'person-photo', 'ad-photo',
+  'person', 'person-title', 'person-photo', 'ad-photo', 'stat',
 ] as const;
 
-export const PURPOSES = ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite', 'event-cover', 'spotlight', 'photo-claim'] as const;
+export const PURPOSES = ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite', 'event-cover', 'spotlight', 'photo-claim', 'claim', 'stat', 'save-the-date'] as const;
 
 // A city or venue photo can also serve as a cover's ground photo.
 // `event-cover` is not a template's own purpose: it asks for the event page cover format of any template that has one.
@@ -25,11 +26,12 @@ export type Match = {
   score: number;
 };
 
-export async function matchTemplates(provided: string[], purpose?: string): Promise<Match[]> {
+// Only within one brand: an Archy brief never gets a DOC template, and the other way round.
+export async function matchTemplates(provided: string[], purpose?: string, brand: Brand = 'archy'): Promise<Match[]> {
   const have = new Set(provided);
   const has = (fact: string) => (SATISFIES[fact] ?? [fact]).some((f) => have.has(f));
   const out: Match[] = [];
-  for (const m of await listTemplates()) {
+  for (const m of await listTemplates(brand)) {
     const c = await loadConfig(m.id);
     const cover = purpose === 'event-cover';
     if (cover ? !m.formats.cover : purpose && c.purpose !== purpose) continue;

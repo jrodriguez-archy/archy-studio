@@ -809,7 +809,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
       }
     }
     const foot = kids.length > 1 ? kids[kids.length - 1] : null;
-    const isFooter = foot && (/Logo|Lockup|Footer|CTA|Button/i.test(foot.dataset.name ?? '') || foot.querySelector('[data-name^="Logo Archy"], [data-name^="Archy Wordmark"]'));
+    const isFooter = foot && (/Logo|Lockup|Footer|CTA|Button/i.test(foot.dataset.name ?? '') || foot.querySelector('[data-name^="Logo Archy"], [data-name^="Archy Wordmark"], [data-name^="Logo DOC"], [data-name^="DOC Lockup"]'));
     // (A fixed-height frame that spreads its content already has its footer at the bottom.)
     const spread = /space-/.test(getComputedStyle(box).justifyContent);
     if (!spread && isFooter && used() < target - 1) {

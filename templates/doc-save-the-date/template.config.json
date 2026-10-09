@@ -1,0 +1,147 @@
+{
+  "id": "doc-save-the-date",
+  "brand": "doc",
+  "title": "DOC Save the Date",
+  "category": "ads",
+  "purpose": "save-the-date",
+  "description": "The date as a numeral at poster size, one line under it and an offer line",
+  "useWhen": "DOC announces a date (a session, a cohort start, an event) before the details are out.",
+  "notWhen": "there is no date yet.",
+  "paperFileId": "01M4GTETFE50NWP2RVCNHFAF0X",
+  "guidance": [
+    "date: the compact graphic numeral M.DD (\"10.12\" for October 12). Only a real date from the brief.",
+    "headline: one short line under the date (\"You'll see why.\").",
+    "offer: the facts, separated by a bullet (\"Foundations track • Free\"). Optional.",
+    "cta: \"Save your spot\" on every theme, unless the brief gives its own action.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "F4A-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "F36-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "F5E-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "save-the-date": {
+      "label": "Save the Date"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "save-the-date",
+    "theme": "foundations"
+  },
+  "combos": {
+    "save-the-date--startup": {
+      "design": "save-the-date",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "F7M-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "F6I-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "F8Q-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "save-the-date--acquisition": {
+      "design": "save-the-date",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "FAY-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "F9U-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "FC2-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "save-the-date--dark": {
+      "design": "save-the-date",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "FEA-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "FD6-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "FFE-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "save-the-date--light": {
+      "design": "save-the-date",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "FGI-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4OO-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "FHM-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "date",
+    "headline",
+    "cta"
+  ],
+  "optional": [
+    "offer"
+  ],
+  "facts": {
+    "date": "date",
+    "headline": null,
+    "offer": null,
+    "cta": null
+  }
+}

@@ -2,14 +2,21 @@ import Link from 'next/link';
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
 import { GalleryFeed } from '@/components/gallery-feed';
 import { TYPES, loadPieces } from '@/lib/gallery';
+import { currentBrand, followRecord } from '@/lib/brand';
+import { BRANDS } from '@/lib/brands';
 import { listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 
-export const metadata = { title: 'Gallery · Archy Studio' };
+// Same segment as the (app) layout, so its title template does not reach this page.
+export async function generateMetadata() {
+  return { title: { absolute: `Gallery · ${BRANDS[await currentBrand()].studio}` } };
+}
 export const dynamic = 'force-dynamic';
 
-export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ all?: string; type?: string }> }) {
-  const { all, type } = await searchParams;
+export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ all?: string; type?: string; set?: string }> }) {
+  const { all, type, set } = await searchParams;
+  // A shared set link (?set=) of the other brand switches to it first.
+  if (set) await followRecord('renders', set, `/?${new URLSearchParams({ ...(all ? { all } : {}), ...(type ? { type } : {}), set })}`, true);
   const me = (await currentUser())!;
   const mine = !all; // default: the signed-in person's own pieces
   const kind = TYPES.find((t) => t.key === type);

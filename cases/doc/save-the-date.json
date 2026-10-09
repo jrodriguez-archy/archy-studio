@@ -1,0 +1,9 @@
+{
+ "name": "doc-save-the-date",
+ "slots": {
+  "date": "11.04",
+  "headline": "The Startup track opens.",
+  "offer": "Startup track • Online",
+  "cta": "Save your spot"
+ }
+}

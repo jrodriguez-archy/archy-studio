@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { brandOf, type Brand } from './brands';
 
 // Repo root holds templates/, fonts/ and scripts/fit.js (bundled via outputFileTracingIncludes).
 export const ROOT = process.cwd();
@@ -61,10 +62,16 @@ export function comboFormats(manifest: Manifest, combo: Combo | null) {
 
 const SAFE_ID = /^[a-z0-9-]+$/;
 
-export async function listTemplates(): Promise<Manifest[]> {
+// Every template, or only one brand's (a template without a brand is Archy's).
+export async function listTemplates(brand?: Brand): Promise<Manifest[]> {
   const dir = path.join(ROOT, 'templates');
-  const ids = (await fs.readdir(dir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+  let ids = (await fs.readdir(dir, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+  if (brand) ids = (await Promise.all(ids.map(async (id) => ((await templateBrand(id)) === brand ? id : null)))).filter((id): id is string => !!id);
   return Promise.all(ids.map((id) => loadManifest(id)));
+}
+
+export async function templateBrand(id: string): Promise<Brand> {
+  return brandOf((await loadConfig(id)).brand);
 }
 
 // Template files never change inside a deploy: read once per server instance (in development they are
@@ -95,6 +102,8 @@ export async function loadRules(id: string, manifest: Manifest): Promise<Rules> 
 
 export type TemplateConfig = {
   id: string;
+  /** The brand it belongs to (missing: Archy). Studio shows it only in that brand. */
+  brand?: Brand;
   title: string;
   description: string;
   useWhen?: string;
@@ -123,6 +132,8 @@ export async function loadConfig(id: string): Promise<TemplateConfig> {
 
 export type LibraryAsset = {
   id: string;
+  /** The brand it belongs to (missing: Archy). */
+  brand?: Brand;
   kind: string;
   title: string;
   description: string;

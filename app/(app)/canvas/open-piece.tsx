@@ -51,6 +51,7 @@ export async function OpenPiece({ pieceRef, me }: { pieceRef: string; me: Who })
         boards: boards.filter((b): b is Board => !('lost' in b)),
         ghosts: set.missing.map((m) => ({ ...m, label: formatLabel(m.format) })),
         slotMeta: ctx.slotsByFormat,
+        brand: ctx.brand,
       }}
     />
   );

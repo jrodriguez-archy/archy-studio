@@ -4,6 +4,7 @@ import { MobileNav } from '@/components/mobile-nav';
 import type { NavIcon } from '@/components/nav-link';
 import type { ProjectLink } from '@/components/projects-nav';
 import { ShellFrame, Sidebar } from '@/components/sidebar';
+import { brandOf, BRAND_COOKIE } from '@/lib/brands';
 import { listProjects } from '@/lib/projects';
 import { displayName } from '@/lib/names';
 import { currentUser } from '@/lib/team';
@@ -25,9 +26,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const projects: ProjectLink[] = list.map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id }));
   const who = me ? { id: me.id, is_admin: me.is_admin } : undefined;
   const collapsed = jar.get('sidebar')?.value === 'collapsed';
+  const brand = brandOf(jar.get(BRAND_COOKIE)?.value);
   return (
-    <ShellFrame initialCollapsed={collapsed} sidebar={<Sidebar sections={sections} admin={admin} projects={projects} me={who} email={me?.email ?? ''} name={name} />}>
-      <MobileNav sections={sections} admin={admin} projects={projects} me={who} email={me?.email ?? ''} />
+    <ShellFrame initialCollapsed={collapsed} sidebar={<Sidebar sections={sections} admin={admin} projects={projects} me={who} email={me?.email ?? ''} name={name} brand={brand} />}>
+      <MobileNav sections={sections} admin={admin} projects={projects} me={who} email={me?.email ?? ''} brand={brand} />
       {/* Full-screen tools (Canvas) mark themselves data-fullbleed and take the whole content area. */}
       <main className="min-w-0 px-4 pt-5 pb-16 sm:px-6 md:pt-8 lg:px-10 has-[[data-fullbleed]]:p-0">{children}</main>
     </ShellFrame>

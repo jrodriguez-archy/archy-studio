@@ -1,0 +1,11 @@
+{
+ "name": "doc-bar-short",
+ "slots": {
+  "headline-1": "Own it.",
+  "headline-2": "Learn it first.",
+  "body": null,
+  "cta-eyebrow": null,
+  "cta-line": "Start wherever you are.",
+  "cta": "Get started"
+ }
+}

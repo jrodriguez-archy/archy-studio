@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/app-shell';
 import { CopyText } from '@/components/copy-text';
 
-export const metadata = { title: 'Install · Archy Studio' };
+export const metadata = { title: 'Install' };
 
 const BRIEFS = [
   'We have booth #1211 at the Chicago Midwinter Meeting, February 18 to 20 in Chicago. Make the social posts.',

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { followRecord } from '@/lib/brand';
 import { loadSource } from '@/lib/canvas';
 import { titleFromSlots } from '@/lib/gallery-shared';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -10,7 +11,7 @@ export const maxDuration = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const piece = await loadSource((await params).id);
-  return { title: `${piece ? piece.set_title ?? titleFromSlots(piece.slots) ?? 'Canvas' : 'Canvas'} · Archy Studio` };
+  return { title: `${piece ? piece.set_title ?? titleFromSlots(piece.slots) ?? 'Canvas' : 'Canvas'}` };
 }
 
 export default async function CanvasPiece({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ latest?: string }> }) {
@@ -27,5 +28,6 @@ export default async function CanvasPiece({ params, searchParams }: { params: Pr
     }
     redirect(`/canvas/${at}`);
   }
+  await followRecord('renders', id, `/canvas/${id}`);
   return <OpenPiece pieceRef={id} me={me} />;
 }

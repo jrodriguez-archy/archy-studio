@@ -2,7 +2,7 @@ import { AssetManager } from '@/components/assets/asset-manager';
 import { canvasLibrary } from '@/lib/canvas';
 import { currentUser } from '@/lib/team';
 
-export const metadata = { title: 'Assets · Archy Studio' };
+export const metadata = { title: 'Assets' };
 export const dynamic = 'force-dynamic';
 
 // Create → Assets: the team's images, wide (the same library as Canvas → Assets).

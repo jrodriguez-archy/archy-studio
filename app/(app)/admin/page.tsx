@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/app-shell';
 import { currentUser, listTeam } from '@/lib/team';
 import { TeamManager } from './team-manager';
 
-export const metadata = { title: 'Team · Archy Studio' };
+export const metadata = { title: 'Team' };
 
 export default async function AdminPage() {
   const me = await currentUser();

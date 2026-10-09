@@ -1,0 +1,7 @@
+{
+  "_comment": "The figure is set at poster size on one line: it shrinks further than copy so a longer figure (\"189 lessons\") still fits.",
+  "slots": {
+    "stat": { "within": "Content", "maxLines": 1, "minScale": 0.5 },
+    "body": { "within": "Content", "maxLines": 3, "minScale": 0.85 }
+  }
+}

@@ -4,7 +4,7 @@ import { ReviewBoard } from '@/components/review/review-board';
 import { listRounds, loadRound } from '@/lib/review';
 import { currentUser } from '@/lib/team';
 
-export const metadata = { title: 'Template review · Archy Studio' };
+export const metadata = { title: 'Template review' };
 export const dynamic = 'force-dynamic';
 
 // Template review: every template × format × case of a round, to approve or comment on. Claude makes the

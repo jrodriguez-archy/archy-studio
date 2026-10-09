@@ -10,7 +10,8 @@ export type Piece = {
 };
 
 // Everything made from one brief: its formats, retries and options, shown as one stacked card.
-export type PieceFilter = { userId?: string; projectId?: string; formats?: string[]; archived?: boolean };
+// Without a brand, the server uses the one the person is working in.
+export type PieceFilter = { userId?: string; projectId?: string; formats?: string[]; archived?: boolean; brand?: 'archy' | 'doc' };
 // A gallery view shows the newest PAGE designs first; older ones load as the person scrolls.
 export const PAGE = 120;
 

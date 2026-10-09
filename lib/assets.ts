@@ -1,5 +1,7 @@
 import 'server-only';
 import { after } from 'next/server';
+import { currentBrand } from './brand';
+import type { Brand } from './brands';
 import { PUBLIC, publicUrl } from './images';
 import { displayName } from './names';
 import { storeUpload } from './renders';
@@ -7,7 +9,8 @@ import { supabaseAdmin } from './supabase/admin';
 
 // Assets: the images the team brings to Studio and what Studio makes from them (a cutout, a pixel effect,
 // a generated image). Shared with the whole team; a design keeps the file as `upload:<path>`, so a
-// design never breaks when an asset is renamed or removed from the list.
+// design never breaks when an asset is renamed or removed from the list. Each asset and folder belongs to
+// one brand and only shows there; without a brand, the one the person works in.
 
 export type AssetKind = 'upload' | 'cutout' | 'pixel' | 'generated';
 export type Asset = {
@@ -30,9 +33,10 @@ const toAsset = (r: Row): Asset => ({
 });
 
 // Store an image as a new asset: the file (private), its thumbnail (public) and its record.
-export async function createAsset(input: { ownerId: string; body: Buffer; type: string; name: string; kind: AssetKind; parentId?: string | null; prompt?: string | null; folderId?: string | null }): Promise<Asset> {
-  // Into a folder that is no longer there: kept, out of any folder.
-  const folder = input.folderId && /^[0-9a-f-]{36}$/i.test(input.folderId) ? (await supabaseAdmin().from('asset_folders').select('id').eq('id', input.folderId).maybeSingle()).data?.id ?? null : null;
+export async function createAsset(input: { ownerId: string; body: Buffer; type: string; name: string; kind: AssetKind; parentId?: string | null; prompt?: string | null; folderId?: string | null; brand?: Brand }): Promise<Asset> {
+  const brand = input.brand ?? (await currentBrand());
+  // Into a folder that is no longer there (or of the other brand): kept, out of any folder.
+  const folder = input.folderId && /^[0-9a-f-]{36}$/i.test(input.folderId) ? (await supabaseAdmin().from('asset_folders').select('id').eq('id', input.folderId).eq('brand', brand).maybeSingle()).data?.id ?? null : null;
   // Made from an image that is no longer there: kept, without the link to it.
   const parent = input.parentId ? (await supabaseAdmin().from('assets').select('id').eq('id', input.parentId).maybeSingle()).data?.id ?? null : null;
   const value = await storeUpload(input.ownerId, input.body, input.type);
@@ -44,7 +48,7 @@ export async function createAsset(input: { ownerId: string; body: Buffer; type: 
   // An image Studio cannot read (damaged, or far too large) is refused, and its file goes.
   const size = await thumbnail(path, input.body).catch(async (e: Error) => { await drop(); throw new Error(`This image could not be read. ${e.message}`); });
   const { width, height } = size;
-  const row = { owner_id: input.ownerId, path, name: input.name.slice(0, 120) || 'Image', kind: input.kind, parent_id: parent, folder_id: folder, prompt: input.prompt ?? null, width, height };
+  const row = { brand, owner_id: input.ownerId, path, name: input.name.slice(0, 120) || 'Image', kind: input.kind, parent_id: parent, folder_id: folder, prompt: input.prompt ?? null, width, height };
   let { data, error } = await supabaseAdmin().from('assets').insert(row).select(COLUMNS).single();
   // Its folder (or source) was removed while it was being made: kept, out of it.
   if (error?.code === '23503') ({ data, error } = await supabaseAdmin().from('assets').insert({ ...row, folder_id: null, parent_id: null }).select(COLUMNS).single());
@@ -73,7 +77,7 @@ async function thumbnail(path: string, body: Buffer) {
 // The newest assets: everyone's (Team) or one person's (Mine). One person's older uploads (from before
 // assets were kept) join the list the first time they look (once per server instance).
 const adopted = new Set<string>();
-export async function listAssets(opts: { ownerId?: string; folderId?: string; search?: string; limit?: number } = {}): Promise<Asset[]> {
+export async function listAssets(opts: { ownerId?: string; folderId?: string; search?: string; limit?: number; brand?: Brand } = {}): Promise<Asset[]> {
   // In the background, after the response: never on the way of the list itself.
   if (opts.ownerId && !adopted.has(opts.ownerId)) {
     adopted.add(opts.ownerId);
@@ -81,7 +85,7 @@ export async function listAssets(opts: { ownerId?: string; folderId?: string; se
     const adopt = () => adoptOldUploads(owner).catch(() => {});
     try { after(adopt); } catch { void adopt(); }
   }
-  let q = supabaseAdmin().from('assets').select(COLUMNS).is('deleted_at', null).order('created_at', { ascending: false }).limit(opts.limit ?? 300);
+  let q = supabaseAdmin().from('assets').select(COLUMNS).eq('brand', opts.brand ?? (await currentBrand())).is('deleted_at', null).order('created_at', { ascending: false }).limit(opts.limit ?? 300);
   if (opts.ownerId) q = q.eq('owner_id', opts.ownerId);
   // By name: the LIKE wildcards are taken literally (PostgREST reads * as a wildcard and cannot escape it).
   const term = opts.search?.trim().slice(0, 80).replace(/[\\%_]/g, '\\$&').replace(/\*/g, '');
@@ -186,10 +190,11 @@ export async function sourceFor(asset: { path: string }): Promise<{ url: string;
 // ---- Folders: one level, shared by the whole team (like a team drive) ----
 export type Folder = { id: string; name: string; createdBy: string | null; count: number };
 
-export async function listFolders(): Promise<Folder[]> {
+export async function listFolders(brand?: Brand): Promise<Folder[]> {
   const db = supabaseAdmin();
+  const b = brand ?? (await currentBrand());
   const [{ data: folders }, { data: counts }] = await Promise.all([
-    db.from('asset_folders').select('id, name, created_by').order('name'),
+    db.from('asset_folders').select('id, name, created_by').eq('brand', b).order('name'),
     db.rpc('asset_folder_counts'),
   ]);
   const count = new Map(((counts ?? []) as { folder_id: string; images: number }[]).map((c) => [c.folder_id, Number(c.images)]));
@@ -202,14 +207,15 @@ const folderName = (name: string) => {
   return n;
 };
 
-export async function createFolder(me: Who, name: string): Promise<Folder> {
+export async function createFolder(me: Who, name: string, brand?: Brand): Promise<Folder> {
   const n = folderName(name);
   const db = supabaseAdmin();
-  const { data, error } = await db.from('asset_folders').insert({ name: n, created_by: me.id }).select('id, name, created_by').single();
+  const b = brand ?? (await currentBrand());
+  const { data, error } = await db.from('asset_folders').insert({ name: n, created_by: me.id, brand: b }).select('id, name, created_by').single();
   if (data) return { id: data.id, name: data.name, createdBy: data.created_by, count: 0 };
   // One name, one folder: that name exists (any capitals), so that folder is used.
   if (error?.code === '23505') {
-    const same = (await listFolders()).find((f) => f.name.toLowerCase() === n.toLowerCase());
+    const same = (await listFolders(b)).find((f) => f.name.toLowerCase() === n.toLowerCase());
     if (same) return same;
   }
   throw new Error('Could not create the folder.');
@@ -241,10 +247,11 @@ export async function deleteFolder(me: Who, id: string) {
 export async function moveAssets(ids: string[], folderId: string | null) {
   const list = ids.filter((id) => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 200);
   if (!list.length) return;
+  const brand = await currentBrand();
   if (folderId) {
-    const { data } = await supabaseAdmin().from('asset_folders').select('id').eq('id', folderId).maybeSingle();
+    const { data } = await supabaseAdmin().from('asset_folders').select('id').eq('id', folderId).eq('brand', brand).maybeSingle();
     if (!data) throw new Error('Folder not found.');
   }
-  const { error } = await supabaseAdmin().from('assets').update({ folder_id: folderId }).in('id', list).is('deleted_at', null);
+  const { error } = await supabaseAdmin().from('assets').update({ folder_id: folderId }).in('id', list).eq('brand', brand).is('deleted_at', null);
   if (error) throw new Error(error.code === '23503' ? 'Folder not found.' : 'Could not move the images.');
 }

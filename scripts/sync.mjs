@@ -205,21 +205,25 @@ async function build(key, label, d) {
   }
 
   const rootStyle = d.styles[d.rootId];
+  // Fonts by brand: Archy's are self-hosted (Inter, Onest); DOC's Satoshi comes from Fontshare, as its
+  // licence lets it be used but not redistributed (never commit it).
+  const doc = config.brand === 'doc';
+  const fontLink = doc ? 'https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=block' : '../../fonts/fonts.css';
   const html = `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <title>${esc(config.title)} · ${esc(label)}</title>
-<link rel="stylesheet" href="../../fonts/fonts.css">
+<link rel="stylesheet" href="${fontLink}">
 <style>
 ${d.tokensCss.trim()}
 html, body { margin: 0; padding: 0; background: transparent; }
 * { box-sizing: border-box; }
 [data-node="${d.rootId}"], [data-node="${d.rootId}"] * {
   font-synthesis: none; overflow-wrap: anywhere;
-  /* Paper does not apply optical sizing (Inter 4 renders at opsz 14 at every size). */
+${doc ? '' : `  /* Paper does not apply optical sizing (Inter 4 renders at opsz 14 at every size). */
   font-optical-sizing: none;
-  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+`}  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 </style>
 </head>

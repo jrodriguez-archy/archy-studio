@@ -6,7 +6,8 @@ import { loadPieces } from './gallery';
 import { formatLabel, groupSets } from './gallery-shared';
 import { listAssets, listFolders } from './assets';
 import { supabaseAdmin } from './supabase/admin';
-import { comboFormats, loadConfig, loadLibrary, loadManifest, resolveCombo, type Manifest, type TemplateConfig } from './templates';
+import { brandOf } from './brands';
+import { comboFormats, loadConfig, loadLibrary, loadManifest, resolveCombo, templateBrand, type Manifest, type TemplateConfig } from './templates';
 
 // Canvas: open a finished piece from its source (template + format + slots + edits), change it by hand
 // and render it again with the same engine. Anyone on the team can open a piece and save a new version
@@ -50,7 +51,10 @@ export const loadSource = cache(async (ref: string): Promise<PieceSource | null>
     let f;
     try { f = filesOf(manifest, pick)[format]; } catch { return null; }
     if (!f) return null;
-    const slots = Object.fromEntries(Object.entries(manifest.slots).map(([k, v]) => [k, v.default]));
+    // The sample copy of this format and theme (DOC's themes each have their own: "Enroll now" on Startup).
+    const key = (() => { try { const c = resolveCombo(manifest, pick.design ?? undefined, pick.theme ?? undefined); return c?.key ? `${format}--${c.key}` : format; } catch { return format; } })();
+    const sampleOf = (v: Manifest['slots'][string]) => (v.perFormat?.[key] as { sample?: string } | undefined)?.sample ?? v.default;
+    const slots = Object.fromEntries(Object.entries(manifest.slots).map(([k, v]) => [k, sampleOf(v)]));
     return { id: ref, template, format, slots, edits: {}, ...pick, set_id: null, set_title: null, project_id: null, user_id: null, storage_path: '', width: f.width, height: f.height };
   }
   const id = ref;
@@ -120,7 +124,8 @@ export type SlotInfo = { type: 'text' | 'image' | 'logo'; optional: boolean; fon
 
 export async function editorContext(piece: PieceSource) {
   const family = await familyOf(piece.template);
-  const [library, title, ...members] = await Promise.all([loadLibrary(), titleOf(family[0]),
+  const brand = await templateBrand(piece.template);
+  const [all, title, ...members] = await Promise.all([loadLibrary(), titleOf(family[0]),
     ...family.map(async (t) => {
       const manifest = await loadManifest(t);
       return { manifest, config: await loadConfig(t), combo: resolveCombo(manifest, t === piece.template ? piece.design : null, t === piece.template ? piece.theme : null) };
@@ -142,8 +147,10 @@ export async function editorContext(piece: PieceSource) {
     /** The same, for every format of the design family (each artboard, the event cover included). */
     slotsByFormat: Object.fromEntries((members as Member[]).flatMap((m) => Object.keys(comboFormats(m.manifest, m.combo)).map((f) => [f, slotsOf(m, f)]))),
     /** The design and theme drawn, with the labels to show (null on single-design templates). */
+    /** The brand of the template: Archy's recolor looks (Dark, Blue…) are offered only on Archy designs. */
+    brand,
     combo: combo ? { design: combo.design, theme: combo.theme, designLabel: manifest.designs![combo.design].label, themeLabel: manifest.themes![combo.theme].label } : null,
-    library: library.map((a) => ({ id: a.id, title: a.title, kind: a.kind, url: `/api/template-files/library/${a.file}` })),
+    library: all.filter((a) => brandOf(a.brand) === brand).map((a) => ({ id: a.id, title: a.title, kind: a.kind, url: `/api/template-files/library/${a.file}` })),
   };
 }
 

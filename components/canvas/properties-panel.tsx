@@ -24,7 +24,7 @@ export type Align = 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
 
 const WEIGHTS = [[400, 'Regular'], [500, 'Medium'], [600, 'Semibold'], [700, 'Bold']] as const;
 const KIND_LABEL: Record<Comp['kind'], string> = {
-  text: 'Text', button: 'Button', icon: 'Icon', photo: 'Photo', partner: 'Logo', archy: 'Archy logo', group: 'Group',
+  text: 'Text', button: 'Button', icon: 'Icon', photo: 'Photo', partner: 'Logo', archy: 'Brand logo', group: 'Group',
   tag: 'Tag', line: 'Line', decoration: 'Decoration', background: 'Background',
 };
 
@@ -34,6 +34,8 @@ type Props = {
   alignIn?: string;
   preset?: Preset;
   onPreset: (p: Preset) => void;
+  /** Archy's recolor looks (Dark, Blue, Ice, Light); off on other brands' designs. */
+  recolor?: boolean;
   info: (id?: string) => LayerInfo | null;
   edits: Edits;
   slots: Record<string, string | null>;
@@ -58,7 +60,7 @@ const NUDGE = 8;
 
 // Right column: what the selected component lets you change, inside the brand (palette colours, the
 // template's weights, sizes within the slot's limits).
-export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign, essential, designFontSize, advanced, onAdvanced }: Props) {
+export function PropertiesPanel({ comp, alignIn, preset, onPreset, recolor = true, info, edits, slots, slotMeta, previews, tokens, library, onEdit, onSlot, onReset, onAlign, essential, designFontSize, advanced, onAdvanced }: Props) {
   const edit = edits[comp.id];
   const box = edit?.box ?? {};
   const me = info(comp.id);
@@ -73,7 +75,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
       <Panel comp={comp} onReset={edited ? onReset : undefined}>
         <div className="flex gap-2.5 rounded-md bg-foreground/[0.04] p-3 text-foreground/60">
           <HugeiconsIcon icon={LockIcon} className="mt-px size-4 shrink-0 text-foreground/50" strokeWidth={1.6} />
-          <p>The drawing and its colour are the brand’s. You can move it and scale it; it turns white or Archy blue with the recolor.</p>
+          <p>The drawing and its colour are the brand’s. You can move it and scale it{recolor ? '; it turns white or Archy blue with the recolor' : ''}.</p>
         </div>
         <Section title="Position">
           {advanced ? (
@@ -168,7 +170,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
         </Section>
       )}
 
-      {comp.kind === 'background' && (
+      {comp.kind === 'background' && recolor && (
         <Section title="Recolor">
           <div className="grid grid-cols-4 gap-1">
             {PRESETS.map(([key, label, swatch]) => (

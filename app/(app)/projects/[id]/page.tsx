@@ -4,6 +4,7 @@ import { LockIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
 import { PageHeader, Pills } from '@/components/app-shell';
 import { GalleryFeed } from '@/components/gallery-feed';
 import { TYPES, loadPieces } from '@/lib/gallery';
+import { followRecord } from '@/lib/brand';
 import { getProject, listProjects } from '@/lib/projects';
 import { currentUser } from '@/lib/team';
 import { ProjectActions } from './project-actions';
@@ -13,12 +14,13 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const me = await currentUser();
   const p = me ? await getProject(me, (await params).id).catch(() => null) : null;
-  return { title: `${p?.name ?? 'Project'} · Archy Studio` };
+  return { title: `${p?.name ?? 'Project'}` };
 }
 
 export default async function ProjectPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ type?: string }> }) {
   const [{ id }, { type }] = await Promise.all([params, searchParams]);
   const me = (await currentUser())!;
+  await followRecord('projects', id, `/projects/${id}`);
   const [project, pieces, projects] = await Promise.all([getProject(me, id), loadPieces({ projectId: id }), listProjects(me)]);
   if (!project) notFound();
   const kind = TYPES.find((t) => t.key === type);

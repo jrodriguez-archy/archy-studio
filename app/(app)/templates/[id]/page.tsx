@@ -2,13 +2,16 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/app-shell';
 import { previewSrcs, selfOrigin } from '@/lib/previews';
+import { followBrand } from '@/lib/brand';
+import { brandOf } from '@/lib/brands';
 import { catalog, FACT_LABEL, PURPOSE_LABEL } from '@/lib/catalog';
 import { comboFormats, resolveCombo } from '@/lib/templates';
 
 export default async function TemplatePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ design?: string; theme?: string }> }) {
   const { id } = await params;
-  const item = (await catalog()).find((i) => i.manifest.id === id);
+  const item = (await catalog('all')).find((i) => i.manifest.id === id);
   if (!item) notFound();
+  await followBrand(brandOf(item.config.brand), `/templates/${id}`);
   const { manifest, config, formats, needs, extras } = item;
   const optional = new Set(config.optional ?? []);
   const srcs = await previewSrcs([item], await selfOrigin());

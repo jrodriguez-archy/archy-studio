@@ -1,0 +1,151 @@
+{
+  "id": "doc-bar",
+  "brand": "doc",
+  "title": "DOC Claim Bar",
+  "category": "ads",
+  "purpose": "claim",
+  "description": "One claim in two weights, a short body line and a CTA bar",
+  "useWhen": "DOC has one claim to make (a setup and its payoff) and an action to take.",
+  "notWhen": "the piece is about one number (use `DOC Stat Hero`) or a date (use `DOC Save the Date`).",
+  "paperFileId": "01M4GTETFE50NWP2RVCNHFAF0X",
+  "guidance": [
+    "headline-1 is the setup, in Regular; headline-2 the payoff, in Bold (\"Dental school taught you teeth.\" / \"We teach you business.\"). Each about two lines; break at a sense unit so the weight change lands at a line end.",
+    "body: one or two lines, two sense units broken after the comma. Optional.",
+    "cta-line sets up the CTA verb in the bar (\"Enrollment is open.\" before \"Enroll now\"); cta-eyebrow is a short label above it, optional.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "370-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "1PK-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "4VX-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "bar": {
+      "label": "Bar"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "bar",
+    "theme": "foundations"
+  },
+  "combos": {
+    "bar--startup": {
+      "design": "bar",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "521-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4X5-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "56X-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "bar--acquisition": {
+      "design": "bar",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "539-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4YD-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "585-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "bar--dark": {
+      "design": "bar",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "54H-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "4ZL-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "59D-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "bar--light": {
+      "design": "bar",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "55P-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "50T-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "5AL-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "headline-1",
+    "headline-2",
+    "cta-line",
+    "cta"
+  ],
+  "optional": [
+    "body",
+    "cta-eyebrow"
+  ],
+  "facts": {
+    "headline-1": null,
+    "headline-2": null,
+    "body": null,
+    "cta-eyebrow": null,
+    "cta-line": null,
+    "cta": null
+  }
+}

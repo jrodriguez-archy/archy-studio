@@ -1,0 +1,147 @@
+{
+  "id": "doc-stat-hero",
+  "brand": "doc",
+  "title": "DOC Stat Hero",
+  "category": "ads",
+  "purpose": "stat",
+  "description": "One real number at poster size, an eyebrow above and a line that explains it",
+  "useWhen": "DOC has one sourced figure that carries the message (\"$80,000\", \"36 modules\").",
+  "notWhen": "there is no real number (never invent one: use `DOC Claim Bar`).",
+  "paperFileId": "01M4GTETFE50NWP2RVCNHFAF0X",
+  "guidance": [
+    "stat: the figure as it should read (\"$80,000\", \"189 lessons\"). Only a real, sourced number; a short non-numeric stat (\"Day one\") is fine when there is none. Keep it short: it is set at poster size on one line.",
+    "kicker: what the number is, in a few words (\"The gap nobody budgets for\"). Optional.",
+    "body: one or two lines that explain the number.",
+    "Copy in US English, in the DOC voice: plain, specific, second person, no exclamation marks. Never invent a figure, price, date, module count, quote or name.",
+    "Themes: Foundations, Startup and Acquisition are the three tracks (red, purple, green grounds): use the one the piece is about, never mix tracks. Dark and Light are neutral, for the collective as a whole.",
+    "cta: no full stop. By theme: Foundations \"Join the waitlist\" (Foundations only), Startup \"Enroll now\", Acquisition \"Register now\", Dark \"Apply today\", Light \"Get started\" — unless the brief gives its own action."
+  ],
+  "formats": {
+    "post": {
+      "nodeId": "3CE-0",
+      "label": "Post 1080×1350"
+    },
+    "square": {
+      "nodeId": "2CY-0",
+      "label": "Square 1080×1080"
+    },
+    "stories": {
+      "nodeId": "6UG-0",
+      "label": "Stories 1080×1920"
+    }
+  },
+  "designs": {
+    "stat-hero": {
+      "label": "Stat Hero"
+    }
+  },
+  "themes": {
+    "foundations": {
+      "label": "Foundations"
+    },
+    "startup": {
+      "label": "Startup"
+    },
+    "acquisition": {
+      "label": "Acquisition"
+    },
+    "dark": {
+      "label": "Dark"
+    },
+    "light": {
+      "label": "Light"
+    }
+  },
+  "default": {
+    "design": "stat-hero",
+    "theme": "foundations"
+  },
+  "combos": {
+    "stat-hero--startup": {
+      "design": "stat-hero",
+      "theme": "startup",
+      "formats": {
+        "post": {
+          "nodeId": "70A-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "6VM-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "74Y-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "stat-hero--acquisition": {
+      "design": "stat-hero",
+      "theme": "acquisition",
+      "formats": {
+        "post": {
+          "nodeId": "71G-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "6WS-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "764-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "stat-hero--dark": {
+      "design": "stat-hero",
+      "theme": "dark",
+      "formats": {
+        "post": {
+          "nodeId": "72M-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "6XY-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "77A-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    },
+    "stat-hero--light": {
+      "design": "stat-hero",
+      "theme": "light",
+      "formats": {
+        "post": {
+          "nodeId": "73S-0",
+          "label": "Post 1080×1350"
+        },
+        "square": {
+          "nodeId": "6Z4-0",
+          "label": "Square 1080×1080"
+        },
+        "stories": {
+          "nodeId": "78G-0",
+          "label": "Stories 1080×1920"
+        }
+      }
+    }
+  },
+  "essential": [
+    "stat",
+    "body",
+    "cta"
+  ],
+  "optional": [
+    "kicker"
+  ],
+  "facts": {
+    "stat": "stat",
+    "kicker": null,
+    "body": null,
+    "cta": null
+  }
+}

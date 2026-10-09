@@ -10,7 +10,7 @@
 //   safe:  the safe area (the content frame of the design), in artboard px
 // window.__alignBox(id) → the box a component aligns in: its container without padding, or the safe area.
 (() => {
-  const ARCHY = /^(Logo Archy|Archy Wordmark)/;
+  const ARCHY = /^(Logo Archy|Archy Wordmark|Logo DOC|DOC Lockup)/;
   const BUTTON = /^(CTA|Button)$/i;
   const DECORATION = /^(Mascot|Stars|Swoosh|Drinks Pattern|Pixel Dissolve|Rulers|BK Fade|Scrim|RIBBON|Border|Photo Panel|Cocktail|Illustration)/i;
   const LINE = /^(Ruler|Divider|Dot)\b/;
@@ -51,7 +51,7 @@
       const type = el.dataset?.slotType;
       const slot = el.dataset?.slot;
       const id = idOf(el);
-      if (ARCHY.test(name)) return [add({ id, kind: 'archy', name: 'Archy logo' })];
+      if (ARCHY.test(name)) return [add({ id, kind: 'archy', name: /DOC/.test(name) ? 'DOC lockup' : 'Archy logo' })];
       if (type === 'logo') return [add({ id, kind: 'partner', name: `${human((slot ?? 'partner').replace(/^logo-/, ''))} logo`, slot, logoAuto: el.querySelector('[data-logo-mark]')?.dataset.logoAuto })];
       if (type === 'image') {
         const what = human((slot ?? 'photo').replace(/^image-/, ''));
@@ -296,7 +296,7 @@
       }
       if (c.kind === 'archy') {
         const k = b.w / b0.w;
-        if (k < 0.6) out.push({ id: c.id, level: 'tip', title: 'The Archy logo is small', detail: `${Math.round(k * 100)}% of its designed size.`, revert: { id: c.id, fields: ['box.scale'], label: 'Reset size' } });
+        if (k < 0.6) out.push({ id: c.id, level: 'tip', title: `The ${c.name} is small`, detail: `${Math.round(k * 100)}% of its designed size.`, revert: { id: c.id, fields: ['box.scale'], label: 'Reset size' } });
       }
     }
 

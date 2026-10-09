@@ -12,9 +12,9 @@ import { PRESETS, type SlotMeta } from './properties-panel';
 // Content: the design as someone who is not a designer reads it. What it says (the copy from the brief),
 // its images, its look (the theme) and, folded away, its decorations. A click picks the part on the
 // design and opens its controls on the right. Every layer is still there under Advanced.
-export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, selected, hover, onSelect, onHover, onSlotToggle, onSlot, onHide, onPreset, onAdvanced, onLogoColors, onSlotRemove }: {
+export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, recolor = true, selected, hover, onSelect, onHover, onSlotToggle, onSlot, onHide, onPreset, onAdvanced, onLogoColors, onSlotRemove }: {
   comps: Comp[]; edits: Edits; slots: Record<string, string | null>; slotMeta: Record<string, SlotMeta>; previews: Record<string, string | null>;
-  preset?: Preset; selected: string[]; hover: string | null;
+  preset?: Preset; recolor?: boolean; selected: string[]; hover: string | null;
   onSelect: (id: string) => void; onHover: (id: string | null) => void;
   /** Leave an optional detail out (the design closes up), or bring it back. */
   onSlotToggle: (slot: string) => void;
@@ -134,7 +134,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
                 <HugeiconsIcon icon={LockIcon} className="size-3.5 text-foreground/40" strokeWidth={1.6} />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate">Archy logo</p>
+                <p className="truncate">{archy.name}</p>
                 <p className="text-foreground/40">Move and scale only</p>
               </div>
             </div>
@@ -142,7 +142,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
         </Group>
       )}
 
-      <Group title="Look">
+      {recolor && <Group title="Look">
         <div className="grid grid-cols-4 gap-1 px-3">
           {PRESETS.map(([key, label, swatch]) => (
             <button key={key} type="button" onClick={() => onPreset(key)} title={label}
@@ -152,7 +152,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
             </button>
           ))}
         </div>
-      </Group>
+      </Group>}
 
       {decor.length > 0 && (
         <div>

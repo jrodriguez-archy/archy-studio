@@ -1,0 +1,7 @@
+{
+  "_comment": "The date numeral (M.DD) is set at poster size on one line: it shrinks further than copy for a wider date (\"12.28\").",
+  "slots": {
+    "date": { "within": "Content", "maxLines": 1, "minScale": 0.6 },
+    "headline": { "within": "Content", "maxLines": 2, "minScale": 0.85 }
+  }
+}

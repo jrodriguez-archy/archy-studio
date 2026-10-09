@@ -1,4 +1,5 @@
 import { DAILY, createAsset, getAsset, readAsset, sourceFor, useAi } from '@/lib/assets';
+import { currentBrand } from '@/lib/brand';
 import { RATIOS, generateImage } from '@/lib/generate';
 import { currentUser } from '@/lib/team';
 
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
   try {
     // An SVG goes as a PNG (the model reads raster images).
     const source = from ? (/\.svg$/i.test(from.path) ? await sourceFor(from).then((x) => ({ body: x.body!, type: x.type })) : await readAsset(from.path)) : null;
-    const png = await generateImage(prompt, ratio, source);
+    const png = await generateImage(prompt, ratio, source, await currentBrand());
     const name = from ? `${from.name} · edited` : prompt.length > 48 ? `${prompt.slice(0, 47)}…` : prompt;
     const asset = await createAsset({ ownerId: me.id, body: png, type: 'image/png', name, kind: 'generated', parentId: from?.id ?? null, prompt, folderId: typeof body.folder === 'string' ? body.folder : from?.folderId ?? null });
     return Response.json({ asset });

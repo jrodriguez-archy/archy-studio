@@ -1,6 +1,7 @@
 import 'server-only';
 import { removeImages, thumbPath } from './images';
 import { supabaseAdmin } from './supabase/admin';
+import type { Brand } from './brands';
 import { getProject } from './projects';
 
 // A set is every piece made from one brief. People manage a set when they made it, when it sits in a
@@ -8,11 +9,11 @@ import { getProject } from './projects';
 // archived) delete it for good.
 
 type Who = { id: string; is_admin: boolean };
-type Row = { id: string; user_id: string | null; project_id: string | null; storage_path: string; archived_at: string | null };
+type Row = { id: string; user_id: string | null; project_id: string | null; storage_path: string; archived_at: string | null; brand: Brand };
 
 async function load(setId: string): Promise<Row[]> {
   if (!/^[0-9a-f-]{36}$/i.test(setId)) throw new Error('Set not found.');
-  const { data } = await supabaseAdmin().from('renders').select('id, user_id, project_id, storage_path, archived_at').eq('set_id', setId);
+  const { data } = await supabaseAdmin().from('renders').select('id, user_id, project_id, storage_path, archived_at, brand').eq('set_id', setId);
   if (!data?.length) throw new Error('Set not found.');
   return data as Row[];
 }
@@ -32,8 +33,9 @@ async function manage(me: Who, setId: string) {
 }
 
 export async function moveSet(me: Who, setId: string, projectId: string | null) {
-  await manage(me, setId);
-  if (projectId && !(await getProject(me, projectId))) throw new Error('Project not found.');
+  const rows = await manage(me, setId);
+  // Only into a project of the same brand.
+  if (projectId && !(await getProject(me, projectId, rows[0].brand))) throw new Error('Project not found.');
   const { error } = await supabaseAdmin().from('renders').update({ project_id: projectId }).eq('set_id', setId);
   if (error) throw new Error(error.message);
 }

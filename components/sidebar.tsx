@@ -2,16 +2,16 @@
 
 import { createContext, Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowRight01Icon, SidebarLeft01Icon, UnfoldMoreIcon } from '@hugeicons/core-free-icons';
-import { ArchyWordmark } from '@/components/archy-wordmark';
-import { BrandLockup } from '@/components/brand-lockup';
+import { ArrowRight01Icon, SidebarLeft01Icon, Tick02Icon, UnfoldMoreIcon } from '@hugeicons/core-free-icons';
+import { BrandLockup, BrandMark } from '@/components/brand-lockup';
 import { NAV_ICONS, NavLink, ROW } from '@/components/nav-link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { NavItem, NavSection } from '@/components/app-shell';
+import { BRAND_IDS, BRANDS, brandCookie, type Brand } from '@/lib/brands';
 import { firstName } from '@/lib/names';
 
 const SidebarContext = createContext({ collapsed: false });
@@ -61,14 +61,14 @@ const ToggleContext = createContext<() => void>(() => {});
 
 // Left rail on a faint grey layer (the login's card-on-ground idea): Studio lockup, icon nav with the
 // active page lifted onto white, account at the bottom. Collapsed, only icons remain, with tooltips.
-export function Sidebar({ sections, admin, projects, me, email, name }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; name: string }) {
+export function Sidebar({ sections, admin, projects, me, email, name, brand }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; name: string; brand: Brand }) {
   const { collapsed } = useSidebar();
   const toggle = useContext(ToggleContext);
   return (
     <aside className={`sticky top-0 hidden h-dvh flex-col overflow-hidden border-r border-foreground/[0.06] bg-[#FAFAFA] pt-6 pb-3 md:flex ${collapsed ? 'px-2.5' : 'px-3'}`}>
       <div className={`flex items-center ${collapsed ? 'flex-col gap-4' : 'justify-between'}`}>
-        <Link href="/" className={collapsed ? 'flex justify-center' : 'px-2'} aria-label="Archy Studio">
-          {collapsed ? <ArchyWordmark mark className="h-8 w-auto text-primary" /> : <BrandLockup size="sm" label={false} />}
+        <Link href="/" className={collapsed ? 'flex justify-center' : 'px-2'} aria-label={BRANDS[brand].studio}>
+          {collapsed ? <BrandMark brand={brand} height={32} /> : <BrandLockup size="sm" label={false} brand={brand} />}
         </Link>
         <Tooltip>
           <TooltipTrigger
@@ -92,6 +92,7 @@ export function Sidebar({ sections, admin, projects, me, email, name }: { sectio
         ))}
       </nav>
       <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
+        <BrandMenu brand={brand} />
         <NavLink href="/install" icon="install">Install</NavLink>
         {admin && <AdminMenu items={admin} />}
         <AccountMenu name={name} email={email} />
@@ -102,6 +103,43 @@ export function Sidebar({ sections, admin, projects, me, email, name }: { sectio
 
 // The rail's menus open upward (to the right when the rail is collapsed).
 const menuSide = (collapsed: boolean) => (collapsed ? { side: 'right' as const, align: 'end' as const } : { side: 'top' as const, align: 'start' as const });
+
+// The brand Studio works in: Archy or DOC. Each has its own templates, assets, gallery and projects,
+// so switching starts over on that brand's Gallery.
+export function useSwitchBrand() {
+  const router = useRouter();
+  return (b: Brand) => {
+    document.cookie = brandCookie(b);
+    router.push('/');
+    router.refresh();
+  };
+}
+
+function BrandMenu({ brand }: { brand: Brand }) {
+  const { collapsed } = useSidebar();
+  const switchTo = useSwitchBrand();
+  const trigger = (
+    <DropdownMenuTrigger aria-label={`Brand: ${BRANDS[brand].name}`}
+      className={`${ROW} w-full text-foreground/60 outline-none hover:bg-foreground/[0.04] hover:text-foreground ${collapsed ? 'justify-center px-0' : ''}`}>
+      <span className="flex size-4 shrink-0 items-center justify-center"><BrandMark brand={brand} /></span>
+      {!collapsed && <><span className="min-w-0 flex-1 truncate text-left">{BRANDS[brand].name}</span><HugeiconsIcon icon={UnfoldMoreIcon} className="size-3.5 text-foreground/35" /></>}
+    </DropdownMenuTrigger>
+  );
+  return (
+    <DropdownMenu>
+      {collapsed ? <Tooltip><TooltipTrigger render={trigger} /><TooltipContent side="right">{BRANDS[brand].name}</TooltipContent></Tooltip> : trigger}
+      <DropdownMenuContent {...menuSide(collapsed)} sideOffset={6} className="w-56">
+        {BRAND_IDS.map((b) => (
+          <DropdownMenuItem key={b} onClick={() => b !== brand && switchTo(b)} className="gap-2 text-[13px]">
+            <span className="flex size-4 items-center justify-center"><BrandMark brand={b} /></span>
+            <span className="flex-1">{BRANDS[b].name}</span>
+            {b === brand && <HugeiconsIcon icon={Tick02Icon} className="size-3.5 text-foreground/50" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 // Admin: one row, its pages in a menu. Lit while on any of them.
 function AdminMenu({ items }: { items: NavItem[] }) {

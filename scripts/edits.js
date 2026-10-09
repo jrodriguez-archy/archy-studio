@@ -4,7 +4,8 @@
 // every touched layer is first put back the way __fill left it.
 window.__applyEdits = function applyEdits(edits, urls, icons) {
   const root = document.querySelector('body > [data-node]');
-  const ARCHY = /^(Logo Archy|Archy Wordmark)/;
+  // The brand's logo (Archy's, or DOC's lockup): locked, it only moves and scales.
+  const ARCHY = /^(Logo Archy|Archy Wordmark|Logo DOC|DOC Lockup)/;
   const BUTTON = /^(CTA|Button)$/i;
   const DECORATION = /^(Mascot|Stars|Swoosh|Drinks Pattern|Pixel Dissolve|Rulers|BK Fade|Scrim|RIBBON|Border|Photo Panel|Cocktail|Illustration)/i;
   const nameOf = (el) => el.getAttribute?.('data-name') ?? '';

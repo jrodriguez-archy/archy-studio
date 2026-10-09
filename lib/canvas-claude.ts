@@ -36,7 +36,7 @@ async function describe(piece: PieceSource, slots: Record<string, string | null>
   return { png: out.png, report: out.report, comps: out.inspected!.comps, tokens: out.inspected!.tokens, review: out.inspected!.review };
 }
 
-const KIND: Record<string, string> = { text: 'text', button: 'button', icon: 'icon', photo: 'photo', partner: 'partner logo', archy: 'Archy logo (locked: move/scale only)', group: 'group', tag: 'tag', line: 'line', decoration: 'decoration', background: 'background' };
+const KIND: Record<string, string> = { text: 'text', button: 'button', icon: 'icon', photo: 'photo', partner: 'partner logo', archy: 'brand logo (locked: move/scale only)', group: 'group', tag: 'tag', line: 'line', decoration: 'decoration', background: 'background' };
 
 export async function getCanvas(me: Who, ref?: string) {
   const { piece, draft } = await findPiece(me, ref);
@@ -116,7 +116,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
   const colour = (c: string) => {
     const k = c.trim().toLowerCase().replace(/\s+/g, '-').replace(/^--color-|^var\(--color-|\)$/g, '');
     const hit = Object.entries(tokens).find(([name, hex]) => name === k || hex === c.trim().toUpperCase());
-    if (!hit) throw new Error(`"${c}" is not an Archy brand colour. Use one of: ${Object.keys(tokens).join(', ')}.`);
+    if (!hit) throw new Error(`"${c}" is not one of this design's brand colours. Use one of: ${Object.keys(tokens).join(', ')}.`);
     return `var(--color-${hit[0]})`;
   };
   // By id (best), "Name (kind)", or name. When a name is shared (a "Date" group and a "Date" text), the
@@ -142,7 +142,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
       for (const id of [c.id, c.textId, c.iconId]) if (id) delete edits[id];
       for (const k of [c.slot, c.textSlot]) if (k) slots[k] = piece.slots[k] ?? null;
     }
-    if (c.kind === 'archy' && (ch.text != null || ch.color || ch.fill || ch.icon || ch.hidden != null)) throw new Error('The Archy logo is locked: it can only be moved, aligned or scaled.');
+    if (c.kind === 'archy' && (ch.text != null || ch.color || ch.fill || ch.icon || ch.hidden != null)) throw new Error(`The ${c.name} is locked: it can only be moved, aligned or scaled.`);
     if (ch.text != null) {
       const slot = c.kind === 'button' ? c.textSlot : c.slot;
       if (slot) slots[slot] = ch.text;

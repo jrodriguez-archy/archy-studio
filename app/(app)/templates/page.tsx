@@ -1,19 +1,22 @@
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
 import { TemplateBrowser, type TemplateCard, type TemplateGroup } from '@/components/template-browser';
 import { previewSrcs, selfOrigin } from '@/lib/previews';
+import { currentBrand } from '@/lib/brand';
+import { BRANDS } from '@/lib/brands';
 import { catalog, CATEGORY_LABEL, FACT_LABEL, PURPOSE_LABEL, PURPOSE_PLURAL, TAXONOMY, type CatalogItem } from '@/lib/catalog';
 
-export const metadata = { title: 'Templates · Archy Studio' };
+export const metadata = { title: 'Templates' };
 
 // Two levels that never mix: big categories (Events, Ads…) and, inside each, subcategories by what the
 // piece is for (Booth invites, Spotlights…). Each style stacks its formats, the event page cover among them.
 export default async function TemplatesPage({ searchParams }: { searchParams: Promise<{ category?: string; purpose?: string }> }) {
   const { category: rawCategory, purpose } = await searchParams;
-  const all = await catalog();
+  const brand = await currentBrand();
+  const all = await catalog(brand);
   const srcs = await previewSrcs(all, await selfOrigin());
   const styles = all;
   const hasCover = (i: CatalogItem) => !!i.manifest.formats.cover;
-  const taxonomy = TAXONOMY.filter((c) => styles.some((i) => i.config.category === c.key));
+  const taxonomy = TAXONOMY.filter((c) => c.brand === brand && styles.some((i) => i.config.category === c.key));
   const category = taxonomy.find((c) => c.key === rawCategory);
   const coversOnly = !!category && purpose === 'event-cover';
 
@@ -27,7 +30,7 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
 
   // Subcategories of a category, in taxonomy order; unknown ones last, so nothing is lost.
   const subcategories = (key: string, items: CatalogItem[]) => {
-    const known = TAXONOMY.find((c) => c.key === key)?.purposes ?? [];
+    const known = TAXONOMY.find((c) => c.brand === brand && c.key === key)?.purposes ?? [];
     const present = [...new Set(items.map((i) => i.config.purpose ?? 'other'))];
     return [...known.filter((p) => present.includes(p)), ...present.filter((p) => !known.includes(p))];
   };
@@ -76,7 +79,14 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
         </div>
       </PageHeader>
 
-      <TemplateBrowser groups={groups} showGroupHeaders={!category} />
+      {all.length ? (
+        <TemplateBrowser groups={groups} showGroupHeaders={!category} />
+      ) : (
+        <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
+          <p className="font-medium">No {BRANDS[brand].name} templates yet</p>
+          <p className="mt-1 text-muted-foreground">They appear here once the designers prepare them.</p>
+        </div>
+      )}
     </>
   );
 }

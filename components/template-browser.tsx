@@ -139,7 +139,7 @@ export function TemplateBrowser({ groups, showGroupHeaders }: { groups: Template
                           <span className="truncate">{t.title}</span>
                           <span className="ml-auto shrink-0 text-foreground/40">{t.formats.map((x) => (x.key === 'og' ? 'OG' : x.key[0].toUpperCase() + x.key.slice(1))).join(' · ')}</span>
                         </div>
-                        <p className="truncate px-0.5 text-[13px] text-foreground/40">{t.purposeLabel}{t.designs ? ` · ${t.designs.length} designs, ${t.themes!.length} themes` : ''}{t.needs.length ? ` · Needs ${t.needs.join(', ').toLowerCase()}` : ''}</p>
+                        <p className="truncate px-0.5 text-[13px] text-foreground/40">{t.purposeLabel}{t.designs ? ` · ${t.designs.length > 1 ? `${t.designs.length} designs, ` : ''}${t.themes!.length} theme${t.themes!.length > 1 ? 's' : ''}` : ''}{t.needs.length ? ` · Needs ${t.needs.join(', ').toLowerCase()}` : ''}</p>
                       </button>
                       <MoreActions actions={templateActions(t, () => open(t.id))} className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full bg-background/80 text-foreground opacity-0 shadow-sm backdrop-blur transition-opacity outline-none group-hover:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100 max-lg:opacity-100" />
                       </ContextActions>

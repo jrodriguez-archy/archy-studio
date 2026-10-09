@@ -18,6 +18,7 @@ async function canvasCall<T = { url: string }>(body: Record<string, unknown>): P
   return res.json().catch(() => ({ ok: false, error: `The server did not answer (${res.status}).` }));
 }
 import { supabaseBrowser } from '@/lib/supabase/browser';
+import type { Brand } from '@/lib/brands';
 import type { CanvasLibrary } from '@/lib/canvas';
 import { LEFT_OUT, RECOLOR, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import { carried, follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
@@ -46,6 +47,7 @@ export type Ghost = { ref: string; format: string; label: string; width: number;
 export type EditorProps = {
   title: string; backHref: string; active: string; boards: Board[]; ghosts: Ghost[];
   slotMeta: Record<string, Record<string, SlotMeta>>;
+  brand?: Brand;
 };
 
 type Doc = Record<string, Snap>;
@@ -128,7 +130,7 @@ export function CanvasEditor({ piece, library: given = null, seenAt = null }: { 
   );
 }
 
-function Editor({ title, backHref, active: firstActive, boards: firstBoards, ghosts: firstGhosts, slotMeta: slotMetaOf, library, updating, onSaved, seenAt, tab, setTab, pointAsset, pointFolder }: EditorProps & {
+function Editor({ title, backHref, active: firstActive, boards: firstBoards, ghosts: firstGhosts, slotMeta: slotMetaOf, brand, library, updating, onSaved, seenAt, tab, setTab, pointAsset, pointFolder }: EditorProps & {
   library: CanvasLibrary | null; updating: string[]; onSaved: (ids: string[]) => void; seenAt: string | null; tab: PanelTab; setTab: (t: PanelTab) => void;
   pointAsset?: string | null;
   pointFolder?: string | null;
@@ -788,7 +790,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       <div className="flex min-h-0 flex-1">
         <CanvasPanel tab={tab} onTab={setTab} badges={{ inspector: warnings + otherWarnings }}>
           {tab === 'layers' && !allLayers && (
-            <ContentPanel comps={comps} edits={snap.edits} slots={snap.slots} slotMeta={slotMeta} previews={plan?.fill.values ?? {}} preset={piece.preset}
+            <ContentPanel comps={comps} edits={snap.edits} slots={snap.slots} slotMeta={slotMeta} previews={plan?.fill.values ?? {}} preset={piece.preset} recolor={brand !== 'doc'}
               selected={selected} hover={hover} onHover={setHover} onSelect={(id) => select([id], 'replace')}
               onSlotToggle={toggleSlot} onSlot={setSlot} onHide={(id) => hideMany([id], !snap.edits[id]?.hidden)} onPreset={setPreset} onAdvanced={() => setAllLayers(true)}
               onLogoColors={(id, colors) => editLayer(id, { colors })} onSlotRemove={removeSlot} />
@@ -898,6 +900,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
               comp={one}
               alignIn={one.kind === 'background' ? undefined : stage.current?.alignBox(one.id)?.name}
               preset={piece.preset}
+              recolor={brand !== 'doc'}
               onPreset={setPreset}
               info={(id) => (id ? stage.current?.info(id) ?? null : null)}
               edits={snap.edits}

@@ -1,4 +1,5 @@
 import 'server-only';
+import { currentBrand } from './brand';
 import { titleOf } from './catalog';
 import { displayName } from './names';
 import { fileLink, largeUrl, thumbUrl } from './images';
@@ -14,6 +15,7 @@ export async function loadPieces(filter: PieceFilter & { before?: string; setId?
     .from('renders')
     .select('id, set_id, set_title, archived_at, edited_at, template, format, design, theme, storage_path, width, height, scale, slots, created_at, user_id, project_id, profiles!renders_user_id_fkey(email, full_name)')
     .order('created_at', { ascending: false })
+    .eq('brand', filter.brand ?? (await currentBrand()))
     .limit(limit);
   q = filter.archived ? q.not('archived_at', 'is', null) : q.is('archived_at', null);
   if (filter.userId) q = q.eq('user_id', filter.userId);

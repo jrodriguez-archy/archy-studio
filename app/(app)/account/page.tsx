@@ -4,7 +4,7 @@ import { displayName, nameFromEmail } from '@/lib/names';
 import { NameForm } from './name-form';
 import { PasswordForm } from './password-form';
 
-export const metadata = { title: 'Account · Archy Studio' };
+export const metadata = { title: 'Account' };
 
 export default async function AccountPage() {
   const me = await currentUser();

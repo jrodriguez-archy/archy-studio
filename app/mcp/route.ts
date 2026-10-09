@@ -11,7 +11,8 @@ import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
 import { listAssets, listFolders } from '@/lib/assets';
-import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo } from '@/lib/templates';
+import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo, templateBrand } from '@/lib/templates';
+import { BRAND_IDS } from '@/lib/brands';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -37,13 +38,15 @@ Projects: designs can be filed into project folders in the Studio gallery (one p
 
 Sets: every render answer ends with "Set: <id>". All designs from one brief (more formats, retries after shortening copy, other templates or options) belong together: pass that id as set to every later render of the same brief. A new brief starts without set.
 
+Brands: Studio makes work for two brands that never mix. Archy (default) and DOC, the Dental Ownership Collective (ownership education for dentists; Archy appears on DOC only as its sponsor). When the brief is for DOC (it says DOC, Dental Ownership Collective, Foundations / Startup / Acquisition tracks), pass brand: "doc" to list_templates, match_templates, list_assets, list_projects and create_project; otherwise leave the default. Never put an Archy template, image or project on a DOC brief or the other way round. DOC templates come in five themes (Foundations, Startup, Acquisition, Dark, Light); never invent a DOC figure, price, date or quote.
+
 Brand rules:
 - All copy on the design is in US English, even when the conversation is not.
 - Photos of people are always the person's real photo, from the team's images (list_assets; a cutout without background works best) or provided by the requester as an https link to a cutout PNG. Never generate a person or use someone else's photo; until the person's photo comes, a neutral silhouette holds its place.
 - Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
 - Keep the template's fixed text and design as they are; only the slots change.
 
-Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, naming the places in plain words, before you make it. Change only what they ask: copy on the design that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other in Canvas while it is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the Archy logo can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
+Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, naming the places in plain words, before you make it. Change only what they ask: copy on the design that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other in Canvas while it is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the brand logo (Archy logo, DOC lockup) can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
 
@@ -53,12 +56,12 @@ const handler = createMcpHandler(
       'list_templates',
       {
         title: 'List templates',
-        description: 'The Archy templates available, with what each is for, its formats, designs and themes (when it offers several) and editable slots.',
-        inputSchema: z.object({}),
+        description: 'The templates of one brand (Archy by default, or DOC), with what each is for, its formats, designs and themes (when it offers several) and editable slots.',
+        inputSchema: z.object({ brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'), }),
         annotations: { readOnlyHint: true },
       },
-      async () => {
-        const manifests = await listTemplates();
+      async ({ brand }) => {
+        const manifests = await listTemplates(brand);
         const list = await Promise.all(manifests.map(async (m) => {
           const c = await loadConfig(m.id);
           return {
@@ -151,11 +154,12 @@ const handler = createMcpHandler(
         inputSchema: z.object({
           facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue; ad-photo = a scene photo that shows a product claim (photo-led ads).'),
           purpose: z.enum(PURPOSES).optional().describe('What the design is for, when clear from the brief.'),
+          brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'),
         }),
         annotations: { readOnlyHint: true },
       },
-      async ({ facts, purpose }) => {
-        const all = await matchTemplates(facts, purpose);
+      async ({ facts, purpose, brand }) => {
+        const all = await matchTemplates(facts, purpose, brand);
         const eligible = all.filter((m) => m.eligible).slice(0, 6).map((m) => ({ template: m.template, title: m.title, purpose: m.purpose, shows: m.shows, not_shown: m.unused, ...(m.photos.length ? { photos_to_ask_for: m.photos } : {}) }));
         const almost = all.filter((m) => !m.eligible && m.missing.length <= 2).slice(0, 6).map((m) => ({ template: m.template, title: m.title, needs: m.missing }));
         return { content: [{ type: 'text', text: JSON.stringify({ eligible, would_fit_with_more_info: almost }, null, 2) }] };
@@ -171,16 +175,17 @@ const handler = createMcpHandler(
           search: z.string().optional().describe('Only images whose name contains this (e.g. a person\'s name)'),
           kind: z.enum(['upload', 'cutout', 'pixel', 'generated']).optional().describe('Only this kind (cutout: a person or object without background)'),
           folder: z.string().optional().describe('Only images in the team folder with this name (e.g. "Speakers")'),
+          brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'),
         }),
         annotations: { readOnlyHint: true },
       },
-      async ({ search, kind, folder }) => {
+      async ({ search, kind, folder, brand }) => {
         const q = search?.trim().toLowerCase();
-        const folders = await listFolders();
+        const folders = await listFolders(brand);
         const folderName = new Map(folders.map((f) => [f.id, f.name]));
         const inFolder = folder ? folders.find((f) => f.name.toLowerCase() === folder.trim().toLowerCase())?.id ?? '-' : null;
         // A folder is listed whole (in the database), whatever its size.
-        const assets = await listAssets(inFolder ? { folderId: inFolder, limit: 1000 } : { limit: 300 });
+        const assets = await listAssets(inFolder ? { folderId: inFolder, limit: 1000, brand } : { limit: 300, brand });
         const items = assets
           .filter((a) => (!q || a.name.toLowerCase().includes(q)) && (!kind || a.kind === kind) && (!inFolder || a.folderId === inFolder))
           .slice(0, 60)
@@ -193,14 +198,14 @@ const handler = createMcpHandler(
       'list_projects',
       {
         title: 'List projects',
-        description: 'Project folders in the Studio gallery that the signed-in person can file designs into: the team ones and their own personal ones.',
-        inputSchema: z.object({}),
+        description: 'Project folders in the Studio gallery that the signed-in person can file designs into: the team ones and their own personal ones, for one brand.',
+        inputSchema: z.object({ brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'), }),
         annotations: { readOnlyHint: true },
       },
-      async (_args, ctx) => {
+      async ({ brand }, ctx) => {
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Projects need a signed-in Studio account.' }] };
-        const list = (await listProjects(me)).map((p) => ({ project: p.name, id: p.id, visible_to: p.shared ? 'team' : 'only the requester', pieces: p.count }));
+        const list = (await listProjects(me, brand)).map((p) => ({ project: p.name, id: p.id, visible_to: p.shared ? 'team' : 'only the requester', pieces: p.count }));
         return { content: [{ type: 'text', text: JSON.stringify(list, null, 2) }] };
       },
     );
@@ -213,12 +218,13 @@ const handler = createMcpHandler(
         inputSchema: z.object({
           name: z.string().min(1).max(80).describe('Project name, e.g. "Chicago Midwinter 2027"'),
           shared: z.boolean().default(true).describe('true: the whole team sees it (default). false: only the requester.'),
+          brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'),
         }),
       },
-      async ({ name, shared }, ctx) => {
+      async ({ name, shared, brand }, ctx) => {
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Projects need a signed-in Studio account.' }] };
-        const p = await createProject(me, name, shared);
+        const p = await createProject(me, name, shared, brand);
         return { content: [{ type: 'text', text: `Project "${p.name}" ready (${p.shared ? 'team' : 'only the requester'}). Pass it to render as project.` }] };
       },
     );
@@ -333,7 +339,8 @@ const handler = createMcpHandler(
         let projectId: string | null = null;
         if (project) {
           const me = await whoIs(ctx);
-          const found = me ? await findProject(me, project) : null;
+          // Among the projects of the template's brand.
+          const found = me ? await findProject(me, project, await templateBrand(template).catch(() => 'archy' as const)) : null;
           if (!found) return { isError: true, content: [{ type: 'text', text: `No project "${project}" for this account. Call list_projects, or create_project first.` }] };
           projectId = found.id;
         }
@@ -382,7 +389,8 @@ const handler = createMcpHandler(
               const have = await factsFromSlots(template, slots);
               // Same purpose first (a booth invite suggests booth invites, not reminders).
               const purpose = (await loadConfig(template)).purpose;
-              const fits = async (p?: string) => (await matchTemplates(have, p)).filter((x) => x.eligible && x.template !== template).slice(0, 3).map((x) => x.template);
+              const brand = await templateBrand(template);
+              const fits = async (p?: string) => (await matchTemplates(have, p, brand)).filter((x) => x.eligible && x.template !== template).slice(0, 3).map((x) => x.template);
               const same = await fits(purpose);
               const alt = same.length ? same : await fits();
               return { isError: true, content: [{ type: 'text', text: `${template} needs ${e.slots.join(', ')} (essential content; it never goes out half empty). Ask the requester for it${alt.length ? `, or use a template that fits what you have: ${alt.join(', ')}` : ''}.` }] };

@@ -1,0 +1,8 @@
+{
+  "_comment": "The two-weight headline: both lines share one size (scaleGroup) and may take up to three lines each, whatever the sample used.",
+  "slots": {
+    "headline-1": { "within": "Content", "maxLines": 3, "sampleLines": 3, "minScale": 0.7, "scaleGroup": "Headline" },
+    "headline-2": { "within": "Content", "maxLines": 3, "sampleLines": 3, "minScale": 0.7, "scaleGroup": "Headline" },
+    "body": { "within": "Content", "maxLines": 3, "minScale": 0.85 }
+  }
+}

@@ -683,7 +683,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
         {ctx && <div className="pointer-events-none absolute outline-1 outline-offset-0 outline-dashed outline-[#FF2BD6]/35" style={{ left: ctx.x, top: ctx.y, width: ctx.w, height: ctx.h }}><Tag right>{ctxComp!.name}</Tag></div>}
         {hov && (
           <div className={`pointer-events-none absolute ${hovComp?.kind === 'group' ? 'bg-[#FF2BD6]/[0.04] outline-1 outline-dashed outline-[#FF2BD6]/70' : 'ring-[1.5px] ring-[#FF2BD6]/80'}`} style={{ left: hov.x, top: hov.y, width: hov.w, height: hov.h }}>
-            {hovComp?.kind === 'archy' ? <Tag icon>Archy logo · move and scale only</Tag> : hovComp?.kind === 'group' && <Tag>{hovComp.name}</Tag>}
+            {hovComp?.kind === 'archy' ? <Tag icon>{hovComp.name} · move and scale only</Tag> : hovComp?.kind === 'group' && <Tag>{hovComp.name}</Tag>}
           </div>
         )}
         {sel.length > 1 && sel.map((s) => <div key={s.id} className="pointer-events-none absolute ring-1 ring-[#FF2BD6]" style={{ left: s.r.x, top: s.r.y, width: s.r.w, height: s.r.h }} />)}
@@ -697,7 +697,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
                 style={{ left: h.includes('w') ? 0 : h.includes('e') ? '100%' : '50%', top: h.includes('n') ? 0 : h.includes('s') ? '100%' : '50%', cursor: `${h}-resize` }}
               />
             ))}
-            {logo && !badge && <Tag icon>Archy logo · move and scale only</Tag>}
+            {logo && !badge && <Tag icon>{comps.find((c) => c.id === single?.id)?.name ?? 'Logo'} · move and scale only</Tag>}
             {sel.length > 1 && !badge && <Tag>{sel.length} selected</Tag>}
             {badge && <span className={`absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums ${outside ? 'bg-[#F2385A]' : 'bg-[#FF2BD6]'}`}>{outside ? `${badge}   Outside the safe area` : badge}</span>}
           </div>

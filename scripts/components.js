@@ -383,9 +383,10 @@
     // A placeholder photo (lib/placeholders.ts) holds the place of the real one: never published as is.
     for (const c of comps) {
       const el = node(c.id);
-      if (!el || c.kind !== 'photo') continue;
+      if (!el || !['photo', 'background'].includes(c.kind)) continue;
+      const marked = [el, ...el.querySelectorAll('[data-placeholder]')].some((n) => n.dataset.placeholder && n.dataset.placeholder === n.style.backgroundImage);
       const shown = [el, ...el.querySelectorAll('[style*="background-image"], img')].map((n) => n.tagName === 'IMG' ? n.src : n.style.backgroundImage).join(' ');
-      if (/\/placeholders\//.test(shown)) out.push({ id: c.id, level: 'warn', title: `${c.name} is a placeholder`, detail: 'Swap in the real photo before publishing: drop one from Assets or ask Claude.' });
+      if (marked || /\/placeholders\//.test(shown)) out.push({ id: c.id, level: 'warn', title: `${c.name} is a placeholder`, detail: 'Swap in the real photo before publishing: drop one from Assets or ask Claude.' });
     }
     return out;
   };

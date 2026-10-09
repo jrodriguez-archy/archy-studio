@@ -23,3 +23,28 @@ export async function renameSetAction(setId: string, title: string) { return run
 export async function archiveSetAction(setId: string) { return run((me) => archiveSet(me, setId)); }
 export async function restoreSetAction(setId: string) { return run((me) => restoreSet(me, setId)); }
 export async function deleteSetAction(setId: string) { return run((me) => deleteSet(me, setId)); }
+
+// Several sets at once (Archive's selection). Each set keeps its own permission check; the ones that
+// fail are counted, the rest go through.
+type BulkResult = { ok: boolean; done: number; failed: number; error?: string };
+const SET_ID = /^[0-9a-f-]{36}$/i;
+
+async function bulk(ids: string[], fn: (me: { id: string; is_admin: boolean }, id: string) => Promise<void>): Promise<BulkResult> {
+  const me = await currentUser();
+  if (!me) return { ok: false, done: 0, failed: 0, error: 'Sign in again.' };
+  const list = Array.isArray(ids) ? [...new Set(ids)].filter((id) => typeof id === 'string' && SET_ID.test(id)).slice(0, 200) : [];
+  let done = 0, failed = 0, error: string | undefined;
+  for (let i = 0; i < list.length; i += 5) {
+    const results = await Promise.allSettled(list.slice(i, i + 5).map((id) => fn(me, id)));
+    for (const r of results) {
+      if (r.status === 'fulfilled') done++;
+      else { failed++; error ??= (r.reason as Error).message; }
+    }
+  }
+  if (done) revalidatePath('/', 'layout');
+  return { ok: failed === 0, done, failed, error };
+}
+
+export async function archiveSetsAction(ids: string[]) { return bulk(ids, archiveSet); }
+export async function restoreSetsAction(ids: string[]) { return bulk(ids, restoreSet); }
+export async function deleteSetsAction(ids: string[]) { return bulk(ids, deleteSet); }

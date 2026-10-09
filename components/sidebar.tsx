@@ -65,7 +65,7 @@ export function Sidebar({ sections, admin, projects, me, email, name }: { sectio
   const { collapsed } = useSidebar();
   const toggle = useContext(ToggleContext);
   return (
-    <aside className={`sticky top-0 hidden h-dvh flex-col overflow-hidden border-r border-foreground/[0.06] bg-[#FAFAFA] py-6 md:flex ${collapsed ? 'px-2.5' : 'px-3'}`}>
+    <aside className={`sticky top-0 hidden h-dvh flex-col overflow-hidden border-r border-foreground/[0.06] bg-[#FAFAFA] pt-6 pb-3 md:flex ${collapsed ? 'px-2.5' : 'px-3'}`}>
       <div className={`flex items-center ${collapsed ? 'flex-col gap-4' : 'justify-between'}`}>
         <Link href="/" className={collapsed ? 'flex justify-center' : 'px-2'} aria-label="Archy Studio">
           {collapsed ? <ArchyWordmark mark className="h-8 w-auto text-primary" /> : <BrandLockup size="sm" label={false} />}

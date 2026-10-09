@@ -9,9 +9,13 @@ export type NodeEdit = {
   image?: string;
   /** Another Hugeicons icon for an icon layer (export name, e.g. "Calendar03Icon"). */
   icon?: string;
-  /** Only on the RECOLOR entry: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground (scripts/edits.js). */
+  /** Only on the RECOLOR entry: the piece redrawn on a Dark, Blue, Ice or Light ground (scripts/edits.js). */
   preset?: Preset;
   hidden?: boolean;
+  /** Only on the LEFT_OUT entry: what hidden optional details held (slot → value), to bring them back. */
+  slots?: Record<string, string>;
+  /** A partner logo in one colour (its shape, in the design's colour) or in its own colours. */
+  colors?: 'one' | 'original';
   box?: { dx?: number; dy?: number; width?: number; height?: number; scale?: number };
   style?: { color?: string; backgroundColor?: string; fontSize?: number; fontWeight?: number; opacity?: number };
   /** A group's layout (it is a flex frame from Paper): spread packed or space-between, gap, placement. */
@@ -28,6 +32,8 @@ export type Preset = 'dark' | 'blue' | 'sky' | 'ice' | 'light';
 // themes are separate artboards, chosen at render). The stored key keeps its first name, ':theme', so
 // pieces saved before the rename still open recoloured.
 export const RECOLOR = ':theme';
+// The piece-level entry that keeps what hidden details held (the eye hides; the bin removes).
+export const LEFT_OUT = ':out';
 
 // Everything the page needs to draw one piece: the template file, the fill for fit.js and the
 // resolved URLs of edited images.
@@ -72,6 +78,9 @@ export function cleanEdits(edits: Edits): Edits {
     if (e.icon) n.icon = e.icon;
     if (e.preset) n.preset = e.preset;
     if (e.hidden) n.hidden = true;
+    if (e.colors === 'one' || e.colors === 'original') n.colors = e.colors;
+    const kept = Object.fromEntries(Object.entries(e.slots ?? {}).filter(([, v]) => typeof v === 'string' && v));
+    if (Object.keys(kept).length) n.slots = kept;
     if (Object.keys(box).length) n.box = box;
     if (Object.keys(style).length) n.style = style;
     const layout = Object.fromEntries(Object.entries(e.layout ?? {}).filter(([, v]) => v != null));

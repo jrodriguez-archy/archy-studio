@@ -57,7 +57,7 @@ export async function getCanvas(me: Who, ref?: string) {
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,
       ...(d.review.length ? ['Inspector suggestions (fix them yourself: edit_canvas with fix: "all", or your own change):', ...d.review.map((t) => `- ${t.title}: ${t.detail} [id ${t.id}]`)] : []),
-      'Recolour presets: dark, blue, sky, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
+      'Recolour presets: dark, blue, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
       ...(manifest.default ? [`This template also comes in other designs (${Object.keys(manifest.designs ?? {}).join(', ')}) and themes (${Object.keys(manifest.themes ?? {}).join(', ')}): those are drawn by render with design/theme, not by a recolour.`] : []),
     ].join('\n'),
   };

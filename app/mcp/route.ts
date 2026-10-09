@@ -247,7 +247,7 @@ const handler = createMcpHandler(
         description: 'Change components of the design open in Canvas, by their names from get_canvas. The person sees each change live and can undo it. Brand colours only (names from get_canvas); the Archy logo can only be moved, aligned or scaled. The answer lists the Inspector’s design suggestions (misaligned, outside the safe area, hard to read…); fix them when they come from your change.',
         inputSchema: z.object({
           piece: z.string().optional().describe('Canvas id. Omit for the one the person has open.'),
-          recolor: z.enum(['dark', 'blue', 'sky', 'ice', 'light']).optional().describe('Recolour the whole design on a Dark (navy), Blue (royal), Sky, Ice (pale blue) or Light (white) ground. On a template with themes (get_canvas says so), prefer rendering the theme instead.'),
+          recolor: z.enum(['dark', 'blue', 'ice', 'light']).optional().describe('Recolour the whole design on a Dark (navy), Blue (royal), Ice (pale blue) or Light (white) ground. On a template with themes (get_canvas says so), prefer rendering the theme instead.'),
           changes: z.array(z.object({
             component: z.string().describe('Component id from get_canvas (best, e.g. "G5O-1"), or its name when unique; "Date (text)" picks the text over a group named the same'),
             text: z.string().optional().describe('New copy (US English). For a button, its label.'),

@@ -71,6 +71,15 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
 
   const piece = edits?.[':theme'] ?? {};
 
+  // ---- A partner logo in one colour or its own colours, chosen by hand (before the theme, which colours
+  // one-colour marks only) ----
+  for (const [id, e] of Object.entries(edits ?? {})) {
+    if (!e?.colors || id === ':theme') continue;
+    const el = root.querySelector(`[data-node="${CSS.escape(id)}"]`);
+    const mark = el && (el.matches('[data-logo-mark]') ? el : el.querySelector('[data-logo-mark]'));
+    if (mark) { keep(mark); window.__logoMode?.(mark, e.colors); }
+  }
+
   // ---- Theme: the piece redrawn on a Dark, Blue, Sky, Ice or Light ground, by role (text, accent, button,
   // surface, line, icon, the Archy logo's approved colour). Photos and illustrations keep theirs. ----
   // solid: the ground as one colour (for contrast checks). fills: what a pill, badge or container may
@@ -114,7 +123,7 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     });
     for (const p of plan) {
       const st = p.el.style;
-      if (p.mark) { keep(p.el); st.backgroundColor = t.text; continue; }
+      if (p.mark) { if (!st.backgroundImage) { keep(p.el); st.backgroundColor = t.text; } continue; }
       if (p.fill || p.border || p.color) keep(p.el);
       if (p.fill) { if (/gradient|url\(/.test(getComputedStyle(p.el).backgroundImage) && p.fill === t.surface) st.backgroundImage = 'none'; st.backgroundColor = p.fill; }
       if (p.border) st.borderColor = t.border;

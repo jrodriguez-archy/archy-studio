@@ -12,7 +12,7 @@ import { RECOLOR, type Edits, type Preset } from '../lib/canvas-shared';
 import type { Manifest, TemplateConfig } from '../lib/templates';
 
 export type ReviewCase = { case: string; slots: Record<string, string | null>; edits: Edits };
-export const THEMES: Preset[] = ['dark', 'blue', 'sky', 'ice', 'light'];
+export const THEMES: Preset[] = ['dark', 'blue', 'ice', 'light'];
 const A = (f: string) => `upload:review-assets/${f}`;
 
 type Facts = Record<string, string | null>;

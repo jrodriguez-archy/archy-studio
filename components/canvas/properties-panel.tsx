@@ -170,7 +170,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, info, edits, 
 
       {comp.kind === 'background' && (
         <Section title="Recolor">
-          <div className="grid grid-cols-5 gap-1">
+          <div className="grid grid-cols-4 gap-1">
             {PRESETS.map(([key, label, swatch]) => (
               <button key={key} type="button" onClick={() => onPreset(key)}
                 className={`flex flex-col items-center gap-1 rounded-md p-1 ring-1 transition-colors ${preset === key ? 'bg-[#E6F4FF] ring-primary/50' : 'ring-foreground/10 hover:bg-foreground/[0.03]'}`}>
@@ -266,7 +266,6 @@ function AdvancedToggle({ on, onChange }: { on: boolean; onChange: (on: boolean)
 export const PRESETS: [Preset, string, React.CSSProperties][] = [
   ['dark', 'Dark', { background: 'linear-gradient(180deg, #000484, #00004E 55%)', color: '#fff' }],
   ['blue', 'Blue', { background: '#013DF5', color: '#fff' }],
-  ['sky', 'Sky', { background: '#0095FF', color: '#fff' }],
   ['ice', 'Ice', { background: '#E6F4FF', color: '#00004E' }],
   ['light', 'Light', { background: '#fff', color: '#00004E', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08)' }],
 ];
@@ -324,7 +323,7 @@ export function PiecePanel({ pieceId, title, seenAt }: { pieceId?: string; title
         <p className="text-[13px] font-medium">Claude</p>
         <p className="flex items-center gap-1.5 truncate text-foreground/55">
           <span className={`size-1.5 shrink-0 rounded-full ${connected ? 'bg-[#05C168]' : 'bg-foreground/25'}`} />
-          {connected ? <>Connected <span className="text-foreground/35">· {ago(seenAt!)}</span></> : 'Not connected yet'}
+          {connected ? <>Connected <span className="text-foreground/35" suppressHydrationWarning>· {ago(seenAt!)}</span></> : 'Not connected yet'}
         </p>
         {connected ? (
           <button type="button" disabled={!pieceId}

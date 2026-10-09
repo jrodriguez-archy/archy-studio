@@ -20,6 +20,7 @@ function shared(e: NodeEdit | undefined, scale = 1, base?: number): NodeEdit {
   if (e.image) out.image = e.image;
   if (e.icon) out.icon = e.icon;
   if (e.hidden) out.hidden = true;
+  if (e.colors) out.colors = e.colors;
   const s = e.style ?? {};
   const style: NonNullable<NodeEdit['style']> = {};
   if (s.color) style.color = s.color;

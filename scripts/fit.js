@@ -184,15 +184,13 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
         n.style.height = `${Math.round(box.height)}px`;
         const el = document.createElement('div');
         el.dataset.logoMark = '';
-        Object.assign(el.style, { width: `${Math.round(w)}px`, height: `${Math.round(h)}px`, backgroundColor: color, flexShrink: '0' });
+        Object.assign(el.style, { width: `${Math.round(w)}px`, height: `${Math.round(h)}px`, flexShrink: '0' });
         const pos = mark ? `${-mark.bx * k}px ${-mark.by * k}px` : 'center';
         const size = mark ? `${mark.nw * k}px ${mark.nh * k}px` : 'contain';
-        for (const pre of ['', '-webkit-']) {
-          el.style.setProperty(`${pre}mask-image`, `url("${value}")`);
-          el.style.setProperty(`${pre}mask-repeat`, 'no-repeat');
-          el.style.setProperty(`${pre}mask-position`, pos);
-          el.style.setProperty(`${pre}mask-size`, size);
-        }
+        // A logo in several colours, or on its own solid ground (a badge, a photo), keeps its colours:
+        // as one colour it would read as a blot. Canvas can choose either by hand (edits.js).
+        Object.assign(el.dataset, { logoSrc: value, logoPos: pos, logoSize: size, logoColor: color, logoAuto: mark?.colourful || mark?.opaque ? 'original' : 'one' });
+        logoMode(el, el.dataset.logoAuto);
         n.replaceChildren(el);
         // Optical centre: the partner mark centres on the body of the Archy letters (cap height), not
         // on the wordmark's box, which the descender of the "y" pulls down.
@@ -1040,6 +1038,24 @@ function withDefaults(root, rules) {
 }
 
 // Ink of an image: bounding box of its visible pixels (alpha > 10%) and how much of that box is ink.
+// A partner mark drawn in one colour (its shape as a mask) or in its own colours.
+function logoMode(el, mode) {
+  const d = el.dataset, s = el.style;
+  const original = mode === 'original';
+  s.backgroundColor = original ? 'transparent' : d.logoColor;
+  s.backgroundImage = original ? `url("${d.logoSrc}")` : '';
+  s.backgroundRepeat = original ? 'no-repeat' : '';
+  s.backgroundPosition = original ? d.logoPos : '';
+  s.backgroundSize = original ? d.logoSize : '';
+  for (const pre of ['', '-webkit-']) {
+    s.setProperty(`${pre}mask-image`, original ? '' : `url("${d.logoSrc}")`);
+    s.setProperty(`${pre}mask-repeat`, original ? '' : 'no-repeat');
+    s.setProperty(`${pre}mask-position`, original ? '' : d.logoPos);
+    s.setProperty(`${pre}mask-size`, original ? '' : d.logoSize);
+  }
+}
+window.__logoMode = logoMode;
+
 async function inkStats(src) {
   const img = new Image();
   img.src = src;
@@ -1053,14 +1069,20 @@ async function inkStats(src) {
   const ctx = cv.getContext('2d', { willReadFrequently: true });
   ctx.drawImage(img, 0, 0, cw, ch);
   const { data } = ctx.getImageData(0, 0, cw, ch);
-  let x0 = cw, y0 = ch, x1 = -1, y1 = -1, ink = 0;
+  let x0 = cw, y0 = ch, x1 = -1, y1 = -1, ink = 0, solid = 0;
+  const hues = new Map(); // solid pixels by colour (8 levels a channel)
   for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
-    const a = data[(y * cw + x) * 4 + 3];
+    const i = (y * cw + x) * 4, a = data[i + 3];
     if (a > 25) { ink += a / 255; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (a > 200) { solid++; const c = ((data[i] >> 5) << 6) | ((data[i + 1] >> 5) << 3) | (data[i + 2] >> 5); hues.set(c, (hues.get(c) ?? 0) + 1); }
   }
   if (x1 < 0) return null;
   const bw = (x1 - x0 + 1) / scale, bh = (y1 - y0 + 1) / scale;
-  return { nw, nh, bx: x0 / scale, by: y0 / scale, bw, bh, density: ink / ((x1 - x0 + 1) * (y1 - y0 + 1)) };
+  // Several colours that each take a real share (not the soft edges of one): a mark in colour.
+  const colourful = [...hues.values()].filter((n) => n > solid * 0.06).length > 1;
+  // Hardly any transparency: the logo sits on its own ground (a badge, a JPG, a photo).
+  const opaque = solid > cw * ch * 0.97;
+  return { nw, nh, bx: x0 / scale, by: y0 / scale, bw, bh, density: ink / ((x1 - x0 + 1) * (y1 - y0 + 1)), colourful, opaque };
 }
 
 // Ink of the template's own sample mark, at the size it is drawn on the piece.

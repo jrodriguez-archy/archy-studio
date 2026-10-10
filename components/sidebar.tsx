@@ -10,6 +10,7 @@ import { BrandLockup, BrandMark } from '@/components/brand-lockup';
 import { NAV_ICONS, NavLink, ROW } from '@/components/nav-link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
+import { ResizeHandle, useSideWidth } from '@/components/resizable';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { NavItem, NavSection } from '@/components/app-shell';
 import { BRAND_IDS, BRANDS, brandCookie, type Brand } from '@/lib/brands';
@@ -22,10 +23,12 @@ const WIDE = 240, NARROW = 60;
 // Full-screen tools open with the rail collapsed, without changing the saved preference.
 const opensCollapsed = (path: string) => /^\/canvas(\/|$)/.test(path);
 
-// The app frame: the left rail (240px, or 60px with icons only) and the content. The preference lives
-// in a cookie so the server draws the right width on the first paint. ⌘\ toggles it.
-export function ShellFrame({ initialCollapsed, sidebar, children }: { initialCollapsed: boolean; sidebar: React.ReactNode; children: React.ReactNode }) {
+// The app frame: the left rail (240px, a little wider or narrower by dragging its edge, or 60px with icons
+// only) and the content. Both preferences live in cookies so the server draws the right width on the first
+// paint. ⌘\ toggles it.
+export function ShellFrame({ initialCollapsed, initialWidth, sidebar, children }: { initialCollapsed: boolean; initialWidth?: number; sidebar: React.ReactNode; children: React.ReactNode }) {
   const path = usePathname();
+  const size = useSideWidth('sidebar-w', WIDE, 200, 320, { prop: '--sidebar-w', cookie: true, saved: initialWidth });
   const [pref, setPref] = useState(initialCollapsed);
   const [override, setOverride] = useState<{ path: string; collapsed: boolean } | null>(null);
   const collapsed = override?.path === path ? override.collapsed : opensCollapsed(path) || pref;
@@ -46,25 +49,30 @@ export function ShellFrame({ initialCollapsed, sidebar, children }: { initialCol
   return (
     <SidebarContext.Provider value={{ collapsed }}>
       <ToggleContext.Provider value={toggle}>
+        <ResizeContext.Provider value={size}>
         <div
+          ref={(el) => { size.ref.current = el; }}
           className="min-h-dvh md:grid md:grid-cols-[var(--sidebar-w)_minmax(0,1fr)] md:transition-[grid-template-columns] md:duration-200"
-          style={{ '--sidebar-w': `${collapsed ? NARROW : WIDE}px` } as React.CSSProperties}
+          style={{ '--sidebar-w': `${collapsed ? NARROW : size.width}px` } as React.CSSProperties}
         >
           {sidebar}
           {children}
         </div>
+        </ResizeContext.Provider>
       </ToggleContext.Provider>
     </SidebarContext.Provider>
   );
 }
 
 const ToggleContext = createContext<() => void>(() => {});
+const ResizeContext = createContext<ReturnType<typeof useSideWidth> | null>(null);
 
 // Left rail on a faint grey layer (the login's card-on-ground idea): Studio lockup, icon nav with the
 // active page lifted onto white, account at the bottom. Collapsed, only icons remain, with tooltips.
 export function Sidebar({ sections, admin, projects, me, email, name, brand }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; name: string; brand: Brand }) {
   const { collapsed } = useSidebar();
   const toggle = useContext(ToggleContext);
+  const size = useContext(ResizeContext);
   return (
     <aside className={`sticky top-0 hidden h-dvh flex-col overflow-hidden border-r border-foreground/[0.06] bg-[#FAFAFA] pt-6 pb-3 md:flex ${collapsed ? 'px-2.5' : 'px-3'}`}>
       <div className={`flex items-center ${collapsed ? 'flex-col gap-4' : 'justify-between'}`}>
@@ -99,6 +107,7 @@ export function Sidebar({ sections, admin, projects, me, email, name, brand }: {
         {admin && <AdminMenu items={admin} />}
         <AccountMenu name={name} email={email} />
       </div>
+      {!collapsed && size && <ResizeHandle side="left" inside width={size.width} onWidth={size.set} onReset={size.reset} />}
     </aside>
   );
 }

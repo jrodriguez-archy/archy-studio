@@ -7,7 +7,7 @@ import { SearchVisualIcon, Image01Icon, Layers01Icon, LibraryIcon } from '@hugei
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { CanvasLibrary } from '@/lib/canvas';
 import { StackBadge, StackLayers, stackPad } from '@/components/stack';
-import { ResizeHandle, useSideWidth } from './resizable';
+import { ResizeHandle, useSideWidth } from '@/components/resizable';
 
 export type PanelTab = 'layers' | 'library' | 'assets' | 'inspector';
 const TABS: { key: PanelTab; label: string; icon: typeof Layers01Icon }[] = [

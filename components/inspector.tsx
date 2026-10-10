@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon } from '@hugeicons/core-free-icons';
+import { ResizeHandle, useSideWidth } from '@/components/resizable';
 
 // Open an item in place (recent.design-like): the URL carries ?<param>=<id> so it can be shared,
 // the page underneath stays where it was. Opening pushes a history entry, so Back closes it.
@@ -50,6 +51,8 @@ export function Inspector({ eyebrow, title, info, stage, onClose, onStep }: {
   onClose: () => void;
   onStep: (d: 1 | -1) => void;
 }) {
+  // The info column can be made a little wider or narrower (desktop).
+  const size = useSideWidth('inspector.info', 320, 280, 460, { prop: '--info-w' });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || (e.target as HTMLElement)?.closest('input, textarea, [role=menu], [data-slot=dialog-content], [data-slot=alert-dialog-content]')) return;
@@ -65,7 +68,9 @@ export function Inspector({ eyebrow, title, info, stage, onClose, onStep }: {
 
   return (
     <div className="fixed inset-0 z-[45] flex flex-col animate-in fade-in-0 duration-150 md:left-(--sidebar-w) md:flex-row" role="dialog" aria-modal="true">
-      <aside className="order-2 flex min-h-0 flex-col border-foreground/[0.06] bg-background md:order-1 md:w-[320px] md:shrink-0 md:border-r max-md:max-h-[55dvh] max-md:border-t">
+      <aside ref={size.ref} style={{ '--info-w': `${size.width}px` } as React.CSSProperties}
+        className="relative order-2 flex min-h-0 flex-col border-foreground/[0.06] bg-background md:order-1 md:w-(--info-w) md:shrink-0 md:border-r max-md:max-h-[55dvh] max-md:border-t">
+        <div className="max-md:hidden"><ResizeHandle side="left" width={size.width} onWidth={size.set} onReset={size.reset} /></div>
         <div className="flex items-center justify-between px-5 pt-4">
           <IconButton label="Close" icon={Cancel01Icon} onClick={onClose} />
           <div className="flex gap-1">

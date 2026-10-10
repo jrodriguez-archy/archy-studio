@@ -27,7 +27,7 @@ import { AssetsTab, withSession } from './assets-tab';
 import { CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
 import { InspectorTab } from './inspector-tab';
 import { ContentPanel } from './content-panel';
-import { ResizeHandle, useSideWidth } from './resizable';
+import { ResizeHandle, useSideWidth } from '@/components/resizable';
 import { LayersPanel } from './layers-panel';
 import { merge, within, type Box, type Comp, type Token } from './model';
 import { MultiPanel, PiecePanel, PropertiesPanel, type Align, type SlotMeta } from './properties-panel';

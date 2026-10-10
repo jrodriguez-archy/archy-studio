@@ -6,6 +6,14 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.20.2', date: '2026-10-10', title: 'Edit explorations in Canvas',
+    notes: [
+      'In Canvas, an exploration’s headline, texts and photo can be edited like a template’s: change the copy, size or colour, or replace the photo.',
+      'On a phone, the preview of a design no longer looks doubled.',
+      'Large copy can sit on a plain colour area of an image without a shade behind it.',
+    ],
+  },
+  {
     version: '0.20.1', date: '2026-10-10', title: 'Better explorations',
     notes: [
       'Claude can make a studio shot of an object (a giant prop, a product) without people or a room added.',

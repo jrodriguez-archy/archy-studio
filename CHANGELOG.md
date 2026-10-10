@@ -3,6 +3,8 @@
 ## archy-studio 0.20.2 (2026-10-10)
 
 - Explorations: a calm, even part of the image counts as the copy's scrim at the contrast the text's size needs (3:1 for large text, 4.5:1 for small), so large copy on a plain colour floor needs no scrim.
+- Canvas: an exploration's texts and photo are editable. A line break no longer becomes a layer (a broken headline read as an empty frame), the exploration's image is a photo (replace and scale), and Content lists its texts and photo.
+- Gallery and Templates: on short screens (phones), the preview keeps the piece's shape, with no placeholder showing at its sides.
 
 ## archy-studio 0.20.1 (2026-10-10)
 

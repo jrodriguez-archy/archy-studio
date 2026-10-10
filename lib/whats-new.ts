@@ -6,6 +6,14 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.20.1', date: '2026-10-10', title: 'Better explorations',
+    notes: [
+      'Claude can make a studio shot of an object (a giant prop, a product) without people or a room added.',
+      'Copy can sit on a calm, dark part of an image, like the inside of an open mouth, without a shade behind it.',
+      'A retry after a refused exploration stays with the same design in the gallery.',
+    ],
+  },
+  {
     version: '0.20.0', date: '2026-10-10', title: 'What’s new and Update',
     notes: [
       'Your Studio version is in the account menu; it opens this page.',

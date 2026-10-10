@@ -8,6 +8,7 @@ import { ORIGIN, resolveImage } from './fill';
 import { findAsset } from './asset-ids';
 import { getAsset } from './assets';
 import { iconMarkup } from './icons';
+import { BLEEDS, EXPRESSIONS, EYES, HEAD, RAISE, bleedBox, mascotSvg, type Bleed, type Expression, type MascotGround } from './mascot';
 import { ROOT } from './templates';
 
 // Explorations: a design for a brief no template covers, written by Claude as HTML in the brand kit
@@ -120,6 +121,44 @@ export async function compose(input: { html: string; width: number; height: numb
     return `<${tag}${attrs}${name}>${cells(kind as 'pixel-dissolve' | 'pixels-behind', w, h, cell, colours)}</${tag}>`;
   });
 
+  // Archy the mascot (lib/mascot.ts): the master drawing in one of his four expressions. Off an edge he is
+  // placed by Studio (rotated so the antenna points in, about two thirds showing, eyes raised and whole);
+  // with data-bleed="none" he stands where the style puts him.
+  let mascots = 0;
+  for (const [whole, tag, attrs] of [...html.matchAll(/<(div|span)\b([^>]*\bdata-piece="mascot"[^>]*)>\s*<\/\1>/gi)]) {
+    const attr = (k: string) => attrs.match(new RegExp(`\\bdata-${k}="([^"]+)"`, 'i'))?.[1];
+    const expression = (attr('expression') ?? 'neutral') as Expression;
+    const bleed = (attr('bleed') ?? 'none') as Bleed;
+    const form = attr('form') === 'body' ? 'body' : 'head';
+    const ground = (attr('ground') ?? 'royal') as MascotGround;
+    if (!EXPRESSIONS.includes(expression)) { problems.push(`Unknown mascot expression "${expression}" (${EXPRESSIONS.join(', ')}).`); html = html.replace(whole, ''); continue; }
+    if (!BLEEDS.includes(bleed)) { problems.push(`Unknown mascot bleed "${bleed}" (${BLEEDS.join(', ')}).`); html = html.replace(whole, ''); continue; }
+    if (form === 'body' && bleed !== 'none' && bleed !== 'bottom') { problems.push('The full-body mascot stands on the piece or rises from the bottom; off the top or a side use his head (data-form="head").'); html = html.replace(whole, ''); continue; }
+    const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1] ?? '';
+    const sideways = bleed === 'left' || bleed === 'right';
+    const w = Number(style.match(/(?:^|;)\s*width\s*:\s*([\d.]+)px/i)?.[1]) || Math.round(sideways ? height * 0.85 : width * 0.64);
+    const svg = mascotSvg({ id: `m${mascots++}`, form, expression, ground, raise: bleed !== 'none' });
+    let place: string;
+    let eyes: { x: number; y: number }[] = [];
+    if (bleed === 'none') {
+      place = `${style}; width: ${w}px; aspect-ratio: ${HEAD.w} / ${form === 'body' ? 644 : HEAD.h}`;
+    } else {
+      const at = Number(attr('at')) || (sideways ? height / 2 : width / 2);
+      const b = bleedBox({ bleed, size: w, at, show: Number(attr('show')) || 0.66, artboard: { width, height }, form });
+      place = `position: absolute; left: ${b.left.toFixed(1)}px; top: ${b.top.toFixed(1)}px; width: ${b.width.toFixed(1)}px; height: ${b.height.toFixed(1)}px; transform: rotate(${b.rotate}deg)`;
+      // His eyes on the artboard: whole, never touched by the trim.
+      const k = b.width / HEAD.w, cx = b.left + b.width / 2, cy = b.top + b.height / 2, a = (b.rotate * Math.PI) / 180;
+      eyes = EYES.xs.map((ex) => {
+        const dx = (ex - HEAD.w / 2) * k, dy = (EYES.y - RAISE - (form === 'body' ? 644 : HEAD.h) / 2) * k;
+        return { x: cx + dx * Math.cos(a) - dy * Math.sin(a), y: cy + dx * Math.sin(a) + dy * Math.cos(a) };
+      });
+      const r = EYES.r * k;
+      if (eyes.some((e) => e.x - r < 0 || e.y - r < 0 || e.x + r > width || e.y + r > height)) problems.push(`The mascot's eyes would be cut by the edge: move him along it (data-at) or show more of him (data-show, up to 0.8).`);
+    }
+    const named = /\bdata-name=/.test(attrs) ? '' : ' data-name="Mascot"';
+    html = html.replace(whole, `<${tag}${attrs.replace(/\bstyle="[^"]*"/i, '')}${named} data-kind="mascot" style="${place}">${svg}</${tag}>`);
+  }
+
   // The product: a whole screen as a window (it may bleed off the artboard) or a crop of it as a card.
   // Drawn from the kit's export of Master - Product, never redrawn.
   const screens = await productScreens(brand);
@@ -170,8 +209,9 @@ export async function compose(input: { html: string; width: number; height: numb
       html = html.replace(whole, whole.replace(`src="${value}"`, `src="${esc(url)}" data-src="${value}"`));
     } catch (e) { problems.push((e as Error).message); }
   }
-  // Any other url() would reach outside the page: only the kit's textures and the images above draw.
-  html = html.replace(/url\(\s*(&quot;|"|'|)(.*?)\1\s*\)/gi, (m, _q: string, u: string) => (images.has(u.replace(/&amp;/g, '&')) ? m : 'none'));
+  // Any other url() would reach outside the page: only the kit's textures, the images above and references
+  // inside the page (the mascot's gradients) draw.
+  html = html.replace(/url\(\s*(&quot;|"|'|)(.*?)\1\s*\)/gi, (m, _q: string, u: string) => (u.startsWith('#') || images.has(u.replace(/&amp;/g, '&')) ? m : 'none'));
 
   // Every layer gets an id (the checks, the Inspector and Canvas address layers by it).
   let n = 0;

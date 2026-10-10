@@ -159,7 +159,7 @@
       const pad = b.height * 0.5, clear = { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad };
       const nearText = runs.find((t) => !l.contains(t.el) && t.lines.some((ln) => area(body(ln, t.cs), clear) > 4));
       const nearThing = nearText ? null : [...r.querySelectorAll('[data-icon], [data-image], img, *')].find((e) => {
-        const product = e.getAttribute('data-kind') === 'product';
+        const product = e.getAttribute('data-kind') === 'product' || e.getAttribute('data-kind') === 'mascot';
         if (e === l || l.contains(e) || e.contains(l) || e.closest('svg') || (!product && e.closest('[data-piece]'))) return false;
         const eb = e.getBoundingClientRect();
         if (!eb.width || !eb.height || (!product && (eb.width * eb.height) / (R.width * R.height) > 0.5) || e.getAttribute('data-kind') === 'cutout') return false;
@@ -191,7 +191,7 @@
       if (cs.filter !== 'none' || cs.backdropFilter !== 'none') warn(el, 'effect', `${nameOf(el)} has a filter or blur (off-brand).`);
       if (cs.mixBlendMode !== 'normal') warn(el, 'effect', `${nameOf(el)} uses a blend mode (off-brand).`);
       const m = cs.transform.match(/^matrix\(([^)]+)\)/);
-      if (m && Math.abs(+m[1].split(',')[1]) > 0.01) warn(el, 'effect', `${nameOf(el)} is rotated; rotation is for the mascot and badges only.`);
+      if (m && Math.abs(+m[1].split(',')[1]) > 0.01 && el.getAttribute('data-kind') !== 'mascot') warn(el, 'effect', `${nameOf(el)} is rotated; rotation is for the mascot and badges only.`);
       // An outlined pill with a word in it reads as generic AI output.
       const b = el.getBoundingClientRect();
       if (b.height && parseFloat(cs.borderTopWidth) > 0 && parseFloat(cs.borderTopLeftRadius) >= b.height / 2 - 1 && (rgb(cs.backgroundColor)?.[3] ?? 0) === 0 && el.textContent.trim() && el.textContent.trim().split(/\s+/).length <= 3) warn(el, 'pill', `${nameOf(el)} is an outlined pill with a word in it; use the status pill (filled) or plain text.`);
@@ -206,7 +206,7 @@
       return k !== 'tone' && k !== 'cutout' && !p.closest('[data-piece]') && b.left <= R.left + 2 && b.top <= R.top + 2 && b.right >= R.right - 2 && b.bottom >= R.bottom - 2;
     });
     if (R.height >= R.width * 0.8 && !imageLed) {
-      const blocks = [...runs.map((t) => t.box), ...logos.map((l) => l.getBoundingClientRect()), ...[...r.querySelectorAll('[data-icon], [data-image], img, [data-kind="product"]')].map((e) => e.getBoundingClientRect())]
+      const blocks = [...runs.map((t) => t.box), ...logos.map((l) => l.getBoundingClientRect()), ...[...r.querySelectorAll('[data-icon], [data-image], img, [data-kind="product"], [data-kind="mascot"]')].map((e) => e.getBoundingClientRect())]
         // What shows of each block (a window bleeding off the artboard counts for its visible part).
         .map((b) => ({ left: Math.max(b.left, R.left), top: Math.max(b.top, R.top), right: Math.min(b.right, R.right), bottom: Math.min(b.bottom, R.bottom) }))
         .map((b) => ({ ...b, width: Math.max(0, b.right - b.left), height: Math.max(0, b.bottom - b.top) }))
@@ -280,6 +280,13 @@
       if (k && k < want) warn(p, 'product-small', `${nameOf(p)} is drawn at ${Math.round(k * 100)}% of the screen: its UI reads too small. Show less of it, bigger: a wider window bleeding further off the edges, or a crop as a card (about ${Math.round(want * 100)}% or more).`);
       const box = { left: Math.max(pb.left, R.left), top: Math.max(pb.top, R.top), right: Math.min(pb.right, R.right), bottom: Math.min(pb.bottom, R.bottom) };
       for (const t of runs) if (!p.contains(t.el) && t.lines.some((ln) => area(body(ln, t.cs), box) > 8)) err(t.el, 'product-text', `"${t.text.slice(0, 30)}" sits on ${nameOf(p)}: copy never goes over the product. Keep the headline above it (or beside it) and let the product show.`);
+    }
+
+    // The mascot: no copy on him (his visible shape, inset a little from his box).
+    for (const m of r.querySelectorAll('[data-kind="mascot"]')) {
+      const mb = m.getBoundingClientRect(), ix = mb.width * 0.08, iy = mb.height * 0.08;
+      const box = { left: Math.max(mb.left + ix, R.left), top: Math.max(mb.top + iy, R.top), right: Math.min(mb.right - ix, R.right), bottom: Math.min(mb.bottom - iy, R.bottom) };
+      for (const t of runs) if (!m.contains(t.el) && t.lines.some((ln) => area(body(ln, t.cs), box) > 8)) err(t.el, 'mascot-text', `"${t.text.slice(0, 30)}" sits on the mascot: copy never goes over him. Give him his own part of the piece (the empty column beside the headline is where he goes).`);
     }
 
     // Photos: a generated image is the subject and fills the artboard; a large photo does not stop across

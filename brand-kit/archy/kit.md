@@ -200,6 +200,24 @@ Two ways, as in the website's hero video:
 
 Studio draws it white with rounded corners and the screen at the width you give (the height follows unless you set one). **The UI has to read**: draw the screen at about 1.3–1.6× its size on a 1080 piece (a window 2700–3300 px wide, most of it off the artboard), so less of it shows, bigger; the check warns when it reads small. To start the window at the part that matters (the teeth, not the side panel), give a crop whose left and top are where the window should begin, e.g. `data-crop="356,0,1700,1160"`. Copy never goes over the product; the logo keeps its air from it. The screens and crops available are listed at the end of this kit.
 
+## The mascot
+
+Archy, the robot (Paper › Archy - Brand › Mascot). Use him when the brief asks for him or the piece wants warmth: a launch, a welcome, a thank-you, a celebration, a moment of personality. Never redraw him: `data-piece="mascot"` is the master drawing, and Studio places him by the brand's rules.
+
+- **Expressions** (`data-expression`): `neutral` (default: listening, waiting), `happy` (a calm smile: welcome, a job done), `joyful` (big wins, celebration, a laugh), `love` (culture, thanks, people; sparingly).
+- **He peeks in from an edge** (`data-bleed`): the antenna always points into the canvas, about two thirds of him shows, his eyes rise a little and are never cut. Studio rotates and places him; you choose the edge, his size (`width`), where along the edge (`data-at`, his centre in px) and how much shows (`data-show`, 0.55–0.8).
+  - Vertical pieces (post, stories): off the **top**, upside down, usually centred. Upside down, the arc eyes (`happy`, `joyful`) flip and read as closed or sad: off the top, `neutral` or `love` read best.
+  - Landscape (OG, banners, slides): off a **side**, turned 90°, beside the headline; the empty column next to a left-aligned headline is where he goes.
+  - Off the **bottom**, upright: small, thumbnail-scale pieces.
+- **Full body** (`data-form="body"`): standing on the piece (`data-bleed="none"`, placed with your own left/top/width) or rising from the bottom edge. For culture and celebration pieces; large, never a small sticker floating in a corner.
+- **Ground** (`data-ground`: `royal`, `primary`, `navy`, `white`, `ice`, `tint-300`): sets his antenna (light on blue and dark, dark on light) and the barely-there edge on the part that would sink into the ground. Always say the ground he sits on.
+- Copy never goes over him; the logo keeps its air from him. He may cross a Ruler.
+```html
+<div data-piece="mascot" data-bleed="top" data-expression="joyful" data-ground="royal" style="width: 691px"></div>
+<div data-piece="mascot" data-bleed="right" data-expression="neutral" data-ground="navy" style="width: 560px"></div>
+<div data-piece="mascot" data-form="body" data-expression="love" data-ground="ice" style="position: absolute; left: 520px; top: 500px; width: 460px"></div>
+```
+
 ## Images
 
 In this order:
@@ -224,4 +242,4 @@ Archy's textures are one pixel grain, in two families (Archy - Brand › Texture
 
 ## Not in explorations yet
 
-The mascot (his placement rules need a designer) and DOC. For those, report the missing template.
+DOC, and the mascot's five agents and poses. For those, report the missing template.

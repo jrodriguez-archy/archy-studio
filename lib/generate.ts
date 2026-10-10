@@ -50,9 +50,10 @@ const SPACE: Record<CopySpace, string> = {
 
 // Archy's photography for marketing pieces, as the brand describes it, and what a made-up image must
 // never show (a person, a real venue, words, a logo).
-const EXPLORE_GUIDE = `Archy's photography: real-world, natural light, clean and modern, true colours with no filter or heavy grade, calm and uncluttered: a modern dental practice, its team and patients, a city or an everyday object when that is the subject.
+const EXPLORE_GUIDE = `Art direction: editorial, magazine-quality photography, realistic. A clear subject, large and close to the camera, and a real moment: something is happening (a hygienist showing a patient something on a tablet, hands checking in at a front desk, a team laughing over a schedule). Shallow depth of field, a considered composition, directional natural light. Never an empty room, a lone object with nothing happening, or a stock-photo pose. If the request only names an object or a place, build a human moment around it, unless it says there are no people.
+Archy's look: a modern dental practice, its team and patients, a city or an everyday object; clean and modern, true colours with no filter or heavy grade.
 One continuous photograph, edge to edge: no split, collage, panel, border, frame, blur band or empty area added beside it.
-People are welcome as generic, natural people (a patient, a team at work, a front desk). Never a specific real person, a logo or a watermark, or a specific real venue presented as itself.`;
+People are welcome as generic, natural people. Never a specific real person, a logo or a watermark (devices and products show no brand marks), or a specific real venue presented as itself.`;
 
 /** A PNG at exactly width × height for a frame of an exploration. */
 export async function generateForFrame(input: { prompt: string; width: number; height: number; copySpace?: CopySpace; brand?: Brand }): Promise<Buffer> {

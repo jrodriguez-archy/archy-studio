@@ -12,6 +12,8 @@
   const hex = (c) => '#' + c.slice(0, 3).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
   const inside = (b, r, tol = 1) => b.left >= r.left - tol && b.top >= r.top - tol && b.right <= r.right + tol && b.bottom <= r.bottom + tol;
   const area = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+  // A line of text as its letters' body, not its font box (tight headline leading makes those boxes overlap).
+  const body = (r, cs) => { const h = parseFloat(cs.fontSize) * 0.7, cy = (r.top + r.bottom) / 2; return { left: r.left, right: r.right, top: cy - h / 2, bottom: cy + h / 2 }; };
   const rel = (b, R) => ({ x: Math.round(b.left - R.left), y: Math.round(b.top - R.top), w: Math.round(b.width), h: Math.round(b.height) });
 
   // Elements that hold text of their own (a text node child), with the box of that text as drawn.
@@ -78,8 +80,6 @@
     for (let i = 0; i < runs.length; i++) for (let j = i + 1; j < runs.length; j++) {
       const a = runs[i], b = runs[j];
       if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
-      // On the letters' body, not their font boxes: tight headline leading makes those boxes overlap.
-      const body = (r, cs) => { const h = parseFloat(cs.fontSize) * 0.7, cy = (r.top + r.bottom) / 2; return { left: r.left, right: r.right, top: cy - h / 2, bottom: cy + h / 2 }; };
       const hit = a.lines.some((la) => b.lines.some((lb) => area(body(la, a.cs), body(lb, b.cs)) > 6));
       if (hit) err(b.el, 'overlap', `"${b.text.slice(0, 30)}" overlaps "${a.text.slice(0, 30)}".`);
     }
@@ -91,13 +91,23 @@
     for (const l of logos) {
       const b = l.getBoundingClientRect();
       if (!b.width || !b.height) { err(l, 'logo', 'The Archy logo has no size: give it a width.'); continue; }
-      // The logo keeps clear of the copy: no text within a tenth of its height.
-      const pad = b.height * 0.1, clear = { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad };
-      const near = runs.find((t) => !l.contains(t.el) && t.lines.some((ln) => area(ln, clear) > 6));
-      if (near) err(l, 'overlap', `The Archy logo touches "${near.text.slice(0, 30)}": give it room (at least a tenth of its height all around).`);
+      // The logo has its own air: nothing within half its height all around (grounds, scrims, full-bleed
+      // photos and a person's cut-out box do not count).
+      const pad = b.height * 0.5, clear = { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad };
+      const nearText = runs.find((t) => !l.contains(t.el) && t.lines.some((ln) => area(body(ln, t.cs), clear) > 4));
+      const nearThing = nearText ? null : [...r.querySelectorAll('[data-icon], [data-image], img, *')].find((e) => {
+        if (e === l || l.contains(e) || e.contains(l) || e.closest('svg') || e.closest('[data-piece]')) return false;
+        const eb = e.getBoundingClientRect();
+        if (!eb.width || !eb.height || (eb.width * eb.height) / (R.width * R.height) > 0.5 || e.getAttribute('data-kind') === 'cutout') return false;
+        const cs = getComputedStyle(e);
+        const solid = (rgb(cs.backgroundColor)?.[3] ?? 0) > 0.5 || e.hasAttribute('data-image') || e.tagName === 'IMG' || e.hasAttribute('data-icon');
+        return solid && area(eb, clear) > 4;
+      });
+      const near = nearText ? `"${nearText.text.slice(0, 30)}"` : nearThing ? nameOf(nearThing) : null;
+      if (near) err(l, 'logo-space', `The Archy logo is too close to ${near}: it needs its own air, at least half its height (${Math.round(pad)} px) clear all around. Move it away (often to the other end of the piece) or give the layout more room.`);
       if (!inside(b, R)) err(l, 'logo', 'The Archy logo runs off the artboard.');
       else if (!inside(b, safe, 2)) warn(l, 'safe-area', 'The Archy logo is outside the safe area.');
-      if (b.width < opts.minLogo) warn(l, 'logo', `The Archy logo is ${Math.round(b.width)} px wide; at least ${Math.round(opts.minLogo)} on this format.`);
+      if (b.width < opts.minLogo) err(l, 'logo', `The Archy logo is ${Math.round(b.width)} px wide; at least ${Math.round(opts.minLogo)} on this format.`);
     }
 
     // Colours outside the brand, and the effects the brand leaves out.
@@ -142,6 +152,40 @@
       const hole = `About ${Math.round(gap)} px of empty space from y ${Math.round(at - R.top)}: the layout reads as a hole. Without an image the type is the design: make the headline bigger so it holds the centre, or spread the blocks over the format (two anchors, the gaps absorb the rest).`;
       if (gap > Math.max(opts.maxGap, room * opts.holeError)) err(null, 'empty', hole);
       else if (gap > Math.max(opts.maxGap, room * opts.holeWarn)) warn(null, 'empty', hole);
+    }
+
+    // The headline (the biggest text) runs big: bigger than feels safe, and bigger still when it has room.
+    if (runs.length) {
+      const head = runs.reduce((a, t) => (parseFloat(t.cs.fontSize) > parseFloat(a.cs.fontSize) ? t : a));
+      const size = parseFloat(head.cs.fontSize);
+      const wide = Math.max(...head.lines.map((ln) => ln.width));
+      if (size < opts.minHeadline) err(head.el, 'headline-size', `The headline "${head.text.slice(0, 30)}" is ${Math.round(size)} px; on this format it starts at ${Math.round(opts.minHeadline)} px. Type runs bigger than feels safe.`);
+      else {
+        // Its column: the block it sits in, never wider than the safe area.
+        const col = Math.min(safe.right - safe.left, head.el.parentElement && head.el.parentElement !== r ? head.el.parentElement.getBoundingClientRect().width : Infinity);
+        if (size < opts.roomHeadline && wide < col * 0.75) warn(head.el, 'headline-room', `The headline has room to grow: it is ${Math.round(size)} px and uses ${Math.round((wide / col) * 100)}% of its column. Make it bigger.`);
+      }
+    }
+
+    // A person (a cut-out) is the subject: big, and bleeding off the bottom edge, never floating.
+    for (const p of r.querySelectorAll('[data-kind="cutout"]')) {
+      const b = p.getBoundingClientRect();
+      if (!b.width) continue;
+      if (b.bottom < R.bottom - 2) err(p, 'person-float', `${nameOf(p)} floats: let the person bleed off the bottom edge (the frame runs to the bottom of the artboard).`);
+      else if (b.height < R.height * 0.6 || b.width < R.width * 0.45) warn(p, 'person-small', `${nameOf(p)} is small for the piece: let the person take more of the frame (from the chest or waist down to the bottom edge).`);
+    }
+
+    // Sky (#0095FF) is never a ground: no large layer filled with it, and no Sky pixel gradient.
+    for (const e of [r, ...r.querySelectorAll('*')]) {
+      if (e.closest('svg')) continue;
+      const b = e.getBoundingClientRect();
+      if (!b.width || (b.width * b.height) / (R.width * R.height) < 0.25) continue;
+      const cs = getComputedStyle(e);
+      const bg = rgb(cs.backgroundColor);
+      const isSky = (c) => c && Math.abs(c[0] - 0) < 12 && Math.abs(c[1] - 149) < 16 && Math.abs(c[2] - 255) < 12 && c[3] > 0.5;
+      const stops = [...cs.backgroundImage.matchAll(/rgba?\([^)]*\)/g)].map((m) => rgb(m[0])).filter((c) => c && c[3] > 0.5);
+      const skyGradient = stops.length && stops.filter(isSky).length * 2 >= stops.length;
+      if (isSky(bg) || skyGradient || e.getAttribute('data-texture') === 'sky') { err(e, 'sky-ground', `${nameOf(e)} uses Sky as a ground: Sky is never a ground. Use royal, primary, navy, ice or a light ground; Sky stays an accent (an icon, a label on dark).`); break; }
     }
 
     // Photos: a generated image is the subject and fills the artboard; a large photo does not stop across

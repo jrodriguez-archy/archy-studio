@@ -20,7 +20,8 @@ export const EXPLORATION_BRANDS: Brand[] = ['archy'];
 export const MAX_HTML = 60_000;
 export const SIZE = { min: 200, max: 4000 };
 
-export const TEXTURES = ['navy', 'deep-blue', 'primary', 'royal-blue', 'sky', 'ice', 'pure-white', 'white', 'mist'] as const;
+// Sky is never a ground (Juan, 2026-10-09): its gradient is left out.
+export const TEXTURES = ['navy', 'deep-blue', 'primary', 'royal-blue', 'ice', 'pure-white', 'white', 'mist'] as const;
 
 const kitFile = (brand: Brand, file: string) => path.join(ROOT, 'brand-kit', brand, file);
 const cache = new Map<string, Promise<string>>();
@@ -103,9 +104,11 @@ export async function compose(input: { html: string; width: number; height: numb
     const w = px('width'), h = px('height');
     if (!w || !h) { problems.push(`The ${kind} needs a width and a height in px.`); return ''; }
     const ground = (attrs.match(/\bdata-ground="([a-z-]+)"/i)?.[1] ?? 'royal') as keyof typeof CELL_COLOURS;
-    const cell = Number(attrs.match(/\bdata-cell="([\d.]+)"/i)?.[1]) || (kind === 'pixels-behind' ? 16 : 8);
+    // Cells read as pixels, not noise: 16 px for a dissolve and 20 behind a headshot on a 1080 piece.
+    const cell = Number(attrs.match(/\bdata-cell="([\d.]+)"/i)?.[1]) || Math.round((kind === 'pixels-behind' ? 20 : 16) * Math.max(0.5, width / 1080));
     const name = /\bdata-name=/.test(attrs) ? '' : ` data-name="${kind === 'pixel-dissolve' ? 'Pixel Dissolve' : 'Pixels Behind'}"`;
-    return `<${tag}${attrs}${name}>${cells(kind as 'pixel-dissolve' | 'pixels-behind', w, h, cell, CELL_COLOURS[ground] ?? CELL_COLOURS.royal)}</${tag}>`;
+    const colours = kind === 'pixels-behind' ? BEHIND_COLOURS[ground] ?? BEHIND_COLOURS.royal : CELL_COLOURS[ground] ?? CELL_COLOURS.royal;
+    return `<${tag}${attrs}${name}>${cells(kind as 'pixel-dissolve' | 'pixels-behind', w, h, cell, colours)}</${tag}>`;
   });
 
   // Images: data-image on a block (its background), or <img src>. asset:, upload: and https values.
@@ -194,7 +197,7 @@ export async function checksFor(width: number, height: number, brand: Brand) {
   // Type and logo scale with the piece: its width, but a wide, short banner is read like a post as tall as
   // it is (a 1584×396 banner holds about the type of a 500 px post).
   const s = Math.min(Math.max(Math.min(width, height * 1.25) / 1080, 0.55), 1.5);
-  return { safe, palette, fonts: ['Onest', 'Inter'], minText: Math.max(14, 18 * s), minLogo: Math.max(96, 160 * s), smallText: 24 * s, maxGap: 160 * s, holeWarn: 0.22, holeError: 0.3, bigPhoto: 0.25 };
+  return { safe, palette, fonts: ['Onest', 'Inter'], minText: Math.max(14, 18 * s), minLogo: Math.max(110, 200 * s), minHeadline: 110 * s, roomHeadline: 160 * s, smallText: 24 * s, maxGap: 160 * s, holeWarn: 0.22, holeError: 0.3, bigPhoto: 0.25 };
 }
 
 // What a team image is, for the checks: an AI image (generated), a Pixel Tone photo (tone) or a person
@@ -210,18 +213,24 @@ async function imageKind(v: string): Promise<'generated' | 'tone' | 'cutout' | n
   return a.kind === 'pixel' && /tone/i.test(a.name) ? 'tone' : null;
 }
 
-// The cell colours per ground, as in Paper: light blues on blue and dark grounds, darks on light ones.
-// For Pixels Behind the first is the lowest (darkest) band.
+// The cell colours per ground, as in Paper. Pixel Dissolve: light blues on blue and dark grounds, darks on
+// light ones. Pixels Behind (BEHIND_COLOURS): three tokens, the darkest lowest.
 const CELL_COLOURS = {
   royal: ['--color-blue-tint-300', '--color-white', '--color-sky-blue-400', '--color-blue-tint-200'],
   primary: ['--color-blue-tint-300', '--color-white', '--color-sky-blue-400', '--color-blue-tint-200'],
   navy: ['--color-royal-blue-500', '--color-sky-blue-400', '--color-blue-tint-300', '--color-white'],
-  sky: ['--color-blue-tint-800', '--color-royal-blue-500', '--color-blue-tint-200', '--color-white'],
   ice: ['--color-blue-tint-800', '--color-royal-blue-500', '--color-sky-blue-400', '--color-blue-tint-300'],
 };
 
 // Whole square cells anchored to the bottom edge (the bleed): sparse at the top of the band, denser toward
 // the bottom. A fixed pseudo-random pattern, so the same piece always draws the same cells.
+const BEHIND_COLOURS = {
+  royal: ['--color-blue-tint-800', '--color-primary-blue-600', '--color-sky-blue-400'],
+  primary: ['--color-blue-tint-800', '--color-royal-blue-500', '--color-sky-blue-400'],
+  navy: ['--color-primary-blue-600', '--color-royal-blue-500', '--color-sky-blue-400'],
+  ice: ['--color-blue-tint-800', '--color-royal-blue-500', '--color-blue-tint-300'],
+};
+
 function cells(kind: 'pixel-dissolve' | 'pixels-behind', w: number, h: number, cell: number, colours: string[]): string {
   const cols = Math.ceil(w / cell), rows = Math.floor(h / cell);
   const rand = (x: number, y: number, k: number) => { const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };

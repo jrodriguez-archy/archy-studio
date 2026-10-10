@@ -100,12 +100,11 @@ export async function pixelTone(src: string, tone: Tone, { steps = 4, pixel = 2 
 
 // ---- Pixel background: the person as photographed, the place behind them in pixel tone ----
 
-// Brand blues for the background, dark to light. Navy and Royal are the engine's own; Navy → Royal has
+// Brand blues for the background, dark to light (no Sky: it is never a ground). Navy and Royal are the engine's own; Navy → Royal has
 // more contrast, for a pixel pattern that reads from afar.
 export const PALETTES = [
   { key: 'navy', label: 'Navy', base: [0, 0, 78], front: [0, 4, 132] },
   { key: 'royal', label: 'Royal', base: [1, 61, 245], front: [1, 105, 250] },
-  { key: 'sky', label: 'Sky', base: [0, 149, 255], front: [102, 191, 255] },
   { key: 'ice', label: 'Ice', base: [153, 209, 255], front: [230, 244, 255] },
   { key: 'navy-royal', label: 'Navy → Royal', base: [0, 0, 78], front: [1, 61, 245] },
 ] as const;

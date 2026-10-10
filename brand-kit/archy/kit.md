@@ -8,15 +8,18 @@ You write the artboard's content as HTML with inline styles (double-quoted attri
 
 ## Hard rules (the check refuses the design otherwise)
 
-1. **The Archy logo appears once**, as `<div data-piece="logo" style="width: 252px"></div>` (height follows, 18:7). Never draw or type it. It is white on dark and blue grounds and Royal Blue 500 on white and light grounds: add `data-on="light"` on a light ground. Partner logos are images (`data-image`).
+1. **The Archy logo appears once**, as `<div data-piece="logo" style="width: 234px"></div>` (height follows, 18:7), at least 200 px wide on a 1080 piece (scaled with the format). Never draw or type it. **It has its own air**: nothing (text, icon, button, pill, a small photo) within half its height all around; it usually anchors the other end of the piece from the headline. It is white on dark and blue grounds and Royal Blue 500 on white and light grounds: add `data-on="light"` on a light ground. Partner logos are images (`data-image`).
 2. **Type is Onest (headings, `var(--font-heading)`) and Inter (body, `var(--font-body)`)**, nothing else.
-3. **No text is cut off or outside the artboard**, no text overlaps other text, and the logo keeps clear of the copy.
-4. **Text reads**: contrast at least 3:1 with what it sits on (4.5:1 under 24 px), the logo too.
-5. **Text over a photo sits on a scrim** (below): a gradient from the colour opposite the text to transparent, toward where the copy is. A solid block (a pill, a button) also carries text.
-6. **A generated image is the subject**: it fills the whole artboard. A large photo never stops across the piece with a hard line: it runs to the edges, or that edge blends into the ground under a scrim.
-7. **No holes**: without an image, the type is the design and holds the centre of the piece.
-8. **Nothing smaller than 18 px** on a 1080-wide piece (scale it with the width).
-9. **No invented facts**: dates, prices, names, numbers come from the brief. All copy is US English.
+3. **No text is cut off or outside the artboard**, and no text overlaps other text.
+4. **The headline runs big**: at least 110 px on a 1080 piece (about 60 on a banner or an email header), and bigger when it has room.
+5. **Text reads**: contrast at least 3:1 with what it sits on (4.5:1 under 24 px), the logo too.
+6. **Text over a photo sits on a scrim** (below): a gradient from the colour opposite the text to transparent, toward where the copy is. A solid block (a pill, a button) also carries text.
+7. **A generated image is the subject**: it fills the whole artboard. A large photo never stops across the piece with a hard line: it runs to the edges, or that edge blends into the ground under a scrim.
+8. **No holes**: without an image, the type is the design and holds the centre of the piece.
+9. **A person is the subject**: a cut-out person is big (from the chest or waist down) and bleeds off the bottom edge, never floating.
+10. **Sky (`--color-sky-blue-400`) is never a ground**: not as a background, a block's fill or a pixel gradient. It stays an accent (an icon, a label on dark, a few cells).
+11. **Nothing smaller than 18 px** on a 1080-wide piece (scale it with the width).
+12. **No invented facts**: dates, prices, names, numbers come from the brief. All copy is US English.
 
 ## Guides (warnings, not refusals)
 
@@ -75,11 +78,11 @@ Type: `--font-heading` Onest 600 for headlines (`letter-spacing: var(--tracking-
 - **Dark**: `background: linear-gradient(180deg, var(--color-blue-tint-700) 0%, var(--color-blue-tint-800) 55%)`
 - **Light**: white or `--color-neutral-super-light`, with the logo in Royal Blue (`data-on="light"`). The website is entirely light; a light piece is the most brand-faithful option, not the risky one.
 - Put the ground on a first layer that covers the artboard: `<div data-name="Ground" style="position: absolute; inset: 0; background: …"></div>`.
-- **Pixel textures**: `data-texture="<name>"` on the ground layer or any block fills it with Archy's dithered pixel gradient: `navy`, `deep-blue`, `primary`, `royal-blue`, `sky` (white text on them), `ice`, `pure-white`, `white`, `mist` (Blue Tint 800 text on them). One texture per piece.
+- **Pixel textures**: `data-texture="<name>"` on the ground layer or any block fills it with Archy's dithered pixel gradient: `navy`, `deep-blue`, `primary`, `royal-blue` (white text on them), `ice`, `pure-white`, `white`, `mist` (Blue Tint 800 text on them). One texture per piece.
 
 ## Scale and spacing
 
-- **Type runs bigger than feels safe.** A 1080 Post headline starts at 100 px (180+ when it is the hero); an OG or banner headline at 72–104. Leading 1.03–1.10 on headlines, solid on one-line labels, ≥ 1.2 on body copy.
+- **Type runs bigger than feels safe.** A 1080 Post headline starts at 120 px, 160–200 when it is the hero; an OG or banner headline at 72–104. When there is room, the headline takes it. Leading 1.03–1.10 on headlines, solid on one-line labels, ≥ 1.2 on body copy.
 - **Gaps run tighter than feels safe**: 12 inside a text block, 20 label to non-text, 40 between detail blocks, 56 between the outer blocks. Outer gaps above about 120 read as a hole: if a piece looks empty, make the type bigger, not the air.
 - Gap between blocks is always larger than the gap inside a block.
 - Fill the format: the content spans the safe area; two anchors (top block, logo at the bottom or top) and the gaps absorb the rest.
@@ -147,14 +150,14 @@ Copy at the top of a post, white text:
 ```
 The same piece blends a photo edge that stops inside the artboard into the ground.
 
-**Pixel Dissolve** (a person bleeding off the bottom: square cells rise from the waist down, sparse at first and denser toward the bottom edge; never over the face). Over a cutout of the person, anchored to the bottom edge; `data-ground` is the ground under it (`royal`, `primary`, `navy`, `sky`, `ice`), `data-cell` the cell size (8 by default; the same grain as the pixel gradient behind).
+**Pixel Dissolve** (a person bleeding off the bottom: square cells rise from the waist down, sparse at first and denser toward the bottom edge; never over the face). Over a big cut-out of the person, anchored to the bottom edge; `data-ground` is the ground under it (`royal`, `primary`, `navy`, `ice`). Cells read as pixels, not noise: 16 px on a 1080 piece by default (scaled with the format; `data-cell` to change it).
 ```html
-<div data-piece="pixel-dissolve" data-ground="royal" data-cell="8" style="position: absolute; left: 0; top: 1080px; width: 1080px; height: 270px"></div>
+<div data-piece="pixel-dissolve" data-ground="royal" style="position: absolute; left: 0; top: 1062px; width: 1080px; height: 288px"></div>
 ```
 
-**Pixels Behind** (a headshot in a tight or square frame, where a dissolve would reach the face: a band of cells behind the cutout, from about a third of the way down to the bottom edge, three tokens with the darkest lowest; bigger cells, about 16 px on a 378 frame, 32 on a 1080 one). Place it before the person's photo, so it sits behind.
+**Pixels Behind** (a headshot in a tight or square frame, where a dissolve would reach the face: a band of cells behind the cut-out, from about a third of the way down to the bottom edge, three tokens with the darkest lowest; 20 px cells on a 1080 piece by default). Place it before the person's photo, so it sits behind; the person is big and bleeds off the bottom.
 ```html
-<div data-piece="pixels-behind" data-ground="sky" data-cell="32" style="position: absolute; left: 0; top: 520px; width: 1080px; height: 560px"></div>
+<div data-piece="pixels-behind" data-ground="primary" style="position: absolute; left: 0; top: 600px; width: 1080px; height: 480px"></div>
 ```
 
 **Two-tone headline** (from the website, on light grounds)
@@ -174,7 +177,7 @@ The same piece blends a photo edge that stops inside the artboard into the groun
 In this order:
 
 1. **A real photo** the team has (`list_assets`) or the requester gives. A specific person (an AE, a speaker, a customer) is always their real photo.
-2. **A generated image** (`generate_image`): a scene with or without generic people (a patient, a team at work, a front desk), a place, an object. Give it the whole artboard's width and height (it is the subject) and where the copy goes (`copy_space`): that part stays calm and free of text, so text in the scene never meets the copy. Never a specific real person, a real venue presented as itself, or a logo. Make one, look at it, and only then another (each person has a daily limit). Tell the requester which images are AI-generated.
+2. **A generated image** (`generate_image`): editorial, magazine-quality, realistic. Write the prompt as an art director: a subject large and close in the frame, something happening (a hygienist showing a patient their plan on a tablet, hands checking in at the front desk), the framing and the light. Not an empty room or a lone object; Studio pushes a weak prompt that way too. Give it the whole artboard's width and height (it is the subject) and where the copy goes (`copy_space`): that part stays calm and free of text, so text in the scene never meets the copy. Never a specific real person, a real venue presented as itself, or a logo. Make one, look at it, and only then another (each person has a daily limit). Tell the requester which images are AI-generated.
 
 ## Textures
 

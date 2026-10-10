@@ -1,4 +1,7 @@
+import { titleOf } from '@/lib/catalog';
 import { directFileOk } from '@/lib/file-links';
+import { pngName } from '@/lib/file-names';
+import { titleFromSlots } from '@/lib/gallery-shared';
 import { signedUrl } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { currentUser } from '@/lib/team';
@@ -15,9 +18,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const q = new URL(req.url).searchParams;
   // A direct link from Claude (signed, for a few days) needs no session; any other needs one.
   const direct = directFileOk(id, q.get('exp'), q.get('sig'));
-  const [me, { data }] = await Promise.all([direct ? null : currentUser(), supabaseAdmin().from('renders').select('storage_path, archived_at').eq('id', id).maybeSingle()]);
+  const [me, { data }] = await Promise.all([direct ? null : currentUser(), supabaseAdmin().from('renders').select('storage_path, archived_at, set_id, set_title, project_id, template, format, design, theme, width, height, slots').eq('id', id).maybeSingle()]);
   if (!me && !direct) return new Response('Sign in again.', { status: 401 });
   // The Archive page still downloads archived designs; a link shared before stops working.
   if (!data || (data.archived_at && new URL(req.url).searchParams.get('archived') !== '1')) return new Response('Not found', { status: 404 });
-  return Response.redirect(await signedUrl(data.storage_path, 60 * 10), 302);
+  return Response.redirect(await signedUrl(data.storage_path, 60 * 10, await nameOf(data)), 302);
+}
+
+// Saved as "<project>-<design's name>-<format>-<size>.png", the design's name as the gallery shows it.
+async function nameOf(r: { set_id: string | null; set_title: string | null; project_id: string | null; template: string; format: string; design: string | null; theme: string | null; width: number; height: number; slots: Record<string, string | null> | null }) {
+  const db = supabaseAdmin();
+  const [set, project] = await Promise.all([
+    !r.set_title && r.set_id ? db.from('renders').select('set_title').eq('set_id', r.set_id).not('set_title', 'is', null).limit(1).maybeSingle() : null,
+    r.project_id ? db.from('projects').select('name').eq('id', r.project_id).maybeSingle() : null,
+  ]);
+  const title = r.set_title ?? set?.data?.set_title ?? titleFromSlots(r.slots ?? {}) ?? (await titleOf(r.template));
+  return pngName({ project: project?.data?.name, title }, r);
 }

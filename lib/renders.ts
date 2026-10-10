@@ -157,8 +157,9 @@ export async function resolveSet(input: { userId: string | null; template: strin
   return match?.set_id ?? randomUUID();
 }
 
-export async function signedUrl(path: string, seconds = SIGNED_URL_SECONDS): Promise<string> {
-  const { data, error } = await supabaseAdmin().storage.from(BUCKET).createSignedUrl(path, seconds, { download: true });
+// `name`: the file name it is saved with (lib/file-names.ts); without one, the stored file's name.
+export async function signedUrl(path: string, seconds = SIGNED_URL_SECONDS, name?: string): Promise<string> {
+  const { data, error } = await supabaseAdmin().storage.from(BUCKET).createSignedUrl(path, seconds, { download: name ?? true });
   if (error || !data) throw new Error(`Could not sign the download link: ${error?.message}`);
   return data.signedUrl;
 }

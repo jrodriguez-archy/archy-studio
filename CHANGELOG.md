@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased: explorations
+## archy-studio 0.19.0 (2026-10-09)
 
 - **Explorations**: when no template fits (or someone asks to explore), Claude designs a new Archy piece in the brand kit with `get_brand_kit` and `compose`. It uses the real logo, Onest and Inter, the brand colours, pixel gradients, Archy's product screens and the mascot, and Studio checks it against the brand before saving. Explorations are labelled Exploration in the gallery and open in Canvas like any design.
 - Brand checks for explorations:

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight01Icon, SidebarLeft01Icon, Tick02Icon, UnfoldMoreIcon } from '@hugeicons/core-free-icons';
+import { AppUpdate } from '@/components/app-version';
 import { BrandLockup, BrandMark } from '@/components/brand-lockup';
 import { NAV_ICONS, NavLink, ROW } from '@/components/nav-link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -91,6 +92,7 @@ export function Sidebar({ sections, admin, projects, me, email, name, brand }: {
           </Fragment>
         ))}
       </nav>
+      <AppUpdate />
       <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
         <BrandMenu brand={brand} />
         <NavLink href="/docs" icon="docs">Docs</NavLink>
@@ -192,6 +194,14 @@ function AccountMenu({ name, email }: { name: string; email: string }) {
         <DropdownMenuItem render={<a href="/auth/signout" />} className="gap-2 text-[13px]">
           <HugeiconsIcon icon={NAV_ICONS.signout} className="size-4 text-foreground/45" strokeWidth={1.6} /> Sign out
         </DropdownMenuItem>
+        {process.env.NEXT_PUBLIC_VERSION && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href="/docs/whats-new" />} className="text-[12px] text-foreground/45">
+              Studio {process.env.NEXT_PUBLIC_VERSION}
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

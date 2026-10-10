@@ -1,3 +1,5 @@
+import { RELEASES, releaseId } from './whats-new';
+
 // The Docs: one page per section, in reading order. The index, search, "On this page", prev/next and
 // page titles all come from here; each section's content lives in components/docs/sections.
 
@@ -73,6 +75,11 @@ export const DOCS: DocSection[] = [
     slug: 'admin', title: 'For admins', group: 'Reference', summary: 'Who can sign in, reviewing new templates, and what the team asks for.', admin: true,
     headings: [{ id: 'team', title: 'Team' }, { id: 'review', title: 'Template review' }, { id: 'missing', title: 'Missing templates' }, { id: 'proposals', title: 'Template proposals' }],
     keywords: 'admin team add person reset password remove review approve',
+  },
+  {
+    slug: 'whats-new', title: 'What’s new', group: 'Reference', summary: 'What changed in each version of Studio.',
+    headings: RELEASES.map((r) => ({ id: releaseId(r.version), title: r.version })),
+    keywords: 'version update release changelog news new',
   },
 ];
 

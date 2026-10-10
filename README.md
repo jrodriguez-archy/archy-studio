@@ -20,6 +20,7 @@ claude plugin install archy-studio@archy-studio
 - `plugins/archy-studio`: the plugin (MCP connection + `studio` skill), listed by `.claude-plugin/marketplace.json`.
 - `app/mcp`: the MCP server (`list_templates`, `get_template`, `match_templates`, `render`, `list_assets`, `request_photos`, `get_photos`, `report_missing_template`, `get_brand_kit`, `compose`, `generate_image`, `pixel_tone`, `list_projects`, `create_project`, `get_canvas`, `edit_canvas`, `save_canvas`), deployed on Vercel at `https://archystudio.vercel.app/mcp`.
 - `app/(app)/docs`: the in-app Docs (content in `components/docs/sections`, index in `lib/docs.ts`; screenshots from `scripts/docs-shots.ts`).
+- Versions: Studio's version is the plugin's (`plugin.json`, shown in the account menu). A release raises it in `plugin.json` and `marketplace.json`, adds its `CHANGELOG.md` entry and its plain-words entry in `lib/whats-new.ts` (the Docs page What's new). An open Studio shows **Update** when a newer deploy is out (`/api/version`).
 - `app/api/render`: the same renderer over HTTP (used for the 2x download links).
 - `templates/<id>`: one folder per template, generated from Paper by `scripts/sync.mjs`.
 

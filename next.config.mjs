@@ -1,3 +1,8 @@
+import { readFileSync } from 'node:fs';
+
+// Studio's version: the plugin's, raised with each release (the sidebar shows it).
+const version = JSON.parse(readFileSync(new URL('./plugins/archy-studio/.claude-plugin/plugin.json', import.meta.url), 'utf8')).version;
+
 // Template HTML, assets, fonts, the asset library and the fit engine are read from disk at runtime.
 const renderFiles = [
   './templates/**/*', './fonts/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js',
@@ -32,8 +37,8 @@ export default {
   outputFileTracingExcludes: { '**': notNeeded, ...Object.fromEntries(listing.map((r) => [r, noImages])) },
   experimental: { optimizePackageImports: ['@hugeicons/core-free-icons'] },
   // The deploy's id, so Canvas asks for this deploy's template pages and page scripts (never a cached
-  // copy from the one before).
-  env: { NEXT_PUBLIC_BUILD: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 10) ?? 'dev' },
+  // copy from the one before), and an open Studio knows when a newer deploy is out.
+  env: { NEXT_PUBLIC_BUILD: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 10) ?? 'dev', NEXT_PUBLIC_VERSION: version },
   // Template files change only with a deploy. Pages and scripts are asked for with the deploy's id, so a
   // few minutes of browser cache never shows an old one; template images briefly too; fonts for a day.
   async headers() {

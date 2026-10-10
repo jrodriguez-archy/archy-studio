@@ -7,11 +7,14 @@ export type Piece = {
   set_title?: string | null; archived_at?: string | null; edited_at?: string | null;
   /** Design and theme, on templates that offer several (null: the default). */
   design?: string | null; theme?: string | null;
+  /** Explorations: already proposed as a template. */
+  proposed?: boolean;
 };
 
 // Everything made from one brief: its formats, retries and options, shown as one stacked card.
 // Without a brand, the server uses the one the person is working in.
-export type PieceFilter = { userId?: string; projectId?: string; formats?: string[]; archived?: boolean; brand?: 'archy' | 'doc' };
+// `made`: only designs from templates, or only explorations (template "exploration").
+export type PieceFilter = { userId?: string; projectId?: string; formats?: string[]; archived?: boolean; brand?: 'archy' | 'doc'; made?: 'template' | 'exploration' };
 // A gallery view shows the newest PAGE designs first; older ones load as the person scrolls.
 export const PAGE = 120;
 

@@ -8,6 +8,7 @@ const clean = (f: PieceFilter): PieceFilter => ({
   userId: f.userId && ID.test(f.userId) ? f.userId : undefined,
   projectId: f.projectId && ID.test(f.projectId) ? f.projectId : undefined,
   archived: !!f.archived,
+  made: f.made === 'template' || f.made === 'exploration' ? f.made : undefined,
 });
 
 // The next page of the gallery: designs older than `before`.

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { H2, Rows, Ui } from '../ui';
 
 export function Admin() {
@@ -17,6 +18,18 @@ export function Admin() {
         New templates are checked here before they reach the team: each one with realistic, short and long copy, and every theme, in every
         format. <Ui>Approve</Ui> it, or click on a design to leave a comment on that spot; Claude works through the comments and the next
         round shows before and after. Admins also see admin-only pages like this one in the Docs.
+      </p>
+
+      <H2 id="missing">Missing templates</H2>
+      <p>
+        When a brief needs a kind of piece the catalog does not have, Claude notes it here: what was asked, the size, what it offered
+        instead and why it did not do. The most asked for come first: the next templates to make.
+      </p>
+
+      <H2 id="proposals">Template proposals</H2>
+      <p>
+        <Link href="/docs/explorations">Explorations</Link> the team proposed as templates, with their note. Move each along with{' '}
+        <Ui>Making it</Ui>, <Ui>Done</Ui> or <Ui>Dismiss</Ui>; the filters show each state.
       </p>
     </>
   );

@@ -20,7 +20,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
     { label: 'Create', items: [{ href: '/canvas', label: 'Canvas', icon: 'canvas' }, { href: '/assets', label: 'Assets', icon: 'assets' }] },
   ];
   // Less used, at the bottom of the rail: Install, Admin (admins only, in a menu) and the account.
-  const admin: NavItem[] | null = me?.is_admin ? [{ href: '/admin', label: 'Team', icon: 'team' }, { href: '/admin/review', label: 'Template review', icon: 'review' }, { href: '/admin/missing', label: 'Missing templates', icon: 'missing' }] : null;
+  const admin: NavItem[] | null = me?.is_admin ? [{ href: '/admin', label: 'Team', icon: 'team' }, { href: '/admin/review', label: 'Template review', icon: 'review' }, { href: '/admin/missing', label: 'Missing templates', icon: 'missing' }, { href: '/admin/proposals', label: 'Template proposals', icon: 'proposals' }] : null;
   const name = me ? displayName(me.full_name, me.email) : '';
   const [list, jar] = await Promise.all([me ? listProjects(me).catch(() => []) : [], cookies()]);
   const projects: ProjectLink[] = list.map(({ id, name, shared, count, owner_id }) => ({ id, name, shared, count, owner_id }));

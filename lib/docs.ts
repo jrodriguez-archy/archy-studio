@@ -45,6 +45,11 @@ export const DOCS: DocSection[] = [
     keywords: 'catalog layout post square stories og cover theme design slot limits room',
   },
   {
+    slug: 'explorations', title: 'Explorations', group: 'Use', summary: 'New designs in the brand when no template fits.',
+    headings: [{ id: 'what', title: 'What an exploration is' }, { id: 'when', title: 'When Claude explores' }, { id: 'ask', title: 'How to ask' }, { id: 'references', title: 'References and Notion briefs' }, { id: 'kinds', title: 'Two kinds of piece' }, { id: 'images', title: 'Images' }, { id: 'product', title: 'The product' }, { id: 'mascot', title: 'The mascot' }, { id: 'checks', title: 'What Studio checks' }, { id: 'change', title: 'Change it' }, { id: 'propose', title: 'Propose it as a template' }, { id: 'not-yet', title: 'Not yet' }],
+    keywords: 'explore exploration new design no template banner linkedin email flyer reference notion generated ai image mascot robot agent pose product screen scrim propose',
+  },
+  {
     slug: 'canvas', title: 'Canvas', group: 'Use', summary: 'Fix copy, photos, colours and sizes by hand, or with Claude.',
     headings: [{ id: 'open', title: 'Open a design' }, { id: 'panels', title: 'The panels' }, { id: 'text', title: 'Edit text' }, { id: 'images', title: 'Photos and logos' }, { id: 'parts', title: 'Move, align and resize' }, { id: 'recolor', title: 'Recolor' }, { id: 'formats', title: 'Formats side by side' }, { id: 'inspector', title: 'The Inspector' }, { id: 'save', title: 'Save and download' }, { id: 'claude', title: 'Edit with Claude' }, { id: 'shortcuts', title: 'Keyboard shortcuts' }],
     keywords: 'editor edit change text photo reframe zoom color colour recolor align inspector save update download shortcuts undo',
@@ -65,8 +70,8 @@ export const DOCS: DocSection[] = [
     keywords: 'faq help problem error not working password english facts',
   },
   {
-    slug: 'admin', title: 'For admins', group: 'Reference', summary: 'Who can sign in, and reviewing new templates.', admin: true,
-    headings: [{ id: 'team', title: 'Team' }, { id: 'review', title: 'Template review' }],
+    slug: 'admin', title: 'For admins', group: 'Reference', summary: 'Who can sign in, reviewing new templates, and what the team asks for.', admin: true,
+    headings: [{ id: 'team', title: 'Team' }, { id: 'review', title: 'Template review' }, { id: 'missing', title: 'Missing templates' }, { id: 'proposals', title: 'Template proposals' }],
     keywords: 'admin team add person reset password remove review approve',
   },
 ];

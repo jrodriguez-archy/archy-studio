@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { propose } from '@/lib/proposals';
 import { archiveSet, deleteSet, moveSet, renameSet, restoreSet } from '@/lib/sets';
 import { currentUser } from '@/lib/team';
 
@@ -23,6 +24,8 @@ export async function renameSetAction(setId: string, title: string) { return run
 export async function archiveSetAction(setId: string) { return run((me) => archiveSet(me, setId)); }
 export async function restoreSetAction(setId: string) { return run((me) => restoreSet(me, setId)); }
 export async function deleteSetAction(setId: string) { return run((me) => deleteSet(me, setId)); }
+// An exploration proposed as a future template (anyone on the team; admins follow it up).
+export async function proposeSetAction(setId: string, note: string) { return run((me) => propose(me.id, setId, note)); }
 
 // Several sets at once (Archive's selection). Each set keeps its own permission check; the ones that
 // fail are counted, the rest go through.

@@ -35,7 +35,7 @@ export function GalleryEmpty({ brand, claudeConnected }: { brand: Brand; claudeC
         </ol>
         <div className="space-y-2">
           <p className="text-foreground/45">Try one of these in Claude:</p>
-          {EXAMPLE_BRIEFS[brand].slice(0, 2).map((b) => <CopyBrief key={b} text={b} />)}
+          {[...EXAMPLE_BRIEFS[brand].slice(0, 2), ...(brand === 'archy' ? EXAMPLE_BRIEFS.exploration.slice(0, 1) : [])].map((b) => <CopyBrief key={b} text={b} />)}
         </div>
         <div className="flex flex-wrap justify-center gap-2">
           {!claudeConnected && <Button size="lg" nativeButton={false} render={<Link href="/docs/connect-claude" />}>Connect Claude</Button>}

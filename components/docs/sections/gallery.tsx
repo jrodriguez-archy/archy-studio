@@ -6,7 +6,7 @@ export function Gallery() {
       <H2 id="gallery">The gallery</H2>
       <p>
         Every design made with Studio, by Claude or in Canvas, is saved to the <strong>Gallery</strong>. <Ui>Mine</Ui> shows yours;{' '}
-        <Ui>Team</Ui> shows everyone’s. Filter by format with <Ui>Post</Ui>, <Ui>Story</Ui>, <Ui>OG</Ui> or <Ui>Cover</Ui>. New designs
+        <Ui>Team</Ui> shows everyone’s. Filter by format with <Ui>Post</Ui>, <Ui>Story</Ui>, <Ui>OG</Ui> or <Ui>Cover</Ui>, and by origin with <Ui>Templates</Ui> or <Ui>Explorations</Ui> (designs made outside the templates, labelled Exploration). New designs
         appear by themselves while Claude makes them.
       </p>
       <p>
@@ -37,6 +37,7 @@ export function Gallery() {
         [<Ui key="5">New version with Claude</Ui>, 'Copies a prompt with the same template and brief, to paste in Claude.'],
         [<Ui key="6">Copy link</Ui>, 'A link that opens this set.'],
         [<Ui key="7">Copy set ID</Ui>, 'For Claude: “keep it in set …”.'],
+        [<Ui key="9">Propose as template…</Ui>, 'Explorations only: suggest it to Design as a future template.'],
         [<Ui key="8">Archive</Ui>, 'Hides it from the gallery (you can undo, or restore it later).'],
       ]} />
 

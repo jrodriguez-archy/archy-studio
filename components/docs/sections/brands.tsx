@@ -32,6 +32,7 @@ export function Brands() {
       <ul>
         <li>Never invent a figure, price, date, module count, quote or name: only real ones from the brief.</li>
         <li>Archy appears on DOC only as its sponsor.</li>
+        <li>No explorations for DOC yet: when no DOC template fits, Claude tells Design what is missing.</li>
         <li>Each theme has its call to action: Foundations “Join the waitlist”, Startup “Enroll now”, Acquisition “Register now”, Dark “Apply today”, Light “Get started”, unless the brief gives its own.</li>
       </ul>
       <Callout kind="note">Archy’s one-click recolors (Dark, Blue, Ice, Light) are only for Archy designs. A DOC design changes theme by asking Claude for it in another theme.</Callout>

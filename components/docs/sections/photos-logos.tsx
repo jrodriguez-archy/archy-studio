@@ -11,6 +11,8 @@ export function PhotosLogos() {
         background) works best; Studio can remove the background for you.
       </p>
 
+      <p>In <Link href="/docs/explorations#images">explorations</Link>, Claude can also generate a scene with generic people; a specific person is still always their real photo.</p>
+
       <H2 id="placeholders">Placeholder photos</H2>
       <p>A missing photo never holds a design back. Claude makes the design with a stand-in and tells you which photos to send:</p>
       <Rows rows={[

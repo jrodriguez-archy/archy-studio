@@ -8,6 +8,7 @@ const FAQ: [string, React.ReactNode][] = [
   ['Can I change the template’s fixed text or layout?', 'The fixed text and the layout are the template’s. You change the content (and, in Canvas, colours, sizes and positions within the brand). For something new, ask the design team.'],
   ['How do I continue a design another day?', <><Ui key="u">New version with Claude</Ui> in the set’s menu, then paste it in Claude.</>],
   ['Where are my files?', 'In the Gallery (Mine). Download a set as a ZIP or each format as a PNG.'],
+  ['What if no template fits?', <>Claude offers the closest one adapted, or an <Link key="e" href="/docs/explorations">exploration</Link>: a new design in the brand. Or ask for one directly (“explore…”).</>],
   ['Who sees my designs?', 'Everyone on the team, in Team. Personal projects (Only me) are visible to you only.'],
 ];
 
@@ -18,9 +19,10 @@ export function Rules() {
       <ul>
         <li><strong>US English</strong> on every design, whatever language you write in.</li>
         <li><strong>Facts come from you.</strong> Claude never invents a name, title, date, number or quote; it asks.</li>
-        <li><strong>Real photos of people</strong>, never generated, never someone else’s.</li>
+        <li><strong>Real photos of people:</strong> a specific person is always their own photo, never generated, never someone else’s. Generated scenes with generic people exist only in explorations.</li>
         <li><strong>Inside the brand:</strong> brand colours, the template’s type and layout. The brand logo is never redrawn or recoloured.</li>
         <li><strong>Never half done:</strong> a design does not go out with essential content missing or copy that does not fit.</li>
+        <li><strong>The brand’s calls:</strong> Sky is never a ground; the logo always has its own air; headlines run big; text on a photo sits on a scrim.</li>
         <li><strong>Brands never mix:</strong> no Archy template, image or project on a DOC piece, or the other way round.</li>
       </ul>
 

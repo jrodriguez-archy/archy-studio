@@ -24,6 +24,11 @@ export function Overview() {
         <li><strong>Edit in Canvas.</strong> Open any design to change copy, swap photos, recolor, resize parts or add formats; Claude can work on it with you, live. <Link href="/docs/canvas">Canvas</Link></li>
       </ul>
 
+      <p>
+        When no template fits, Claude can <strong>explore</strong>: a new design in the Archy brand, checked by Studio and labelled
+        Exploration in the gallery. <Link href="/docs/explorations">Explorations</Link>
+      </p>
+
       <H2 id="brands">Archy and DOC</H2>
       <p>
         Studio works for two brands: <strong>Archy</strong> (the default) and <strong>DOC</strong>, the Dental Ownership Collective. Each

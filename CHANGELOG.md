@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased: explorations
+
+- **Explorations**: when no template fits (or someone asks to explore), Claude designs a new Archy piece in the brand kit with `get_brand_kit` and `compose`. It uses the real logo, Onest and Inter, the brand colours, pixel gradients, Archy's product screens and the mascot, and Studio checks it against the brand before saving. Explorations are labelled Exploration in the gallery and open in Canvas like any design.
+- Brand checks for explorations:
+  - **Refused:** the logo (missing, small or without its air), fonts, a small headline, text that is cut off, overlapping or touching between lines, contrast (measured on the pixels behind), text on a photo without a scrim, a generated image that does not fill the piece, a photo cut across the piece, a hole in a typographic piece, copy on a person, the product or the mascot, and Sky as a ground.
+  - **Flagged:** the safe area, off-brand colours and effects, room to grow, a small person or product.
+- Images for explorations: `generate_image` makes editorial, magazine-quality photos at the frame's exact size with room for the copy; generic people are welcome, never a specific real person, a real venue or a logo. Each person can make 100 a day, apart from Assets. `pixel_tone` applies Archy's Pixel Tone to place photos.
+- Brand pieces for explorations:
+  - Pixel Dissolve and Pixels Behind for people.
+  - Product screens from Paper's Master - Product, as a bleeding window or a cropped card.
+  - Archy the mascot: four expressions, placed off an edge by the brand's rules, full body with six poses, and the five agents.
+- Briefs: a reference image or a Notion brief is the idea, rebuilt in the brand, never copied.
+- **Missing templates** (admins): the briefs no template covered, most asked for first.
+- **Template proposals** (admins): anyone can propose an exploration as a template from its menu (*Propose as template…*); admins move each one through Making it, Done or Dismiss.
+- Gallery: a Templates / Explorations filter. Templates: "Not in the catalog?" with a brief to copy. Docs: a new Explorations page, and the other pages updated.
+- Sky is no longer offered as a pixel background in Assets.
+
 ## archy-studio 0.18.0 (2026-10-09)
 
 - MCP `render`: `framing` per image slot. `focus_x` / `focus_y` keep the subject at the frame's centre, `zoom` comes closer or makes the photo smaller than its frame, and `fill_around: true` paints the rest of the scene with AI (as Canvas's Generate content around; counted in its daily limit). The framing is saved as crop edits, so Canvas opens the design as rendered. The MCP route may run up to 300 s (an extended photo takes up to a minute).

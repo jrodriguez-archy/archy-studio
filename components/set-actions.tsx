@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
+  BulbIcon,
   Archive02Icon, ArrowTurnBackwardIcon, Copy01Icon, Delete02Icon, Download04Icon, Folder01Icon, FolderExportIcon,
   Link01Icon, PackageIcon, PaintBoardIcon, PencilEdit02Icon, SparklesIcon, ViewIcon,
 } from '@hugeicons/core-free-icons';
@@ -17,8 +18,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { createProjectAction } from '@/app/(app)/projects/actions';
-import { archiveSetAction, deleteSetAction, moveSetAction, renameSetAction, restoreSetAction } from '@/app/(app)/sets/actions';
+import { archiveSetAction, deleteSetAction, moveSetAction, proposeSetAction, renameSetAction, restoreSetAction } from '@/app/(app)/sets/actions';
 import { formatLabel, humanize, isExploration, type PieceSet } from '@/lib/gallery-shared';
 import { downloadSet } from '@/lib/download-set';
 
@@ -43,6 +45,7 @@ function versionPrompt(set: PieceSet) {
 // Actions for one set (gallery, project pages) or one archived set (Archive page), plus the dialogs they open.
 export function useSetActions({ set, projects, canManage, onOpen }: { set: PieceSet; projects: ProjectLink[]; canManage: boolean; onOpen?: () => void }) {
   const [renaming, setRenaming] = useState(false);
+  const [proposing, setProposing] = useState(false);
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [, start] = useTransition();
@@ -89,6 +92,11 @@ export function useSetActions({ set, projects, canManage, onOpen }: { set: Piece
           ],
         },
         { label: 'Rename…', icon: PencilEdit02Icon, disabled: !canManage, onSelect: () => setRenaming(true) },
+        ...(isExploration(set.lead.template)
+          ? [set.lead.proposed
+            ? { label: 'Proposed as template', icon: BulbIcon, disabled: true, onSelect: () => {} }
+            : { label: 'Propose as template…', icon: BulbIcon, onSelect: () => setProposing(true) }]
+          : []),
         { label: 'New version with Claude', icon: SparklesIcon, onSelect: async () => { (await copy(versionPrompt(set))) ? toast.success('Prompt copied. Paste it in Claude.') : toast.error('Could not copy'); } },
         { label: 'Copy link', icon: Link01Icon, onSelect: async () => { (await copy(`${location.origin}/?all=1&set=${set.id}`)) && toast.success('Link copied'); } },
         { label: 'Copy set ID', icon: Copy01Icon, onSelect: async () => { (await copy(set.id)) && toast.success('Set ID copied'); } },
@@ -98,6 +106,7 @@ export function useSetActions({ set, projects, canManage, onOpen }: { set: Piece
 
   const dialogs = (
     <>
+      <ProposeDialog open={proposing} onOpenChange={setProposing} title={set.title} onSave={async (note) => { const r = await proposeSetAction(set.id, note); if (!r.ok) toast.error(r.error); else toast.success('Proposed. Design will see it in Template proposals.'); return r.ok; }} />
       <RenameDialog open={renaming} onOpenChange={setRenaming} title={set.title} onSave={async (t) => { const r = await renameSetAction(set.id, t); if (!r.ok) toast.error(r.error); return r.ok; }} />
       <ProjectDialog
         open={creating}
@@ -129,6 +138,26 @@ export function useSetActions({ set, projects, canManage, onOpen }: { set: Piece
   );
 
   return { actions, dialogs, restore, openDelete: () => setDeleting(true), openRename: () => setRenaming(true), archive: () => run(() => archiveSetAction(set.id), 'Archived', restore) };
+}
+
+function ProposeDialog({ open, onOpenChange, title, onSave }: { open: boolean; onOpenChange: (o: boolean) => void; title: string; onSave: (note: string) => Promise<boolean> }) {
+  const [note, setNote] = useState('');
+  const [pending, start] = useTransition();
+  useEffect(() => { if (open) setNote(''); }, [open]);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="gap-5 rounded-md p-6 text-[13px] sm:max-w-[420px]">
+        <DialogHeader><DialogTitle className="text-[15px] font-medium">Propose “{title}” as a template</DialogTitle></DialogHeader>
+        <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); start(async () => { if (await onSave(note)) onOpenChange(false); }); }}>
+          <Textarea autoFocus maxLength={300} rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Why it should be a template (optional)" className="text-[13px]" aria-label="Note" />
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="ghost" size="lg" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" size="lg" disabled={pending}>{pending ? 'Sending…' : 'Propose'}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function RenameDialog({ open, onOpenChange, title, onSave }: { open: boolean; onOpenChange: (o: boolean) => void; title: string; onSave: (t: string) => Promise<boolean> }) {

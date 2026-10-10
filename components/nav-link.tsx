@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSidebar } from '@/components/sidebar';
-import { Archive02Icon, Album02Icon, BookOpen01Icon, Settings02Icon, CheckListIcon, Folder01Icon, Idea01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PaintBoardIcon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
+import { Archive02Icon, Album02Icon, BookOpen01Icon, Settings02Icon, BulbIcon, CheckListIcon, Folder01Icon, Idea01Icon, Image02Icon, LayoutGridIcon, Logout03Icon, PaintBoardIcon, PlugSocketIcon, UserCircleIcon, UserGroupIcon } from '@hugeicons/core-free-icons';
 
-export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, docs: BookOpen01Icon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon, archive: Archive02Icon, canvas: PaintBoardIcon, review: CheckListIcon, missing: Idea01Icon, admin: Settings02Icon, assets: Album02Icon };
+export const NAV_ICONS = { gallery: Image02Icon, templates: LayoutGridIcon, install: PlugSocketIcon, docs: BookOpen01Icon, team: UserGroupIcon, account: UserCircleIcon, signout: Logout03Icon, project: Folder01Icon, archive: Archive02Icon, canvas: PaintBoardIcon, review: CheckListIcon, missing: Idea01Icon, proposals: BulbIcon, admin: Settings02Icon, assets: Album02Icon };
 export type NavIcon = keyof typeof NAV_ICONS;
 
 export const ROW = 'flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] transition-colors';

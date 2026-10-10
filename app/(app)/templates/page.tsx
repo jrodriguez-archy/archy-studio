@@ -1,4 +1,7 @@
+import Link from 'next/link';
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
+import { CopyBrief } from '@/components/docs/copy-brief';
+import { EXAMPLE_BRIEFS } from '@/lib/example-briefs';
 import { TemplateBrowser, type TemplateCard, type TemplateGroup } from '@/components/template-browser';
 import { previewSrcs, selfOrigin } from '@/lib/previews';
 import { currentBrand } from '@/lib/brand';
@@ -80,7 +83,19 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
       </PageHeader>
 
       {all.length ? (
-        <TemplateBrowser groups={groups} showGroupHeaders={!category} />
+        <>
+          <TemplateBrowser groups={groups} showGroupHeaders={!category} />
+          {/* Explorations cover what the catalog does not (Archy only for now). */}
+          {brand === 'archy' && (
+            <section className="mt-12 max-w-2xl space-y-3 border-t border-foreground/[0.06] pt-8">
+              <div>
+                <h2 className="text-[15px] font-medium">Not in the catalog?</h2>
+                <p className="text-[13px] text-foreground/55">Ask Claude for an exploration. <Link href="/docs/explorations" className="underline underline-offset-4 hover:text-foreground">How it works</Link></p>
+              </div>
+              <CopyBrief text={EXAMPLE_BRIEFS.exploration[0]} />
+            </section>
+          )}
+        </>
       ) : (
         <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
           <p className="font-medium">No {BRANDS[brand].name} templates yet</p>

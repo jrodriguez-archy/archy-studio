@@ -1,13 +1,19 @@
 import type { Brand } from './brands';
 
 // Example briefs to copy into Claude: the Docs (Make designs) and the Gallery's welcome show these.
-export const EXAMPLE_BRIEFS: Record<Brand, string[]> = {
+export const EXAMPLE_BRIEFS: Record<Brand | 'exploration', string[]> = {
   archy: [
     'We have booth #1211 at the Chicago Midwinter Meeting, February 18 to 20 in Chicago. Make the social posts.',
     'Reminder for tomorrow: we are at the Hinman Dental Meeting in Atlanta, booth #1039.',
     'We are hosting a free night out for Dallas dentists at Topgolf Dallas, Friday October 9, 6 to 8 PM.',
     'Instagram ad introducing Sarah Thompson, our Account Executive in Austin, TX. Her photo is in Assets.',
     'Event page cover for our booth at the Greater New York Dental Meeting, booth #4402.',
+  ],
+  // Explorations: new designs in the brand when no template fits (Docs › Explorations, Templates, the welcome).
+  exploration: [
+    'Explore a LinkedIn banner for our webinar on paperless check-in, March 12. Use a generated photo of a front desk.',
+    'Explore an Instagram post about Archy Scribe writing clinical notes, with the mascot as the Scribe agent.',
+    'Here is a reference I made in another tool (attached). Rebuild it as an Archy post: same idea, our brand.',
   ],
   doc: [
     'DOC ad for the Startup track: enrollment is open. Give me two options.',

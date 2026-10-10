@@ -35,6 +35,7 @@ export function Assets() {
       <Rows rows={[
         ['30 a day', 'Generated images and Edit with AI, per person.'],
         ['60 a day', 'Remove background (and Pixel background), per person.'],
+        ['100 a day', 'Images Claude generates for explorations, per person (apart from the 30 above).'],
         ['No limit', 'Pixel tone and Pixel dissolve (they are made in your browser).'],
       ]} />
 

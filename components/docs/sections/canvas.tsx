@@ -59,7 +59,8 @@ export function Canvas() {
       <p>
         Archy designs can be recolored in one click from <Ui>Look</Ui> in Content (or the background’s <Ui>Recolor</Ui>):{' '}
         <Ui>Dark</Ui>, <Ui>Blue</Ui>, <Ui>Ice</Ui> or <Ui>Light</Ui>. Text, buttons, lines, icons and the logo follow. DOC designs do not
-        recolor this way: ask Claude for the design in another of its themes.
+        recolor this way: ask Claude for the design in another of its themes. Explorations open in Canvas like any design; a recolour
+        does not repaint a pixel texture.
       </p>
 
       <H2 id="formats">Formats side by side</H2>

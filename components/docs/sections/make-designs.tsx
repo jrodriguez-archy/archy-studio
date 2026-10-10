@@ -34,7 +34,7 @@ export function MakeDesigns() {
       <H2 id="what-happens">What Claude does</H2>
       <Steps>
         <Step><strong>Reads the brief</strong> and lists the facts it brings.</Step>
-        <Step><strong>Matches templates</strong> that can be made with those facts, best first, and notes what a better one would need.</Step>
+        <Step><strong>Matches templates</strong> that can be made with those facts, best first, and notes what a better one would need. If none fits, it offers the closest one adapted, or an <Link href="/docs/explorations">exploration</Link>.</Step>
         <Step><strong>Asks once</strong>, in one short message, for anything missing or anything that would unlock a better template (a city photo, the partner’s logo, the time). It never asks one question at a time.</Step>
         <Step><strong>Writes the copy</strong> to fit each format’s space, and renders every format.</Step>
         <Step><strong>Delivers</strong> the images with a download link and an <Ui>Edit in Canvas</Ui> link, says which template it chose and why, what was left out, and which photos are placeholders.</Step>

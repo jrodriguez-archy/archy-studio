@@ -159,9 +159,10 @@
       const pad = b.height * 0.5, clear = { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad };
       const nearText = runs.find((t) => !l.contains(t.el) && t.lines.some((ln) => area(body(ln, t.cs), clear) > 4));
       const nearThing = nearText ? null : [...r.querySelectorAll('[data-icon], [data-image], img, *')].find((e) => {
-        if (e === l || l.contains(e) || e.contains(l) || e.closest('svg') || e.closest('[data-piece]')) return false;
+        const product = e.getAttribute('data-kind') === 'product';
+        if (e === l || l.contains(e) || e.contains(l) || e.closest('svg') || (!product && e.closest('[data-piece]'))) return false;
         const eb = e.getBoundingClientRect();
-        if (!eb.width || !eb.height || (eb.width * eb.height) / (R.width * R.height) > 0.5 || e.getAttribute('data-kind') === 'cutout') return false;
+        if (!eb.width || !eb.height || (!product && (eb.width * eb.height) / (R.width * R.height) > 0.5) || e.getAttribute('data-kind') === 'cutout') return false;
         const cs = getComputedStyle(e);
         const solid = (rgb(cs.backgroundColor)?.[3] ?? 0) > 0.5 || e.hasAttribute('data-image') || e.tagName === 'IMG' || e.hasAttribute('data-icon');
         return solid && area(eb, clear) > 4;
@@ -205,7 +206,10 @@
       return k !== 'tone' && k !== 'cutout' && !p.closest('[data-piece]') && b.left <= R.left + 2 && b.top <= R.top + 2 && b.right >= R.right - 2 && b.bottom >= R.bottom - 2;
     });
     if (R.height >= R.width * 0.8 && !imageLed) {
-      const blocks = [...runs.map((t) => t.box), ...logos.map((l) => l.getBoundingClientRect()), ...[...r.querySelectorAll('[data-icon], [data-image], img')].map((e) => e.getBoundingClientRect())]
+      const blocks = [...runs.map((t) => t.box), ...logos.map((l) => l.getBoundingClientRect()), ...[...r.querySelectorAll('[data-icon], [data-image], img, [data-kind="product"]')].map((e) => e.getBoundingClientRect())]
+        // What shows of each block (a window bleeding off the artboard counts for its visible part).
+        .map((b) => ({ left: Math.max(b.left, R.left), top: Math.max(b.top, R.top), right: Math.min(b.right, R.right), bottom: Math.min(b.bottom, R.bottom) }))
+        .map((b) => ({ ...b, width: Math.max(0, b.right - b.left), height: Math.max(0, b.bottom - b.top) }))
         .filter((b) => b.width && b.height && b.width * b.height < R.width * R.height * 0.85 && b.bottom > safe.top && b.top < safe.bottom)
         .sort((a, b) => a.top - b.top);
       let end = safe.top, gap = 0, at = null;
@@ -266,6 +270,16 @@
       const stops = [...cs.backgroundImage.matchAll(/rgba?\([^)]*\)/g)].map((m) => rgb(m[0])).filter((c) => c && c[3] > 0.5);
       const skyGradient = stops.length && stops.filter(isSky).length * 2 >= stops.length;
       if (isSky(bg) || skyGradient || e.getAttribute('data-texture') === 'sky') { err(e, 'sky-ground', `${nameOf(e)} uses Sky as a ground: Sky is never a ground. Use royal, primary, navy, ice or a light ground; Sky stays an accent (an icon, a label on dark).`); break; }
+    }
+
+    // The product (a screen or a card of it) is shown, never written over: no copy on it.
+    for (const p of r.querySelectorAll('[data-kind="product"]')) {
+      const pb = p.getBoundingClientRect();
+      // Its UI (about 14 px in the screen) has to read on the piece: drawn at least ~1.3× on a 1080 post.
+      const k = +p.getAttribute('data-scale'), want = 1.3 * (opts.minText / 18);
+      if (k && k < want) warn(p, 'product-small', `${nameOf(p)} is drawn at ${Math.round(k * 100)}% of the screen: its UI reads too small. Show less of it, bigger: a wider window bleeding further off the edges, or a crop as a card (about ${Math.round(want * 100)}% or more).`);
+      const box = { left: Math.max(pb.left, R.left), top: Math.max(pb.top, R.top), right: Math.min(pb.right, R.right), bottom: Math.min(pb.bottom, R.bottom) };
+      for (const t of runs) if (!p.contains(t.el) && t.lines.some((ln) => area(body(ln, t.cs), box) > 8)) err(t.el, 'product-text', `"${t.text.slice(0, 30)}" sits on ${nameOf(p)}: copy never goes over the product. Keep the headline above it (or beside it) and let the product show.`);
     }
 
     // Photos: a generated image is the subject and fills the artboard; a large photo does not stop across

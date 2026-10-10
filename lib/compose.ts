@@ -35,7 +35,16 @@ const read = (file: string) => {
 /** The brand kit Claude reads before composing (get_brand_kit). */
 export async function brandKit(brand: Brand): Promise<string> {
   if (!EXPLORATION_BRANDS.includes(brand)) throw new Error(`Explorations are for Archy only for now. For ${brand.toUpperCase()}, report the missing template.`);
-  return read(kitFile(brand, 'kit.md'));
+  const [kit, screens] = await Promise.all([read(kitFile(brand, 'kit.md')), productScreens(brand)]);
+  const list = Object.entries(screens).map(([id, sc]) => `- \`${id}\` (${sc.width}×${sc.height}): ${sc.about}${Object.keys(sc.crops ?? {}).length ? ` Crops: ${Object.entries(sc.crops!).map(([c, v]) => `\`${c}\` (${v.about})`).join('; ')}.` : ''}`);
+  return list.length ? `${kit}\n\n## Product screens available\n\n${list.join('\n')}\n` : kit;
+}
+
+// The product (Master - Product in Paper), exported to brand-kit/<brand>/product: whole screens and named
+// crops of them, in screen px.
+type Screen = { file: string; width: number; height: number; about: string; crops?: Record<string, { box: number[]; about: string }> };
+async function productScreens(brand: Brand): Promise<Record<string, Screen>> {
+  try { return JSON.parse(await read(kitFile(brand, 'product.json'))).screens ?? {}; } catch { return {}; }
 }
 
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -110,6 +119,29 @@ export async function compose(input: { html: string; width: number; height: numb
     const colours = kind === 'pixels-behind' ? BEHIND_COLOURS[ground] ?? BEHIND_COLOURS.royal : CELL_COLOURS[ground] ?? CELL_COLOURS.royal;
     return `<${tag}${attrs}${name}>${cells(kind as 'pixel-dissolve' | 'pixels-behind', w, h, cell, colours)}</${tag}>`;
   });
+
+  // The product: a whole screen as a window (it may bleed off the artboard) or a crop of it as a card.
+  // Drawn from the kit's export of Master - Product, never redrawn.
+  const screens = await productScreens(brand);
+  for (const [whole, tag, attrs] of [...html.matchAll(/<(div|span)\b([^>]*\bdata-piece="product"[^>]*)>\s*<\/\1>/gi)]) {
+    const id = attrs.match(/\bdata-screen="([a-z0-9-]+)"/i)?.[1] ?? '';
+    const sc = screens[id];
+    if (!sc) { problems.push(`Unknown product screen "${id}". Screens: ${Object.keys(screens).join(', ') || 'none yet'}.`); html = html.replace(whole, ''); continue; }
+    const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1] ?? '';
+    const w = Number(style.match(/(?:^|;)\s*width\s*:\s*([\d.]+)px/i)?.[1]);
+    if (!w) { problems.push(`The product "${id}" needs a width in px.`); html = html.replace(whole, ''); continue; }
+    const cropRef = attrs.match(/\bdata-crop="([^"]+)"/i)?.[1];
+    const crop = cropRef ? (sc.crops?.[cropRef]?.box ?? (/^[\d.]+(,[\d.]+){3}$/.test(cropRef) ? cropRef.split(',').map(Number) : null)) : [0, 0, sc.width, sc.height];
+    if (!crop) { problems.push(`Unknown crop "${cropRef}" of ${id}. Crops: ${Object.keys(sc.crops ?? {}).join(', ') || 'none'} (or x,y,w,h in screen px).`); html = html.replace(whole, ''); continue; }
+    const [cx, cy, cw, ch] = crop, k = w / cw;
+    const url = `${origin}/brand-kit/${brand}/product/${sc.file}`;
+    images.add(url);
+    const hasHeight = /(?:^|;)\s*height\s*:/i.test(style);
+    const radius = Math.round(Math.max(12, 24 * Math.min(width, height) / 1080));
+    const look = [`background-color: var(--color-white)`, `background-image: url(&quot;${esc(url)}&quot;)`, `background-size: ${(sc.width * k).toFixed(1)}px auto`, `background-position: ${(-cx * k).toFixed(1)}px ${(-cy * k).toFixed(1)}px`, `background-repeat: no-repeat`, `border-radius: ${radius}px`, `overflow: hidden`, ...(hasHeight ? [] : [`height: ${(ch * k).toFixed(1)}px`])].join('; ');
+    const named = /\bdata-name=/.test(attrs) ? '' : ` data-name="Product ${id}${cropRef ? ` · ${cropRef}` : ''}"`;
+    html = html.replace(whole, `<${tag}${attrs.replace(/\bstyle="[^"]*"/i, '')}${named} data-kind="product" data-scale="${k.toFixed(3)}" style="${style}; ${look}"></${tag}>`);
+  }
 
   // Images: data-image on a block (its background), or <img src>. asset:, upload: and https values.
   const resolve = async (v: string) => {

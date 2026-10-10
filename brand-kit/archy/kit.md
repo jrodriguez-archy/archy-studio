@@ -6,6 +6,8 @@ An exploration is a new Archy design for a brief no template covers. It is not a
 
 You write the artboard's content as HTML with inline styles (double-quoted attributes). Studio wraps it in the artboard (your width × height, `position: relative`, `overflow: clip`), loads the fonts and the tokens, puts in the real logo, icons, textures and images, renders it and checks it. Lay it out the way the templates do: one absolutely positioned `Content` frame inside the safe area holding the stacked blocks in a flex column with gaps; only grounds, photos, textures and bleed art are absolute layers. Name layers with `data-name` ("Headline", "Subline", "CTA", "Details") so the checks and the Inspector can talk about them.
 
+**A reference in the brief** (a mock-up the requester made, or an image from another generator, with other fonts and colours) is the idea, not the design: take its message, its composition and the kind of image, and rebuild it with this kit (type, colours, logo, textures, pieces, the real product) and its rules. Never copy its fonts, colours, logos or made-up text. Where it shows a photo or the product, use the real thing: a team photo, `generate_image`, or a product screen below.
+
 ## Hard rules (the check refuses the design otherwise)
 
 1. **The Archy logo appears once**, as `<div data-piece="logo" style="width: 234px"></div>` (height follows, 18:7), at least 200 px wide on a 1080 piece (scaled with the format). Never draw or type it. **It has its own air**: nothing (text, icon, button, pill, a small photo) within half its height all around; it usually anchors the other end of the piece from the headline. It is white on dark and blue grounds and Royal Blue 500 on white and light grounds: add `data-on="light"` on a light ground. Partner logos are images (`data-image`).
@@ -41,7 +43,8 @@ A person with Pixel Dissolve or Pixels Behind (below) is image-led too: the pers
 - **A person on a colour ground**: the headline big at the top; the person large, pushed to the right (they may bleed off the right edge) and off the bottom; the logo in the corner the person leaves free (bottom left). With the logo there, no pixels under it: Pixel Dissolve and Pixels Behind are optional, and a pixel gradient ground is often enough.
 - **The copy and the person**: some air between the headline and the top of the head (about a third of the headline size or more); the copy never sits on the person.
 - **Framing a photo** (generated or real): the subjects large and central to the frame, close under the headline but never behind it. Scale the image beyond cover and anchor it to the bottom to bring them up and closer (`background-size: auto 112%; background-position: 40% 100%`), then look at the result.
-- **Leading**: in a big headline, a descender (y, g, p) must not meet a capital on the next line (the check flags it); 1.05–1.1 of the size keeps lines together without touching.
+- **Leading**: in a big headline, a descender (y, g, p) must not meet a capital on the next line (the check flags it); 1.08–1.12 of the size keeps lines together without touching.
+- **The person, large**: the head comes up close to the headline (keeping the air) and the person fills the side they are on. "Pushed right" is not "stuck to the edge": bring them toward the centre as far as the face needs to breathe and the composition to balance.
 
 ## Formats and safe areas
 
@@ -178,6 +181,24 @@ The same piece blends a photo edge that stops inside the artboard into the groun
 ```html
 <div data-name="Partner logo" data-image="https://…/logo.svg" style="width: 260px; height: 92px; background-size: contain; background-repeat: no-repeat; background-position: right center"></div>
 ```
+
+## Product
+
+The product is Archy's real screens (Master - Product in Paper), exported to the kit: use them in pieces about what the product does (scheduling, charting, messaging, payments), or propose them when they make the point better than a photo. Never redraw or invent product UI; it is the screens below, as they are (in Open Sans, the product's own type).
+
+Two ways, as in the website's hero video:
+
+**Window** (the whole screen, bleeding off the right and the bottom): headline big at the top, the window from the lower left running off the artboard.
+```html
+<div data-piece="product" data-screen="charting" style="position: absolute; left: 105px; top: 660px; width: 2900px"></div>
+```
+
+**Card** (a named crop of a screen, or `x,y,w,h` in screen px): one piece of the product, centred or anchored, as its own card on the ground.
+```html
+<div data-piece="product" data-screen="schedule" data-crop="appointments" style="position: absolute; left: 105px; top: 600px; width: 870px"></div>
+```
+
+Studio draws it white with rounded corners and the screen at the width you give (the height follows unless you set one). **The UI has to read**: draw the screen at about 1.3–1.6× its size on a 1080 piece (a window 2700–3300 px wide, most of it off the artboard), so less of it shows, bigger; the check warns when it reads small. To start the window at the part that matters (the teeth, not the side panel), give a crop whose left and top are where the window should begin, e.g. `data-crop="356,0,1700,1160"`. Copy never goes over the product; the logo keeps its air from it. The screens and crops available are listed at the end of this kit.
 
 ## Images
 

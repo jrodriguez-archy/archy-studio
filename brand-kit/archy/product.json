@@ -1,0 +1,63 @@
+{
+  "source": "Paper › Master - Product (01M3M69CTR7XJ8F5KP1405RC6F), the TPL · … · Desktop 2056×1160 artboards, exported at 2x as sRGB WebP. Crops are in screen px (2056×1160).",
+  "screens": {
+    "schedule": {
+      "file": "schedule.webp", "width": 2056, "height": 1160,
+      "about": "The day schedule: the patient panel on the left and four columns (rooms, hygiene) of colour-coded appointments.",
+      "crops": {
+        "day": { "box": [356, 56, 1700, 1104], "about": "the day grid without the patient panel" },
+        "appointment": { "box": [836, 244, 378, 92], "about": "one appointment card (Brynn Pelerin, X-ray)" },
+        "patient-panel": { "box": [60, 0, 292, 1160], "about": "the patient summary: balance, quick links, next appointment, tasks" }
+      }
+    },
+    "schedule-new-patient": {
+      "file": "schedule-new-patient.webp", "width": 2056, "height": 1160,
+      "about": "The schedule with a new patient's appointment selected.",
+      "crops": {
+        "new-patient": { "box": [838, 438, 376, 92], "about": "the new patient's appointment card" }
+      }
+    },
+    "schedule-popovers": {
+      "file": "schedule-popovers.webp", "width": 2056, "height": 1160,
+      "about": "The schedule with the production goals bar, an appointment's details, the status menu and a new-patient slot open.",
+      "crops": {
+        "goals": { "box": [356, 68, 1700, 68], "about": "net production, goal, % to goal, completed, scheduled" },
+        "appointment-details": { "box": [778, 306, 292, 510], "about": "an appointment's details: patient, time, provider, notes, forms" },
+        "status-menu": { "box": [1444, 304, 224, 516], "about": "the appointment status menu (unconfirmed to checkout)" },
+        "new-patients-slot": { "box": [1668, 840, 292, 270], "about": "a block reserved for new patients" }
+      }
+    },
+    "charting": {
+      "file": "charting.webp", "width": 2056, "height": 1160,
+      "about": "Clinical charting: the odontogram, the add-to-chart procedures and the perio exams list.",
+      "crops": {
+        "tooth-chart": { "box": [372, 72, 1028, 532], "about": "the odontogram, all 32 teeth" },
+        "add-to-chart": { "box": [1410, 72, 628, 532], "about": "adding a treatment: procedure categories and codes" },
+        "perio-exams": { "box": [360, 624, 1684, 286], "about": "the perio exams list" }
+      }
+    },
+    "charting-history": {
+      "file": "charting-history.webp", "width": 2056, "height": 1160,
+      "about": "Charting with the treatment history table (procedures, conditions, status, provider).",
+      "crops": {
+        "treatment-history": { "box": [360, 660, 1696, 500], "about": "the treatment history table" }
+      }
+    },
+    "charting-perio": {
+      "file": "charting-perio.webp", "width": 2056, "height": 1160,
+      "about": "The perio chart being filled in, with plaque, calculus, bleeding and suppuration shortcuts.",
+      "crops": {
+        "perio-chart": { "box": [370, 136, 1212, 904], "about": "the perio chart grid, upper and lower arches" }
+      }
+    },
+    "messaging": {
+      "file": "messaging.webp", "width": 2056, "height": 1160,
+      "about": "Patient messaging: the inbox and a text conversation with reminders sent by Archy (the thread holds a photo the patient sent, drawn as a blue placeholder).",
+      "crops": {
+        "inbox": { "box": [360, 80, 360, 1080], "about": "the inbox of patient conversations" },
+        "reminders": { "box": [740, 0, 1316, 480], "about": "the top of the thread: an appointment reminder sent by Archy" },
+        "reminder": { "box": [1724, 170, 312, 114], "about": "one reminder message bubble" }
+      }
+    }
+  }
+}

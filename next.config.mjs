@@ -9,7 +9,7 @@ const rendering = ['/api/render', '/mcp', '/api/preview-render/[template]/[forma
 // Canvas pages prepare the fill (manifests, configs, rules, the library list); images come through /api/template-files.
 const canvasPages = ['/canvas/[id]', '/canvas/new', '/canvas', '/api/canvas/live', '/api/template-files/[...path]'];
 // Explorations are composed from the brand kit's tokens and logo (its textures come through /api/template-files).
-const canvasFiles = ['./templates/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js', './brand-kit/*/*.{css,svg,md}'];
+const canvasFiles = ['./templates/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js', './brand-kit/*/*.{css,svg,md,json}', './brand-kit/*/mascot/*.svg'];
 const notNeeded = ['./templates/*/reference/**', './templates/*/source/**'];
 // Pages that only list templates and designs read manifests and configs, never template images.
 const listing = ['/', '/archive', '/projects/[id]', '/templates', '/templates/[id]', '/admin', '/admin/review', '/account', '/install',

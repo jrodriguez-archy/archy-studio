@@ -8,7 +8,7 @@ import { ORIGIN, resolveImage } from './fill';
 import { findAsset } from './asset-ids';
 import { getAsset } from './assets';
 import { iconMarkup } from './icons';
-import { BLEEDS, EXPRESSIONS, EYES, HEAD, RAISE, bleedBox, mascotSvg, type Bleed, type Expression, type MascotGround } from './mascot';
+import { AGENTS, BLEEDS, EXPRESSIONS, EYES, HEAD, POSES, RAISE, bleedBox, mascotSvg, type Agent, type Bleed, type Expression, type MascotGround, type Pose } from './mascot';
 import { ROOT } from './templates';
 
 // Explorations: a design for a brief no template covers, written by Claude as HTML in the brand kit
@@ -127,9 +127,17 @@ export async function compose(input: { html: string; width: number; height: numb
   let mascots = 0;
   for (const [whole, tag, attrs] of [...html.matchAll(/<(div|span)\b([^>]*\bdata-piece="mascot"[^>]*)>\s*<\/\1>/gi)]) {
     const attr = (k: string) => attrs.match(new RegExp(`\\bdata-${k}="([^"]+)"`, 'i'))?.[1];
-    const expression = (attr('expression') ?? 'neutral') as Expression;
+    // An agent is the full body with the objects of its job; a pose moves his parts. Each brings its face
+    // unless one is asked for.
+    const agent = attr('agent') as Agent | undefined;
+    const pose = attr('pose') as Pose | undefined;
+    if (agent && !AGENTS[agent]) { problems.push(`Unknown agent "${agent}" (${Object.keys(AGENTS).join(', ')}).`); html = html.replace(whole, ''); continue; }
+    if (pose && !POSES[pose]) { problems.push(`Unknown pose "${pose}" (${Object.keys(POSES).join(', ')}).`); html = html.replace(whole, ''); continue; }
+    const expression = (attr('expression') ?? (agent ? AGENTS[agent].face : pose ? POSES[pose].face : 'neutral')) as Expression;
     const bleed = (attr('bleed') ?? 'none') as Bleed;
-    const form = attr('form') === 'body' ? 'body' : 'head';
+    const form = attr('form') === 'body' || agent ? 'body' : 'head';
+    if (pose && form !== 'body') { problems.push('Poses are for the full-body mascot (data-form="body"); off the top or a side his head stays as drawn.'); html = html.replace(whole, ''); continue; }
+    const props = agent ? (await read(kitFile(brand, `mascot/props-${agent}.svg`))).replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '') : undefined;
     const ground = (attr('ground') ?? 'royal') as MascotGround;
     if (!EXPRESSIONS.includes(expression)) { problems.push(`Unknown mascot expression "${expression}" (${EXPRESSIONS.join(', ')}).`); html = html.replace(whole, ''); continue; }
     if (!BLEEDS.includes(bleed)) { problems.push(`Unknown mascot bleed "${bleed}" (${BLEEDS.join(', ')}).`); html = html.replace(whole, ''); continue; }
@@ -137,7 +145,7 @@ export async function compose(input: { html: string; width: number; height: numb
     const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1] ?? '';
     const sideways = bleed === 'left' || bleed === 'right';
     const w = Number(style.match(/(?:^|;)\s*width\s*:\s*([\d.]+)px/i)?.[1]) || Math.round(sideways ? height * 0.85 : width * 0.64);
-    const svg = mascotSvg({ id: `m${mascots++}`, form, expression, ground, raise: bleed !== 'none' });
+    const svg = mascotSvg({ id: `m${mascots++}`, form, expression, ground, raise: bleed !== 'none', pose, look: attr('look') === 'left' ? 'left' : 'right', props: props && `<g data-part="props">${props}</g>` });
     let place: string;
     let eyes: { x: number; y: number }[] = [];
     if (bleed === 'none') {
@@ -155,7 +163,7 @@ export async function compose(input: { html: string; width: number; height: numb
       const r = EYES.r * k;
       if (eyes.some((e) => e.x - r < 0 || e.y - r < 0 || e.x + r > width || e.y + r > height)) problems.push(`The mascot's eyes would be cut by the edge: move him along it (data-at) or show more of him (data-show, up to 0.8).`);
     }
-    const named = /\bdata-name=/.test(attrs) ? '' : ' data-name="Mascot"';
+    const named = /\bdata-name=/.test(attrs) ? '' : ` data-name="${agent ? `Agent ${agent[0].toUpperCase()}${agent.slice(1)}` : 'Mascot'}"`;
     html = html.replace(whole, `<${tag}${attrs.replace(/\bstyle="[^"]*"/i, '')}${named} data-kind="mascot" style="${place}">${svg}</${tag}>`);
   }
 

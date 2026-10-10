@@ -72,6 +72,10 @@
     return out;
   }
 
+  // The mascot as drawn: the box of each of his shapes (his own box is a rectangle around transparency,
+  // and his objects reach past it).
+  const mascotShapes = (m) => [...m.querySelectorAll('svg path, svg circle, svg rect, svg polygon')].map((e) => e.getBoundingClientRect()).filter((b) => b.width > 0.5 && b.height > 0.5);
+
   window.__hideText = function hideText(on) {
     let s = document.getElementById('__hide-text');
     if (on && !s) { s = document.createElement('style'); s.id = '__hide-text'; s.textContent = '[data-node="root"] * { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; text-decoration-color: transparent !important; }'; document.head.appendChild(s); }
@@ -164,6 +168,7 @@
         const eb = e.getBoundingClientRect();
         if (!eb.width || !eb.height || (!product && (eb.width * eb.height) / (R.width * R.height) > 0.5) || e.getAttribute('data-kind') === 'cutout') return false;
         const cs = getComputedStyle(e);
+        if (e.getAttribute('data-kind') === 'mascot') return mascotShapes(e).some((b) => area(b, clear) > 4);
         const solid = (rgb(cs.backgroundColor)?.[3] ?? 0) > 0.5 || e.hasAttribute('data-image') || e.tagName === 'IMG' || e.hasAttribute('data-icon');
         return solid && area(eb, clear) > 4;
       });
@@ -284,9 +289,8 @@
 
     // The mascot: no copy on him (his visible shape, inset a little from his box).
     for (const m of r.querySelectorAll('[data-kind="mascot"]')) {
-      const mb = m.getBoundingClientRect(), ix = mb.width * 0.08, iy = mb.height * 0.08;
-      const box = { left: Math.max(mb.left + ix, R.left), top: Math.max(mb.top + iy, R.top), right: Math.min(mb.right - ix, R.right), bottom: Math.min(mb.bottom - iy, R.bottom) };
-      for (const t of runs) if (!m.contains(t.el) && t.lines.some((ln) => area(body(ln, t.cs), box) > 8)) err(t.el, 'mascot-text', `"${t.text.slice(0, 30)}" sits on the mascot: copy never goes over him. Give him his own part of the piece (the empty column beside the headline is where he goes).`);
+      const shapes = mascotShapes(m);
+      for (const t of runs) if (!m.contains(t.el) && t.lines.some((ln) => shapes.some((b) => area(body(ln, t.cs), b) > 8))) err(t.el, 'mascot-text', `"${t.text.slice(0, 30)}" sits on the mascot: copy never goes over him. Give him his own part of the piece (the empty column beside the headline is where he goes).`);
     }
 
     // Photos: a generated image is the subject and fills the artboard; a large photo does not stop across

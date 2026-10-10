@@ -211,11 +211,15 @@ Archy, the robot (Paper › Archy - Brand › Mascot). Use him when the brief as
   - Off the **bottom**, upright: small, thumbnail-scale pieces.
 - **Full body** (`data-form="body"`): standing on the piece (`data-bleed="none"`, placed with your own left/top/width) or rising from the bottom edge. For culture and celebration pieces; large, never a small sticker floating in a corner.
 - **Ground** (`data-ground`: `royal`, `primary`, `navy`, `white`, `ice`, `tint-300`): sets his antenna (light on blue and dark, dark on light) and the barely-there edge on the part that would sink into the ground. Always say the ground he sits on.
-- Copy never goes over him; the logo keeps its air from him. He may cross a Ruler.
+- **Poses** (`data-pose`, full body only): a little motion, the parts never change. `listen` (neutral, head tilts in: attentive), `look` (neutral, eyes slide toward the content; `data-look="left"` or `"right"`, toward the copy), `tilt` (happy: curious, warm), `laugh` (joyful, head thrown back), `jump` (joyful, head and body lift: a win), `crush` (love, head leans in, antenna flicks). Each brings its face.
+- **Agents** (`data-agent`, full body with the objects of the job, in the brand greens, the one sanctioned use of mint): `insight` (reads the numbers: a report and a document), `scribe` (takes the notes: a pencil and a clipboard), `connect` (talks to patients: a phone and a chat bubble), `verify` (confirms coverage: a magnifier and a check seal), `revenue` (collects payment: a card terminal, a card and a coin). Use the agent of the feature the piece is about. They are drawn for light grounds (white, ice): there the magnifier's lens and the greens read best. The job lines come from the brand sheet and are not yet confirmed by Product: keep claims about what an agent does to the brief.
+- Copy never goes over him; the logo keeps its air from him (measured on his shapes, objects included). He may cross a Ruler.
 ```html
 <div data-piece="mascot" data-bleed="top" data-expression="joyful" data-ground="royal" style="width: 691px"></div>
 <div data-piece="mascot" data-bleed="right" data-expression="neutral" data-ground="navy" style="width: 560px"></div>
 <div data-piece="mascot" data-form="body" data-expression="love" data-ground="ice" style="position: absolute; left: 520px; top: 500px; width: 460px"></div>
+<div data-piece="mascot" data-agent="verify" data-ground="ice" style="position: absolute; left: 380px; top: 600px; width: 600px"></div>
+<div data-piece="mascot" data-form="body" data-pose="jump" data-ground="primary" style="position: absolute; left: 440px; top: 420px; width: 560px"></div>
 ```
 
 ## Images
@@ -242,4 +246,4 @@ Archy's textures are one pixel grain, in two families (Archy - Brand › Texture
 
 ## Not in explorations yet
 
-DOC, and the mascot's five agents and poses. For those, report the missing template.
+DOC. For DOC, report the missing template.

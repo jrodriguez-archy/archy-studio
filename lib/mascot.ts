@@ -14,6 +14,31 @@ export const BLEEDS = ['top', 'right', 'left', 'bottom', 'none'] as const;
 export type Bleed = (typeof BLEEDS)[number];
 export type MascotGround = 'royal' | 'primary' | 'navy' | 'white' | 'ice' | 'tint-300';
 
+// Poses (Mascot · Poses): the same parts, only their angle and offset change. Angles in degrees about the
+// pivots on the 670.54 × 644 viewBox (head 335.27, 244; body 335.27, 553.6; antenna base 335.27, 53.41);
+// offsets in viewBox units (up is negative). Each has the face it is drawn with.
+export const POSES = {
+  listen: { face: 'neutral', head: 10, headY: 8 },
+  look: { face: 'neutral', head: -4, body: 2, eyesX: 38 },
+  tilt: { face: 'happy', head: 7, body: -3 },
+  laugh: { face: 'joyful', head: -9, headY: -14, body: 4 },
+  jump: { face: 'joyful', headY: -40, bodyY: -16 },
+  crush: { face: 'love', head: 12, antenna: -18, body: -4 },
+} as const satisfies Record<string, { face: Expression; head?: number; headY?: number; body?: number; bodyY?: number; antenna?: number; eyesX?: number }>;
+export type Pose = keyof typeof POSES;
+const PIVOT = { head: [335.27, 244], body: [335.27, 553.6], antenna: [335.27, 53.41] };
+
+// Agents (Mascot · Agents): the full-body mascot with the objects of each job (Paper's Props, exported to
+// brand-kit/<brand>/mascot/props-<agent>.svg), each with its face.
+export const AGENTS = {
+  insight: { face: 'neutral', job: 'reads the numbers (a report with charts and a document)' },
+  scribe: { face: 'neutral', job: 'takes the notes (a pencil and a clipboard)' },
+  connect: { face: 'happy', job: 'talks to patients (a phone and a chat bubble)' },
+  verify: { face: 'joyful', job: 'confirms coverage (a magnifier and a check seal)' },
+  revenue: { face: 'happy', job: 'collects payment (a card terminal, a card and a coin)' },
+} as const satisfies Record<string, { face: Expression; job: string }>;
+export type Agent = keyof typeof AGENTS;
+
 // Eye centres (head units): where the crop must never reach.
 export const EYES = { y: 243.59, r: 43, xs: [235.15, 435.39] };
 export const RAISE = 50;
@@ -65,8 +90,13 @@ const grad = (id: string, [x1, y1, x2, y2]: number[], a: string, b: string) =>
   `<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
 
 /** The mascot as an SVG (head, or the full body), for one ground, with the eyes raised when he bleeds. */
-export function mascotSvg(input: { id: string; form: 'head' | 'body'; expression: Expression; ground: MascotGround; raise: boolean }): string {
+export function mascotSvg(input: { id: string; form: 'head' | 'body'; expression: Expression; ground: MascotGround; raise: boolean; pose?: Pose; look?: 'left' | 'right'; props?: string }): string {
   const { id, form, expression, ground, raise } = input;
+  const P: { head?: number; headY?: number; body?: number; bodyY?: number; antenna?: number; eyesX?: number } = input.pose ? POSES[input.pose] : {};
+  // Look slides the eyes toward the content; looking left mirrors the motion.
+  const m = input.pose === 'look' && input.look === 'left' ? -1 : 1;
+  const move = (angle: number | undefined, dy: number | undefined, [cx, cy]: number[]) =>
+    `translate(0 ${dy ?? 0}) rotate(${(angle ?? 0) * m} ${cx} ${cy})`;
   const L = looks(ground);
   const E = EYE_PATHS[expression];
   const box = form === 'body' ? BODY : HEAD;
@@ -80,15 +110,17 @@ export function mascotSvg(input: { id: string; form: 'head' | 'body'; expression
     grad(`${id}-eyeR`, E.grads[1], '#8addff', '#66bdfd'),
     ...(form === 'body' ? [grad(`${id}-body`, [215.44, 433.74, 455.09, 673.39], '#0492fc', '#033cf1')] : []),
   ].join('');
-  const eyes = `<g transform="translate(0 ${raise ? -RAISE : 0})${E.transform ? ` ${E.transform}` : ''}" data-part="eyes">${(E.left + E.right).replace(/ID-/g, `${id}-`)}</g>`;
+  const eyes = `<g transform="translate(${(P.eyesX ?? 0) * m} ${raise ? -RAISE : 0})${E.transform ? ` ${E.transform}` : ''}" data-part="eyes">${(E.left + E.right).replace(/ID-/g, `${id}-`)}</g>`;
   const body = form === 'body'
-    ? `<path d="${BODY_CAPSULE}" fill="url(#${id}-body)"${edge(L.bodyEdge)}/><path d="${BODY_MARK}" fill="#e2f1fd"/>`
+    ? `<g transform="${move(P.body, P.bodyY, PIVOT.body)}" data-part="body"><path d="${BODY_CAPSULE}" fill="url(#${id}-body)"${edge(L.bodyEdge)}/><path d="${BODY_MARK}" fill="#e2f1fd"/></g>`
     : '';
-  return `<svg viewBox="0 0 ${box.w} ${box.h}" width="100%" height="100%" overflow="visible" xmlns="http://www.w3.org/2000/svg" style="display:block; overflow:visible"><defs>${defs}</defs>`
+  const head = `<g transform="${move(P.head, P.headY, PIVOT.head)}" data-part="head">`
     + `<path d="${EAR_L}" fill="url(#${id}-earL)"${edge(L.earEdge)}/><path d="${EAR_R}" fill="url(#${id}-earR)"${edge(L.earEdge)}/>`
-    + `<path d="${ANTENNA}" fill="${L.antenna}" data-part="antenna"/>`
+    + `<path d="${ANTENNA}" fill="${L.antenna}" data-part="antenna" transform="rotate(${(P.antenna ?? 0) * m} ${PIVOT.antenna[0]} ${PIVOT.antenna[1]})"/>`
     + `<path d="${SHELL}" fill="url(#${id}-shell)"${edge(L.shellEdge)}/><path d="${PLATE}" fill="url(#${id}-plate)"/>`
-    + eyes + body + '</svg>';
+    + eyes + '</g>';
+  return `<svg viewBox="0 0 ${box.w} ${box.h}" width="100%" height="100%" overflow="visible" xmlns="http://www.w3.org/2000/svg" style="display:block; overflow:visible"><defs>${defs}</defs>`
+    + head + body + (input.props ?? '') + '</svg>';
 }
 
 /**

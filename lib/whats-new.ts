@@ -6,6 +6,13 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.20.5', date: '2026-10-10', title: 'Explorations keep the whole brief',
+    notes: [
+      'Claude puts everything the brief asks for in each format (a feature strip, a tagline, a CTA); if a change would look better, it proposes it instead of leaving something out.',
+      'Copy that touches a detail of the photo, like teeth, gets a shade behind it so it always reads.',
+    ],
+  },
+  {
     version: '0.20.4', date: '2026-10-10', title: 'Clear file names',
     notes: [
       'Downloaded files are named after the project, the design, the format and its size, like hinman-2026-meet-archy-post-1080x1350.png. The ZIP too.',

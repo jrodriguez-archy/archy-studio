@@ -32,7 +32,11 @@ export const TYPES = [
 const FORMAT_ORDER = ['post', 'square', 'stories', 'og', 'cover'];
 const rankFormat = (f: string) => { const i = FORMAT_ORDER.indexOf(f); return i < 0 ? 99 : i; };
 
-export const formatLabel = (f: string) => (f === 'og' ? 'OG' : f[0].toUpperCase() + f.slice(1));
+// Explorations: designs Claude composed in the brand kit for a brief no template covers (lib/compose.ts).
+export const isExploration = (template: string) => template === 'exploration';
+
+const FORMAT_LABELS: Record<string, string> = { og: 'OG', 'linkedin-banner': 'LinkedIn banner', 'linkedin-post': 'LinkedIn post' };
+export const formatLabel = (f: string) => FORMAT_LABELS[f] ?? (f[0].toUpperCase() + f.slice(1)).replace(/-/g, ' ');
 
 // "speaker-name" → "Speaker name"
 export const humanize = (k: string) => (k.charAt(0).toUpperCase() + k.slice(1)).replace(/-/g, ' ');

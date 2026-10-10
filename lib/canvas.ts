@@ -7,6 +7,8 @@ import { formatLabel, groupSets } from './gallery-shared';
 import { listAssets, listFolders } from './assets';
 import { supabaseAdmin } from './supabase/admin';
 import { brandOf } from './brands';
+import { EXPLORATION } from './compose';
+import type { Exploration } from './fill';
 import { comboFormats, loadConfig, loadLibrary, loadManifest, resolveCombo, templateBrand, type Manifest, type TemplateConfig } from './templates';
 
 // Canvas: open a finished piece from its source (template + format + slots + edits), change it by hand
@@ -23,7 +25,13 @@ export type PieceSource = {
   smaller_text?: boolean;
   set_id: string | null; set_title: string | null; project_id: string | null; user_id: string | null; storage_path: string;
   width: number; height: number;
+  /** Explorations: the HTML Claude wrote (template "exploration"), and the brand of the piece. */
+  html?: string | null; brand?: string | null;
 };
+
+// What an exploration is drawn from (lib/compose.ts); undefined for a template's piece.
+export const explorationOf = (p: PieceSource): Exploration | undefined =>
+  p.template === EXPLORATION && p.html ? { html: p.html, width: p.width, height: p.height, brand: brandOf(p.brand ?? undefined) } : undefined;
 
 // What Canvas opens: a saved piece (its id) or a new piece from a template ("new:<template>:<format>",
 // plus ":<design>:<theme>" on templates that offer several; drawn with the template's sample copy;
@@ -38,7 +46,7 @@ const filesOf = (manifest: Manifest, piece: { design: string | null; theme: stri
 const comboKey = (manifest: Manifest, p: { design: string | null; theme: string | null }) =>
   manifest.default ? `${p.design || manifest.default.design}--${p.theme || manifest.default.theme}` : '';
 
-const COLUMNS = 'id, template, format, slots, edits, design, theme, smaller_text, set_id, set_title, project_id, user_id, storage_path, width, height';
+const COLUMNS = 'id, template, format, slots, edits, design, theme, smaller_text, set_id, set_title, project_id, user_id, storage_path, width, height, html, brand';
 
 // Once per request (the page title and the page both ask).
 export const loadSource = cache(async (ref: string): Promise<PieceSource | null> => {
@@ -75,6 +83,7 @@ export async function familyOf(template: string): Promise<string[]> {
 // The formats of a design, as artboards: the newest design of each format of its family in its set
 // (the piece itself for its own format), and the formats the set does not have yet.
 export async function loadSet(piece: PieceSource) {
+  if (piece.template === EXPLORATION) return loadExplorationSet(piece);
   const family = await familyOf(piece.template);
   const manifests = Object.fromEntries(await Promise.all(family.map(async (t) => [t, await loadManifest(t)] as const)));
   const configs = Object.fromEntries(await Promise.all(family.map(async (t) => [t, await loadConfig(t)] as const)));
@@ -110,6 +119,24 @@ export async function loadSet(piece: PieceSource) {
   return { pieces: siblings, missing };
 }
 
+// An exploration's set: its other formats (the newest of each), each drawn from its own HTML. There are
+// no formats to add: a new format is a new compose by Claude.
+async function loadExplorationSet(piece: PieceSource) {
+  let siblings: PieceSource[] = [piece];
+  if (piece.set_id) {
+    const { data } = await supabaseAdmin().from('renders').select(`${COLUMNS}, created_at`)
+      .eq('set_id', piece.set_id).eq('template', EXPLORATION).is('archived_at', null).order('created_at', { ascending: false });
+    const seen = new Set([piece.format]);
+    for (const r of data ?? []) {
+      if (seen.has(r.format)) continue;
+      seen.add(r.format);
+      siblings.push({ ...(r as PieceSource), slots: r.slots ?? {}, edits: r.edits ?? {} });
+    }
+  }
+  siblings = siblings.sort((a, b) => b.width * b.height - a.width * a.height);
+  return { pieces: siblings, missing: [] as { ref: string; format: string; width: number; height: number; defaults: Record<string, string | null> }[] };
+}
+
 export async function canReplace(me: Who, piece: PieceSource) {
   if (isNew(piece)) return false;
   if (me.is_admin || piece.user_id === me.id) return true;
@@ -123,6 +150,16 @@ export async function canReplace(me: Who, piece: PieceSource) {
 export type SlotInfo = { type: 'text' | 'image' | 'logo'; optional: boolean; fontSize?: { min: number; max: number } };
 
 export async function editorContext(piece: PieceSource) {
+  if (piece.template === EXPLORATION) {
+    const brand = brandOf(piece.brand ?? undefined);
+    const set = await loadExplorationSet(piece);
+    return {
+      title: 'Exploration', formatLabel: formatLabel(piece.format), slots: {} as Record<string, SlotInfo>,
+      slotsByFormat: Object.fromEntries(set.pieces.map((p) => [p.format, {} as Record<string, SlotInfo>])),
+      brand, combo: null,
+      library: (await loadLibrary()).filter((a) => brandOf(a.brand) === brand).map((a) => ({ id: a.id, title: a.title, kind: a.kind, url: `/api/template-files/library/${a.file}` })),
+    };
+  }
   const family = await familyOf(piece.template);
   const brand = await templateBrand(piece.template);
   const [all, title, ...members] = await Promise.all([loadLibrary(), titleOf(family[0]),

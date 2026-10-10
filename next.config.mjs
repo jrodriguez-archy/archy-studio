@@ -1,13 +1,15 @@
 // Template HTML, assets, fonts, the asset library and the fit engine are read from disk at runtime.
 const renderFiles = [
   './templates/**/*', './fonts/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js',
+  './brand-kit/**/*', './scripts/explore-check.js',
   './node_modules/@sparticuz/chromium/bin/**', './node_modules/playwright-core/**',
 ];
 // Routes that render with Chromium (Canvas export and save go through /api/canvas).
 const rendering = ['/api/render', '/mcp', '/api/preview-render/[template]/[format]', '/api/canvas'];
 // Canvas pages prepare the fill (manifests, configs, rules, the library list); images come through /api/template-files.
 const canvasPages = ['/canvas/[id]', '/canvas/new', '/canvas', '/api/canvas/live', '/api/template-files/[...path]'];
-const canvasFiles = ['./templates/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js'];
+// Explorations are composed from the brand kit's tokens and logo (its textures come through /api/template-files).
+const canvasFiles = ['./templates/**/*', './library/**/*', './scripts/fit.js', './scripts/edits.js', './scripts/components.js', './brand-kit/*/*.{css,svg,md}'];
 const notNeeded = ['./templates/*/reference/**', './templates/*/source/**'];
 // Pages that only list templates and designs read manifests and configs, never template images.
 const listing = ['/', '/archive', '/projects/[id]', '/templates', '/templates/[id]', '/admin', '/admin/review', '/account', '/install',

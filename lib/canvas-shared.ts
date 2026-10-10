@@ -78,8 +78,10 @@ export type FillPlan = {
   /** Image slots holding a placeholder photo until the real one comes. */
   placeholders?: string[];
   slots: Record<string, string | null>;
-  /** Path of the template HTML under the file root (templates/<id>/<file>.html). */
+  /** Path of the template HTML under the file root (templates/<id>/<file>.html); a key for explorations. */
   html: string;
+  /** Explorations: the whole page, composed from the HTML Claude wrote (there is no template file). */
+  page?: string;
   width: number;
   height: number;
   fill: { format: string; formats: string[]; values: Record<string, string | null>; rules: unknown; limits: unknown };

@@ -351,7 +351,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     f.addEventListener('load', onLoad);
     // Written in, so a redraw does not go back to the network for the page (if that fails, loaded
     // from its address; srcdoc would win over src, so it goes first).
-    const write = () => templatePage(plan.html).then((t) => { if (!stale) f.srcdoc = `${t}<!--${++loads}-->`; })
+    // An exploration brings its page (composed on the server); a template's comes from its file.
+    const write = () => (plan.page != null ? Promise.resolve(plan.page) : templatePage(plan.html)).then((t) => { if (!stale) f.srcdoc = `${t}<!--${++loads}-->`; })
       .catch(() => { if (stale) return; f.removeAttribute('srcdoc'); f.src = `/api/template-files/${plan.html}?load=${++loads}`; });
     // A format waiting its turn never holds the others for long, even if its page never loads.
     let safety: ReturnType<typeof setTimeout> | undefined;

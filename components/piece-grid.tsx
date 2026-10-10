@@ -11,7 +11,7 @@ import { ContextActions, MoreActions } from '@/components/action-menu';
 import { useSetActions } from '@/components/set-actions';
 import { StackBadge, StackLayers, stackPad } from '@/components/stack';
 import { downloadSet } from '@/lib/download-set';
-import { canManageSet, formatLabel, humanize, type Piece, type PieceSet } from '@/lib/gallery-shared';
+import { canManageSet, formatLabel, humanize, isExploration, type Piece, type PieceSet } from '@/lib/gallery-shared';
 
 const formatsOf = (s: PieceSet) => [...new Set(s.pieces.map((p) => formatLabel(p.format)))].join(', ');
 
@@ -90,6 +90,9 @@ const SetCard = memo(function SetCard({ set: s, eager, projects, canManage, proj
             <img src={r.thumb} alt="" width={r.width} height={r.height} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" className={`block h-auto w-full ${s.archived_at ? 'opacity-60 grayscale' : ''}`} style={{ aspectRatio: `${r.width} / ${r.height}` }} />
           </button>
           <StackBadge n={n} />
+          {isExploration(r.template) && !picking && (
+            <span className="pointer-events-none absolute top-2 right-2 z-10 rounded-[4px] bg-background/85 px-1.5 py-0.5 text-[11px] font-medium text-foreground/70 shadow-sm backdrop-blur">Exploration</span>
+          )}
           {picking && (
             <span aria-hidden className={`pointer-events-none absolute top-2 right-2 z-10 flex size-5 items-center justify-center rounded-full shadow-sm ring-1 transition-colors ${selected ? 'bg-primary text-primary-foreground ring-primary' : 'bg-background/80 ring-foreground/20 backdrop-blur'}`}>
               {selected && <HugeiconsIcon icon={Tick02Icon} strokeWidth={2.5} className="size-3" />}
@@ -181,7 +184,7 @@ function SetInfo({ set, shown, project, projects, canManage }: { set: PieceSet; 
 
       <InfoRows
         rows={[
-          ['Template', set.templates.length > 1 ? `${set.templates.length} templates` : <Link key="t" href={`/templates?t=${set.lead.template}`} className="underline decoration-foreground/20 underline-offset-4 hover:decoration-foreground">{set.lead.title}</Link>],
+          ['Template', set.templates.length > 1 ? `${set.templates.length} templates` : isExploration(set.lead.template) ? 'Exploration (no template)' : <Link key="t" href={`/templates?t=${set.lead.template}`} className="underline decoration-foreground/20 underline-offset-4 hover:decoration-foreground">{set.lead.title}</Link>],
           ['File', `PNG @${shown.scale}x`],
           ['Project', project ?? '—'],
           ['Made by', set.author],

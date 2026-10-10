@@ -2,20 +2,24 @@ import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
 import { editCanvas, getCanvas, saveCanvas } from '@/lib/canvas-claude';
-import { MissingRequired, render } from '@/lib/renderer';
-import { shortId } from '@/lib/asset-ids';
+import { MissingRequired, render, renderComposition } from '@/lib/renderer';
+import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, compose } from '@/lib/compose';
+import { randomUUID } from 'node:crypto';
+import { findAsset, shortId } from '@/lib/asset-ids';
 import { photoPlaceholder, placeholderNote, type Placeholder } from '@/lib/placeholders';
 import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
 import { createProject, findProject, listProjects } from '@/lib/projects';
 import { resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { supabaseConfigured } from '@/lib/supabase/admin';
-import { DAILY, getAsset, listAssets, listFolders, useAi } from '@/lib/assets';
+import { DAILY, createAsset, getAsset, listAssets, listFolders, readAsset, useAi } from '@/lib/assets';
+import { generateForFrame, pixelTone } from '@/lib/generate';
 import { outpaintFor, type Edits, type Framing } from '@/lib/canvas-shared';
 import { directFileLink, DIRECT_DAYS } from '@/lib/file-links';
 import { keepLinkedImage } from '@/lib/keep-image';
 import { extendPhoto } from '@/lib/outpaint';
 import { createPhotoRequest, getPhotoRequest } from '@/lib/photo-requests';
+import { reportMissing } from '@/lib/missing-templates';
 import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo, templateBrand } from '@/lib/templates';
 import { BRAND_IDS } from '@/lib/brands';
 
@@ -31,9 +35,12 @@ Brief first, then the best template:
 2. Call match_templates with those facts (and the purpose if clear). It returns the templates that can be made with them, best first, and for the others what is missing.
 3. Ask once, in one short message, for what would unlock a better template or is missing (the partner logo, the time...). Never invent facts. Photos never hold a design back: a template that shows photos is made anyway, with placeholder photos close to the brief, and the real ones are asked for in that same message (photos_to_ask_for).
 4. With the answers, call match_templates again and pick the best eligible template (offer two when they are equally good). When the requester asks for options, make each option a different template (or design or theme), not the same design with other copy; a copy-only variation only when they ask for one, and then without set, so it stands on its own in the gallery. If none is eligible, say what is missing; never force a template.
+4b. No template for it: when the kind of piece or size is not in the catalog (a LinkedIn banner, a flyer, an email header), even if templates are eligible by their facts, or match_templates has nothing: offer the closest template adapted in one line (closest_made_for_another_purpose, or a format the requester can use instead) and make it if they take it. If nothing is close, or they decline it, call report_missing_template once (so Marketing & Design see what is asked for) and offer an exploration (below) in the same message; never promise a date for a template.
 5. get_template for its slots and limits, then render. Each template has essential content (always filled) and minor optional details: an optional detail you do not have is left out with its label (no time: the date stays alone).
 6. If copy does not fit, the format is not delivered and the answer brings two options: shorter copy (with the exact maximum) and, when it works, smaller text (a preview, down to 70%). Show both and let the requester choose; offer a shorter version written by you (same facts, their wording). If they choose smaller text, render again with smaller_text: true. Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline takes the size and lines its room allows, the logo stays at the bottom), so never add words just to fill space. A headline on three or four big lines is right, not a problem.
 7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, what was left out, and which photos are placeholders.
+
+Explorations (Archy only): a new design for a brief no template covers, made when the requester takes the offer or asks to explore. Call get_brand_kit once, then compose: write each format as HTML in the kit (its tokens, type, grounds, textures and pieces; the real logo through data-piece="logo"). Start with the format they need (the banner, the flyer); add more only when asked. Look at every image as a designer would: hierarchy, scale (type bigger than feels safe), the safe area, nothing floating; fix what a designer would, and fix every hard problem the check reports, then compose again with the same set. When they ask for options, make each one a different composition (ground, layout, where the image sits). Images: a real photo first (list_assets, or the requester's); otherwise generate_image for a scene, place, object or texture at the frame's exact size with copy_space where the copy goes (never a person, a real venue as itself, text or logos; one at a time, look at each); pixel_tone for a place behind text on blue, dark or light grounds. Say which images are AI-generated. Same rules as templates: never invent facts, a person is always their real photo, copy in US English. Say plainly it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design (small changes there, with get_canvas / edit_canvas when it is open); a new layout, ground or format is a new compose with the same set.
 
 Framing photos: a photo is cropped to its frame from its centre unless you say otherwise. Look at every render: when what matters in a photo (a face, a tattoo, a product) is cut off or hidden behind the design (a pixel band, the copy), render again with framing for that slot: focus_x / focus_y (0–100 %, where that subject is in the photo, across and down) keep it at the frame's centre as far as the photo allows; zoom above 1 comes closer. When the photo is too tall or too wide for the frame to show the subject whole, use zoom below 1 with fill_around: true: AI paints the rest of the scene around the photo so it fills the frame (it can invent details: look at the result and say it was extended). Framing is kept in the design, so Canvas opens it as rendered.
 
@@ -173,7 +180,209 @@ const handler = createMcpHandler(
         const all = await matchTemplates(facts, purpose, brand);
         const eligible = all.filter((m) => m.eligible).slice(0, 6).map((m) => ({ template: m.template, title: m.title, purpose: m.purpose, shows: m.shows, not_shown: m.unused, ...(m.photos.length ? { photos_to_ask_for: m.photos } : {}) }));
         const almost = all.filter((m) => !m.eligible && m.missing.length <= 2).slice(0, 6).map((m) => ({ template: m.template, title: m.title, needs: m.missing }));
-        return { content: [{ type: 'text', text: JSON.stringify({ eligible, would_fit_with_more_info: almost }, null, 2) }] };
+        // No template for this purpose: the closest ones made for something else, to offer adapted.
+        const closest = purpose && !eligible.length && !almost.length
+          ? (await matchTemplates(facts, undefined, brand)).filter((m) => m.eligible).slice(0, 3).map((m) => ({ template: m.template, title: m.title, purpose: m.purpose, shows: m.shows }))
+          : [];
+        const note = !eligible.length && !almost.length ? 'No template fits this brief. Offer the closest one adapted when it works; if not, or when the requester declines it, call report_missing_template.' : undefined;
+        return { content: [{ type: 'text', text: JSON.stringify({ eligible, would_fit_with_more_info: almost, ...(closest.length ? { closest_made_for_another_purpose: closest } : {}), ...(note ? { note } : {}) }, null, 2) }] };
+      },
+    );
+
+    server.registerTool(
+      'get_brand_kit',
+      {
+        title: 'Get the brand kit for an exploration',
+        description: 'The brand kit for explorations (designs for a brief no template covers): the formats and safe areas, the tokens, the grounds and pixel textures, type scale and spacing, and the pieces to copy (logo, button, pill, label and value, rulers, photo, shade). Read it before the first compose of a conversation.',
+        inputSchema: z.object({ brand: z.enum(BRAND_IDS).default('archy') }),
+        annotations: { readOnlyHint: true },
+      },
+      async ({ brand }) => {
+        try {
+          return { content: [{ type: 'text', text: await brandKit(brand) }] };
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
+      },
+    );
+
+    server.registerTool(
+      'generate_image',
+      {
+        title: 'Generate an image for an exploration',
+        description: `An AI image (Nano Banana) for one frame of an exploration, at that frame's exact shape, in Archy's photography: a scene, a place, an object or a texture. Never a person (a person is always their real photo), a specific real venue presented as itself, text or a logo. It joins Assets as a generated image; use it in compose as data-image="asset:<id>". Each person makes ${DAILY.generate} images a day, so make one, look at it, and only then another. Tell the requester which images are AI-generated.`,
+        inputSchema: z.object({
+          prompt: z.string().min(10).max(800).describe('What the image shows, concretely ("a bright, modern dental front desk with a tablet on the counter, morning light, shallow depth of field"). In English.'),
+          width: z.number().int().min(SIZE.min).max(SIZE.max).describe('Width of the frame the image fills, in px.'),
+          height: z.number().int().min(SIZE.min).max(SIZE.max).describe('Height of the frame the image fills, in px.'),
+          copy_space: z.enum(['top', 'bottom', 'left', 'right', 'none']).default('none').describe('Where copy will sit over the image: that part is kept calm.'),
+          pixel_tone: z.enum(['royal', 'navy', 'ice']).optional().describe('Also make a Pixel Tone version (Archy\'s dithered grain in two brand tones) for a place behind text. Never on people.'),
+          brand: z.enum(BRAND_IDS).default('archy'),
+        }),
+      },
+      async ({ prompt, width, height, copy_space: copySpace, pixel_tone: tone, brand }, ctx) => {
+        if (!EXPLORATION_BRANDS.includes(brand)) return { isError: true, content: [{ type: 'text', text: 'Images for explorations are for Archy only for now.' }] };
+        const owner = userIdOf(ctx);
+        if (!owner || !supabaseConfigured()) return { isError: true, content: [{ type: 'text', text: 'Generating images needs a signed-in Studio account.' }] };
+        if (!(await useAi(owner, 'generate'))) return { isError: true, content: [{ type: 'text', text: `The daily limit of ${DAILY.generate} generated images is reached for this account. Use a team photo (list_assets) or a placeholder, and say so.` }] };
+        try {
+          const png = await generateForFrame({ prompt, width, height, copySpace, brand });
+          const name = prompt.length > 48 ? `${prompt.slice(0, 47)}…` : prompt;
+          const asset = await createAsset({ ownerId: owner, body: png, type: 'image/png', name, kind: 'generated', prompt, brand });
+          const content: Content[] = [{ type: 'image', data: (await previewOf(png)).toString('base64'), mimeType: 'image/jpeg' }];
+          let text = `Generated (AI): asset:${shortId(asset.id)} for a ${width}×${height} frame. Use data-image="asset:${shortId(asset.id)}" with background-size: cover. Look at it before using it.`;
+          if (tone) {
+            const toned = await pixelTone(png, { width, height }, tone);
+            const t = await createAsset({ ownerId: owner, body: toned, type: 'image/png', name: `${name} · Pixel Tone ${tone}`, kind: 'pixel', parentId: asset.id, brand });
+            content.push({ type: 'image', data: (await previewOf(toned)).toString('base64'), mimeType: 'image/jpeg' });
+            text += `\nPixel Tone (${tone}): asset:${shortId(t.id)}, sized for this frame (background-size: cover).`;
+          }
+          content.push({ type: 'text', text });
+          return { content };
+        } catch (e) {
+          const msg = (e as Error).message;
+          return { isError: true, content: [{ type: 'text', text: /auth|oidc|api key|unauthorized|403|401/i.test(msg) ? 'Image generation is not set up yet (AI Gateway).' : msg }] };
+        }
+      },
+    );
+
+    server.registerTool(
+      'pixel_tone',
+      {
+        title: 'Pixel Tone a photo',
+        description: 'Archy\'s Pixel Tone on a photo for one frame of an exploration: the photo redrawn as a dithered grain in two brand tones (royal on blue grounds, navy on dark, ice on light), the way the event covers treat a venue. For a place, an office or a practice behind text; never on a person. Free (no AI). The result joins Assets; use it as data-image="asset:<id>".',
+        inputSchema: z.object({
+          image: z.string().describe('The photo: asset:<id>, an upload: value from list_assets, or an https link.'),
+          width: z.number().int().min(SIZE.min).max(SIZE.max).describe('Width of the frame it fills, in px.'),
+          height: z.number().int().min(SIZE.min).max(SIZE.max).describe('Height of the frame it fills, in px.'),
+          tone: z.enum(['royal', 'navy', 'ice']),
+          brand: z.enum(BRAND_IDS).default('archy'),
+        }),
+      },
+      async ({ image, width, height, tone, brand }, ctx) => {
+        const owner = userIdOf(ctx);
+        if (!owner || !supabaseConfigured()) return { isError: true, content: [{ type: 'text', text: 'Pixel Tone needs a signed-in Studio account.' }] };
+        try {
+          let v = /^https:\/\//i.test(image) ? await keepLinkedImage(image, { ownerId: owner, brand, name: 'Photo (from a link)' }) : image.trim();
+          let parent: string | null = null;
+          if (v.startsWith('asset:')) {
+            const a = await findAsset(v.slice(6));
+            if (!a) return { isError: true, content: [{ type: 'text', text: `Unknown asset: ${v.slice(6)}. Use an ID from list_assets.` }] };
+            parent = a.id;
+            v = `upload:${a.path}`;
+          }
+          if (!v.startsWith('upload:')) return { isError: true, content: [{ type: 'text', text: 'Give the photo as asset:<id>, an upload: value or an https link.' }] };
+          const { body } = await readAsset(v.slice(7));
+          const toned = await pixelTone(body, { width, height }, tone);
+          const t = await createAsset({ ownerId: owner, body: toned, type: 'image/png', name: `Pixel Tone ${tone} ${width}×${height}`, kind: 'pixel', parentId: parent, brand });
+          return { content: [
+            { type: 'image', data: (await previewOf(toned)).toString('base64'), mimeType: 'image/jpeg' },
+            { type: 'text', text: `Pixel Tone (${tone}): asset:${shortId(t.id)}, sized for a ${width}×${height} frame (background-size: cover).` },
+          ] };
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
+      },
+    );
+
+    server.registerTool(
+      'compose',
+      {
+        title: 'Compose an exploration',
+        description: 'Draw a new design in the brand kit for a brief no template covers (an exploration, not an approved template): you write each format as HTML (read get_brand_kit first), Studio puts in the real logo, icons, textures and images, renders it and checks it against the brand. A format that breaks a hard rule (logo, fonts, text cut off or overlapping, contrast, tiny text) is shown with the problems and not saved: fix them and compose again. A format that passes goes to the gallery labelled Exploration, with its download links. Look at every image before showing it.',
+        inputSchema: z.object({
+          title: z.string().min(3).max(80).describe('The design\'s name in the gallery, in English ("Spring webinar · LinkedIn banner").'),
+          formats: z.array(z.object({
+            name: z.string().regex(/^[a-z0-9][a-z0-9-]{1,39}$/).describe('Plain format name: post, square, stories, og, linkedin-banner, email-header…'),
+            width: z.number().int().min(SIZE.min).max(SIZE.max),
+            height: z.number().int().min(SIZE.min).max(SIZE.max),
+            html: z.string().min(20).max(MAX_HTML).describe('The artboard\'s content: HTML with inline styles in the brand kit (tokens, data-piece="logo", data-icon, data-texture, data-image).'),
+          })).min(1).max(4),
+          brand: z.enum(BRAND_IDS).default('archy'),
+          project: z.string().optional().describe('Project to file it in (name or id from list_projects). Only when the requester mentions one.'),
+          set: z.string().optional().describe('Set id from an earlier compose of the same brief (more formats, a fixed version, another option), so the gallery stacks them.'),
+        }),
+        annotations: { openWorldHint: false },
+      },
+      async ({ title, formats, brand, project, set }, ctx) => {
+        if (!EXPLORATION_BRANDS.includes(brand)) return { isError: true, content: [{ type: 'text', text: `Explorations are for Archy only for now. For ${brand.toUpperCase()}, call report_missing_template.` }] };
+        const owner = userIdOf(ctx);
+        let projectId: string | null = null;
+        if (project) {
+          const me = await whoIs(ctx);
+          const found = me ? await findProject(me, project, brand) : null;
+          if (!found) return { isError: true, content: [{ type: 'text', text: `No project "${project}" for this account. Call list_projects, or create_project first.` }] };
+          projectId = found.id;
+        }
+        // The same brief keeps its set (only one of this person's sets); otherwise a new one.
+        let setId: string = randomUUID();
+        if (set && /^[0-9a-f-]{36}$/i.test(set) && supabaseConfigured()) {
+          let q = supabaseAdmin().from('renders').select('id, project_id').eq('set_id', set).limit(1);
+          q = owner ? q.eq('user_id', owner) : q.is('user_id', null);
+          const { data } = await q;
+          if (data?.length) { setId = set; projectId ??= (data[0].project_id as string | null) ?? null; }
+        }
+        const origin = publicOrigin(ctx);
+        const content: Content[] = [];
+        let saved = 0;
+        for (const f of formats) {
+          const label = `${f.name} (${f.width}×${f.height})`;
+          let html = f.html;
+          try {
+            // Images given as links are kept in Assets first, so the design keeps drawing once they expire.
+            for (const [, link] of [...html.matchAll(/\b(?:data-image|src)="(https:\/\/[^"]+)"/g)]) {
+              const kept = await keepLinkedImage(link.replace(/&amp;/g, '&'), { ownerId: owner, brand, name: `${title} (from a link)` });
+              if (kept !== link) html = html.split(`"${link}"`).join(`"${kept}"`);
+            }
+            const checks = await checksFor(f.width, f.height, brand);
+            const comp = await compose({ html, width: f.width, height: f.height, brand, title });
+            const out = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, checks });
+            const errors = [...comp.problems, ...out.report.errors.map((e) => e.message)];
+            const warnings = out.report.warnings.map((w) => w.message);
+            content.push({ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' });
+            if (errors.length) {
+              content.push({ type: 'text', text: `${label}: not saved. Fix these and compose again:\n- ${errors.join('\n- ')}${warnings.length ? `\nAlso worth fixing:\n- ${warnings.join('\n- ')}` : ''}` });
+              continue;
+            }
+            let links = '';
+            if (supabaseConfigured()) {
+              const hi = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, scale: 2, checks });
+              const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: hi.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html });
+              if (rec) { saved++; links = ` Download (2x PNG): ${origin}/api/file/${rec.id} File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, rec.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${rec.id}`; }
+            }
+            content.push({ type: 'text', text: `${label}: ready, saved in the gallery as an Exploration.${links}${warnings.length ? `\nWorth fixing (guides, not refusals):\n- ${warnings.join('\n- ')}` : ''}` });
+          } catch (e) {
+            content.push({ type: 'text', text: `${label}: ${(e as Error).message}` });
+          }
+        }
+        content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later compose of this brief).${saved ? ' Tell the requester it is an exploration that Design reviews, not an approved template. Small changes (copy, a colour, moving or scaling something) are made in Canvas (get_canvas / edit_canvas when they have it open); a new layout, ground or format is a new compose with the same set.' : ''}` });
+        return { isError: saved === 0 && !content.some((c) => c.type === 'image'), content };
+      },
+    );
+
+    server.registerTool(
+      'report_missing_template',
+      {
+        title: 'Tell Design a template is missing',
+        description: 'When no template fits the brief: a kind of piece or a size the catalog does not have (a LinkedIn banner, a flyer, an email header), or the closest template was offered and the requester declined it. Marketing & Design see what is asked for most and make those templates next. Call it once per brief, then tell the requester in one line that Design has it.',
+        inputSchema: z.object({
+          piece: z.string().min(3).max(200).describe('What they asked for, in a few plain words, in English ("LinkedIn banner for a webinar", "printed flyer for a study club"). Same words for the same kind of piece.'),
+          format: z.string().max(80).optional().describe('The size or channel when they said it ("1584×396", "Letter, print", "email header").'),
+          facts: z.array(z.enum(FACTS)).default([]).describe('The facts the brief brings, as for match_templates.'),
+          purpose: z.enum(PURPOSES).optional(),
+          offered: z.array(z.string()).max(6).default([]).describe('The templates offered instead, if any.'),
+          reason: z.string().max(300).optional().describe('Why they did not do, in one line ("needs a horizontal banner", "they want a printed piece").'),
+          brand: z.enum(BRAND_IDS).default('archy'),
+        }),
+      },
+      async ({ piece, format, facts, purpose, offered, reason, brand }, ctx) => {
+        if (!supabaseConfigured()) return { isError: true, content: [{ type: 'text', text: 'Studio is not set up to keep this (Supabase).' }] };
+        try {
+          await reportMissing(userIdOf(ctx), { brand, piece, format, facts, purpose, offered, reason });
+          return { content: [{ type: 'text', text: 'Kept for Marketing & Design (Studio → Missing templates). Tell the requester in one line that Design has the request; do not promise a date.' }] };
+        } catch (e) {
+          return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
+        }
       },
     );
 
@@ -598,3 +807,9 @@ const authed = withMcpAuth(handler, verifyMcpToken, {
 });
 
 export { authed as GET, authed as POST, authed as DELETE };
+
+// A light JPEG of an image for Claude to look at (the full PNG stays in Assets).
+async function previewOf(png: Buffer): Promise<Buffer> {
+  const sharp = (await import('sharp')).default;
+  return sharp(png).resize({ width: 900, height: 900, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 80 }).toBuffer();
+}

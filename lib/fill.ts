@@ -40,7 +40,11 @@ export type RenderInput = {
   inspect?: boolean;
   /** Apply the Inspector's automatic fixes in the page (several rounds) and return the fixed edits. */
   autofix?: boolean;
+  /** Explorations (template "exploration"): the HTML Claude wrote and the artboard size. */
+  exploration?: Exploration;
 };
+
+export type Exploration = { html: string; width: number; height: number; brand?: 'archy' | 'doc' };
 
 // How far "smaller text" lets copy shrink (the design's own floor is usually 85%).
 export const SMALLER_TEXT = 0.7;
@@ -55,7 +59,13 @@ export class MissingRequired extends Error {
 // fit rules and limits, and every image resolved to a URL under `origin`. The renderer and the Canvas
 // editor share it, so both draw the same piece.
 // `slotsOnly`: just the slot values (no images, rules or limits), for comparing with what was saved.
-export async function prepareFill({ template, format, design, theme, slots: given, fillDefaults = false, edits = {}, smallerText = false }: Omit<RenderInput, 'scale'>, origin = ORIGIN, slotsOnly = false): Promise<FillPlan> {
+export async function prepareFill({ template, format, design, theme, slots: given, fillDefaults = false, edits = {}, smallerText = false, exploration }: Omit<RenderInput, 'scale'>, origin = ORIGIN, slotsOnly = false): Promise<FillPlan> {
+  if (template === 'exploration') {
+    if (!exploration) throw new Error('This exploration has no design to draw (its HTML was not kept).');
+    if (slotsOnly) return { slots: {} } as FillPlan;
+    const { explorationPlan } = await import('./compose');
+    return explorationPlan({ ...exploration, format, edits }, origin);
+  }
   const [manifest, config] = await Promise.all([loadManifest(template), loadConfig(template)]);
   const combo = resolveCombo(manifest, design, theme);
   const files = comboFormats(manifest, combo);

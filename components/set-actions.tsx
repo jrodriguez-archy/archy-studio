@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { createProjectAction } from '@/app/(app)/projects/actions';
 import { archiveSetAction, deleteSetAction, moveSetAction, renameSetAction, restoreSetAction } from '@/app/(app)/sets/actions';
-import { formatLabel, humanize, type PieceSet } from '@/lib/gallery-shared';
+import { formatLabel, humanize, isExploration, type PieceSet } from '@/lib/gallery-shared';
 import { downloadSet } from '@/lib/download-set';
 
 const download = (url?: string) => { if (url) window.location.href = url; };
@@ -31,6 +31,7 @@ function versionPrompt(set: PieceSet) {
     .filter(([, v]) => v && !v.startsWith('data:') && v !== '[inline image]')
     .sort(([a], [b]) => rank(a) - rank(b))
     .map(([k, v]) => `- ${humanize(k)}: ${v!.replace(/\s*\n\s*/g, ' ')}`);
+  if (isExploration(set.lead.template)) return [`Make a new version of the Archy Studio exploration "${set.title}" (${set.pieces.map((p) => `${p.format} ${p.width}×${p.height}`).join(', ')}).`, `Keep it in set ${set.id}.`].join('\n');
   return [
     `Make a new version of "${set.title}" with the Archy Studio template ${set.lead.template}.`,
     'Same brief:',

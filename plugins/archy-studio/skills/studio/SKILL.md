@@ -1,6 +1,6 @@
 ---
 name: studio
-description: Make a finished Archy marketing design (PNG) from an approved template, just by asking, with the Archy Studio tools. Use when someone wants an Archy ad or social image ready to post: an AE or team member spotlight, a photo-led ad with one product claim, a trade show booth invite, a day-before reminder, a speaker or hosted-evening invite, or an event page cover, in Post, Square, Stories, OG or Cover size, or asks what Archy Studio can make. Not for designing something new or editing a template (that is the designers' job in Paper).
+description: Make a finished Archy marketing design (PNG) from an approved template, just by asking, with the Archy Studio tools. Use when someone wants an Archy ad or social image ready to post: an AE or team member spotlight, a photo-led ad with one product claim, a trade show booth invite, a day-before reminder, a speaker or hosted-evening invite, or an event page cover, in Post, Square, Stories, OG or Cover size, or asks what Archy Studio can make. Also explorations in the Archy brand when no template covers the brief. Not for editing a template (that is the designers' job in Paper).
 ---
 
 # Archy Studio
@@ -11,7 +11,7 @@ Archy Studio fills Archy's approved templates and returns the finished images. T
 
 ## Steps
 
-When the Archy Studio tools are deferred (they appear only by name), load them all at once with one `ToolSearch` call: `select:` followed by every Archy Studio tool name (match_templates, get_template, list_templates, list_assets, render, get_canvas, edit_canvas, save_canvas, list_projects, create_project), not one at a time.
+When the Archy Studio tools are deferred (they appear only by name), load them all at once with one `ToolSearch` call: `select:` followed by every Archy Studio tool name (match_templates, get_template, list_templates, list_assets, render, request_photos, get_photos, report_missing_template, get_brand_kit, compose, generate_image, pixel_tone, get_canvas, edit_canvas, save_canvas, list_projects, create_project), not one at a time.
 
 0. **A template ID or a Studio prompt.** When the person gives a template ID (like `booth-icon-list`, copied from the Studio app) or a `/templates?t=` link, use that template directly: skip `match_templates`, call `get_template`, ask once only for missing essential facts, then render. A prompt copied from the gallery ("Make a new version of… Keep it in set <id>") renders in that `set`.
 1. **Read the whole brief first.** List the facts it brings: event name, city, venue, dates, time, booth, photos (city, venue, speaker, person), logos (partner, offer), speaker name, role, company. Facts are things that must come from the requester; headlines and subheads you write from the brief.
@@ -19,6 +19,7 @@ When the Archy Studio tools are deferred (they appear only by name), load them a
 3. **Ask once, well.** In one short message, ask for what would complete the design: the partner logo, the booth number, the time. Never invent facts, names, titles or numbers.
    - **Photos never hold a design back.** A template with photos is made anyway: missing photos come as placeholders close to the brief (a neutral silhouette for a person), and you ask for the real ones in the same message (`photos_to_ask_for`). They can send a link, upload the photo in Studio → Assets and give you its ID, or swap it in Canvas.
 4. **Choose the template.** With the answers, call `match_templates` again and pick the best eligible one; offer two when they are equally good. Every template has **essential content** that is always filled; if no template is eligible, say what is missing instead of forcing one.
+   - **No template for it.** When the kind of piece or the size is not in the catalog (a LinkedIn banner, a flyer, an email header), even if some template is eligible by its facts: offer the closest template adapted, in one line (`closest_made_for_another_purpose`, or a format they can use instead), and make it if they take it. If nothing is close, or they decline it, call `report_missing_template` once (so Marketing & Design see what is asked for) and, in the same message, offer an **exploration** (below). Never promise a date for a template.
    - **Options are different designs.** When they ask for options, make each one a different template (or design or theme), not the same design with other copy. A copy-only variation only when they ask for it, rendered without `set` so it shows on its own in the gallery.
    - **Designs and themes.** Some templates come in several designs (layouts) and themes (White, Royal Blue, Navy), all with the same slots; `list_templates` shows them. Use the default unless the requester asks for a design or a colour. When they want options, render two or three different designs in the same `set` and say which is which ("The Arch, Navy").
 5. **Read its slots.** Call `get_template` (with the design and theme you will use) for the slots, the limits and which details are optional. Some slots exist only in some designs (`only_in_designs`): the AE Spotlight's first-name headline is only in Meet Name, and the Photo Headline's two photos and labels only in Split.
@@ -44,6 +45,18 @@ When the Archy Studio tools are deferred (they appear only by name), load them a
    - Save the high-resolution files: when you can run commands, download each format's **File** link (it works without signing in for 7 days) into the working folder as `<template>-<format>.png` (for example with `curl -L -o ae-spotlight-post.png "<File link>"`). Otherwise give them the links.
    - Give the **Edit in Canvas** link of each format: there they can fix copy, colours, images or sizes by hand and download again, without a new render.
    - Say which photos are placeholders and how to replace them. Give the **Download (2x PNG)** links to share: they last (for people signed in to Studio) until the design is archived or deleted.
+
+## Explorations (Archy only)
+
+A new design for a brief no template covers, made when the requester takes the offer or asks to explore something new. It is not an approved template: it goes to the gallery labelled Exploration and Design reviews it. Say so plainly.
+
+1. Call `get_brand_kit` once: formats and safe areas, tokens, grounds and pixel textures, type scale, and the pieces to copy (logo, button, pill, label and value, rulers, photo, shade).
+2. Call `compose` with the format they need (the banner, the flyer); more formats only when asked. Write each as HTML in the kit; the real logo always through `data-piece="logo"`.
+3. **Look at every image as a designer would**: hierarchy, type bigger than feels safe, the safe area, nothing floating. A format that breaks a hard rule (logo, fonts, text cut or overlapping, contrast, tiny text) comes back not saved with the problems: fix them and `compose` again with the same `set`.
+4. **Options are different compositions** (ground, layout, where the image sits), not the same one with other copy.
+5. **Images**: a real photo first (`list_assets`, or the requester's). Otherwise `generate_image` for a scene, a place, an object or a texture, at the frame's exact width and height, with `copy_space` where the copy goes: never a person, a real venue as itself, text or logos. Make one, look at it, then another if needed (there is a daily limit). `pixel_tone` turns a place behind text into Archy's dithered grain (`royal`, `navy` or `ice` for blue, dark or light grounds). Tell them which images are AI-generated.
+   Same rules as templates: never invent facts, a person is always their real photo, copy in US English. The mascot and DOC are not in explorations yet.
+6. Deliver as with templates: the images, the File links saved to the folder, the Download links to share and the **Edit in Canvas** link. Small changes (copy, a colour, moving or scaling something) are made in Canvas, by them or by you with `get_canvas` / `edit_canvas`; a new layout, ground or format is a new `compose` with the same `set`. A recolour preset does not repaint a pixel texture.
 
 ## Live editing in Canvas
 

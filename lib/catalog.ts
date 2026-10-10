@@ -67,5 +67,6 @@ export async function catalog(brand?: Brand | 'all'): Promise<CatalogItem[]> {
 }
 
 export const titleOf = async (id: string) => {
+  if (id === 'exploration') return 'Exploration';
   try { return (await loadConfig(id)).title; } catch { return id; }
 };

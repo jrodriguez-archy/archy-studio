@@ -9,7 +9,7 @@ import { ROOT } from '@/lib/templates';
 export const dynamic = 'force-static';
 export const dynamicParams = false;
 
-const DIRS = ['templates', 'fonts', 'library'];
+const DIRS = ['templates', 'fonts', 'library', 'brand-kit'];
 const SCRIPTS = ['scripts/fit.js', 'scripts/edits.js', 'scripts/components.js'];
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg',

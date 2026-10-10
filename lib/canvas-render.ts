@@ -1,7 +1,8 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { cleanEdits, type Edits } from './canvas-shared';
-import { canReplace, isNew, type PieceSource } from './canvas';
+import { brandOf } from './brands';
+import { canReplace, explorationOf, isNew, type PieceSource } from './canvas';
 import { render } from './renderer';
 import { replaceRender, saveRender, storeExport } from './renders';
 
@@ -13,8 +14,11 @@ type Who = { id: string; is_admin: boolean };
 // Render the edited piece at 2x. Copy that does not fit is refused, as in the MCP.
 async function renderEdited(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
   // Nothing blocks a save: the Inspector suggests, the person decides.
-  return render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots: pick(piece, slots), edits: cleanEdits(edits), scale: 2 });
+  return render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots: pick(piece, slots), edits: cleanEdits(edits), scale: 2, exploration: explorationOf(piece) });
 }
+
+// An exploration's new version keeps its HTML and brand (there is no template to read them from).
+const keep = (piece: PieceSource) => (explorationOf(piece) ? { html: piece.html!, brand: brandOf(piece.brand ?? undefined) } : {});
 
 // Only the slots the template has (the client cannot add others).
 function pick(piece: PieceSource, slots: Record<string, string | null>) {
@@ -36,7 +40,7 @@ export async function saveEdited(me: Who, piece: PieceSource, slots: Record<stri
     // A piece started from a template: its own set (like a brief made with Claude), or a format added to one.
     const saved = await saveRender({
       userId: me.id, template: piece.template, format: piece.format, slots: out.slots, png: out.png, width: out.width, height: out.height, scale: 2,
-      source: 'app', setId: set?.id ?? randomUUID(), projectId: set?.projectId ?? null, setTitle: set?.title ?? null, variant: out.variant, design: out.design, theme: out.theme, smallerText: !!piece.smaller_text, edits: clean,
+      source: 'app', setId: set?.id ?? randomUUID(), projectId: set?.projectId ?? null, setTitle: set?.title ?? null, variant: out.variant, design: out.design, theme: out.theme, smallerText: !!piece.smaller_text, edits: clean, ...keep(piece),
     });
     if (!saved) throw new Error('Saving needs the gallery (Supabase) configured.');
     return saved;
@@ -47,7 +51,7 @@ export async function saveEdited(me: Who, piece: PieceSource, slots: Record<stri
   }
   const saved = await saveRender({
     userId: me.id, template: piece.template, format: piece.format, slots: out.slots, png: out.png, width: out.width, height: out.height, scale: 2,
-    source: 'app', projectId: piece.project_id, setId: piece.set_id ?? piece.id, setTitle: piece.set_title, variant: out.variant, design: out.design, theme: out.theme, smallerText: !!piece.smaller_text, edits: clean, parentId: piece.id,
+    source: 'app', projectId: piece.project_id, setId: piece.set_id ?? piece.id, setTitle: piece.set_title, variant: out.variant, design: out.design, theme: out.theme, smallerText: !!piece.smaller_text, edits: clean, parentId: piece.id, ...keep(piece),
   });
   if (!saved) throw new Error('Saving needs the gallery (Supabase) configured.');
   return saved;

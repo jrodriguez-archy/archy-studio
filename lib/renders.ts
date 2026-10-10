@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Edits } from './canvas-shared';
 import { PUBLIC, largePath, previewPath, publicUrl, removeImages, thumbPath } from './images';
 import { supabaseAdmin, supabaseConfigured } from './supabase/admin';
+import type { Brand } from './brands';
 import { templateBrand } from './templates';
 
 export { fileLink, largePath, largeUrl, previewPath, publicUrl, removeImages, thumbPath, thumbUrl } from './images';
@@ -35,6 +36,9 @@ export async function saveRender(input: {
   theme?: string | null;
   edits?: Edits;
   parentId?: string | null;
+  /** Explorations (no template): their brand and the HTML Claude wrote. */
+  brand?: Brand;
+  html?: string;
 }): Promise<SavedRender | null> {
   if (!supabaseConfigured()) return null;
   const db = supabaseAdmin();
@@ -43,9 +47,9 @@ export async function saveRender(input: {
   const path = `${day}/${input.template}/${input.format}-${id}.png`;
   await storeFiles(path, input.png, false);
   const ins = await db.from('renders').insert({
-    id, user_id: input.userId, template: input.template, brand: await templateBrand(input.template), format: input.format, slots: await keepInlineImages(input.userId, input.slots),
+    id, user_id: input.userId, template: input.template, brand: input.brand ?? await templateBrand(input.template), format: input.format, slots: await keepInlineImages(input.userId, input.slots),
     storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp', project_id: input.projectId ?? null, set_id: input.setId ?? null,
-    set_title: input.setTitle ?? null, variant: input.variant ?? null, design: input.design ?? null, theme: input.theme ?? null, smaller_text: input.smallerText ?? false, edits: input.edits ?? {}, parent_id: input.parentId ?? null, edited_at: input.parentId ? new Date().toISOString() : null,
+    set_title: input.setTitle ?? null, variant: input.variant ?? null, design: input.design ?? null, theme: input.theme ?? null, smaller_text: input.smallerText ?? false, edits: input.edits ?? {}, parent_id: input.parentId ?? null, ...(input.html != null ? { html: input.html } : {}), edited_at: input.parentId ? new Date().toISOString() : null,
   });
   if (ins.error) throw new Error(`Could not record the render: ${ins.error.message}`);
   return { id, path, url: await signedUrl(path) };

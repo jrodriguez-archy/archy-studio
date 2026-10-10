@@ -1,6 +1,6 @@
 import 'server-only';
 import { cleanEdits, RECOLOR, type Edits, type Layout, type NodeEdit, type Preset } from './canvas-shared';
-import { loadSet, loadSource, type PieceSource } from './canvas';
+import { explorationOf, loadSet, loadSource, type PieceSource } from './canvas';
 import { saveEdited } from './canvas-render';
 import { iconMarkup, searchIcons } from './icons';
 import { render, type InspectedComp } from './renderer';
@@ -33,7 +33,7 @@ async function findPiece(me: Who, ref?: string): Promise<{ piece: PieceSource; d
 }
 
 async function describe(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
-  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots, edits, inspect: true });
+  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, exploration: explorationOf(piece), slots, edits, inspect: true });
   return { png: out.png, report: out.report, comps: out.inspected!.comps, tokens: out.inspected!.tokens, review: out.inspected!.review };
 }
 
@@ -47,19 +47,23 @@ export async function getCanvas(me: Who, ref?: string) {
   const byId = new Map(d.comps.map((c) => [c.id, c]));
   const depth = (c: InspectedComp): number => (c.parent ? 1 + depth(byId.get(c.parent)!) : 0);
   const lines = d.comps.map((c) => `${'  '.repeat(depth(c))}- ${c.name} [${KIND[c.kind] ?? c.kind} · id ${c.id}]${c.text ? `: "${c.text.replace(/\s+/g, ' ').trim()}"` : ''}${c.layout ? ` (${c.layout})` : ''}${c.slot || c.textSlot ? ' (from the brief)' : ''}${c.hidden ? ' (hidden)' : ''}`);
-  const [config, set, manifest] = await Promise.all([loadConfig(piece.template), loadSet(piece), loadManifest(piece.template)]);
+  const exploration = !!explorationOf(piece);
+  const [config, set, manifest] = await Promise.all([
+    exploration ? { title: `Exploration "${piece.set_title ?? 'untitled'}"` } : loadConfig(piece.template), loadSet(piece), exploration ? null : loadManifest(piece.template),
+  ]);
   const others = set.pieces.filter((p) => p.id !== piece.id);
   return {
     piece, png: d.png,
     text: [
-      `Canvas design ${piece.id}: ${config.title}${comboLine(manifest, piece)}, ${piece.format} ${piece.width}×${piece.height}. Recolour: ${edits[RECOLOR]?.preset ?? 'none (as designed)'}.`,
+      `Canvas design ${piece.id}: ${config.title}${manifest ? comboLine(manifest, piece) : ''}, ${piece.format} ${piece.width}×${piece.height}. Recolour: ${edits[RECOLOR]?.preset ?? 'none (as designed)'}.`,
       ...(others.length ? [`Other formats of this design (same set; each its own canvas id): ${others.map((p) => `${p.format} ${p.id}`).join(', ')}. In Canvas, copy, images, recolour and styles follow between synced formats while it is open; otherwise edit each one.`] : []),
       'Components (refer to them by id, e.g. component: "G5O-1"; a name works when it is unique):',
       ...lines,
       `Brand colours: ${Object.entries(d.tokens).map(([k, v]) => `${k} ${v}`).join(', ')}.`,
       ...(d.review.length ? ['Inspector suggestions (fix them yourself: edit_canvas with fix: "all", or your own change):', ...d.review.map((t) => `- ${t.title}: ${t.detail} [id ${t.id}]`)] : []),
       'Recolour presets: dark, blue, ice, light. Icons: any Hugeicons name or a word to search ("calendar").',
-      ...(manifest.default ? [`This template also comes in other designs (${Object.keys(manifest.designs ?? {}).join(', ')}) and themes (${Object.keys(manifest.themes ?? {}).join(', ')}): those are drawn by render with design/theme, not by a recolour.`] : []),
+      ...(exploration ? ['This is an exploration (composed in the brand kit, no template): every text and image is a layer you change directly. A recolour preset does not repaint a pixel texture; a new ground or layout is a new compose with the same set.'] : []),
+      ...(manifest?.default ? [`This template also comes in other designs (${Object.keys(manifest.designs ?? {}).join(', ')}) and themes (${Object.keys(manifest.themes ?? {}).join(', ')}): those are drawn by render with design/theme, not by a recolour.`] : []),
     ].join('\n'),
   };
 }
@@ -172,7 +176,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
     if (ch.image) {
       if (!/^(asset:|upload:|https:\/\/)/.test(ch.image)) throw new Error('Images are asset:<id> (list_assets), an upload: value or an https URL.');
       // A link is kept in Assets first (a signed link expires; the design must keep opening).
-      const image = await keepLinkedImage(ch.image, { ownerId: me.id, brand: await templateBrand(piece.template).catch(() => 'archy' as const), name: `${c.slot ? c.slot.replace(/^(image|logo)-/, '').replace(/-/g, ' ') : 'image'} (from a link)` });
+      const image = await keepLinkedImage(ch.image, { ownerId: me.id, brand: explorationOf(piece)?.brand ?? await templateBrand(piece.template).catch(() => 'archy' as const), name: `${c.slot ? c.slot.replace(/^(image|logo)-/, '').replace(/-/g, ' ') : 'image'} (from a link)` });
       if (c.slot) slots[c.slot] = image; else edit(c.id, { image });
     }
     const b = edits[c.id]?.box ?? {};
@@ -186,7 +190,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
   }
   // fix: 'all' runs the Inspector's own fixes in the page (several rounds), like Fix all in Canvas.
   if (input.fix === 'all') await working('Fixing the Inspector’s suggestions');
-  const after = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots, edits: cleanEdits(edits), inspect: true, autofix: input.fix === 'all' });
+  const after = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, exploration: explorationOf(piece), slots, edits: cleanEdits(edits), inspect: true, autofix: input.fix === 'all' });
   const final = after.fixed ? after.fixed : edits;
   const fixedCount = after.fixed ? Object.keys(after.fixed).filter((id) => JSON.stringify(after.fixed![id]) !== JSON.stringify(edits[id])).length : 0;
   const tips = after.inspected?.review ?? [];
@@ -208,7 +212,7 @@ export async function saveCanvas(me: Who, ref?: string) {
 
 export async function downloadCanvas(me: Who, ref?: string) {
   const { piece, draft } = await findPiece(me, ref);
-  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits, scale: 2 });
+  const out = await render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, exploration: explorationOf(piece), slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits, scale: 2 });
   return storeExport(out.png, `${piece.template}-${piece.format}.png`);
 }
 

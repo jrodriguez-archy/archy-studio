@@ -1,0 +1,201 @@
+import 'server-only';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import type { Brand } from './brands';
+import type { Edits, FillPlan } from './canvas-shared';
+import { ORIGIN, resolveImage } from './fill';
+import { iconMarkup } from './icons';
+import { ROOT } from './templates';
+
+// Explorations: a design for a brief no template covers, written by Claude as HTML in the brand kit
+// (brand-kit/<brand>/) and drawn by the same renderer. Studio wraps it in the artboard, puts in the real
+// logo, icons, textures and images, and scripts/explore-check.js checks it against the brand. A saved
+// exploration keeps the HTML Claude wrote (renders.html) under the template id "exploration".
+
+export const EXPLORATION = 'exploration';
+export const EXPLORATION_BRANDS: Brand[] = ['archy'];
+export const MAX_HTML = 60_000;
+export const SIZE = { min: 200, max: 4000 };
+
+export const TEXTURES = ['navy', 'deep-blue', 'primary', 'royal-blue', 'sky', 'ice', 'pure-white', 'white', 'mist'] as const;
+
+const kitFile = (brand: Brand, file: string) => path.join(ROOT, 'brand-kit', brand, file);
+const cache = new Map<string, Promise<string>>();
+const read = (file: string) => {
+  if (process.env.NODE_ENV !== 'production') return fs.readFile(file, 'utf8');
+  let p = cache.get(file);
+  if (!p) { p = fs.readFile(file, 'utf8'); cache.set(file, p); }
+  return p;
+};
+
+/** The brand kit Claude reads before composing (get_brand_kit). */
+export async function brandKit(brand: Brand): Promise<string> {
+  if (!EXPLORATION_BRANDS.includes(brand)) throw new Error(`Explorations are for Archy only for now. For ${brand.toUpperCase()}, report the missing template.`);
+  return read(kitFile(brand, 'kit.md'));
+}
+
+const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+// What never belongs in a design: scripts, frames, forms, outside stylesheets and handlers. The page is
+// also cut off from the network (the renderer serves only the kit, the fonts and the resolved images).
+export function sanitize(html: string): string {
+  return html
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<(script|style|iframe|object|embed|form|template|noscript)\b[\s\S]*?<\/\1\s*>/gi, '')
+    .replace(/<\/?(script|style|iframe|object|embed|link|meta|base|form|input|button|textarea|select|template|noscript|html|head|body)\b[^>]*>/gi, '')
+    .replace(/\s(on[a-z]+|srcdoc|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/@import/gi, '')
+    .replace(/expression\s*\(/gi, '(');
+}
+
+export type Composition = {
+  /** The whole page: the artboard with Claude's HTML, the kit's tokens, fonts and pieces filled in. */
+  page: string;
+  /** The image URLs the page may load (the renderer lets only these and the kit through). */
+  images: string[];
+  /** Problems found before drawing (an unknown icon, an image that does not open). */
+  problems: string[];
+};
+
+// The artboard page for one format. `origin` is where the page reads the repo files (the renderer's).
+export async function compose(input: { html: string; width: number; height: number; brand: Brand; title?: string }, origin = ORIGIN): Promise<Composition> {
+  const { width, height, brand } = input;
+  if (!EXPLORATION_BRANDS.includes(brand)) throw new Error(`Explorations are for Archy only for now.`);
+  if (input.html.length > MAX_HTML) throw new Error(`The HTML is ${input.html.length} characters; keep it under ${MAX_HTML}.`);
+  for (const [k, v] of [['width', width], ['height', height]] as const) {
+    if (!Number.isFinite(v) || v < SIZE.min || v > SIZE.max) throw new Error(`The ${k} must be ${SIZE.min}–${SIZE.max} px.`);
+  }
+  const problems: string[] = [];
+  const images = new Set<string>();
+  let html = sanitize(input.html);
+
+  // The logo: the real wordmark, coloured for its ground (white unless data-on="light").
+  const logo = (await read(kitFile(brand, 'logo.svg'))).replace('<svg ', '<svg width="100%" height="100%" preserveAspectRatio="xMinYMid meet" ');
+  html = html.replace(/<(div|span)\b([^>]*\bdata-piece="logo"[^>]*)>\s*<\/\1>/gi, (_m, tag: string, attrs: string) => {
+    const light = /\bdata-on="light"/i.test(attrs);
+    const style = (attrs.match(/\bstyle="([^"]*)"/i)?.[1] ?? '').replace(/(^|;)\s*(height|aspect-ratio|color)\s*:[^;]*/gi, '');
+    const rest = attrs.replace(/\bstyle="[^"]*"/i, '');
+    const name = /\bdata-name=/.test(rest) ? '' : ' data-name="Logo Archy"';
+    return `<${tag}${rest}${name} style="${style}; display: block; aspect-ratio: 18 / 7; flex-shrink: 0; color: ${light ? 'var(--color-royal-blue-500)' : 'var(--color-white)'}">${logo}</${tag}>`;
+  });
+
+  // Icons by their Hugeicons name, stroked in the layer's colour (stroke 1.5, round caps).
+  const iconTags = [...html.matchAll(/<(span|div|i)\b([^>]*\bdata-icon="([A-Za-z0-9]+)"[^>]*)>\s*<\/\1>/g)];
+  for (const [whole, tag, attrs, name] of iconTags) {
+    const inner = await iconMarkup(name);
+    if (!inner) { problems.push(`Unknown icon "${name}" (use a Hugeicons export name, e.g. Calendar03Icon).`); continue; }
+    const svg = `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">${inner.replace(/stroke-width="[^"]*"/g, 'stroke-width="1.5"')}</svg>`;
+    const named = /\bdata-name=/.test(attrs) ? '' : ` data-name="Icon ${name.replace(/Icon$/, '')}"`;
+    html = html.replace(whole, `<${tag}${attrs}${named}>${svg}</${tag}>`);
+  }
+
+  // Images: data-image on a block (its background), or <img src>. asset:, upload: and https values.
+  const resolve = async (v: string) => {
+    if (v.startsWith('placeholder:')) return `${origin}/library/placeholders/${v.slice(12) === 'person' ? 'person' : 'scene'}.png`;
+    if (!/^(asset:|upload:|https:\/\/)/.test(v)) throw new Error(`"${v}" is not an image Studio can open (use asset:<id>, upload:<path> or an https link).`);
+    return resolveImage(EXPLORATION, v, origin);
+  };
+  for (const [whole, before, value, after] of [...html.matchAll(/<([a-z]+\b[^>]*?)\bdata-image="([^"]+)"([^>]*)>/gi)]) {
+    try {
+      const url = await resolve(value.replace(/&amp;/g, '&'));
+      images.add(url);
+      const attrs = `${before}data-image="${value}"${after}`;
+      const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1];
+      const bg = `background-image: url(&quot;${esc(url)}&quot;)`;
+      const next = style != null ? attrs.replace(/\bstyle="([^"]*)"/i, `style="$1; ${bg}"`) : `${attrs} style="${bg}"`;
+      html = html.replace(whole, `<${next}>`);
+    } catch (e) { problems.push((e as Error).message); }
+  }
+  for (const [whole, value] of [...html.matchAll(/<img\b[^>]*?\bsrc="([^"]+)"[^>]*>/gi)]) {
+    try {
+      const url = await resolve(value.replace(/&amp;/g, '&'));
+      images.add(url);
+      html = html.replace(whole, whole.replace(`src="${value}"`, `src="${esc(url)}" data-src="${value}"`));
+    } catch (e) { problems.push((e as Error).message); }
+  }
+  // Any other url() would reach outside the page: only the kit's textures and the images above draw.
+  html = html.replace(/url\(\s*(&quot;|"|'|)(.*?)\1\s*\)/gi, (m, _q: string, u: string) => (images.has(u.replace(/&amp;/g, '&')) ? m : 'none'));
+
+  // Every layer gets an id (the checks, the Inspector and Canvas address layers by it).
+  let n = 0;
+  html = html.replace(/<([a-z][a-z0-9]*)\b(?![^>]*\bdata-node=)/gi, (m, tag: string) => (/^(path|g|circle|rect|line|polyline|polygon|ellipse|defs|clippath|lineargradient|stop|use|mask)$/i.test(tag) ? m : `<${tag} data-node="x${(n++).toString(36)}"`));
+
+  const tokens = await read(kitFile(brand, 'tokens.css'));
+  const textures = TEXTURES.map((t) => `[data-texture="${t}"] { background-image: url("${origin}/brand-kit/${brand}/textures/${t}.png"); background-size: 2000px 2000px; background-position: center; background-repeat: no-repeat; }`).join('\n');
+  const root = `width: ${width}px; height: ${height}px; position: relative; overflow: clip; background: var(--color-white)`;
+  const page = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${esc(input.title ?? 'Exploration')}</title>
+<link rel="stylesheet" href="${origin}/fonts/fonts.css">
+<style>
+${tokens}
+html, body { margin: 0; padding: 0; background: transparent; }
+* { box-sizing: border-box; }
+[data-node="root"], [data-node="root"] * {
+  font-synthesis: none; overflow-wrap: break-word; font-optical-sizing: none;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+[data-node="root"] { font-family: var(--font-body), system-ui, sans-serif; color: var(--color-blue-tint-800); }
+[data-image] { background-repeat: no-repeat; }
+${textures}
+</style>
+</head>
+<body>
+<div data-node="root" data-name="Exploration · ${width}×${height}" style="${root}">
+${html}
+</div>
+</body>
+</html>`;
+  return { page, images: [...images], problems };
+}
+
+// Safe areas of the formats the kit names (brand-kit/<brand>/kit.md); any other size keeps about 7% of
+// its short side.
+const SAFE: Record<string, { x: number; y: number; w: number; h: number }> = {
+  '1080x1350': { x: 105, y: 105, w: 870, h: 1140 },
+  '1080x1080': { x: 105, y: 105, w: 870, h: 870 },
+  '1080x1920': { x: 105, y: 250, w: 870, h: 1420 },
+  '1200x630': { x: 60, y: 54, w: 1080, h: 522 },
+  '1584x396': { x: 72, y: 48, w: 1440, h: 300 },
+  '1200x627': { x: 60, y: 54, w: 1080, h: 519 },
+  '1200x400': { x: 56, y: 48, w: 1088, h: 304 },
+};
+
+/** What the brand check holds one format to (scripts/explore-check.js). */
+export async function checksFor(width: number, height: number, brand: Brand) {
+  const m = Math.max(40, Math.round(Math.min(width, height) * 0.07));
+  const safe = SAFE[`${width}x${height}`] ?? { x: m, y: m, w: width - 2 * m, h: height - 2 * m };
+  const tokens = await read(kitFile(brand, 'tokens.css'));
+  // Every token hex, and the one sanctioned computed tint (the Ruler on royal blue).
+  const palette = [...new Set([...tokens.matchAll(/#[0-9a-f]{6}\b/gi)].map((x) => x[0].toUpperCase()).concat(['#2A5DF6']))];
+  // Type and logo scale with the piece: its width, but a wide, short banner is read like a post as tall as
+  // it is (a 1584×396 banner holds about the type of a 500 px post).
+  const s = Math.min(Math.max(Math.min(width, height * 1.25) / 1080, 0.55), 1.5);
+  return { safe, palette, fonts: ['Onest', 'Inter'], minText: Math.max(14, 18 * s), minLogo: Math.max(96, 160 * s), smallText: 24 * s, maxGap: 160 * s };
+}
+
+// An exploration as a fill plan (lib/fill.ts): the page itself instead of a template file, no slots
+// (all of its copy and images are layers, changed in Canvas as hand edits), and the edited images and
+// icons resolved like a template's.
+export async function explorationPlan(input: { html: string; width: number; height: number; brand?: Brand; format: string; edits: Edits }, origin = ORIGIN): Promise<FillPlan> {
+  const { width, height, format, edits } = input;
+  const comp = await compose({ html: input.html, width, height, brand: input.brand ?? 'archy' }, origin);
+  const imageUrls: Record<string, string> = {};
+  const iconSvgs: Record<string, string> = {};
+  const images = [...new Set(Object.values(edits).map((e) => e.image).filter(Boolean) as string[])];
+  const icons = [...new Set(Object.values(edits).map((e) => e.icon).filter(Boolean) as string[])];
+  await Promise.all([
+    ...images.map(async (i) => { imageUrls[i] = await resolveImage(EXPLORATION, i, origin); }),
+    ...icons.map(async (i) => { const svg = await iconMarkup(i); if (!svg) throw new Error(`Unknown icon: ${i}`); iconSvgs[i] = svg; }),
+  ]);
+  const key = createHash('sha1').update(input.html).digest('hex').slice(0, 12);
+  return {
+    template: EXPLORATION, format, design: null, theme: null, variant: null, slots: {}, placeholders: [],
+    html: `exploration/${format}-${key}`, page: comp.page, width, height,
+    fill: { format, formats: [format], values: {}, rules: { slots: {} }, limits: {} }, imageUrls, iconSvgs,
+  };
+}

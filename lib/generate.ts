@@ -41,18 +41,18 @@ const nearestRatio = (r: number) => MODEL_RATIOS.reduce((a, b) => (Math.abs(Math
 
 export type CopySpace = 'top' | 'bottom' | 'left' | 'right' | 'none';
 const SPACE: Record<CopySpace, string> = {
-  top: 'Frame it so the upper third of the same scene is calm (a plain wall, sky or soft out-of-focus background) and the subject sits low: copy will go on top.',
-  bottom: 'Frame it so the lower third of the same scene is calm (a plain surface or soft out-of-focus foreground) and the subject sits high: copy will go at the bottom.',
-  left: 'Frame it so the left part of the same scene is calm (a plain wall or soft out-of-focus background) and the subject sits on the right: copy will go on the left.',
-  right: 'Frame it so the right part of the same scene is calm (a plain wall or soft out-of-focus background) and the subject sits on the left: copy will go on the right.',
+  top: 'Frame it so the upper third of the same scene is calm (a plain wall, sky or soft out-of-focus background, with no text or signage in it) and the subject sits low: copy will go on top.',
+  bottom: 'Frame it so the lower third of the same scene is calm (a plain surface or soft out-of-focus foreground, with no text in it) and the subject sits high: copy will go at the bottom.',
+  left: 'Frame it so the left part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) and the subject sits on the right: copy will go on the left.',
+  right: 'Frame it so the right part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) and the subject sits on the left: copy will go on the right.',
   none: '',
 };
 
 // Archy's photography for marketing pieces, as the brand describes it, and what a made-up image must
 // never show (a person, a real venue, words, a logo).
-const EXPLORE_GUIDE = `Archy's photography: real-world, natural light, clean and modern, true colours with no filter or heavy grade, calm and uncluttered: a modern dental practice, a city or an everyday object when that is the subject.
+const EXPLORE_GUIDE = `Archy's photography: real-world, natural light, clean and modern, true colours with no filter or heavy grade, calm and uncluttered: a modern dental practice, its team and patients, a city or an everyday object when that is the subject.
 One continuous photograph, edge to edge: no split, collage, panel, border, frame, blur band or empty area added beside it.
-Never: people (no faces, figures or silhouettes; hands only when the prompt asks for them); text, letters, numbers, signage, screens with readable content, logos or watermarks; a specific real venue presented as itself.`;
+People are welcome as generic, natural people (a patient, a team at work, a front desk). Never a specific real person, a logo or a watermark, or a specific real venue presented as itself.`;
 
 /** A PNG at exactly width × height for a frame of an exploration. */
 export async function generateForFrame(input: { prompt: string; width: number; height: number; copySpace?: CopySpace; brand?: Brand }): Promise<Buffer> {

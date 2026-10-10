@@ -91,6 +91,10 @@
     for (const l of logos) {
       const b = l.getBoundingClientRect();
       if (!b.width || !b.height) { err(l, 'logo', 'The Archy logo has no size: give it a width.'); continue; }
+      // The logo keeps clear of the copy: no text within a tenth of its height.
+      const pad = b.height * 0.1, clear = { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad };
+      const near = runs.find((t) => !l.contains(t.el) && t.lines.some((ln) => area(ln, clear) > 6));
+      if (near) err(l, 'overlap', `The Archy logo touches "${near.text.slice(0, 30)}": give it room (at least a tenth of its height all around).`);
       if (!inside(b, R)) err(l, 'logo', 'The Archy logo runs off the artboard.');
       else if (!inside(b, safe, 2)) warn(l, 'safe-area', 'The Archy logo is outside the safe area.');
       if (b.width < opts.minLogo) warn(l, 'logo', `The Archy logo is ${Math.round(b.width)} px wide; at least ${Math.round(opts.minLogo)} on this format.`);
@@ -122,14 +126,70 @@
 
     // A hole in the layout: the largest empty band between the blocks, top to bottom (portrait and square
     // pieces; a wide banner leaves room on purpose). Big type fills a piece better than air.
-    if (R.height >= R.width * 0.8) {
+    // A piece whose photo fills it is image-led: its open space is the photo, not a hole.
+    const imageLed = [...r.querySelectorAll('[data-image], img')].some((p) => {
+      const k = p.getAttribute('data-kind'), b = p.getBoundingClientRect();
+      return k !== 'tone' && k !== 'cutout' && !p.closest('[data-piece]') && b.left <= R.left + 2 && b.top <= R.top + 2 && b.right >= R.right - 2 && b.bottom >= R.bottom - 2;
+    });
+    if (R.height >= R.width * 0.8 && !imageLed) {
       const blocks = [...runs.map((t) => t.box), ...logos.map((l) => l.getBoundingClientRect()), ...[...r.querySelectorAll('[data-icon], [data-image], img')].map((e) => e.getBoundingClientRect())]
         .filter((b) => b.width && b.height && b.width * b.height < R.width * R.height * 0.85 && b.bottom > safe.top && b.top < safe.bottom)
         .sort((a, b) => a.top - b.top);
       let end = safe.top, gap = 0, at = null;
       for (const b of blocks) { if (b.top - end > gap) { gap = b.top - end; at = end; } end = Math.max(end, b.bottom); }
       if (safe.bottom - end > gap) { gap = safe.bottom - end; at = end; }
-      if (gap > Math.max(opts.maxGap, (safe.bottom - safe.top) * 0.22)) warn(null, 'empty', `About ${Math.round(gap)} px of empty space from y ${Math.round(at - R.top)}: the layout reads as a hole. Make the type bigger or spread the blocks over the format (two anchors, the gaps absorb the rest).`);
+      const room = safe.bottom - safe.top;
+      const hole = `About ${Math.round(gap)} px of empty space from y ${Math.round(at - R.top)}: the layout reads as a hole. Without an image the type is the design: make the headline bigger so it holds the centre, or spread the blocks over the format (two anchors, the gaps absorb the rest).`;
+      if (gap > Math.max(opts.maxGap, room * opts.holeError)) err(null, 'empty', hole);
+      else if (gap > Math.max(opts.maxGap, room * opts.holeWarn)) warn(null, 'empty', hole);
+    }
+
+    // Photos: a generated image is the subject and fills the artboard; a large photo does not stop across
+    // the piece without blending into it; a Pixel Tone photo is a texture behind type, not a band.
+    const photos = [...r.querySelectorAll('[data-image], img')].filter((p) => !p.closest('[data-piece]'));
+    const fills = (b) => b.left <= R.left + 2 && b.top <= R.top + 2 && b.right >= R.right - 2 && b.bottom >= R.bottom - 2;
+    const gradientOver = (photo, x, y) => {
+      const stack = document.elementsFromPoint(x, y);
+      const i = stack.indexOf(photo);
+      return stack.slice(0, i < 0 ? stack.length : i).some((e) => /gradient\(/.test(getComputedStyle(e).backgroundImage) && !e.hasAttribute('data-image'));
+    };
+    for (const p of photos) {
+      const b = p.getBoundingClientRect();
+      if (!b.width || !b.height) continue;
+      const kind = p.getAttribute('data-kind');
+      const big = (b.width * b.height) / (R.width * R.height) >= opts.bigPhoto;
+      if (kind === 'generated' && !fills(b)) { err(p, 'image-subject', `${nameOf(p)} is a generated image that does not fill the artboard: in a piece with an image, the image is the subject. Run it full-bleed (left 0, top 0, the artboard's width and height) and set the copy on its calm part with a scrim.`); continue; }
+      if (kind === 'tone' && !fills(b) && big) warn(p, 'tone', `${nameOf(p)} is a Pixel Tone photo used as a band: Pixel Tone is a quiet texture behind type (the whole artboard or a block's ground), not a picture to look at.`);
+      if (!big || fills(b) || kind === 'cutout') continue;
+      // Each side that stops inside the artboard needs a gradient over it (a fade into the ground).
+      const sides = [['top', b.top > R.top + 2, (k) => [b.left + (b.width * k) / 4, b.top + 3]], ['bottom', b.bottom < R.bottom - 2, (k) => [b.left + (b.width * k) / 4, b.bottom - 3]],
+        ['left', b.left > R.left + 2, (k) => [b.left + 3, b.top + (b.height * k) / 4]], ['right', b.right < R.right - 2, (k) => [b.right - 3, b.top + (b.height * k) / 4]]];
+      const cut = sides.filter(([, inside, at]) => inside && ![1, 2, 3].every((k) => gradientOver(p, ...at(k)))).map(([side]) => side);
+      if (cut.length) err(p, 'photo-edge', `${nameOf(p)} stops across the piece (${cut.join(', ')} edge) with a hard line: run it to the edge, or blend that edge into the ground with a scrim (a gradient from the ground colour to transparent).`);
+    }
+
+    // Text over a photo sits on a scrim (a gradient from the colour opposite the text to transparent) or
+    // on a solid block (a pill, a button); a Pixel Tone texture is quiet enough on its own.
+    for (const t of runs) {
+      const { el, box } = t;
+      const pts = [[0.5, 0.5], [0.15, 0.3], [0.85, 0.3], [0.15, 0.7], [0.85, 0.7]].map(([fx, fy]) => [box.left + box.width * fx, box.top + box.height * fy]);
+      const bare = pts.some(([x, y]) => {
+        if (x < R.left || y < R.top || x > R.right || y > R.bottom) return false;
+        const stack = document.elementsFromPoint(x, y);
+        let i = stack.findIndex((e) => e === el || el.contains(e));
+        if (i < 0) i = 0;
+        for (const e of stack.slice(i + 1)) {
+          if (e === r) return false;
+          if (e.hasAttribute('data-image') || e.tagName === 'IMG') return e.getAttribute('data-kind') !== 'tone' && !e.closest('[data-piece]');
+          const cs = getComputedStyle(e);
+          if (/gradient\(/.test(cs.backgroundImage)) return false;
+          const bg = rgb(cs.backgroundColor);
+          if (bg && bg[3] > 0.85 && !e.contains(el)) return false;
+          if (bg && bg[3] > 0.85 && e.contains(el) && e !== r) return false;
+        }
+        return false;
+      });
+      if (bare) err(el, 'scrim', `"${t.text.slice(0, 40)}" sits on a photo without a scrim. Put a gradient behind the copy, from the colour opposite the text to transparent, toward where the copy is (white behind dark text, var(--color-blue-tint-800) behind white text), covering the copy and running to that edge of the artboard.`);
     }
 
     const texts = runs.map((t) => ({ layer: nameOf(t.el), text: t.text.slice(0, 60), box: rel(t.box, R), color: rgb(t.cs.color), size: parseFloat(t.cs.fontSize) }));

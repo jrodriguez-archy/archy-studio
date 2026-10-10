@@ -5,6 +5,8 @@ import path from 'node:path';
 import type { Brand } from './brands';
 import type { Edits, FillPlan } from './canvas-shared';
 import { ORIGIN, resolveImage } from './fill';
+import { findAsset } from './asset-ids';
+import { getAsset } from './assets';
 import { iconMarkup } from './icons';
 import { ROOT } from './templates';
 
@@ -45,6 +47,8 @@ export function sanitize(html: string): string {
     .replace(/<(script|style|iframe|object|embed|form|template|noscript)\b[\s\S]*?<\/\1\s*>/gi, '')
     .replace(/<\/?(script|style|iframe|object|embed|link|meta|base|form|input|button|textarea|select|template|noscript|html|head|body)\b[^>]*>/gi, '')
     .replace(/\s(on[a-z]+|srcdoc|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    // What an image is (generated, Pixel Tone) is read from Assets, never taken from the HTML.
+    .replace(/\sdata-kind\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
     .replace(/javascript:/gi, '')
     .replace(/@import/gi, '')
     .replace(/expression\s*\(/gi, '(');
@@ -91,6 +95,19 @@ export async function compose(input: { html: string; width: number; height: numb
     html = html.replace(whole, `<${tag}${attrs}${named}>${svg}</${tag}>`);
   }
 
+  // Pixel Dissolve and Pixels Behind (Archy - Brand › Textures › Pixel Effects): the grain as square cells
+  // in brand tokens, drawn over a person's lower body (dissolve) or behind a tight headshot (behind).
+  html = html.replace(/<(div|span)\b([^>]*\bdata-piece="(pixel-dissolve|pixels-behind)"[^>]*)>\s*<\/\1>/gi, (_m, tag: string, attrs: string, kind: string) => {
+    const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1] ?? '';
+    const px = (k: string) => Number(style.match(new RegExp(`(?:^|;)\\s*${k}\\s*:\\s*([\\d.]+)px`, 'i'))?.[1]);
+    const w = px('width'), h = px('height');
+    if (!w || !h) { problems.push(`The ${kind} needs a width and a height in px.`); return ''; }
+    const ground = (attrs.match(/\bdata-ground="([a-z-]+)"/i)?.[1] ?? 'royal') as keyof typeof CELL_COLOURS;
+    const cell = Number(attrs.match(/\bdata-cell="([\d.]+)"/i)?.[1]) || (kind === 'pixels-behind' ? 16 : 8);
+    const name = /\bdata-name=/.test(attrs) ? '' : ` data-name="${kind === 'pixel-dissolve' ? 'Pixel Dissolve' : 'Pixels Behind'}"`;
+    return `<${tag}${attrs}${name}>${cells(kind as 'pixel-dissolve' | 'pixels-behind', w, h, cell, CELL_COLOURS[ground] ?? CELL_COLOURS.royal)}</${tag}>`;
+  });
+
   // Images: data-image on a block (its background), or <img src>. asset:, upload: and https values.
   const resolve = async (v: string) => {
     if (v.startsWith('placeholder:')) return `${origin}/library/placeholders/${v.slice(12) === 'person' ? 'person' : 'scene'}.png`;
@@ -101,7 +118,9 @@ export async function compose(input: { html: string; width: number; height: numb
     try {
       const url = await resolve(value.replace(/&amp;/g, '&'));
       images.add(url);
-      const attrs = `${before}data-image="${value}"${after}`;
+      // Generated images and Pixel Tone photos are marked: the checks hold them to their own rules.
+      const kind = await imageKind(value);
+      const attrs = `${before}data-image="${value}"${kind ? ` data-kind="${kind}"` : ''}${after}`;
       const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1];
       const bg = `background-image: url(&quot;${esc(url)}&quot;)`;
       const next = style != null ? attrs.replace(/\bstyle="([^"]*)"/i, `style="$1; ${bg}"`) : `${attrs} style="${bg}"`;
@@ -175,7 +194,55 @@ export async function checksFor(width: number, height: number, brand: Brand) {
   // Type and logo scale with the piece: its width, but a wide, short banner is read like a post as tall as
   // it is (a 1584×396 banner holds about the type of a 500 px post).
   const s = Math.min(Math.max(Math.min(width, height * 1.25) / 1080, 0.55), 1.5);
-  return { safe, palette, fonts: ['Onest', 'Inter'], minText: Math.max(14, 18 * s), minLogo: Math.max(96, 160 * s), smallText: 24 * s, maxGap: 160 * s };
+  return { safe, palette, fonts: ['Onest', 'Inter'], minText: Math.max(14, 18 * s), minLogo: Math.max(96, 160 * s), smallText: 24 * s, maxGap: 160 * s, holeWarn: 0.22, holeError: 0.3, bigPhoto: 0.25 };
+}
+
+// What a team image is, for the checks: an AI image (generated), a Pixel Tone photo (tone) or a person
+// without background (cutout: it has no edge to cut across the piece).
+async function imageKind(v: string): Promise<'generated' | 'tone' | 'cutout' | null> {
+  if (v === 'placeholder:person') return 'cutout';
+  if (!v.startsWith('asset:')) return null;
+  const hit = await findAsset(v.slice(6)).catch(() => null);
+  const a = hit ? await getAsset(hit.id).catch(() => null) : null;
+  if (!a) return null;
+  if (a.kind === 'generated') return 'generated';
+  if (a.kind === 'cutout') return 'cutout';
+  return a.kind === 'pixel' && /tone/i.test(a.name) ? 'tone' : null;
+}
+
+// The cell colours per ground, as in Paper: light blues on blue and dark grounds, darks on light ones.
+// For Pixels Behind the first is the lowest (darkest) band.
+const CELL_COLOURS = {
+  royal: ['--color-blue-tint-300', '--color-white', '--color-sky-blue-400', '--color-blue-tint-200'],
+  primary: ['--color-blue-tint-300', '--color-white', '--color-sky-blue-400', '--color-blue-tint-200'],
+  navy: ['--color-royal-blue-500', '--color-sky-blue-400', '--color-blue-tint-300', '--color-white'],
+  sky: ['--color-blue-tint-800', '--color-royal-blue-500', '--color-blue-tint-200', '--color-white'],
+  ice: ['--color-blue-tint-800', '--color-royal-blue-500', '--color-sky-blue-400', '--color-blue-tint-300'],
+};
+
+// Whole square cells anchored to the bottom edge (the bleed): sparse at the top of the band, denser toward
+// the bottom. A fixed pseudo-random pattern, so the same piece always draws the same cells.
+function cells(kind: 'pixel-dissolve' | 'pixels-behind', w: number, h: number, cell: number, colours: string[]): string {
+  const cols = Math.ceil(w / cell), rows = Math.floor(h / cell);
+  const rand = (x: number, y: number, k: number) => { const v = Math.sin(x * 127.1 + y * 311.7 + k * 74.7) * 43758.5453; return v - Math.floor(v); };
+  const out: string[] = [];
+  for (let r = 0; r < rows; r++) {
+    const f = 1 - r / Math.max(1, rows); // r = 0 is the bottom row
+    const density = kind === 'pixel-dissolve' ? Math.pow(f, 1.6) : Math.min(1, Math.pow(f, 1.1) * 1.15);
+    for (let c = 0; c < cols; c++) {
+      if (rand(c, r, 1) > density) continue;
+      let colour: string;
+      if (kind === 'pixels-behind') {
+        // Three bands, darkest lowest, with a little mixing at their edges.
+        const band = Math.min(2, Math.floor((1 - f) * 3 + (rand(c, r, 2) - 0.5) * 0.6));
+        colour = colours[Math.max(0, band)];
+      } else {
+        colour = colours[Math.floor(rand(c, r, 3) * colours.length)];
+      }
+      out.push(`<rect x="${c * cell}" y="${h - (r + 1) * cell}" width="${cell}" height="${cell}" fill="var(${colour})"/>`);
+    }
+  }
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg" style="display:block">${out.join('')}</svg>`;
 }
 
 // An exploration as a fill plan (lib/fill.ts): the page itself instead of a template file, no slots

@@ -1,5 +1,11 @@
 # Changelog
 
+## archy-studio 0.20.0 (2026-10-10)
+
+- Studio's version is in the account menu and opens **What's new**, a Docs page with each version's news in plain words (`lib/whats-new.ts`, added with each release).
+- **Update** in the sidebar: when a newer deploy is out while Studio is open, a button above the sidebar's foot reloads into it (`/api/version`, checked on returning to the tab and every 10 minutes).
+- Brand kit: the product card example uses a crop that exists (`appointment-details`).
+
 ## archy-studio 0.19.0 (2026-10-09)
 
 - **Explorations**: when no template fits (or someone asks to explore), Claude designs a new Archy piece in the brand kit with `get_brand_kit` and `compose`. It uses the real logo, Onest and Inter, the brand colours, pixel gradients, Archy's product screens and the mascot, and Studio checks it against the brand before saving. Explorations are labelled Exploration in the gallery and open in Canvas like any design.

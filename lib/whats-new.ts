@@ -6,6 +6,13 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.20.0', date: '2026-10-10', title: 'What’s new and Update',
+    notes: [
+      'Your Studio version is in the account menu; it opens this page.',
+      'When a new version is out while Studio is open, Update appears in the sidebar: one click and you are on it.',
+    ],
+  },
+  {
     version: '0.19.0', date: '2026-10-09', title: 'Explorations',
     notes: [
       'When no template fits, Claude designs a new piece in the brand: the real logo, fonts and colours, pixel gradients, the product and the mascot.',

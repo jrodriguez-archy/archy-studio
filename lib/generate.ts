@@ -41,8 +41,8 @@ const nearestRatio = (r: number) => MODEL_RATIOS.reduce((a, b) => (Math.abs(Math
 
 export type CopySpace = 'top' | 'bottom' | 'left' | 'right' | 'none';
 const SPACE: Record<CopySpace, string> = {
-  top: 'Frame it so the upper third of the same scene is calm (a plain wall, sky or soft out-of-focus background, with no text or signage in it), with the subjects large in the lower two thirds, starting right under it: copy will go on top.',
-  bottom: 'Frame it so the lower third of the same scene is calm (a plain surface or soft out-of-focus foreground, with no text in it), with the subjects large in the upper two thirds: copy will go at the bottom.',
+  top: 'Frame it so the upper third of the same scene is calm (a plain wall, sky, the plain backdrop or a soft out-of-focus background, with no text or signage in it), with the subjects large in the lower two thirds, starting right under it: copy will go on top.',
+  bottom: 'Frame it so the lower third of the same scene is calm (the plain backdrop, a plain surface or a soft out-of-focus foreground, with no text in it), with the subjects large in the upper two thirds: copy will go at the bottom.',
   left: 'Frame it so the left part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) with the subjects large on the right: copy will go on the left.',
   right: 'Frame it so the right part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) with the subjects large on the left: copy will go on the right.',
   none: '',
@@ -50,7 +50,7 @@ const SPACE: Record<CopySpace, string> = {
 
 // Archy's photography for marketing pieces, as the brand describes it, and what a made-up image must
 // never show (a person, a real venue, words, a logo).
-const EXPLORE_GUIDE = `Art direction: editorial, magazine-quality photography, realistic. A clear subject, large and close to the camera, and a real moment: something is happening (a hygienist showing a patient something on a tablet, hands checking in at a front desk, a team laughing over a schedule). Shallow depth of field, a considered composition, directional natural light. Never an empty room, a lone object with nothing happening, or a stock-photo pose. If the request only names an object or a place, build a human moment around it, unless it says there are no people.
+const EXPLORE_GUIDE = `Art direction: editorial, magazine-quality photography, realistic. A clear subject, large and close to the camera, and a real moment: something is happening (a hygienist showing a patient something on a tablet, hands checking in at a front desk, a team laughing over a schedule). Shallow depth of field, a considered composition, directional natural light. Never an empty room or a stock-photo pose. A place or an everyday object alone gets a human moment built around it, unless the request says there are no people. A studio still life (a sculpted prop or a product on a seamless coloured backdrop, lit like an advertising shot) is its own subject: make it exactly as described, with no people, no room and nothing added.
 Archy's look: a modern dental practice, its team and patients, a city or an everyday object; clean and modern, true colours with no filter or heavy grade.
 One continuous photograph, edge to edge: no split, collage, panel, border, frame, blur band or empty area added beside it.
 People are welcome as generic, natural people. Never a specific real person, a logo or a watermark (devices and products show no brand marks), or a specific real venue presented as itself.`;

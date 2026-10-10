@@ -338,7 +338,7 @@
         }
         return false;
       });
-      if (bare) err(el, 'scrim', `"${t.text.slice(0, 40)}" sits on a photo without a scrim. Put a gradient behind the copy, from the colour opposite the text to transparent, toward where the copy is (white behind dark text, var(--color-blue-tint-800) behind white text), covering the copy and running to that edge of the artboard.`);
+      if (bare) err(el, 'scrim', `"${t.text.slice(0, 40)}" sits on a photo without a scrim. Put a gradient behind the copy, from the colour opposite the text to transparent, toward where the copy is (white behind dark text, var(--color-blue-tint-800) behind white text), covering the copy (a calm, even part of the image that reads well needs none: the copy only touches it).`);
     }
 
     const texts = runs.map((t) => ({ layer: nameOf(t.el), text: t.text.slice(0, 60), box: rel(t.box, R), color: rgb(t.cs.color), size: parseFloat(t.cs.fontSize) }));

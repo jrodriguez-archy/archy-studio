@@ -134,14 +134,20 @@ export async function storeExport(png: Buffer, name: string): Promise<string> {
 const SET_WINDOW_MS = 30 * 60 * 1000;
 const KEY_SLOTS = ['event-name', 'kicker', 'headline', 'headline-1', 'speaker-name', 'name', 'city'];
 
+/** The set an answer asked Claude to pass back: kept when it is this person's, or when nothing was saved
+ *  in it yet (every format was refused, so the id only lives in that answer). Someone else's set is not. */
+export async function keepSet(requested: string | null | undefined, userId: string | null): Promise<string | null> {
+  if (!requested || !/^[0-9a-f-]{36}$/i.test(requested) || !supabaseConfigured()) return null;
+  const { data } = await supabaseAdmin().from('renders').select('user_id').eq('set_id', requested).limit(50);
+  if (!data?.length) return requested;
+  return data.some((r) => r.user_id === userId) ? requested : null;
+}
+
 export async function resolveSet(input: { userId: string | null; template: string; slots: Record<string, string | null>; requested?: string | null }): Promise<string> {
   if (!supabaseConfigured()) return randomUUID();
   const db = supabaseAdmin();
-  if (input.requested && /^[0-9a-f-]{36}$/i.test(input.requested)) {
-    let q = db.from('renders').select('id').eq('set_id', input.requested).limit(1);
-    q = input.userId ? q.eq('user_id', input.userId) : q.is('user_id', null);
-    if ((await q).data?.length) return input.requested;
-  }
+  const kept = await keepSet(input.requested, input.userId);
+  if (kept) return kept;
   const since = new Date(Date.now() - SET_WINDOW_MS).toISOString();
   let q = db.from('renders').select('set_id, slots').eq('template', input.template).is('archived_at', null).gte('created_at', since).order('created_at', { ascending: false }).limit(20);
   q = input.userId ? q.eq('user_id', input.userId) : q.is('user_id', null);

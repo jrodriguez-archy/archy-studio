@@ -1,5 +1,11 @@
 # Changelog
 
+## archy-studio 0.20.1 (2026-10-10)
+
+- Explorations, `generate_image`: when the object is the idea (a giant prop, a product), a studio still life on a seamless colour backdrop stays as described, with no people or room added ("studio still life, no people" in the prompt).
+- Explorations: copy on a calm, even part of the image that already reads (the inside of an open mouth, a clear dark sky) needs no scrim; copy that touches anything else still does.
+- `compose` and `render`: a set id from an answer whose formats were all refused is kept on the next try, so the gallery stacks the retry with the brief.
+
 ## archy-studio 0.20.0 (2026-10-10)
 
 - Studio's version is in the account menu and opens **What's new**, a Docs page with each version's news in plain words (`lib/whats-new.ts`, added with each release).

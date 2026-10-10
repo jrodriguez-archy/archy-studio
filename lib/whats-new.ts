@@ -6,6 +6,12 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.20.3', date: '2026-10-10', title: 'Resize the side panels',
+    notes: [
+      'Drag the edge of the sidebar, or of a design’s details panel, to make it a little wider or narrower. Double-click the edge to put it back.',
+    ],
+  },
+  {
     version: '0.20.2', date: '2026-10-10', title: 'Edit explorations in Canvas',
     notes: [
       'In Canvas, an exploration’s headline, texts and photo can be edited like a template’s: change the copy, size or colour, or replace the photo.',

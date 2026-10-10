@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.20.3 (2026-10-10)
+
+- Sidebar and the Gallery / Templates detail panel can be made a little wider or narrower by dragging their edge (sidebar 228–320 px, kept in a cookie so the first paint has it; detail panel 280–460 px on desktop). Double-click resets. The line shows in a soft blue grey. The Canvas panels share the same handle (`components/resizable.tsx`).
+
 ## archy-studio 0.20.2 (2026-10-10)
 
 - Explorations: a calm, even part of the image counts as the copy's scrim at the contrast the text's size needs (3:1 for large text, 4.5:1 for small), so large copy on a plain colour floor needs no scrim.

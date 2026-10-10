@@ -219,7 +219,7 @@ export async function renderComposition({ page: html, images, width, height, sca
     });
     await page.addScriptTag({ content: exploreJs });
     const seen = (await page.evaluate((o) => (window as unknown as { __exploreCheck: (o: unknown) => unknown }).__exploreCheck(o), checks)) as {
-      errors: ExploreIssue[]; warnings: ExploreIssue[]; texts: { layer: string; text: string; box: { x: number; y: number; w: number; h: number }; color: number[] | null; size: number }[];
+      errors: ExploreIssue[]; warnings: ExploreIssue[]; texts: SeenText[];
     };
     const artboard = page.locator('body > [data-node="root"]');
     // Contrast on the pixels behind each text: the text drawn transparent, the ground read where it sits.
@@ -231,7 +231,10 @@ export async function renderComposition({ page: html, images, width, height, sca
     // A calm, even part of the photo that already reads (a dark sky, the inside of a mouth) is its own scrim.
     const onCalm = (e: ExploreIssue) => e.code === 'scrim' && calm.some((t) => t.layer === e.layer && e.message.includes(`"${t.text.slice(0, 40)}"`));
     const errors = [...seen.errors.filter((e) => !onCalm(e)), ...contrast];
-    return { png, report: { ok: errors.length === 0, errors, warnings: seen.warnings } as ExploreReport };
+    // A headline set in a calm area of the photo is as big as that area allows, not its column.
+    const calmLayers = new Set(seen.errors.filter(onCalm).map((e) => e.layer));
+    const warnings = seen.warnings.filter((w) => !(w.code === 'headline-room' && calmLayers.has(w.layer)));
+    return { png, report: { ok: errors.length === 0, errors, warnings } as ExploreReport };
   } finally {
     await context.close();
   }
@@ -239,8 +242,10 @@ export async function renderComposition({ page: html, images, width, height, sca
 
 // WCAG contrast of each text against the ground under it, at its worst tenth (a photo or a texture is
 // not one colour). Under 3:1 is refused; small text needs 4.5:1. `calm`: the texts whose ground is even
-// (its light and dark tenths within 1.5:1) and reads at its size's contrast at its worst.
-type SeenText = { layer: string; text: string; box: { x: number; y: number; w: number; h: number }; color: number[] | null; size: number };
+// (all but its lightest and darkest 2% within 2:1: a soft gradient is calm, a tooth or an edge is not) and
+// reads at its size's contrast at its worst.
+type Box = { x: number; y: number; w: number; h: number };
+type SeenText = { layer: string; text: string; box: Box; lines?: Box[]; color: number[] | null; size: number };
 async function contrastIssues(png: Buffer, texts: SeenText[], width: number, smallText: number): Promise<{ issues: ExploreIssue[]; calm: SeenText[] }> {
   const sharp = (await import('sharp')).default;
   const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -269,9 +274,18 @@ async function contrastIssues(png: Buffer, texts: SeenText[], width: number, sma
     const ratios = ground.map((c) => { const lg = lum(c[0], c[1], c[2]); return (Math.max(li, lg) + 0.05) / (Math.min(li, lg) + 0.05); }).sort((x, y) => x - y);
     const worst = ratios[Math.floor(ratios.length * 0.1)];
     const need = t.size < smallText ? 4.5 : 3;
-    const lums = ground.map((c) => lum(c[0], c[1], c[2])).sort((x, y) => x - y);
-    const lo = lums[Math.floor(lums.length * 0.1)], hi = lums[Math.floor(lums.length * 0.9)];
-    if ((hi + 0.05) / (lo + 0.05) < 1.5 && worst >= need) calm.push(t);
+    // Calm is read under the lines' letters (not the corners of a ragged block), at a finer step.
+    const lums: number[] = [];
+    for (const b of t.lines?.length ? t.lines : [t.box]) {
+      const lx0 = Math.max(0, Math.floor(b.x * k)), ly0 = Math.max(0, Math.floor(b.y * k));
+      const lx1 = Math.min(info.width, Math.ceil((b.x + b.w) * k)), ly1 = Math.min(info.height, Math.ceil((b.y + b.h) * k));
+      const st = Math.max(1, Math.round(Math.sqrt(((lx1 - lx0) * (ly1 - ly0)) / 3000)));
+      for (let y = ly0; y < ly1; y += st) for (let x = lx0; x < lx1; x += st) { const i = (y * info.width + x) * 3; lums.push(lum(data[i], data[i + 1], data[i + 2])); }
+    }
+    lums.sort((x, y) => x - y);
+    // Nearly all of it: a few teeth or an edge under a line of copy make it not calm.
+    const lo = lums[Math.floor(lums.length * 0.02)], hi = lums[Math.min(lums.length - 1, Math.floor(lums.length * 0.98))];
+    if ((hi + 0.05) / (lo + 0.05) < 2 && worst >= need) calm.push(t);
     if (worst < need && t.size === 999) out.push({ layer: t.layer, code: 'contrast', message: `The Archy logo is hard to see: contrast ${worst.toFixed(1)}:1 with what is behind it (needs 3:1). Use data-on="light" on a light ground, or move it onto a solid area or a shade.` });
     else if (worst < need) out.push({ layer: t.layer, code: 'contrast', message: `"${t.text.slice(0, 40)}" is hard to read: contrast ${worst.toFixed(1)}:1 with what is behind it (needs ${need}:1). Change its colour, or put it on a solid ground or a shade.` });
   }

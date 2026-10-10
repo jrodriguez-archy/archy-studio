@@ -2,6 +2,12 @@
 
 ## archy-studio 0.20.3 (2026-10-10)
 
+- Explorations: everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format; when a change would read better, Claude proposes it next to the full version instead of dropping an element.
+- Explorations: a calm part of the image is read under each line's letters and must be calm almost everywhere, so copy that touches the teeth, an edge or a detail needs a scrim even when that detail is small; a soft gradient still counts as calm.
+- Explorations: no "headline has room to grow" for a headline set in a calm area of the photo (the area bounds it, not its column).
+
+## archy-studio 0.20.3 (2026-10-10)
+
 - Sidebar and the Gallery / Templates detail panel can be made a little wider or narrower by dragging their edge (sidebar 228–320 px, kept in a cookie so the first paint has it; detail panel 280–460 px on desktop). Double-click resets. The line shows in a soft blue grey. The Canvas panels share the same handle (`components/resizable.tsx`).
 
 ## archy-studio 0.20.2 (2026-10-10)

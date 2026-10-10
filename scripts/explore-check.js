@@ -341,7 +341,9 @@
       if (bare) err(el, 'scrim', `"${t.text.slice(0, 40)}" sits on a photo without a scrim. Put a gradient behind the copy, from the colour opposite the text to transparent, toward where the copy is (white behind dark text, var(--color-blue-tint-800) behind white text), covering the copy (a calm, even part of the image that reads well needs none: the copy only touches it).`);
     }
 
-    const texts = runs.map((t) => ({ layer: nameOf(t.el), text: t.text.slice(0, 60), box: rel(t.box, R), color: rgb(t.cs.color), size: parseFloat(t.cs.fontSize) }));
+    // Each line's body (what its letters cover), for where the copy actually touches the image.
+    const texts = runs.map((t) => ({ layer: nameOf(t.el), text: t.text.slice(0, 60), box: rel(t.box, R), color: rgb(t.cs.color), size: parseFloat(t.cs.fontSize),
+      lines: t.lines.map((ln) => { const b = body(ln, t.cs); return { x: Math.round(b.left - R.left), y: Math.round(b.top - R.top), w: Math.round(b.right - b.left), h: Math.round(b.bottom - b.top) }; }) }));
     // The logo reads like large text against what is behind it.
     for (const l of logos) { const b = l.getBoundingClientRect(); if (b.width) texts.push({ layer: nameOf(l), text: 'the Archy logo', box: rel(b, R), color: rgb(getComputedStyle(l).color), size: 999 }); }
     return { errors, warnings, texts };

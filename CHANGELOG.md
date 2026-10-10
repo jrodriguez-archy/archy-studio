@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.20.4 (2026-10-10)
+
+- Downloads are named by project, design, format and size: `<project>-<design>-<format>-<width>x<height>.png`, and the ZIP `<project>-<design>.zip` (`lib/file-names.ts`). The design's name is the one the gallery shows (the ZIP used the template's), and a single PNG no longer saves under its storage id.
+
 ## archy-studio 0.20.3 (2026-10-10)
 
 - Sidebar and the Gallery / Templates detail panel can be made a little wider or narrower by dragging their edge (sidebar 228–320 px, kept in a cookie so the first paint has it; detail panel 280–460 px on desktop). Double-click resets. The line shows in a soft blue grey. The Canvas panels share the same handle (`components/resizable.tsx`).

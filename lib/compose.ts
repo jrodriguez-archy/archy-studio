@@ -221,9 +221,21 @@ export async function compose(input: { html: string; width: number; height: numb
   // inside the page (the mascot's gradients) draw.
   html = html.replace(/url\(\s*(&quot;|"|'|)(.*?)\1\s*\)/gi, (m, _q: string, u: string) => (u.startsWith('#') || images.has(u.replace(/&amp;/g, '&')) ? m : 'none'));
 
-  // Every layer gets an id (the checks, the Inspector and Canvas address layers by it).
+  // Every layer gets an id (the checks, the Inspector and Canvas address layers by it). A line break is
+  // not a layer (it still counts, so ids stay what they were for pieces already edited in Canvas).
   let n = 0;
-  html = html.replace(/<([a-z][a-z0-9]*)\b(?![^>]*\bdata-node=)/gi, (m, tag: string) => (/^(path|g|circle|rect|line|polyline|polygon|ellipse|defs|clippath|lineargradient|stop|use|mask)$/i.test(tag) ? m : `<${tag} data-node="x${(n++).toString(36)}"`));
+  html = html.replace(/<([a-z][a-z0-9]*)\b(?![^>]*\bdata-node=)/gi, (m, tag: string) => {
+    if (/^br$/i.test(tag)) { n++; return m; }
+    return /^(path|g|circle|rect|line|polyline|polygon|ellipse|defs|clippath|lineargradient|stop|use|mask)$/i.test(tag) ? m : `<${tag} data-node="x${(n++).toString(36)}"`;
+  });
+  // A text broken with <br> becomes one text with its line breaks kept, so Canvas reads and edits it
+  // as a text (an element child would make it a frame with nothing inside).
+  html = html.replace(/<([a-z][a-z0-9]*)(\s[^>]*)?>([^<]*(?:<br\s*\/?>[^<]*)+)<\/\1>/gi, (m, tag: string, attrs = '', body: string) => {
+    const lines = body.split(/<br\s*\/?>/i).map((l) => l.replace(/\s+/g, ' ').trim());
+    const ws = 'white-space: pre-line';
+    const open = /\bstyle="/i.test(attrs) ? attrs.replace(/\bstyle="([^"]*)"/i, (_s: string, st: string) => `style="${st.replace(/;?\s*$/, '')}; ${ws}"`) : `${attrs} style="${ws}"`;
+    return `<${tag}${open}>${lines.join('\n')}</${tag}>`;
+  });
 
   const tokens = await read(kitFile(brand, 'tokens.css'));
   const textures = TEXTURES.map((t) => `[data-texture="${t}"] { background-image: url("${origin}/brand-kit/${brand}/textures/${t}.png"); background-size: 2000px 2000px; background-position: center; background-repeat: no-repeat; }`).join('\n');

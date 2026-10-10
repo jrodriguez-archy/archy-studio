@@ -10,6 +10,8 @@ export type Comp = {
   textId?: string; textSlot?: string; iconId?: string;
   /** A partner logo: how Studio draws it on its own (one colour, or its own colours). */
   logoAuto?: 'one' | 'original';
+  /** A text that is not a slot: its copy as drawn (an exploration's texts). */
+  text?: string;
 };
 export type Box = { x: number; y: number; w: number; h: number; name?: string };
 export type Token = { name: string; value: string; hex: string; group: 'Blues' | 'Neutrals' | 'Accents' };

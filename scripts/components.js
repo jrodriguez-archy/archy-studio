@@ -78,8 +78,10 @@
         // Field labels set in capitals ("LOCATION", "BOOTH") read as labels.
         const caps = el.textContent.trim() === el.textContent.trim().toUpperCase() || getComputedStyle(el).textTransform === 'uppercase';
         const n = GENERIC.test(name) || !name || caps ? fromText(el.textContent) : human(name);
-        return [add({ id, kind: 'text', name: caps && el.textContent.trim().length <= 24 ? `${n} label` : n })];
+        return [add({ id, kind: 'text', name: caps && el.textContent.trim().length <= 24 ? `${n} label` : n, text: el.textContent.trim() })];
       }
+      // An exploration's image (data-image, lib/compose.ts) is a photo: it can be replaced and reframed.
+      if (!children.length && el.dataset?.image) return [add({ id, kind: 'photo', name: GENERIC.test(name) || !name || /^photo$/i.test(name) ? 'Photo' : `${human(name)} photo` })];
       if (!children.length && /url\(/.test(getComputedStyle(el).backgroundImage)) return [add({ id, kind: 'decoration', name: GENERIC.test(name) ? 'Image' : human(name) })];
       if (!children.length) return [];
 

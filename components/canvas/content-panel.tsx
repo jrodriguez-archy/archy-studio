@@ -30,6 +30,10 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
   const [decorOpen, setDecorOpen] = useState(false);
   const texts = comps.filter((c) => (c.kind === 'text' && c.slot) || (c.kind === 'button' && c.textSlot));
   const images = comps.filter((c) => (c.kind === 'photo' || c.kind === 'partner') && c.slot);
+  // An exploration has no slots: its texts and photos are its content (edited by hand, as layers).
+  const free = !Object.keys(slotMeta).length;
+  const freeTexts = free ? comps.filter((c) => c.kind === 'text' && !c.slot) : [];
+  const freePhotos = free ? comps.filter((c) => c.kind === 'photo' && !c.slot) : [];
   const archy = comps.find((c) => c.kind === 'archy');
   // Optional details this design leaves out right now: listed too, so they can come back.
   const drawn = new Set(comps.flatMap((c) => [c.slot, c.textSlot]).filter(Boolean));
@@ -37,7 +41,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
   const absent = comps.length ? Object.entries(slotMeta).filter(([k, m]) => m.optional && !drawn.has(k)) : [];
   const absentTexts = absent.filter(([, m]) => m.type === 'text').map(([k]) => k);
   const absentImages = absent.filter(([, m]) => m.type !== 'text').map(([k, m]) => [k, m.type] as const);
-  const decor = comps.filter((c) => ['decoration', 'line', 'icon'].includes(c.kind) || (c.kind === 'text' && !c.slot) || (c.kind === 'photo' && !c.slot));
+  const decor = comps.filter((c) => ['decoration', 'line', 'icon'].includes(c.kind) || (!free && ((c.kind === 'text' && !c.slot) || (c.kind === 'photo' && !c.slot))));
 
   const rowClass = (id: string) => `group mx-1.5 flex min-h-8 cursor-default items-center gap-2 rounded-md px-2 py-1 text-[12px] ${
     selected.includes(id) ? 'bg-[#E6F4FF]' : hover === id ? 'bg-foreground/[0.04]' : 'hover:bg-foreground/[0.04]'}`;
@@ -59,6 +63,14 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
     </button>
   ) : <span className="size-5 shrink-0" title="Essential to the design" />;
 
+  // A layer's eye (hides it; the design keeps its place).
+  const eye = (id: string, hidden: boolean) => (
+    <button type="button" onClick={(e) => { e.stopPropagation(); onHide(id); }} aria-label={hidden ? 'Show' : 'Hide'} title={hidden ? 'Show' : 'Hide'}
+      className={`flex size-5 shrink-0 items-center justify-center rounded text-foreground/40 hover:text-foreground ${hidden ? '' : 'opacity-0 group-hover:opacity-100'}`}>
+      <HugeiconsIcon icon={hidden ? ViewOffSlashIcon : ViewIcon} className="size-3.5" strokeWidth={1.6} />
+    </button>
+  );
+
   return (
     <div className="space-y-4 py-2">
       <Group title="Text">
@@ -75,6 +87,18 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
             </div>
           );
         })}
+        {freeTexts.map((c) => {
+          const hidden = !!edits[c.id]?.hidden;
+          return (
+            <div key={c.id} {...pick(c.id)} className={rowClass(c.id)}>
+              <div className={`min-w-0 flex-1 ${hidden ? 'opacity-45' : ''}`}>
+                <p className="truncate text-foreground/50">{c.name}</p>
+                <p className="truncate text-[13px] text-foreground">{(edits[c.id]?.text ?? c.text ?? '').replace(/\n/g, ' ')}</p>
+              </div>
+              {eye(c.id, hidden)}
+            </div>
+          );
+        })}
         {absentTexts.map((k) => (
           <div key={k} className={rowClass(`slot:${k}`)} onClick={() => onSlotToggle(k)}>
             <div className="min-w-0 flex-1 opacity-45">
@@ -86,7 +110,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
         ))}
       </Group>
 
-      {(images.length > 0 || archy || absentImages.length > 0) && (
+      {(images.length > 0 || freePhotos.length > 0 || archy || absentImages.length > 0) && (
         <Group title="Images">
           {images.map((c) => {
             const value = slots[c.slot!];
@@ -129,6 +153,21 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
               {bin(k)}
             </div>
           ) : <AddImage key={k} name={nameOf(k)} logo={type === 'logo'} className={rowClass(`slot:${k}`)} onPick={(v) => onSlot(k, v)} />)}
+          {freePhotos.map((c) => {
+            const hidden = !!edits[c.id]?.hidden;
+            return (
+              <div key={c.id} {...pick(c.id)} className={rowClass(c.id)}>
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-[4px] bg-foreground/[0.04]">
+                  <HugeiconsIcon icon={Image02Icon} className="size-3.5 text-foreground/40" strokeWidth={1.6} />
+                </span>
+                <div className={`min-w-0 flex-1 ${hidden ? 'opacity-45' : ''}`}>
+                  <p className="truncate">{c.name}</p>
+                  <p className="text-foreground/40">{hidden ? 'Hidden' : 'Replace'}</p>
+                </div>
+                {eye(c.id, hidden)}
+              </div>
+            );
+          })}
           {archy && (
             <div {...pick(archy.id)} className={rowClass(archy.id)}>
               <span className="flex size-8 shrink-0 items-center justify-center rounded-[4px] bg-foreground/[0.04]">

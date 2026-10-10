@@ -23,7 +23,7 @@ export const DOCS: DocSection[] = [
   },
   {
     slug: 'connect-claude', title: 'Connect Claude', group: 'Start', summary: 'Add Archy Studio to Claude once, then ask for designs in any conversation.',
-    headings: [{ id: 'claude-app', title: 'In the Claude app' }, { id: 'terminal', title: 'Claude Code in a terminal' }, { id: 'check', title: 'Check that it works' }, { id: 'can-do', title: 'What Claude can do' }, { id: 'signed-out', title: 'If Claude is not signed in' }],
+    headings: [{ id: 'claude-app', title: 'In the Claude app' }, { id: 'terminal', title: 'Claude Code in a terminal' }, { id: 'check', title: 'Check that it works' }, { id: 'can-do', title: 'What Claude can do' }, { id: 'update', title: 'Update the plugin' }, { id: 'signed-out', title: 'If Claude is not signed in' }, { id: 'reinstall', title: 'If the plugin is not enabled' }],
     keywords: 'install plugin marketplace mcp connector sign in authenticate cowork code',
   },
   {

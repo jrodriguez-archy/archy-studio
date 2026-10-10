@@ -39,6 +39,7 @@ export function Rules() {
       <H2 id="trouble">Troubleshooting</H2>
       <Rows rows={[
         ['Claude says Studio is not signed in', <span key="a">Type /mcp in Claude and sign in again. <Link href="/docs/connect-claude#signed-out">Steps</Link></span>],
+        ['The plugin is not enabled, or its tools are missing', <span key="r">Remove the plugin and install it again. <Link href="/docs/connect-claude#reinstall">Steps</Link></span>],
         ['Claude does not see the tools', 'Start a new conversation; check the plugin is installed and enabled.'],
         ['The first design is slow', 'The first render after a quiet while takes a little longer. The next ones are quick.'],
         ['I cannot find a design', 'Check the brand (Archy or DOC) at the bottom of the sidebar, Mine vs Team, and Archive.'],

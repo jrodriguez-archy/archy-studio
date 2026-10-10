@@ -77,7 +77,7 @@ export async function compose(input: { html: string; width: number; height: numb
   let html = sanitize(input.html);
 
   // The logo: the real wordmark, coloured for its ground (white unless data-on="light").
-  const logo = (await read(kitFile(brand, 'logo.svg'))).replace('<svg ', '<svg width="100%" height="100%" preserveAspectRatio="xMinYMid meet" ');
+  const logo = (await read(kitFile(brand, 'logo.svg'))).replace('<svg ', '<svg width="100%" height="100%" preserveAspectRatio="xMinYMid meet" style="display:block" ');
   html = html.replace(/<(div|span)\b([^>]*\bdata-piece="logo"[^>]*)>\s*<\/\1>/gi, (_m, tag: string, attrs: string) => {
     const light = /\bdata-on="light"/i.test(attrs);
     const style = (attrs.match(/\bstyle="([^"]*)"/i)?.[1] ?? '').replace(/(^|;)\s*(height|aspect-ratio|color)\s*:[^;]*/gi, '');
@@ -122,8 +122,9 @@ export async function compose(input: { html: string; width: number; height: numb
       const url = await resolve(value.replace(/&amp;/g, '&'));
       images.add(url);
       // Generated images and Pixel Tone photos are marked: the checks hold them to their own rules.
-      const kind = await imageKind(value);
-      const attrs = `${before}data-image="${value}"${kind ? ` data-kind="${kind}"` : ''}${after}`;
+      const info = await imageInfo(value.replace(/&amp;/g, '&'), url, origin);
+      const marks = `${info.kind ? ` data-kind="${info.kind}"` : ''}${info.subject ? ` data-subject="${info.subject.join(',')}" data-mask="${info.mask}" data-iw="${info.w}" data-ih="${info.h}"` : ''}`;
+      const attrs = `${before}data-image="${value}"${marks}${after}`;
       const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1];
       const bg = `background-image: url(&quot;${esc(url)}&quot;)`;
       const next = style != null ? attrs.replace(/\bstyle="([^"]*)"/i, `style="$1; ${bg}"`) : `${attrs} style="${bg}"`;
@@ -197,20 +198,62 @@ export async function checksFor(width: number, height: number, brand: Brand) {
   // Type and logo scale with the piece: its width, but a wide, short banner is read like a post as tall as
   // it is (a 1584×396 banner holds about the type of a 500 px post).
   const s = Math.min(Math.max(Math.min(width, height * 1.25) / 1080, 0.55), 1.5);
-  return { safe, palette, fonts: ['Onest', 'Inter'], minText: Math.max(14, 18 * s), minLogo: Math.max(110, 200 * s), minHeadline: 110 * s, roomHeadline: 160 * s, smallText: 24 * s, maxGap: 160 * s, holeWarn: 0.22, holeError: 0.3, bigPhoto: 0.25 };
+  return { maskW: MASK_W, maskH: MASK_H, safe, palette, fonts: ['Onest', 'Inter'], minText: Math.max(14, 18 * s), minLogo: Math.max(110, 200 * s), minHeadline: 110 * s, roomHeadline: 160 * s, smallText: 24 * s, maxGap: 160 * s, holeWarn: 0.22, holeError: 0.3, bigPhoto: 0.25 };
 }
 
-// What a team image is, for the checks: an AI image (generated), a Pixel Tone photo (tone) or a person
-// without background (cutout: it has no edge to cut across the piece).
-async function imageKind(v: string): Promise<'generated' | 'tone' | 'cutout' | null> {
-  if (v === 'placeholder:person') return 'cutout';
-  if (!v.startsWith('asset:')) return null;
-  const hit = await findAsset(v.slice(6)).catch(() => null);
-  const a = hit ? await getAsset(hit.id).catch(() => null) : null;
-  if (!a) return null;
-  if (a.kind === 'generated') return 'generated';
-  if (a.kind === 'cutout') return 'cutout';
-  return a.kind === 'pixel' && /tone/i.test(a.name) ? 'tone' : null;
+// What an image is, for the checks: an AI image (generated), a Pixel Tone photo (tone) or a person
+// without background (cutout: it has no edge to cut across the piece). For a cut-out, where the person
+// actually is inside the image (`subject`: left, top, right, bottom as fractions), so the checks can keep
+// the copy and the logo clear of the person rather than of a transparent rectangle.
+type ImageInfo = { kind: 'generated' | 'tone' | 'cutout' | null; subject?: number[]; mask?: string; w?: number; h?: number };
+const infos = new Map<string, Promise<ImageInfo>>();
+function imageInfo(v: string, url: string, origin: string): Promise<ImageInfo> {
+  let p = infos.get(v);
+  if (!p) {
+    p = readImageInfo(v, url, origin).catch(() => ({ kind: null }));
+    if (infos.size > 200) infos.delete(infos.keys().next().value!);
+    infos.set(v, p);
+  }
+  return p;
+}
+async function readImageInfo(v: string, url: string, origin: string): Promise<ImageInfo> {
+  let kind: ImageInfo['kind'] = null;
+  if (v.startsWith('asset:')) {
+    const hit = await findAsset(v.slice(6)).catch(() => null);
+    const a = hit ? await getAsset(hit.id).catch(() => null) : null;
+    if (a?.kind === 'generated') return { kind: 'generated' };
+    if (a?.kind === 'pixel') return { kind: /tone/i.test(a.name) ? 'tone' : null };
+    if (a?.kind === 'cutout') kind = 'cutout';
+  }
+  // The pixels: a placeholder from the library, anything else from its (signed) link.
+  const body = url.startsWith(`${origin}/library/`)
+    ? await fs.readFile(path.join(ROOT, decodeURIComponent(url.slice(origin.length + 1))))
+    : /^https:\/\//.test(url) ? Buffer.from(await (await fetch(url, { signal: AbortSignal.timeout(15_000) })).arrayBuffer()) : null;
+  if (!body) return { kind };
+  const box = await cutoutBox(body);
+  return box ? { kind: 'cutout', ...box } : { kind };
+}
+
+// The mask's grid: where the person is, cell by cell (MASK_W across, MASK_H down), as hex.
+export const MASK_W = 48, MASK_H = 64;
+
+/** A cut-out's subject (where its opaque pixels are, as fractions), its mask and size; null for an opaque image. */
+export async function cutoutBox(body: Buffer): Promise<{ subject: number[]; mask: string; w: number; h: number } | null> {
+  const sharp = (await import('sharp')).default;
+  const meta = await sharp(body).metadata();
+  if (!meta.hasAlpha || !meta.width || !meta.height) return null;
+  const { data, info } = await sharp(body).ensureAlpha().extractChannel(3).resize({ width: 256, height: 256, fit: 'inside' }).raw().toBuffer({ resolveWithObject: true });
+  let l = info.width, t = info.height, r = -1, b = -1, clear = 0;
+  for (let y = 0; y < info.height; y++) for (let x = 0; x < info.width; x++) {
+    if (data[y * info.width + x] > 32) { if (x < l) l = x; if (x > r) r = x; if (y < t) t = y; if (y > b) b = y; } else clear++;
+  }
+  // Mostly opaque: a photo with a few transparent pixels, not a cut-out.
+  if (r < 0 || clear < info.width * info.height * 0.1) return null;
+  const f = (n: number, d: number) => +(n / d).toFixed(3);
+  const grid = await sharp(body).ensureAlpha().extractChannel(3).resize(MASK_W, MASK_H, { fit: 'fill' }).raw().toBuffer();
+  let bits = '';
+  for (let i = 0; i < MASK_W * MASK_H; i += 4) bits += ((grid[i] > 64 ? 8 : 0) | (grid[i + 1] > 64 ? 4 : 0) | (grid[i + 2] > 64 ? 2 : 0) | (grid[i + 3] > 64 ? 1 : 0)).toString(16);
+  return { subject: [f(l, info.width), f(t, info.height), f(r + 1, info.width), f(b + 1, info.height)], mask: bits, w: meta.width, h: meta.height };
 }
 
 // The cell colours per ground, as in Paper. Pixel Dissolve: light blues on blue and dark grounds, darks on

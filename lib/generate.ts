@@ -41,10 +41,10 @@ const nearestRatio = (r: number) => MODEL_RATIOS.reduce((a, b) => (Math.abs(Math
 
 export type CopySpace = 'top' | 'bottom' | 'left' | 'right' | 'none';
 const SPACE: Record<CopySpace, string> = {
-  top: 'Frame it so the upper third of the same scene is calm (a plain wall, sky or soft out-of-focus background, with no text or signage in it) and the subject sits low: copy will go on top.',
-  bottom: 'Frame it so the lower third of the same scene is calm (a plain surface or soft out-of-focus foreground, with no text in it) and the subject sits high: copy will go at the bottom.',
-  left: 'Frame it so the left part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) and the subject sits on the right: copy will go on the left.',
-  right: 'Frame it so the right part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) and the subject sits on the left: copy will go on the right.',
+  top: 'Frame it so the upper third of the same scene is calm (a plain wall, sky or soft out-of-focus background, with no text or signage in it), with the subjects large in the lower two thirds, starting right under it: copy will go on top.',
+  bottom: 'Frame it so the lower third of the same scene is calm (a plain surface or soft out-of-focus foreground, with no text in it), with the subjects large in the upper two thirds: copy will go at the bottom.',
+  left: 'Frame it so the left part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) with the subjects large on the right: copy will go on the left.',
+  right: 'Frame it so the right part of the same scene is calm (a plain wall or soft out-of-focus background, with no text or signage in it) with the subjects large on the left: copy will go on the right.',
   none: '',
 };
 

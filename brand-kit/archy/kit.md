@@ -36,6 +36,13 @@ Every exploration is one of these. Decide which before you write it.
 
 A person with Pixel Dissolve or Pixels Behind (below) is image-led too: the person is the subject.
 
+### Composition guides (not rules: use them when they fit)
+
+- **A person on a colour ground**: the headline big at the top; the person large, pushed to the right (they may bleed off the right edge) and off the bottom; the logo in the corner the person leaves free (bottom left). With the logo there, no pixels under it: Pixel Dissolve and Pixels Behind are optional, and a pixel gradient ground is often enough.
+- **The copy and the person**: some air between the headline and the top of the head (about a third of the headline size or more); the copy never sits on the person.
+- **Framing a photo** (generated or real): the subjects large and central to the frame, close under the headline but never behind it. Scale the image beyond cover and anchor it to the bottom to bring them up and closer (`background-size: auto 112%; background-position: 40% 100%`), then look at the result.
+- **Leading**: in a big headline, a descender (y, g, p) must not meet a capital on the next line (the check flags it); 1.05–1.1 of the size keeps lines together without touching.
+
 ## Formats and safe areas
 
 | Format | Size | Safe area |
@@ -82,7 +89,7 @@ Type: `--font-heading` Onest 600 for headlines (`letter-spacing: var(--tracking-
 
 ## Scale and spacing
 
-- **Type runs bigger than feels safe.** A 1080 Post headline starts at 120 px, 160–200 when it is the hero; an OG or banner headline at 72–104. When there is room, the headline takes it. Leading 1.03–1.10 on headlines, solid on one-line labels, ≥ 1.2 on body copy.
+- **Type runs bigger than feels safe.** A 1080 Post headline starts at 120 px, 160–200 when it is the hero; an OG or banner headline at 72–104. When there is room, the headline takes it, with the leading open enough (1.05–1.1) that descenders never meet the next line. Leading 1.03–1.10 on headlines, solid on one-line labels, ≥ 1.2 on body copy.
 - **Gaps run tighter than feels safe**: 12 inside a text block, 20 label to non-text, 40 between detail blocks, 56 between the outer blocks. Outer gaps above about 120 read as a hole: if a piece looks empty, make the type bigger, not the air.
 - Gap between blocks is always larger than the gap inside a block.
 - Fill the format: the content spans the safe area; two anchors (top block, logo at the bottom or top) and the gaps absorb the rest.

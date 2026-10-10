@@ -185,7 +185,7 @@ let exploreJs: string | null = null;
 
 export type ExploreIssue = { layer: string | null; code: string; message: string };
 export type ExploreReport = { ok: boolean; errors: ExploreIssue[]; warnings: ExploreIssue[] };
-export type ExploreChecks = { safe: { x: number; y: number; w: number; h: number }; palette: string[]; fonts: string[]; minText: number; minLogo: number; minHeadline: number; roomHeadline: number; smallText: number; maxGap: number; holeWarn: number; holeError: number; bigPhoto: number };
+export type ExploreChecks = { maskW: number; maskH: number; safe: { x: number; y: number; w: number; h: number }; palette: string[]; fonts: string[]; minText: number; minLogo: number; minHeadline: number; roomHeadline: number; smallText: number; maxGap: number; holeWarn: number; holeError: number; bigPhoto: number };
 
 // The page is cut off from everything but the kit, the fonts and the images it was given.
 export async function renderComposition({ page: html, images, width, height, scale = 1, checks }: { page: string; images: string[]; width: number; height: number; scale?: number; checks: ExploreChecks }) {

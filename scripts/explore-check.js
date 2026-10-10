@@ -42,6 +42,36 @@
     return out;
   }
 
+  // Where a cut-out person actually is on the artboard: the occupied cells of its mask (lib/compose.ts),
+  // placed as the browser draws the image (background-size and -position), clipped to its frame.
+  function personCells(p, mw, mh) {
+    const mask = p.getAttribute('data-mask'), iw = +p.getAttribute('data-iw'), ih = +p.getAttribute('data-ih');
+    if (!mask || !iw || !ih) return [];
+    const b = p.getBoundingClientRect(), cs = getComputedStyle(p);
+    let w = iw, h = ih;
+    const size = p.tagName === 'IMG' ? 'fill' : cs.backgroundSize;
+    if (size === 'fill') { w = b.width; h = b.height; }
+    else if (size === 'cover' || size === 'contain') { const k = (size === 'cover' ? Math.max : Math.min)(b.width / iw, b.height / ih); w = iw * k; h = ih * k; }
+    else {
+      const [sw, sh = 'auto'] = size.split(' ');
+      const len = (v, room) => (v.endsWith('%') ? (room * parseFloat(v)) / 100 : v === 'auto' ? null : parseFloat(v));
+      const W0 = len(sw, b.width), H0 = len(sh, b.height);
+      w = W0 ?? (H0 ? (H0 * iw) / ih : iw); h = H0 ?? (W0 ? (W0 * ih) / iw : ih);
+    }
+    const [px = '50%', py = '50%'] = p.tagName === 'IMG' ? ['0px', '0px'] : cs.backgroundPosition.split(' ');
+    const pos = (v, room) => (v.endsWith('%') ? (room * parseFloat(v)) / 100 : parseFloat(v) || 0);
+    const x0 = b.left + pos(px, b.width - w), y0 = b.top + pos(py, b.height - h);
+    const cw = w / mw, ch = h / mh, out = [];
+    for (let i = 0; i < mw * mh; i++) {
+      if (!((parseInt(mask[i >> 2], 16) >> (3 - (i & 3))) & 1)) continue;
+      const c = { left: x0 + (i % mw) * cw, top: y0 + Math.floor(i / mw) * ch };
+      c.right = c.left + cw; c.bottom = c.top + ch;
+      const k = { left: Math.max(c.left, b.left), top: Math.max(c.top, b.top), right: Math.min(c.right, b.right), bottom: Math.min(c.bottom, b.bottom) };
+      if (k.right > k.left && k.bottom > k.top) out.push(k);
+    }
+    return out;
+  }
+
   window.__hideText = function hideText(on) {
     let s = document.getElementById('__hide-text');
     if (on && !s) { s = document.createElement('style'); s.id = '__hide-text'; s.textContent = '[data-node="root"] * { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; text-decoration-color: transparent !important; }'; document.head.appendChild(s); }
@@ -71,7 +101,7 @@
           const o = getComputedStyle(a);
           if ((o.overflow !== 'visible' || o.overflowX !== 'visible' || o.overflowY !== 'visible') && !inside(box, a.getBoundingClientRect())) { err(el, 'cut', `"${t.text.slice(0, 40)}" is cut off by ${nameOf(a)}.`); break; }
         }
-        if (!inside(box, safe, 2)) warn(el, 'safe-area', `"${t.text.slice(0, 40)}" is outside the safe area.`);
+        if (!t.lines.every((ln) => inside(body(ln, cs), safe, 2))) warn(el, 'safe-area', `"${t.text.slice(0, 40)}" is outside the safe area.`);
       }
       if (size < opts.minText) err(el, 'small', `"${t.text.slice(0, 40)}" is ${Math.round(size)} px; at least ${Math.ceil(opts.minText)} px on this format.`);
       if (cs.textShadow !== 'none') warn(el, 'effect', `${nameOf(el)} has a text shadow (off-brand).`);
@@ -82,6 +112,39 @@
       if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
       const hit = a.lines.some((la) => b.lines.some((lb) => area(body(la, a.cs), body(lb, b.cs)) > 6));
       if (hit) err(b.el, 'overlap', `"${b.text.slice(0, 30)}" overlaps "${a.text.slice(0, 30)}".`);
+    }
+
+    // Line spacing: in big type, a descender (y, g, j, p, q) must not meet a capital or an ascender on the
+    // line below. Measured character by character where the two lines share columns.
+    for (const t of runs) {
+      const size = parseFloat(t.cs.fontSize), lh = parseFloat(t.cs.lineHeight);
+      if (size < 40 || !lh || t.lines.length < 2) continue;
+      const chars = [];
+      const w = document.createTreeWalker(t.el, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(); n; n = w.nextNode()) {
+        if (n.parentElement !== t.el) continue;
+        for (let i = 0; i < n.textContent.length; i++) {
+          const ch = n.textContent[i];
+          if (!/\S/.test(ch)) continue;
+          const rg = document.createRange(); rg.setStart(n, i); rg.setEnd(n, i + 1);
+          const rc = rg.getBoundingClientRect();
+          if (rc.width) chars.push({ ch, rc });
+        }
+      }
+      const rows = [];
+      for (const c of chars) { const row = rows.find((r) => Math.abs(r.top - c.rc.top) < size * 0.3); if (row) row.items.push(c); else rows.push({ top: c.rc.top, items: [c] }); }
+      rows.sort((a, b) => a.top - b.top);
+      const ratio = lh / size;
+      for (let i = 0; i + 1 < rows.length; i++) {
+        const down = rows[i].items.filter((c) => /[gjpqyQ]/.test(c.ch));
+        const up = rows[i + 1].items.filter((c) => /[A-Z0-9bdfhiklt]/.test(c.ch));
+        const meet = down.find((d) => up.some((u) => u.rc.left < d.rc.right && u.rc.right > d.rc.left));
+        if (!meet) continue;
+        const other = up.find((u) => u.rc.left < meet.rc.right && u.rc.right > meet.rc.left);
+        const msg = `In "${t.text.slice(0, 30)}" the "${meet.ch}" nearly touches the "${other.ch}" on the next line (leading ${ratio.toFixed(2)}): open the line height to about 1.05–1.1 of the size.`;
+        if (ratio < 1.0) err(t.el, 'leading', msg); else if (ratio < 1.04) warn(t.el, 'leading', msg);
+        break;
+      }
     }
 
     // The logo: the real one, once, whole, not tiny.
@@ -167,10 +230,27 @@
       }
     }
 
-    // A person (a cut-out) is the subject: big, and bleeding off the bottom edge, never floating.
+    // A person (a cut-out) is the subject: big, and bleeding off the bottom edge, never floating; the copy
+    // never sits on them, keeps a little air above their head, and the logo keeps its own air from them.
     for (const p of r.querySelectorAll('[data-kind="cutout"]')) {
       const b = p.getBoundingClientRect();
       if (!b.width) continue;
+      const cells = personCells(p, opts.maskW, opts.maskH);
+      for (const t of runs) {
+        if (p.contains(t.el)) continue;
+        const size = parseFloat(t.cs.fontSize);
+        const bodies = t.lines.map((ln) => body(ln, t.cs));
+        if (bodies.some((ln) => cells.some((c) => area(ln, c) > 8))) { err(t.el, 'subject-text', `"${t.text.slice(0, 30)}" sits on ${nameOf(p)}: the copy never goes over the person. Move the person (or the copy) so they stay clear.`); continue; }
+        // The nearest part of the person below the copy, where they share the same columns.
+        let gap = Infinity;
+        for (const ln of bodies) for (const c of cells) if (c.right > ln.left && c.left < ln.right && c.top >= ln.bottom) gap = Math.min(gap, c.top - ln.bottom);
+        if (gap < size * 0.3) warn(t.el, 'subject-close', `${nameOf(p)} is tight under "${t.text.slice(0, 30)}" (${Math.round(gap)} px): give the copy some air above the person's head (about a third of the headline size or more), by moving or scaling the person.`);
+      }
+      for (const l of logos) {
+        const lb = l.getBoundingClientRect(), pad = lb.height * 0.5;
+        const clear = { left: lb.left - pad, top: lb.top - pad, right: lb.right + pad, bottom: lb.bottom + pad };
+        if (cells.some((c) => area(c, clear) > 8)) err(l, 'logo-space', `The Archy logo is too close to ${nameOf(p)}: it needs its own air, at least half its height clear all around. A good place is the corner the person leaves free (for a person on the right, bottom left).`);
+      }
       if (b.bottom < R.bottom - 2) err(p, 'person-float', `${nameOf(p)} floats: let the person bleed off the bottom edge (the frame runs to the bottom of the artboard).`);
       else if (b.height < R.height * 0.6 || b.width < R.width * 0.45) warn(p, 'person-small', `${nameOf(p)} is small for the piece: let the person take more of the frame (from the chest or waist down to the bottom edge).`);
     }

@@ -6,6 +6,12 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.20.4', date: '2026-10-10', title: 'Clear file names',
+    notes: [
+      'Downloaded files are named after the project, the design, the format and its size, like hinman-2026-meet-archy-post-1080x1350.png. The ZIP too.',
+    ],
+  },
+  {
     version: '0.20.3', date: '2026-10-10', title: 'Resize the side panels',
     notes: [
       'Drag the edge of the sidebar, or of a design’s details panel, to make it a little wider or narrower. Double-click the edge to put it back.',

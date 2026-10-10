@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.20.4 (2026-10-10)
+
+- Downloads are named by project, design, format and size: `<project>-<design>-<format>-<width>x<height>.png`, and the ZIP `<project>-<design>.zip` (`lib/file-names.ts`). The design's name is the one the gallery shows (the ZIP used the template's), and a single PNG no longer saves under its storage id.
+
 ## archy-studio 0.20.3 (2026-10-10)
 
 - Explorations: everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format; when a change would read better, Claude proposes it next to the full version instead of dropping an element.

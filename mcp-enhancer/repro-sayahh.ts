@@ -13,6 +13,14 @@ for (const [name, top] of [['inside', 362], ['on-teeth', 200]] as const) {
   console.log(name, JSON.stringify([...comp.problems, ...r.report.errors.map((e) => e.message)]));
   if (out) await fs.writeFile(`${out}/sayahh-${name}.png`, r.png);
 }
+// Stories: the subline on the plain blue floor under the mouth (large text: 3:1 is enough) needs no scrim.
+{
+  const html = '<div data-name="Photo" data-image="asset:bd8d751b" style="position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background-size: cover; background-position: 50% 50%"></div><div data-name="Headline" style="position: absolute; left: 105px; top: 625px; width: 870px; font: 600 172px/180px var(--font-heading); letter-spacing: var(--tracking-tight); color: var(--color-white); text-align: center">Say<br>Ahhh.</div><div data-name="Content" style="position: absolute; left: 105px; top: 1400px; width: 870px; display: flex; flex-direction: column; align-items: center; gap: 56px"><div data-name="Subline" style="font: 500 46px/58px var(--font-body); color: var(--color-white); text-align: center">Then say goodbye to<br>outdated dental software.</div><div data-piece="logo" data-name="Logo Archy" style="width: 230px"></div></div>';
+  const comp = await compose({ html, width: 1080, height: 1920, brand: 'archy' });
+  const r = await renderComposition({ page: comp.page, images: comp.images, width: 1080, height: 1920, checks: await checksFor(1080, 1920, 'archy') });
+  console.log('floor', JSON.stringify([...comp.problems, ...r.report.errors.map((e) => e.message)]));
+  if (out) await fs.writeFile(`${out}/sayahh-floor.png`, r.png);
+}
 const fresh = crypto.randomUUID();
 console.log('fresh set kept:', (await keepSet(fresh, null)) === fresh);
 process.exit(0);

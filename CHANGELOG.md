@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.20.2 (2026-10-10)
+
+- Explorations: a calm, even part of the image counts as the copy's scrim at the contrast the text's size needs (3:1 for large text, 4.5:1 for small), so large copy on a plain colour floor needs no scrim.
+
 ## archy-studio 0.20.1 (2026-10-10)
 
 - Explorations, `generate_image`: when the object is the idea (a giant prop, a product), a studio still life on a seamless colour backdrop stays as described, with no people or room added ("studio still life, no people" in the prompt).

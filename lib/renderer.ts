@@ -239,7 +239,7 @@ export async function renderComposition({ page: html, images, width, height, sca
 
 // WCAG contrast of each text against the ground under it, at its worst tenth (a photo or a texture is
 // not one colour). Under 3:1 is refused; small text needs 4.5:1. `calm`: the texts whose ground is even
-// (its light and dark tenths within 1.5:1) and reads at 4.5:1 at its worst.
+// (its light and dark tenths within 1.5:1) and reads at its size's contrast at its worst.
 type SeenText = { layer: string; text: string; box: { x: number; y: number; w: number; h: number }; color: number[] | null; size: number };
 async function contrastIssues(png: Buffer, texts: SeenText[], width: number, smallText: number): Promise<{ issues: ExploreIssue[]; calm: SeenText[] }> {
   const sharp = (await import('sharp')).default;
@@ -271,7 +271,7 @@ async function contrastIssues(png: Buffer, texts: SeenText[], width: number, sma
     const need = t.size < smallText ? 4.5 : 3;
     const lums = ground.map((c) => lum(c[0], c[1], c[2])).sort((x, y) => x - y);
     const lo = lums[Math.floor(lums.length * 0.1)], hi = lums[Math.floor(lums.length * 0.9)];
-    if ((hi + 0.05) / (lo + 0.05) < 1.5 && worst >= 4.5) calm.push(t);
+    if ((hi + 0.05) / (lo + 0.05) < 1.5 && worst >= need) calm.push(t);
     if (worst < need && t.size === 999) out.push({ layer: t.layer, code: 'contrast', message: `The Archy logo is hard to see: contrast ${worst.toFixed(1)}:1 with what is behind it (needs 3:1). Use data-on="light" on a light ground, or move it onto a solid area or a shade.` });
     else if (worst < need) out.push({ layer: t.layer, code: 'contrast', message: `"${t.text.slice(0, 40)}" is hard to read: contrast ${worst.toFixed(1)}:1 with what is behind it (needs ${need}:1). Change its colour, or put it on a solid ground or a shade.` });
   }

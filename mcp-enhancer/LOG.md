@@ -11,6 +11,7 @@ Decisions from Juan (2026-10-08), the rules future fixes follow:
 
 | Date | Diagnostic | Symptom | Cause | Fix | Status |
 |---|---|---|---|---|---|
+| 2026-10-10 | say-ahhh (retest) | Large subline on the plain blue floor under the mouth refused for no scrim (calm areas asked 4.5:1 whatever the size) | logic | `lib/renderer.ts`: a calm area needs the text's own contrast (3:1 large, 4.5:1 small). `repro-sayahh.ts` floor case passes, copy on the teeth still refused | fixed |
 | 2026-10-10 | say-ahhh | generate_image turned a studio still life (a prop on a seamless backdrop) into a room with a person | instructions | `lib/generate.ts` EXPLORE_GUIDE: a studio still life is its own subject, made as described; copy_space wording allows the backdrop. generate_image description, INSTRUCTIONS, skill and kit: say "studio still life, no people" when the object is the idea. `repro-still-life.ts`: two 9:16 mouths, both clean | fixed |
 | 2026-10-10 | say-ahhh | A set id from an all-refused compose was not kept on the next compose | logic | `keepSet` in `lib/renders.ts` (kept when it is this person's or nothing was saved in it yet), used by compose and render (`resolveSet`) | fixed |
 | 2026-10-10 | say-ahhh | Copy in a calm dark area of the image (inside the mouth) refused for no scrim | logic | `lib/renderer.ts` contrastIssues returns `calm` texts (even ground within 1.5:1, ≥ 4.5:1 contrast); their scrim error is dropped. Message and kit rule 6 updated. `repro-sayahh.ts`: copy inside the mouth passes, copy on the teeth is still refused | fixed |

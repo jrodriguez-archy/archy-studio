@@ -1,6 +1,5 @@
-import Link from 'next/link';
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
-import { CopyBrief } from '@/components/docs/copy-brief';
+import { ExploreHint } from '@/components/explore-hint';
 import { EXAMPLE_BRIEFS } from '@/lib/example-briefs';
 import { TemplateBrowser, type TemplateCard, type TemplateGroup } from '@/components/template-browser';
 import { previewSrcs, selfOrigin } from '@/lib/previews';
@@ -84,17 +83,9 @@ export default async function TemplatesPage({ searchParams }: { searchParams: Pr
 
       {all.length ? (
         <>
-          <TemplateBrowser groups={groups} showGroupHeaders={!category} />
           {/* Explorations cover what the catalog does not (Archy only for now). */}
-          {brand === 'archy' && (
-            <section className="mt-12 max-w-2xl space-y-3 border-t border-foreground/[0.06] pt-8">
-              <div>
-                <h2 className="text-[15px] font-medium">Not in the catalog?</h2>
-                <p className="text-[13px] text-foreground/55">Ask Claude for an exploration. <Link href="/docs/explorations" className="underline underline-offset-4 hover:text-foreground">How it works</Link></p>
-              </div>
-              <CopyBrief text={EXAMPLE_BRIEFS.exploration[0]} />
-            </section>
-          )}
+          {brand === 'archy' && <ExploreHint brief={EXAMPLE_BRIEFS.exploration[0]} />}
+          <TemplateBrowser groups={groups} showGroupHeaders={!category} />
         </>
       ) : (
         <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">

@@ -50,7 +50,7 @@ export function Templates() {
       </ul>
       <Callout kind="note">Templates change only through the design team. If something is missing from the catalog, ask them: a new template has to hold a kind of content the others cannot.</Callout>
       <p>
-        Not in the catalog? At the bottom of Templates, copy a brief for an <Link href="/docs/explorations">exploration</Link>: a new
+        Not in the catalog? At the top of Templates, copy a brief for an <Link href="/docs/explorations">exploration</Link>: a new
         design in the brand.
       </p>
     </>

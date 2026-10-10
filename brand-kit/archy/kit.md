@@ -195,7 +195,7 @@ Two ways, as in the website's hero video:
 
 **Card** (a named crop of a screen, or `x,y,w,h` in screen px): one piece of the product, centred or anchored, as its own card on the ground.
 ```html
-<div data-piece="product" data-screen="schedule" data-crop="appointments" style="position: absolute; left: 105px; top: 600px; width: 870px"></div>
+<div data-piece="product" data-screen="schedule-popovers" data-crop="appointment-details" style="position: absolute; left: 105px; top: 600px; width: 870px"></div>
 ```
 
 Studio draws it white with rounded corners and the screen at the width you give (the height follows unless you set one). **The UI has to read**: draw the screen at about 1.3–1.6× its size on a 1080 piece (a window 2700–3300 px wide, most of it off the artboard), so less of it shows, bigger; the check warns when it reads small. To start the window at the part that matters (the teeth, not the side panel), give a crop whose left and top are where the window should begin, e.g. `data-crop="356,0,1700,1160"`. Copy never goes over the product; the logo keeps its air from it. The screens and crops available are listed at the end of this kit.

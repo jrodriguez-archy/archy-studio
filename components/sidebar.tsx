@@ -19,7 +19,8 @@ import { firstName } from '@/lib/names';
 const SidebarContext = createContext({ collapsed: false });
 export const useSidebar = () => useContext(SidebarContext);
 
-const WIDE = 240, NARROW = 60;
+// The narrowest the rail can be dragged: the lockup and the collapse button still fit with air.
+const WIDE = 240, MIN_WIDE = 228, NARROW = 60;
 // Full-screen tools open with the rail collapsed, without changing the saved preference.
 const opensCollapsed = (path: string) => /^\/canvas(\/|$)/.test(path);
 
@@ -28,7 +29,7 @@ const opensCollapsed = (path: string) => /^\/canvas(\/|$)/.test(path);
 // paint. ⌘\ toggles it.
 export function ShellFrame({ initialCollapsed, initialWidth, sidebar, children }: { initialCollapsed: boolean; initialWidth?: number; sidebar: React.ReactNode; children: React.ReactNode }) {
   const path = usePathname();
-  const size = useSideWidth('sidebar-w', WIDE, 200, 320, { prop: '--sidebar-w', cookie: true, saved: initialWidth });
+  const size = useSideWidth('sidebar-w', WIDE, MIN_WIDE, 320, { prop: '--sidebar-w', cookie: true, saved: initialWidth });
   const [pref, setPref] = useState(initialCollapsed);
   const [override, setOverride] = useState<{ path: string; collapsed: boolean } | null>(null);
   const collapsed = override?.path === path ? override.collapsed : opensCollapsed(path) || pref;
@@ -75,7 +76,7 @@ export function Sidebar({ sections, admin, projects, me, email, name, brand }: {
   const size = useContext(ResizeContext);
   return (
     <aside className={`sticky top-0 hidden h-dvh flex-col overflow-hidden border-r border-foreground/[0.06] bg-[#FAFAFA] pt-6 pb-3 md:flex ${collapsed ? 'px-2.5' : 'px-3'}`}>
-      <div className={`flex items-center ${collapsed ? 'flex-col gap-4' : 'justify-between'}`}>
+      <div className={`flex items-center ${collapsed ? 'flex-col gap-4' : 'justify-between gap-2'}`}>
         <Link href="/" className={collapsed ? 'flex justify-center' : 'px-2'} aria-label={BRANDS[brand].studio}>
           {collapsed ? <BrandMark brand={brand} height={32} /> : <BrandLockup size="sm" label={false} brand={brand} />}
         </Link>

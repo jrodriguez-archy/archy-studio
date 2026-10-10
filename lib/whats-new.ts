@@ -6,6 +6,13 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.20.6', date: '2026-10-10', title: 'Update and reinstall the plugin',
+    notes: [
+      'Docs → Connect Claude now shows how to update the plugin in Claude, and how to have it update on its own.',
+      'If the plugin shows as installed but is not enabled, remove it and install it again: the steps are in the same page.',
+    ],
+  },
+  {
     version: '0.20.5', date: '2026-10-10', title: 'Explorations keep the whole brief',
     notes: [
       'Claude puts everything the brief asks for in each format (a feature strip, a tagline, a CTA); if a change would look better, it proposes it instead of leaving something out.',

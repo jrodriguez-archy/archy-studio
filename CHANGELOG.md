@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.20.6 (2026-10-10)
+
+- Docs, Connect Claude: **Update the plugin** (Claude app: Customize → Plugins → Check for updates, or Sync automatically; terminal: `claude plugin marketplace update archy-studio` then `claude plugin update archy-studio@archy-studio`, or auto-update from `/plugin`) and **If the plugin is not enabled** (remove it and its marketplace, install fresh and sign in again with `/mcp`). Rules' troubleshooting links to it.
+
 ## archy-studio 0.20.5 (2026-10-10)
 
 - Explorations: everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format; when a change would read better, Claude proposes it next to the full version instead of dropping an element.

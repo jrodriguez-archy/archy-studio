@@ -110,15 +110,21 @@ export function InfoRows({ rows }: { rows: [string, React.ReactNode][] }) {
 }
 
 // The item on the stage: as large as the stage allows, never upscaled past the file.
+// Sized against both the stage's width and height (container units), so the box always keeps the
+// image's shape; otherwise a short stage left a wide box with the placeholder showing at the sides.
 export function StageImage({ src, placeholder, alt, width, height }: { src?: string; placeholder?: string; alt: string; width: number; height: number }) {
+  const ratio = width / height;
+  const cap = width >= height ? '1100px' : `${Math.round(900 * ratio)}px`;
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      key={src}
-      src={src ?? placeholder}
-      alt={alt}
-      className="max-h-full max-w-full rounded-[4px] object-contain shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)] animate-in fade-in-0 zoom-in-[0.98] duration-200"
-      style={{ aspectRatio: `${width} / ${height}`, width: width >= height ? 'min(100%, 1100px)' : 'auto', height: height > width ? 'min(100%, 900px)' : 'auto', backgroundImage: placeholder ? `url("${placeholder}")` : undefined, backgroundSize: 'cover' }}
-    />
+    <div className="pointer-events-none flex size-full min-h-0 min-w-0 items-center justify-center [container-type:size]">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        key={src}
+        src={src ?? placeholder}
+        alt={alt}
+        className="pointer-events-auto rounded-[4px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)] animate-in fade-in-0 zoom-in-[0.98] duration-200"
+        style={{ aspectRatio: `${width} / ${height}`, width: `min(100cqw, 100cqh * ${ratio}, ${cap})`, height: 'auto', backgroundImage: placeholder ? `url("${placeholder}")` : undefined, backgroundSize: 'cover' }}
+      />
+    </div>
   );
 }

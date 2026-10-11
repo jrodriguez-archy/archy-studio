@@ -36,5 +36,5 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   // Template files for Canvas and catalog previews are static brand assets: no session check.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|fonts/|textures/|api/template-files/|api/preview/|api/preview-render/).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|fonts/|textures/|api/template-files/|api/preview/|api/preview-render/).*)'],
 };

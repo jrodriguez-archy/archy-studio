@@ -42,7 +42,11 @@ export default {
   // Template files change only with a deploy. Pages and scripts are asked for with the deploy's id, so a
   // few minutes of browser cache never shows an old one; template images briefly too; fonts for a day.
   async headers() {
+    // Sign-in and the MCP consent never show inside another site's frame.
+    const unframed = [{ key: 'Content-Security-Policy', value: "frame-ancestors 'none'" }, { key: 'X-Frame-Options', value: 'DENY' }];
     return [
+      { source: '/login', headers: unframed },
+      { source: '/oauth/:path*', headers: unframed },
       { source: '/api/template-files/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=600' }] },
       { source: '/api/template-files/fonts/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }] },
       // Template images are named by their content (Paper's ids), and library images rarely change: a day,

@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { outpaintFor, type Crop, type Edits, type FillPlan, type NodeEdit, type Outpaint, type PhotoFit, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import type { Keys } from '@/lib/canvas-sync';
 import { movingEdges, snap, type Guide } from './guides';
-import { script, templatePage, turn, withoutSamples } from './stage-pages';
+import { guarded, script, templatePage, turn, withoutSamples } from './stage-pages';
 import { componentAt, innermostAt, parentOf, readInfo, readTokens, within, type Box, type Comp, type LayerInfo, type Token } from './model';
 
 type Win = Window & {
@@ -291,10 +291,12 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     loading.current = target;
     let stale = false;
     let release: (() => void) | null = null; // this format's turn, given back once it is drawn
+    const key = crypto.randomUUID(); // the only scripts the written page runs carry it
     const load = async () => {
       const d = f.contentDocument!, w = f.contentWindow as Win;
       for (const name of ['fit.js', 'edits.js', 'components.js']) {
         const s = d.createElement('script');
+        s.nonce = key;
         s.textContent = await script(name);
         d.head.appendChild(s);
       }
@@ -343,7 +345,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     // Written in, so a redraw does not go back to the network for the page (if that fails, loaded
     // from its address; srcdoc would win over src, so it goes first).
     // An exploration brings its page (composed on the server); a template's comes from its file.
-    const write = () => (plan.page != null ? Promise.resolve(plan.page) : templatePage(plan.html).then((t) => withoutSamples(t, plan.fill.values))).then((t) => { if (!stale) f.srcdoc = `${t}<!--${++loads}-->`; })
+    const write = () => (plan.page != null ? Promise.resolve(plan.page) : templatePage(plan.html).then((t) => withoutSamples(t, plan.fill.values))).then((t) => { if (!stale) f.srcdoc = `${guarded(t, key)}<!--${++loads}-->`; })
       .catch(() => { if (stale) return; f.removeAttribute('srcdoc'); f.src = `/api/template-files/${plan.html}?load=${++loads}`; });
     // A format waiting its turn never holds the others for long, even if its page never loads.
     let safety: ReturnType<typeof setTimeout> | undefined;

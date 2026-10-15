@@ -5,9 +5,19 @@ import { supabaseAdmin, supabaseConfigured } from './supabase/admin';
 
 // An image Claude passes as a link (https) is kept in Assets the first time it is used: a signed link
 // (Notion, Drive, S3, Studio's own) stops working within minutes or hours, and a design must keep opening
-// and rendering. The same file (same address without its query) is kept once and reused.
+// and rendering. The same file is kept once and reused: same address, without the parts of its query that
+// only sign it for a while (a Drive link's id stays: every Drive file is at /uc or /download).
 const MAX_FETCH = 30_000_000;
 const MAX_STORE = 7_500_000; // storeUpload takes 8 MB at most
+const SIGNING = /^(x-amz-.*|x-goog-.*|token|access_token|signature|sig|se|sp|sv|sr|st|skoid|sktid|skt|ske|sks|skv|expires|exp|policy|key-pair-id|response-.*|_gl|utm_.*)$/i;
+
+export function linkKey(u: URL): string {
+  const q = [...u.searchParams].filter(([k]) => !SIGNING.test(k)).sort(([a], [b]) => a.localeCompare(b));
+  return `link:${u.origin}${u.pathname}${q.length ? `?${new URLSearchParams(q)}` : ''}`.slice(0, 500);
+}
+
+// The same link twice in one answer (two formats, two slots) is fetched and kept once.
+const inFlight = new Map<string, Promise<string>>();
 
 export async function keepLinkedImage(value: string, opts: { ownerId: string | null; brand: Brand; name: string }): Promise<string> {
   if (!/^https:\/\//i.test(value) || !opts.ownerId || !supabaseConfigured()) return value;
@@ -16,7 +26,16 @@ export async function keepLinkedImage(value: string, opts: { ownerId: string | n
   const own = process.env.NEXT_PUBLIC_SUPABASE_URL && value.startsWith(process.env.NEXT_PUBLIC_SUPABASE_URL)
     ? u.pathname.match(/\/storage\/v1\/object\/(?:sign|public)\/uploads\/(.+)$/) : null;
   if (own) return `upload:${decodeURIComponent(own[1])}`;
-  const key = `link:${u.origin}${u.pathname}`.slice(0, 500);
+  const key = linkKey(u);
+  const flight = `${opts.brand}|${key}`;
+  const running = inFlight.get(flight);
+  if (running) return running;
+  const kept = keep(value, u, key, { ...opts, ownerId: opts.ownerId }).finally(() => inFlight.delete(flight));
+  inFlight.set(flight, kept);
+  return kept;
+}
+
+async function keep(value: string, u: URL, key: string, opts: { ownerId: string; brand: Brand; name: string }): Promise<string> {
   const db = supabaseAdmin();
   const { data: kept } = await db.from('assets').select('path').eq('prompt', key).eq('brand', opts.brand).is('deleted_at', null).limit(1).maybeSingle();
   if (kept?.path) return `upload:${kept.path}`;

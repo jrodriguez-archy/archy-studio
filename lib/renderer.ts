@@ -8,12 +8,17 @@ import { ROOT } from './templates';
 export { MissingRequired, prepareFill, type RenderInput } from './fill';
 
 let browserPromise: Promise<Browser> | null = null;
+let current: Browser | null = null; // what browserPromise gave, once it did
 
+// One browser per instance, shared by every render on it. Renders that find it gone start one new browser
+// together (the first to notice launches it, the others wait for that one).
 async function getBrowser(): Promise<Browser> {
-  if (browserPromise) {
+  const seen = browserPromise;
+  if (seen) {
     // A launch that failed is forgotten (the next render tries again), never kept as this instance's browser.
-    const b = await browserPromise.catch(() => null);
+    const b = await seen.catch(() => null);
     if (b?.isConnected()) return b;
+    if (browserPromise !== seen) return getBrowser();
   }
   const launching = (async () => {
     const { chromium } = await import('playwright-core');
@@ -28,8 +33,15 @@ async function getBrowser(): Promise<Browser> {
     return chromium.launch({ headless: true });
   })();
   browserPromise = launching;
-  launching.catch(() => { if (browserPromise === launching) browserPromise = null; });
+  current = null;
+  launching.then((b) => { if (browserPromise === launching) current = b; }, () => { if (browserPromise === launching) browserPromise = null; });
   return launching;
+}
+
+// A browser that stopped answering: closed, and the next render starts a new one (unless one already has).
+function retire(browser: Browser) {
+  if (current === browser) { browserPromise = null; current = null; }
+  browser.close().catch(() => {});
 }
 
 const fontFiles = new Map<string, Promise<{ body: Buffer; type: string }>>();
@@ -47,12 +59,19 @@ function fontshare(url: string) {
 }
 
 // A fresh context. A warm instance can hold a dead browser: if it does not answer quickly, a new one starts.
+// A browser busy with other renders (formats drawn side by side) is only slow: it gets more time instead,
+// since closing it would end those renders too.
 async function newContext(options: Parameters<Browser['newContext']>[0]) {
   const browser = await getBrowser();
-  const context = await withTimeout(browser.newContext(options), 5000).catch(() => null);
+  const pending = browser.newContext(options);
+  const context = await withTimeout(pending, 5000).catch(() => null);
   if (context) return context;
-  await browser.close().catch(() => {});
-  browserPromise = null;
+  if (browser.isConnected() && browser.contexts().length > 0) {
+    const late = await withTimeout(pending, 20_000).catch(() => null);
+    if (late) return late;
+  }
+  pending.then((c) => c.close(), () => {});
+  retire(browser);
   return (await getBrowser()).newContext(options);
 }
 

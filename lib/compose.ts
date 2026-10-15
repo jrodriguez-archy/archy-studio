@@ -57,8 +57,12 @@ export function sanitize(html: string): string {
   return html
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<(script|style|iframe|object|embed|form|template|noscript)\b[\s\S]*?<\/\1\s*>/gi, '')
-    .replace(/<\/?(script|style|iframe|object|embed|link|meta|base|form|input|button|textarea|select|template|noscript|html|head|body)\b[^>]*>/gi, '')
-    .replace(/\s(on[a-z]+|srcdoc|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/<\/?(script|style|iframe|object|embed|link|meta|base|form|input|button|textarea|select|template|noscript|html|head|body|animate|set)\b[^>]*>/gi, '')
+    // A handler after a space, a slash or a quote (<img src="x"/onerror=…> is a handler too).
+    .replace(/[\s/"'](on[a-z]+|srcdoc|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, (m) => (/^["']/.test(m) ? m[0] : ''))
+    // A link that is javascript: once its entities and spaces are read (java&#x73;cript:).
+    .replace(/\s((?:xlink:)?href|src|action)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, (m, _a: string, v: string) =>
+      /^javascript:/i.test(v.replace(/^["']|["']$/g, '').replace(/&#x([0-9a-f]+);?/gi, (_e, h: string) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);?/g, (_e, d: string) => String.fromCodePoint(Number(d))).replace(/&[a-z]+;?|[\s\0]/gi, '')) ? '' : m)
     // What an image is (generated, Pixel Tone) is read from Assets, never taken from the HTML.
     .replace(/\sdata-kind\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
     .replace(/javascript:/gi, '')

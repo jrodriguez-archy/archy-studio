@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { AuthShell } from '@/components/auth-shell';
+import { redirectHost, trustedRedirect } from '@/lib/oauth-clients';
 import { supabaseServer } from '@/lib/supabase/server';
 import { ConsentForm } from './consent-form';
 
@@ -19,6 +20,10 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
     return <AuthShell><p className="text-[13px] text-destructive">This authorization request expired or is not valid. Start the connection again from Claude.</p></AuthShell>;
   }
   // Already approved before: Supabase hands back the redirect straight away.
+  const to = 'authorization_id' in data ? data.redirect_uri : data.redirect_url;
+  if (!trustedRedirect(to)) {
+    return <AuthShell><p className="text-[13px] text-destructive">Not Claude: this sign-in would go to {redirectHost(to) ?? 'an unknown address'}. Nothing was shared.</p></AuthShell>;
+  }
   if (!('authorization_id' in data)) redirect(data.redirect_url);
 
   return (
@@ -26,6 +31,7 @@ export default async function ConsentPage({ searchParams }: { searchParams: Prom
       <ConsentForm
         authorizationId={data.authorization_id}
         clientName={data.client?.name || 'Claude'}
+        host={redirectHost(data.redirect_uri) ?? ''}
         email={String(claims.claims.email ?? '')}
         scopes={(data.scope ?? '').split(' ').filter(Boolean)}
       />

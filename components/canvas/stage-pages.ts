@@ -5,6 +5,13 @@ const scripts: Record<string, Promise<string>> = {};
 // This deploy's copy (a new deploy, a new address: never an old engine from the browser cache).
 const BUILD = process.env.NEXT_PUBLIC_BUILD ?? 'dev';
 export const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}?v=${BUILD}`).then((r) => r.text()));
+// The page is written into a same-origin iframe: only Canvas's own scripts (with this nonce) run in it, never
+// a handler or a javascript: link that came in with a design's HTML.
+export const guarded = (t: string, nonce: string) => {
+  const meta = `<meta http-equiv="Content-Security-Policy" content="script-src 'nonce-${nonce}'; object-src 'none'; base-uri 'self'; form-action 'none'">`;
+  return /<head[^>]*>/i.test(t) ? t.replace(/<head([^>]*)>/i, `<head$1>${meta}`) : meta + t;
+};
+
 // Formats not being edited draw their first time two at a time (the one being edited never waits),
 // so opening a set shows the active format first instead of every format at once on one thread.
 let busy = 0;

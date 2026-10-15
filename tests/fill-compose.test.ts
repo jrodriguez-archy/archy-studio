@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compose, withStableIds } from '@/lib/compose';
+import { compose, sanitize, withStableIds } from '@/lib/compose';
 import { prepareFill } from '@/lib/fill';
 
 // Template files and the brand kit are read from disk; nothing here reaches Supabase.
@@ -54,5 +54,29 @@ describe('compose', () => {
   it('strips scripts and event handlers from the HTML', async () => {
     const c = await compose({ html: '<div data-name="A" onclick="alert(1)">Hi<script>alert(2)</script></div>', width: 1080, height: 1080, brand: 'archy' });
     expect(c.page).not.toMatch(/onclick|<script>alert/);
+  });
+});
+
+describe('sanitize', () => {
+  it('drops handlers and javascript: links however they are written', () => {
+    for (const bad of [
+      '<img src="x" onerror="alert(1)">',
+      '<img src="x"/onerror="alert(1)">',
+      '<img src="x"onerror="alert(1)">',
+      "<svg/onload=alert(1)>",
+      '<a href="java&#x73;cript:alert(1)">x</a>',
+      '<a href="&#106;avascript:alert(1)">x</a>',
+      '<a href=" java\tscript:alert(1)">x</a>',
+      '<svg><a xlink:href="javascript:alert(1)">x</a></svg>',
+      '<svg><animate attributeName="href" to="javascript:alert(1)"/></svg>',
+      '<iframe srcdoc="<script>alert(1)</script>"></iframe>',
+    ]) {
+      const out = sanitize(bad);
+      expect(out, bad).not.toMatch(/\bon[a-z]+\s*=|javascript|&#|<animate|<iframe|<script/i);
+    }
+  });
+  it('keeps the design', () => {
+    const ok = '<div data-name="Headline" style="color: red">Book a demo — online now</div><img data-image="asset:abc12345" src="https://example.com/a.png">';
+    expect(sanitize(ok)).toBe(ok);
   });
 });

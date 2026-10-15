@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 
-export function ConsentForm({ authorizationId, clientName, email, scopes }: { authorizationId: string; clientName: string; email: string; scopes: string[] }) {
+export function ConsentForm({ authorizationId, clientName, host, email, scopes }: { authorizationId: string; clientName: string; host: string; email: string; scopes: string[] }) {
   const [busy, setBusy] = useState<'approve' | 'deny' | null>(null);
   const [error, setError] = useState('');
 
@@ -22,11 +22,8 @@ export function ConsentForm({ authorizationId, clientName, email, scopes }: { au
     <div className="space-y-4 text-[13px]">
       <div className="space-y-1">
         <p className="font-medium">Connect {clientName}</p>
-        <p className="text-muted-foreground">
-          {clientName} will make designs from Archy templates as <span className="text-foreground">{email}</span>. Each design is saved to the gallery under your name.
-        </p>
+        <p className="text-muted-foreground">As <span className="text-foreground">{email}</span> · to <span className="text-foreground">{host}</span></p>
       </div>
-      <p className="text-muted-foreground">It can make designs from the templates, read the team's images, file designs in projects, send you photo links and edit the design you have open in Canvas. It cannot change templates, delete anything or touch your account.</p>
       {scopes.length > 0 && <p className="text-foreground/40">Requested: {scopes.join(', ')}</p>}
       {error && <p className="text-destructive">{error}</p>}
       <div className="flex gap-2">

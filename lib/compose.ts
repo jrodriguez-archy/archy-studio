@@ -5,6 +5,7 @@ import path from 'node:path';
 import type { Brand } from './brands';
 import type { Edits, FillPlan } from './canvas-shared';
 import { ORIGIN, resolveImage } from './fill';
+import { UPLOAD_ROUTE } from './upload-links';
 import { findAsset } from './asset-ids';
 import { getAsset } from './assets';
 import { iconMarkup } from './icons';
@@ -321,7 +322,9 @@ async function readImageInfo(v: string, url: string, origin: string): Promise<Im
     if (a?.kind === 'pixel') return { kind: /tone/i.test(a.name) ? 'tone' : null };
     if (a?.kind === 'cutout') kind = 'cutout';
   }
-  // The pixels: a placeholder from the library, anything else from its (signed) link.
+  // The pixels: a placeholder from the library, anything else from its (signed) link. Canvas gets an
+  // upload by the app's address, which needs a session: read here by the renderer's signed link.
+  if (url.startsWith(`${UPLOAD_ROUTE}/`)) url = await resolveImage(EXPLORATION, v, ORIGIN);
   const body = url.startsWith(`${origin}/library/`)
     ? await fs.readFile(path.join(ROOT, decodeURIComponent(url.slice(origin.length + 1))))
     : /^https:\/\//.test(url) ? Buffer.from(await (await fetch(url, { signal: AbortSignal.timeout(15_000) })).arrayBuffer()) : null;

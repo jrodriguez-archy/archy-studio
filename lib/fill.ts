@@ -6,6 +6,7 @@ import { iconMarkup } from './icons';
 import { STATIC, isPlaceholder, staticPlaceholder } from './placeholders';
 import { supabaseAdmin } from './supabase/admin';
 import { findAsset } from './asset-ids';
+import { uploadLink } from './upload-links';
 import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo, templateBrand } from './templates';
 
 // Deciding a piece before any page is opened: slot values, variant, fit rules, resolved images and
@@ -129,7 +130,7 @@ export async function prepareFill({ template, format, design, theme, slots: give
   // Images and logos resolve together (signed links, remote logos), not one after another.
   const values: Record<string, string | null> = Object.fromEntries(await Promise.all(Object.entries(slots).map(async ([k, v]) => {
     const type = manifest.slots[k].type;
-    return [k, !v ? v : type === 'logo' ? await resolveLogo(template, v, origin) : type === 'image' ? await resolveImage(template, v, origin) : v];
+    return [k, !v ? v : type === 'logo' ? await resolveLogo(template, v) : type === 'image' ? await resolveImage(template, v, origin) : v];
   })));
   const limitKey = combo?.key ? fileKey : variant ? `${format}--${variant}` : format;
   const limits = Object.fromEntries(Object.entries(manifest.slots).map(([k, s]) => [k, s.limits && { [format]: s.limits[limitKey] }]));
@@ -156,11 +157,12 @@ export async function prepareFill({ template, format, design, theme, slots: give
 // the uploads bucket), an https URL, or a path inside the template. `origin` is where the page reads the
 // repo files: the renderer's fake origin, or /api/template-files for the Canvas editor.
 // Logos are inlined as data URLs so the page can use them as a CSS mask (no cross-origin limits).
-async function resolveLogo(template: string, v: string, origin = ORIGIN): Promise<string> {
+// Read on the server whoever draws it (Canvas too), so resolved as the renderer does.
+async function resolveLogo(template: string, v: string): Promise<string> {
   if (v.startsWith('data:image/')) return v;
-  const src = await resolveImage(template, v, origin);
-  if (src.startsWith(`${origin}/`)) {
-    const rel = decodeURIComponent(src.slice(origin.length + 1));
+  const src = await resolveImage(template, v, ORIGIN);
+  if (src.startsWith(`${ORIGIN}/`)) {
+    const rel = decodeURIComponent(src.slice(ORIGIN.length + 1));
     const file = path.resolve(ROOT, rel);
     // Only the folders a template page may read (as the renderer and /api/template-files allow).
     if (!['templates', 'library', 'brand-kit'].some((d) => file.startsWith(path.join(ROOT, d) + path.sep))) throw new Error(`Unknown logo: ${v}`);
@@ -198,8 +200,11 @@ export async function resolveImage(template: string, v: string, origin = ORIGIN)
     v = `upload:${team.path}`;
   }
   if (v.startsWith('upload:')) {
-    // One link per image for most of its hour: the same link each time, so the browser keeps the image
-    // and Canvas does not redraw a format whose images did not change.
+    // Canvas (a signed-in browser): the app's address for the file, the same on every server instance, so
+    // the browser keeps the photo after the first time (lib/upload-links.ts).
+    const file = v.slice(7);
+    if (origin !== ORIGIN) return uploadLink(file, file.startsWith('placeholders/') && template !== 'exploration' && (await templateBrand(template)) === 'doc');
+    // The renderer (no session): a signed link, one per image for most of its hour.
     const hit = signed.get(v);
     if (hit && hit.until > Date.now()) return hit.url;
     const { data, error } = await supabaseAdmin().storage.from('uploads').createSignedUrl(v.slice(7), 60 * 60);

@@ -92,8 +92,25 @@ export async function removeMember(rawEmail: string) {
   if (email === me.email) throw new Error('You cannot remove yourself.');
   const db = supabaseAdmin();
   const user = await userByEmail(email);
-  if (user) await db.auth.admin.deleteUser(user.id);
-  await db.from('allowed_emails').delete().eq('email', email);
+  if (user) {
+    // Everything they made passes to the admin who removes them, before the account goes (its projects
+    // would go with it, shared ones included). Personal projects stay personal, now the admin's.
+    const moves = [
+      db.from('renders').update({ user_id: me.id }).eq('user_id', user.id),
+      db.from('projects').update({ owner_id: me.id }).eq('owner_id', user.id),
+      db.from('assets').update({ owner_id: me.id }).eq('owner_id', user.id),
+      db.from('asset_folders').update({ created_by: me.id }).eq('created_by', user.id),
+      db.from('canvas_drafts').update({ user_id: me.id }).eq('user_id', user.id),
+      db.from('template_proposals').update({ proposed_by: me.id }).eq('proposed_by', user.id),
+      // A review comment with no one behind it would read as Claude's suggestion.
+      db.from('review_comments').update({ user_id: me.id }).eq('user_id', user.id),
+    ];
+    for (const { error } of await Promise.all(moves)) if (error) throw new Error(`Could not pass their work to you: ${error.message}`);
+    const { error } = await db.auth.admin.deleteUser(user.id);
+    if (error) throw new Error(`Could not remove the account: ${error.message}`);
+  }
+  const { error } = await db.from('allowed_emails').delete().eq('email', email);
+  if (error) throw new Error(error.message);
 }
 
 // The person's next sign-in asks for a new password; the old one stops working right away

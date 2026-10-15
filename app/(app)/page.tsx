@@ -30,7 +30,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
   const kind = TYPES.find((t) => t.key === type);
   const brand = await currentBrand();
   const [loaded, projects, real] = await Promise.all([
-    welcome ? [] : loadPieces({ userId: mine ? me.id : undefined, made }),
+    welcome ? [] : loadPieces({ userId: mine ? me.id : undefined, made, viewerId: me.id }),
     listProjects(me).catch(() => []),
     welcome ? null : onboardingState(me),
   ]);

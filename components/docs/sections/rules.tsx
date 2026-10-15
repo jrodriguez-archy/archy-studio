@@ -9,7 +9,7 @@ const FAQ: [string, React.ReactNode][] = [
   ['How do I continue a design another day?', <><Ui key="u">New version with Claude</Ui> in the set’s menu, then paste it in Claude.</>],
   ['Where are my files?', 'In the Gallery (Mine). Download a set as a ZIP or each format as a PNG.'],
   ['What if no template fits?', <>Claude offers the closest one adapted, or an <Link key="e" href="/docs/explorations">exploration</Link>: a new design in the brand. Or ask for one directly (“explore…”).</>],
-  ['Who sees my designs?', 'Everyone on the team, in Team. Personal projects (Only me) are visible to you only.'],
+  ['Who sees my designs?', 'Everyone on the team, in Team. Sets in a personal project (Only me) are yours alone.'],
 ];
 
 export function Rules() {

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // restore them to the gallery or delete them for good.
 export default async function ArchivePage() {
   const me = (await currentUser())!;
-  const [pieces, projects] = await Promise.all([loadPieces({ archived: true }), listProjects(me).catch(() => [])]);
+  const [pieces, projects] = await Promise.all([loadPieces({ archived: true, viewerId: me.id }), listProjects(me).catch(() => [])]);
 
   return (
     <>

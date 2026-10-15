@@ -194,7 +194,7 @@ export async function editorContext(piece: PieceSource) {
 // The Canvas panel: the pieces to open and the team's assets (mine and everyone's).
 export async function canvasLibrary(me: Who) {
   const [mine, team, myAssets, teamAssets, folders, seen] = await Promise.all([
-    loadPieces({ userId: me.id }, 80), loadPieces({}, 80), listAssets({ ownerId: me.id }), listAssets(), listFolders(),
+    loadPieces({ userId: me.id, viewerId: me.id }, 80), loadPieces({ viewerId: me.id }, 80), listAssets({ ownerId: me.id }), listAssets(), listFolders(),
     supabaseAdmin().from('profiles').select('mcp_seen_at').eq('id', me.id).maybeSingle(),
   ]);
   // One card per set, as in the gallery: its lead format in front, the others stacked behind. Opening

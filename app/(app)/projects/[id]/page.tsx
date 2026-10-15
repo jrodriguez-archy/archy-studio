@@ -21,7 +21,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
   const [{ id }, { type }] = await Promise.all([params, searchParams]);
   const me = (await currentUser())!;
   await followRecord('projects', id, `/projects/${id}`);
-  const [project, pieces, projects] = await Promise.all([getProject(me, id), loadPieces({ projectId: id }), listProjects(me)]);
+  const [project, pieces, projects] = await Promise.all([getProject(me, id), loadPieces({ projectId: id, viewerId: me.id }), listProjects(me)]);
   if (!project) notFound();
   const kind = TYPES.find((t) => t.key === type);
   const href = (t?: string) => (t ? `/projects/${id}?type=${t}` : `/projects/${id}`);

@@ -44,7 +44,7 @@ export function Gallery() {
       <H2 id="projects">Projects</H2>
       <p>
         Projects are folders for sets: a campaign, an event, a client. Create one with <Ui>+</Ui> next to Projects in the sidebar. A
-        project is <strong>Team</strong> (everyone sees it) or <strong>Only me</strong> (your personal folder). Move sets in with{' '}
+        project is <strong>Team</strong> (everyone sees it) or <strong>Only me</strong> (your personal folder: its sets show to no one else, not even in Team). Move sets in with{' '}
         <Ui>Move to project</Ui>, or ask Claude to save new designs there. Deleting a project keeps its designs in the gallery.
       </p>
 

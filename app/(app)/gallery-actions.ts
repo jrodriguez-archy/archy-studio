@@ -13,12 +13,14 @@ const clean = (f: PieceFilter): PieceFilter => ({
 
 // The next page of the gallery: designs older than `before`.
 export async function morePiecesAction(filter: PieceFilter, before: string): Promise<Piece[]> {
-  if (!(await currentUser())) return [];
-  return loadPieces({ ...clean(filter), before });
+  const me = await currentUser();
+  if (!me) return [];
+  return loadPieces({ ...clean(filter), viewerId: me.id, before });
 }
 
 // One set as it is now, for a live update (empty when it no longer belongs to this view).
 export async function setPiecesAction(filter: PieceFilter, setId: string): Promise<Piece[]> {
-  if (!(await currentUser()) || !ID.test(setId)) return [];
-  return loadPieces({ ...clean(filter), setId }, 50);
+  const me = await currentUser();
+  if (!me || !ID.test(setId)) return [];
+  return loadPieces({ ...clean(filter), viewerId: me.id, setId }, 50);
 }

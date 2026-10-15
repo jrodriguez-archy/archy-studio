@@ -11,7 +11,14 @@ import { PAGE, type Piece, type PieceFilter } from './gallery-shared';
 export { PAGE, TYPES, canManageSet, formatLabel, groupSets, type Piece, type PieceFilter, type PieceSet } from './gallery-shared';
 
 
-export async function loadPieces(filter: PieceFilter & { before?: string; setId?: string }, limit = PAGE): Promise<Piece[]> {
+// Designs filed in someone else's personal project are theirs alone: they never show to anyone else.
+async function othersPrivateProjects(viewerId: string): Promise<string[]> {
+  const { data } = await supabaseAdmin().from('projects').select('id').eq('shared', false).neq('owner_id', viewerId);
+  return (data ?? []).map((p) => p.id as string);
+}
+
+export async function loadPieces(filter: PieceFilter & { viewerId: string; before?: string; setId?: string }, limit = PAGE): Promise<Piece[]> {
+  const hidden = await othersPrivateProjects(filter.viewerId);
   let q = supabaseAdmin()
     .from('renders')
     .select('id, set_id, set_title, archived_at, edited_at, template, format, design, theme, storage_path, width, height, scale, slots, created_at, user_id, project_id, profiles!renders_user_id_fkey(email, full_name)')
@@ -26,6 +33,7 @@ export async function loadPieces(filter: PieceFilter & { before?: string; setId?
   else if (filter.made === 'template') q = q.neq('template', 'exploration');
   if (filter.before) q = q.lt('created_at', filter.before);
   if (filter.setId) q = q.or(`set_id.eq.${filter.setId},id.eq.${filter.setId}`);
+  if (hidden.length) q = q.or(`project_id.is.null,project_id.not.in.(${hidden.join(',')})`);
   type Row = { id: string; set_id: string | null; set_title: string | null; archived_at: string | null; edited_at: string | null; template: string; format: string; design: string | null; theme: string | null; storage_path: string; width: number; height: number; scale: number; slots: Record<string, string | null>; created_at: string; user_id: string | null; project_id: string | null; profiles: { email: string; full_name: string | null } | null };
   const rows = ((await q).data ?? []) as unknown as Row[];
   const titles = Object.fromEntries(await Promise.all([...new Set(rows.map((r) => r.template))].map(async (t) => [t, await titleOf(t)])));

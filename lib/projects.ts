@@ -4,8 +4,8 @@ import { currentBrand } from './brand';
 import type { Brand } from './brands';
 import { supabaseAdmin } from './supabase/admin';
 
-// Projects organise pieces like folders. Shared projects are visible to the whole team; personal ones
-// only to their owner. Anyone can file their own pieces into a project they can see; the owner (or an
+// Projects organise pieces like folders. Shared projects are visible to the whole team; personal ones,
+// and the pieces filed in them, only to their owner. Anyone can file their own pieces into a project they can see; the owner (or an
 // admin) renames or deletes it. Deleting a project keeps its pieces (they go back to no project).
 // Each project belongs to one brand and only shows there; without a brand, the one the person works in.
 

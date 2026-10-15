@@ -46,7 +46,7 @@ export function ProjectDialog({ open, onOpenChange, title, action, initial, onSu
             <div className="grid grid-cols-2 gap-1.5" role="radiogroup">
               {[
                 { value: true, label: 'Team', hint: 'Everyone in Studio', icon: UserGroupIcon },
-                { value: false, label: 'Only me', hint: 'Personal folder', icon: LockIcon },
+                { value: false, label: 'Only me', hint: 'Its sets only for you', icon: LockIcon },
               ].map((o) => (
                 <button
                   key={o.label}

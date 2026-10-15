@@ -15,7 +15,7 @@ export default async function ArchivePage() {
 
   return (
     <>
-      <PageHeader title="Archive" description="Archived designs are hidden from the gallery. Restore them, or delete them for good." />
+      <PageHeader title="Archive" description="Hidden from the gallery." />
       <GalleryFeed
         initial={pieces} filter={{ archived: true }} manageOnly selectable projects={projects} me={me}
         empty={

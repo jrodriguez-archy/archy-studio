@@ -12,6 +12,12 @@ export const session = {
   /** Images moved in (+) or out (−) of each folder this session, on top of the server's counts. */
   counts: new Map<string, number>(),
 };
+/** Another brand: its own images and folders, so nothing changed here in the other one shows. */
+export function resetSession() {
+  session.added = []; session.gone.clear(); session.names.clear(); session.folderOf.clear();
+  session.folders = []; session.foldersGone.clear(); session.folderNames.clear(); session.counts.clear();
+  countedOn = null;
+}
 export const bump = (id: string | null | undefined, by: number) => { if (id) session.counts.set(id, (session.counts.get(id) ?? 0) + by); };
 export function withSession(base: Lists): Lists {
   const fix = (l: Asset[]) => {

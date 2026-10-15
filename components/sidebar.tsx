@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import type { NavItem, NavSection } from '@/components/app-shell';
 import { BRAND_IDS, BRANDS, brandCookie, type Brand } from '@/lib/brands';
 import { firstName } from '@/lib/names';
+import { resetSession } from '@/components/assets/session';
 
 const SidebarContext = createContext({ collapsed: false });
 export const useSidebar = () => useContext(SidebarContext);
@@ -122,6 +123,7 @@ export function useSwitchBrand() {
   const router = useRouter();
   return (b: Brand) => {
     document.cookie = brandCookie(b);
+    resetSession();
     router.push('/');
     router.refresh();
   };
@@ -130,6 +132,10 @@ export function useSwitchBrand() {
 function BrandMenu({ brand }: { brand: Brand }) {
   const { collapsed } = useSidebar();
   const switchTo = useSwitchBrand();
+  // However the brand changed (this menu, or a link to the other brand's design), the images and folders
+  // changed here in the other one do not follow.
+  const [shown, setShown] = useState(brand);
+  useEffect(() => { if (brand !== shown) { resetSession(); setShown(brand); } }, [brand, shown]);
   const trigger = (
     <DropdownMenuTrigger aria-label={`Brand: ${BRANDS[brand].name}`}
       className={`${ROW} w-full text-foreground/60 outline-none hover:bg-foreground/[0.04] hover:text-foreground ${collapsed ? 'justify-center px-0' : ''}`}>

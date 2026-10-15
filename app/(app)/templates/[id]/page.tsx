@@ -114,7 +114,7 @@ export default async function TemplatePage({ params, searchParams }: { params: P
               </div>
             );
           })}
-          <p className="mt-2 text-foreground/40">Room: characters per line × lines at full size; text can shrink a little to fit more.</p>
+          <p className="mt-2 text-foreground/40">Room: characters per line × lines.</p>
         </section>
       </div>
     </>

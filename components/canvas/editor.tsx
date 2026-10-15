@@ -502,10 +502,12 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   useEffect(() => { refreshInfo(); }, [refreshInfo, selected, comps]);
 
   // ---- Keys ----
+  const nudging = useRef(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (t?.closest?.('input, textarea, [contenteditable], [role=dialog], [role=menu], [data-panel]')) return; // keys in a side panel are the panel's
+      // Keys while typing or in a menu are theirs; after a click on a panel button, ⌘Z and the arrows still work.
+      if (t?.closest?.('input, textarea, select, [contenteditable], [role=dialog], [role=menu], [role=listbox], [role=slider], [role=radiogroup]')) return;
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
@@ -519,15 +521,23 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
       const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
       if (d) {
         e.preventDefault();
-        editMany(Object.fromEntries(ids.map((id) => { const b = cur().edits[id]?.box ?? {}; return [id, { box: { dx: (b.dx ?? 0) + d[0], dy: (b.dy ?? 0) + d[1] } }]; })));
+        // Shown at once; one history step when the key is let go (holding it never floods the history).
+        nudging.current = true;
+        editMany(Object.fromEntries(ids.map((id) => { const b = cur().edits[id]?.box ?? {}; return [id, { box: { dx: (b.dx ?? 0) + d[0], dy: (b.dy ?? 0) + d[1] } }]; })), false);
       } else if (e.key === 'Backspace' || e.key === 'Delete') {
         e.preventDefault();
         hideMany(ids);
       }
     };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (!nudging.current || !e.key.startsWith('Arrow')) return;
+      nudging.current = false;
+      commitTo(activeRef.current, docRef.current[activeRef.current]);
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [comps, selected, undo, redo, editMany, hideMany, vp, cur]);
+    window.addEventListener('keyup', onKeyUp);
+    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKeyUp); };
+  }, [comps, selected, undo, redo, editMany, hideMany, vp, cur, commitTo]);
 
   // ---- The work is kept as people edit (each saved format's draft, with the formats added and not saved
   // yet on the first one); Claude's edits and the same design's edits in another tab arrive over Realtime.

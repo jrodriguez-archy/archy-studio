@@ -51,7 +51,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
       <div className="rounded-xl bg-foreground/[0.03] px-6 py-24 text-center">
         <p className="font-medium">{kind ? `No ${kind.label.toLowerCase()} designs here` : 'This project is empty'}</p>
         <p className="mx-auto mt-1 max-w-sm text-muted-foreground">
-          Move designs here from the gallery, or ask Claude to save new ones to “{project.name}”.
+          Move designs here, or ask Claude to save to “{project.name}”.
         </p>
       </div>
         }

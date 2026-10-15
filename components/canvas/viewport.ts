@@ -68,9 +68,11 @@ export function useViewport(width: number, height: number) {
 
   useEffect(() => {
     const typing = (t: EventTarget | null) => !!(t as HTMLElement)?.closest?.('input, textarea, [contenteditable]');
+    // Space on a focused button presses it (not the hand).
+    const pressable = (t: EventTarget | null) => !!(t as HTMLElement)?.closest?.('button, [role=button], [role=menuitem], [role=radio], select, a');
     const down = (e: KeyboardEvent) => {
       if (typing(e.target)) return;
-      if (e.code === 'Space' && !e.repeat) { e.preventDefault(); setSpace(true); }
+      if (e.code === 'Space' && !e.repeat && !pressable(e.target)) { e.preventDefault(); setSpace(true); }
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
       if (e.key === '=' || e.key === '+') { e.preventDefault(); zoomTo(view.current.zoom * 1.25); }
@@ -79,9 +81,14 @@ export function useViewport(width: number, height: number) {
       else if (e.key === '1') { e.preventDefault(); zoomTo(1); }
     };
     const up = (e: KeyboardEvent) => { if (e.code === 'Space') setSpace(false); };
+    // Space let go in another window (⌘-Tab while holding it): the hand does not stay on.
+    const away = () => { setSpace(false); dragging.current = null; };
+    const hidden = () => { if (document.visibilityState === 'hidden') away(); };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    window.addEventListener('blur', away);
+    document.addEventListener('visibilitychange', hidden);
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); window.removeEventListener('blur', away); document.removeEventListener('visibilitychange', hidden); };
   }, [fit, zoomTo]);
 
   const panning = space || hand;
@@ -100,6 +107,7 @@ export function useViewport(width: number, height: number) {
       setFitted(false);
     },
     onPointerUp: () => { dragging.current = null; },
+    onPointerCancel: () => { dragging.current = null; },
   };
 
   return { area, zoom, pan, fit, frame, zoomTo, panning, hand, setHand, handlers, grabbing: !!dragging.current };

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { PageHeader, Pills, Segmented } from '@/components/app-shell';
 import { GalleryEmpty } from '@/components/gallery-empty';
 import { GalleryFeed } from '@/components/gallery-feed';
@@ -34,7 +35,14 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
     listProjects(me).catch(() => []),
     welcome ? null : onboardingState(me),
   ]);
-  const pieces = loaded;
+  // A set link (Copy link, a proposal, Canvas's way back) opens that set even when it is older than the
+  // first page, or someone else's in Mine; an archived one opens in Archive.
+  let pieces = loaded;
+  if (set && /^[0-9a-f-]{36}$/i.test(set) && !welcome && !loaded.some((p) => p.set_id === set || p.id === set)) {
+    const extra = await loadPieces({ setId: set, viewerId: me.id }, 50);
+    if (extra.length) pieces = [...loaded, ...extra];
+    else if ((await loadPieces({ setId: set, viewerId: me.id, archived: true }, 1)).length) redirect(`/archive?set=${set}`);
+  }
   const onboarding = real ?? { show: true, complete: false, steps: { claude: false, design: false, canvas: false }, latestPieceId: null };
 
   const href = (p: { all?: boolean; type?: string; made?: string }) => {

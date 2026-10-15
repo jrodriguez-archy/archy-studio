@@ -609,7 +609,18 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     if (!g) { if (!panning && !passive && !reframe) onHover(pick(e)?.id ?? null); return; }
     if (!g.moved && Math.abs(e.clientX - g.x) + Math.abs(e.clientY - g.y) < 3) return;
     g.moved = true;
+    last.current = e;
     dragTo(e, false);
+  };
+  // The last place the pointer was seen while dragging: a gesture the system takes away (⌘-Tab, a touch
+  // turned into a scroll) ends there, as if released.
+  const last = useRef<React.PointerEvent | null>(null);
+  const onPointerCancel = () => {
+    const at = last.current;
+    last.current = null;
+    if (pan.current) { pan.current = null; return; }
+    if (!drag.current) return;
+    if (drag.current.moved && at) onPointerUp(at); else onPointerUp({ clientX: drag.current.x, clientY: drag.current.y } as React.PointerEvent);
   };
 
   const onPointerUp = (e: React.PointerEvent) => {
@@ -758,7 +769,10 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
         className={`absolute inset-0 ${editing || panning ? 'pointer-events-none' : reframe ? 'cursor-move' : 'cursor-default'}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
+        onPointerUp={(e) => { last.current = null; onPointerUp(e); }}
+        onPointerCancel={onPointerCancel}
+        onLostPointerCapture={() => { if (drag.current || pan.current) onPointerCancel(); }}
+        style={{ touchAction: 'none' }}
         onPointerLeave={() => onHover(null)}
         onDoubleClick={onDoubleClick}
       >

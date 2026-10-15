@@ -71,21 +71,29 @@ export function GalleryFeed({ initial, filter, leadFormats, manageOnly, selectab
   // Older designs when the end of the grid comes into view.
   const end = useRef<HTMLDivElement>(null);
   const loading = useRef(false);
+  // A page that did not come (a network blip, a new deploy) is asked for again a little later.
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
     const el = end.current;
     if (!el || !more) return;
+    let gone = false, again: ReturnType<typeof setTimeout> | undefined;
     const io = new IntersectionObserver(async ([e]) => {
       if (!e.isIntersecting || loading.current) return;
       loading.current = true;
-      const before = pieces[pieces.length - 1]?.created_at;
-      const next = before ? await morePiecesAction(filter, before) : [];
-      setPieces((now) => [...now, ...next.filter((p) => !now.some((q) => q.id === p.id))]);
-      setMore(next.length >= PAGE);
-      loading.current = false;
+      try {
+        const before = pieces[pieces.length - 1]?.created_at;
+        const next = before ? await morePiecesAction(filter, before) : [];
+        setPieces((now) => [...now, ...next.filter((p) => !now.some((q) => q.id === p.id))]);
+        setMore(next.length >= PAGE);
+      } catch {
+        if (!gone) again = setTimeout(() => setRetry((n) => n + 1), 3000);
+      } finally {
+        loading.current = false;
+      }
     }, { rootMargin: '1200px 0px' });
     io.observe(el);
-    return () => io.disconnect();
-  }, [pieces, more, filter]);
+    return () => { gone = true; clearTimeout(again); io.disconnect(); };
+  }, [pieces, more, filter, retry]);
 
   if (!sets.length && !more) return <>{empty}</>;
   return (

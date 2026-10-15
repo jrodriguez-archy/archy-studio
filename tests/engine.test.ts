@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { compose } from '@/lib/compose';
+import { compose, withStableIds } from '@/lib/compose';
 import { ORIGIN, MIME } from '@/lib/fill';
 import { render } from '@/lib/renderer';
 import { ROOT, listTemplates, loadManifest } from '@/lib/templates';
@@ -33,12 +33,14 @@ describe('exploration editing', () => {
   <img data-name="Team photo" src="placeholder:scene" style="width:300px; height:200px; object-fit:cover">
   <div data-name="Hero" data-image="placeholder:person" style="width:400px; height:300px; background-size:cover"></div>
   <div data-name="Stat card" style="padding:24px; border-radius:24px; background: var(--color-white)"><p style="margin:0">32%</p><p style="margin:0">more booked hours</p></div>
+  <span data-icon="Calendar03Icon" data-name="Icon Calendar" style="width:48px; height:48px; color: white"></span>
+  <div data-piece="mascot" data-name="Mascot" style="width:240px"></div>
 </div>`;
   type W = Window & Record<string, (...a: unknown[]) => unknown>;
   const id = (name: string) => page.evaluate((n) => (document.querySelector(`[data-name="${n}"]`) as HTMLElement).dataset.node!, name);
 
   beforeAll(async () => {
-    const c = await compose({ html, width: 1080, height: 1350, brand: 'archy' });
+    const c = await compose({ html: withStableIds(html), width: 1080, height: 1350, brand: 'archy' });
     browser = await chromium.launch();
     page = await browser.newPage({ viewport: { width: 1080, height: 1350 } });
     await page.route(`${ORIGIN}/**`, async (route) => {
@@ -64,6 +66,8 @@ describe('exploration editing', () => {
     expect(by('Stat card')?.kind).toBe('tag');
     expect(by('Headline')?.kind).toBe('text');
     expect(by('Team photo photo')?.kind).toBe('photo');
+    expect(comps.find((c) => c.kind === 'icon')?.id).toMatch(/^x[0-9a-z]+i$/);
+    expect(by('Mascot')?.kind).toBe('decoration');
   });
 
   it('applies fill, typed rich copy (cleaned) and a new <img>, and puts them back', async () => {

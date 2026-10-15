@@ -90,6 +90,8 @@
       // An exploration's image (data-image, lib/compose.ts) is a photo: it can be replaced and reframed.
       if (!children.length && el.dataset?.image) return [add({ id, kind: 'photo', name: GENERIC.test(name) || !name || /^photo$/i.test(name) ? 'Photo' : `${human(name)} photo` })];
       if (!children.length && /url\(/.test(getComputedStyle(el).backgroundImage)) return [add({ id, kind: 'decoration', name: GENERIC.test(name) ? 'Image' : human(name) })];
+      // A drawing the kit put in (the mascot, Pixels Behind) whose parts are not layers: one decoration.
+      if (!children.length && el.querySelector('svg')) return [add({ id, kind: 'decoration', name: GENERIC.test(name) || !name ? 'Graphic' : human(name) })];
       if (!children.length) return [];
 
       // A container: a pill, plate or badge with its own fill (tag), a named frame holding several

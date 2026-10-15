@@ -26,7 +26,7 @@
   "slots": {
     "image-photo": {
       "type": "image",
-      "default": "assets/01M46M1PSKRKK2HRB9H3P8SM6K.png",
+      "default": "assets/01M46M1PSKRKK2HRB9H3P8SM6K.webp",
       "perFormat": {
         "square": {
           "nodes": 1
@@ -950,7 +950,7 @@
     },
     "image-left": {
       "type": "image",
-      "default": "assets/01M4704G94A4V53CAK7FES1AZR.png",
+      "default": "assets/01M4704G94A4V53CAK7FES1AZR.webp",
       "perFormat": {
         "square--split--royal": {
           "nodes": 1
@@ -974,7 +974,7 @@
     },
     "image-right": {
       "type": "image",
-      "default": "assets/01M46M1PSKRKK2HRB9H3P8SM6K.png",
+      "default": "assets/01M46M1PSKRKK2HRB9H3P8SM6K.webp",
       "perFormat": {
         "square--split--royal": {
           "nodes": 1

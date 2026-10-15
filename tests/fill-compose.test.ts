@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compose } from '@/lib/compose';
+import { compose, withStableIds } from '@/lib/compose';
 import { prepareFill } from '@/lib/fill';
 
 // Template files and the brand kit are read from disk; nothing here reaches Supabase.
@@ -36,6 +36,19 @@ describe('compose', () => {
     const want = Object.fromEntries(ids(good.page));
     expect(want.Headline).toBeDefined();
     expect(Object.fromEntries(ids(bad.page))).toMatchObject({ Headline: want.Headline, Subline: want.Subline });
+  });
+
+  it('with stable ids, the kit\'s drawings never move the ids of the layers Claude wrote', async () => {
+    const page = async (extra: string) => (await compose({ html: withStableIds(`${extra}${piece('Calendar03Icon')}`), width: 1080, height: 1350, brand: 'archy' })).page;
+    const plain = Object.fromEntries(ids(await page('')));
+    const withMascot = Object.fromEntries(ids(await page('<div data-piece="mascot" data-name="Mascot" style="width:300px"></div><div data-piece="logo" style="width:200px"></div>')));
+    // Two more layers of its own (mascot, logo) come first: Claude's later layers shift by exactly two, not by the drawings' parts.
+    const n = (v: string) => parseInt(v.slice(1), 36);
+    expect(n(withMascot.Headline) - n(plain.Headline)).toBe(2);
+    expect(n(withMascot.Subline) - n(plain.Subline)).toBe(2);
+    const bad = Object.fromEntries(ids((await compose({ html: withStableIds(piece('NoSuchIcon')), width: 1080, height: 1350, brand: 'archy' })).page));
+    expect(bad.Headline).toBe(plain.Headline);
+    expect((await page('')).match(/<svg data-node="x[0-9a-z]+i"/)).not.toBeNull();
   });
 
   it('strips scripts and event handlers from the HTML', async () => {

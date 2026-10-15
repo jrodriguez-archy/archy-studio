@@ -75,6 +75,21 @@ export type Composition = {
   problems: string[];
 };
 
+// Layer ids. Pieces saved with this mark at the start of their HTML number only the layers Claude wrote,
+// before the kit's drawings go in (the logo, icons, the mascot), so a change to a drawing in the kit never
+// moves the ids that saved edits point to. Pieces saved before it keep the old numbering (drawings counted).
+export const STABLE_IDS = '<!--studio-ids:2-->';
+export const withStableIds = (html: string) => (html.trimStart().startsWith(STABLE_IDS) ? html : `${STABLE_IDS}${html}`);
+const SVG_PARTS = /^(path|g|circle|rect|line|polyline|polygon|ellipse|defs|clippath|lineargradient|stop|use|mask)$/i;
+function numberLayers(html: string): string {
+  let n = 0;
+  return html.replace(/<([a-z][a-z0-9]*)\b(?![^>]*\bdata-node=)/gi, (m, tag: string) => {
+    // A line break is not a layer (it still counts, so ids stay what they were for pieces already edited).
+    if (/^br$/i.test(tag)) { n++; return m; }
+    return SVG_PARTS.test(tag) ? m : `<${tag} data-node="x${(n++).toString(36)}"`;
+  });
+}
+
 // The artboard page for one format. `origin` is where the page reads the repo files (the renderer's).
 export async function compose(input: { html: string; width: number; height: number; brand: Brand; title?: string }, origin = ORIGIN): Promise<Composition> {
   const { width, height, brand } = input;
@@ -85,7 +100,9 @@ export async function compose(input: { html: string; width: number; height: numb
   }
   const problems: string[] = [];
   const images = new Set<string>();
+  const stable = input.html.trimStart().startsWith(STABLE_IDS);
   let html = sanitize(input.html);
+  if (stable) html = numberLayers(html);
 
   // The logo: the real wordmark, coloured for its ground (white unless data-on="light").
   const logo = (await read(kitFile(brand, 'logo.svg'))).replace('<svg ', '<svg width="100%" height="100%" preserveAspectRatio="xMinYMid meet" style="display:block" ');
@@ -106,7 +123,9 @@ export async function compose(input: { html: string; width: number; height: numb
     if (!inner) { problems.push(`Unknown icon "${name}" (use a Hugeicons export name, e.g. Calendar03Icon).`); html = html.replace(whole, `<${tag}${attrs}><svg data-missing="icon" viewBox="0 0 24 24" width="100%" height="100%"></svg></${tag}>`); continue; }
     const svg = `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">${inner.replace(/stroke-width="[^"]*"/g, 'stroke-width="1.5"')}</svg>`;
     const named = /\bdata-name=/.test(attrs) ? '' : ` data-name="Icon ${name.replace(/Icon$/, '')}"`;
-    html = html.replace(whole, `<${tag}${attrs}${named}>${svg}</${tag}>`);
+    // With stable ids the drawing takes its holder's id plus "i" (Canvas edits the icon by it).
+    const host = stable ? attrs.match(/\bdata-node="([^"]+)"/)?.[1] : undefined;
+    html = html.replace(whole, `<${tag}${attrs}${named}>${host ? svg.replace('<svg ', `<svg data-node="${host}i" `) : svg}</${tag}>`);
   }
 
   // Pixel Dissolve and Pixels Behind (Archy - Brand › Textures › Pixel Effects): the grain as square cells
@@ -226,13 +245,8 @@ export async function compose(input: { html: string; width: number; height: numb
   // inside the page (the mascot's gradients) draw.
   html = html.replace(/url\(\s*(&quot;|"|'|)(.*?)\1\s*\)/gi, (m, _q: string, u: string) => (u.startsWith('#') || images.has(u.replace(/&amp;/g, '&')) ? m : 'none'));
 
-  // Every layer gets an id (the checks, the Inspector and Canvas address layers by it). A line break is
-  // not a layer (it still counts, so ids stay what they were for pieces already edited in Canvas).
-  let n = 0;
-  html = html.replace(/<([a-z][a-z0-9]*)\b(?![^>]*\bdata-node=)/gi, (m, tag: string) => {
-    if (/^br$/i.test(tag)) { n++; return m; }
-    return /^(path|g|circle|rect|line|polyline|polygon|ellipse|defs|clippath|lineargradient|stop|use|mask)$/i.test(tag) ? m : `<${tag} data-node="x${(n++).toString(36)}"`;
-  });
+  // Every layer gets an id (the checks, the Inspector and Canvas address layers by it).
+  if (!stable) html = numberLayers(html);
   // A text broken with <br> becomes one text with its line breaks kept, so Canvas reads and edits it
   // as a text (an element child would make it a frame with nothing inside).
   html = html.replace(/<([a-z][a-z0-9]*)(\s[^>]*)?>([^<]*(?:<br\s*\/?>[^<]*)+)<\/\1>/gi, (m, tag: string, attrs = '', body: string) => {

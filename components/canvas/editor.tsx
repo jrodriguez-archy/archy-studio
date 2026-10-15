@@ -9,7 +9,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type { libraryAction as LibraryCall, prepareAction as PrepareCall, saveDraftAction as DraftCall } from '@/app/(app)/canvas/actions';
+import { canon, cleanSnap, libraryAction, luminance, planKeyOf, prepareAction, same, saveDraftAction } from './editor-calls';
 import { useRendersLive } from '@/components/use-renders-live';
 
 // Export and save render with Chromium in their own route (/api/canvas), not in this page's function.
@@ -54,24 +54,6 @@ type Doc = Record<string, Snap>;
 type Meta = { comps: Comp[]; safe: Box | null; tokens: Token[]; report: RenderReport | null; keys: Keys | null; review: Suggestion[] };
 const EMPTY: Meta = { comps: [], safe: null, tokens: [], report: null, keys: null, review: [] };
 const GAP = 120; // between artboards, in design px
-
-// Canvas's light server calls, side by side (server actions would run one at a time): /api/canvas/live.
-async function live(kind: string, args: unknown[]) {
-  const r = await fetch('/api/canvas/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, args }) });
-  // The same answers the actions gave: signed out, or any failure, comes back as { ok: false, error }.
-  if (r.status === 401) return { ok: false, error: 'Sign in again.' };
-  return r.json().catch(() => ({ ok: false, error: 'Something went wrong. Try again.' }));
-}
-const prepareAction = (...a: Parameters<typeof PrepareCall>): ReturnType<typeof PrepareCall> => live('prepare', a);
-const saveDraftAction = (...a: Parameters<typeof DraftCall>): ReturnType<typeof DraftCall> => live('draft', a);
-const libraryAction = (): ReturnType<typeof LibraryCall> => live('library', []);
-
-const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
-const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });
-// Key order ignored: a draft read back from the database (jsonb) compares equal to the one sent.
-const canon = (v: unknown) => JSON.stringify(v, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => (a < b ? -1 : 1))) : x));
-const luminance = (hex: string) => { const n = parseInt(hex.slice(1), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
-const planKeyOf = (s: Snap) => JSON.stringify([s.slots, Object.values(s.edits).flatMap((e) => [e.image, e.icon]).filter(Boolean).sort()]);
 
 // Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the design's
 // formats side by side as artboards in a pannable, zoomable viewport, the selection's properties on the
@@ -868,6 +850,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
                         claude={busyClaude}
                         flash={flash?.ref === b.ref ? flash.ids : []}
                         plan={p}
+                        slots={doc[b.ref].slots}
                         edits={doc[b.ref].edits}
                         zoom={vp.zoom}
                         selected={isActive ? selected : []}

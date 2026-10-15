@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { outpaintFor, type Crop, type Edits, type FillPlan, type NodeEdit, type Outpaint, type PhotoFit, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
 import type { Keys } from '@/lib/canvas-sync';
 import { movingEdges, snap, type Guide } from './guides';
+import { script, templatePage, turn, withoutSamples } from './stage-pages';
 import { componentAt, innermostAt, parentOf, readInfo, readTokens, within, type Box, type Comp, type LayerInfo, type Token } from './model';
 
 type Win = Window & {
@@ -30,34 +31,7 @@ export type { Outpaint };
 export const REFRAME_EVENT = 'canvas:reframe';
 export const startReframe = (id: string) => window.dispatchEvent(new CustomEvent(REFRAME_EVENT, { detail: id }));
 
-const scripts: Record<string, Promise<string>> = {};
 let loads = 0;
-// This deploy's copy (a new deploy, a new address: never an old engine from the browser cache).
-const BUILD = process.env.NEXT_PUBLIC_BUILD ?? 'dev';
-const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}?v=${BUILD}`).then((r) => r.text()));
-// Formats not being edited draw their first time two at a time (the one being edited never waits),
-// so opening a set shows the active format first instead of every format at once on one thread.
-let busy = 0;
-const waiting: (() => void)[] = [];
-const turn = () => new Promise<() => void>((done) => {
-  const go = () => { busy++; let out = false; done(() => { if (out) return; out = true; busy--; waiting.shift()?.(); }); };
-  if (busy < 2) go(); else waiting.push(go);
-});
-
-// A template page, fetched once per tab: each redraw writes it into the iframe (no network), and its
-// fonts and images resolve against the template's folder and come from the browser cache.
-const pages: Record<string, Promise<string>> = {};
-const templatePage = (html: string) => (pages[html] ??= fetch(`/api/template-files/${html}?v=${BUILD}`)
-  .then((r) => { if (!r.ok) throw new Error(`Template page ${r.status}`); return r.text(); })
-  .then((t) => t.replace(/<head([^>]*)>/i, `<head$1><base href="${location.origin}/api/template-files/${html}">`))
-  .catch((e) => { delete pages[html]; throw e; })); // a failed fetch is tried again next time
-
-// The template's sample photo in an image slot the fill is about to set (or remove): taken out of the page
-// before it is written, so the iframe's load does not wait for a multi-MB PNG that is thrown away.
-const withoutSamples = (t: string, values: Record<string, string | null>) => t.replace(/<[^>]*data-slot-type="image"[^>]*>/g, (tag) => {
-  const role = tag.match(/data-slot="([^"]+)"/)?.[1];
-  return role && role in values ? tag.replace(/background-image:\s*url\([^)]*\);?\s*/g, '') : tag;
-});
 
 export type StageHandle = {
   info: (id: string) => LayerInfo | null;
@@ -77,6 +51,8 @@ export type SelectMode = 'replace' | 'toggle';
 
 type Props = {
   plan: FillPlan;
+  /** The copy as typed now: shown at once in the design on screen while the fitted version is on its way. */
+  slots?: Record<string, string | null>;
   edits: Edits;
   zoom: number;
   selected: string[];
@@ -129,7 +105,7 @@ function scaleAround(f: Fit, crop: Crop, zoom: number): Crop {
 
 // The design itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
-export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview, claude, flash = [], passive = false, onActivate }, ref) {
+export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview, claude, flash = [], passive = false, onActivate }, ref) {
   // Two pages, double-buffered: a new fill is drawn in the hidden one while the current one stays on
   // screen, then fades in over it. `frame` is always the one on screen.
   const frameA = useRef<HTMLIFrameElement>(null);
@@ -382,6 +358,22 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     return () => { stale = true; clearTimeout(safety); f.removeEventListener('load', onLoad); release?.(); release = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fillKey, nonce, redraw]);
+
+  // Copy changed in a panel: it shows in the design on screen right away; the fitted page (sizes, wraps)
+  // replaces it when its fill arrives.
+  useEffect(() => {
+    if (!ready || !slots || plan.page != null) return;
+    const d = doc();
+    if (!d) return;
+    for (const [k, v] of Object.entries(slots)) {
+      if (v == null || v === '' || v === plan.fill.values[k]) continue;
+      for (const n of d.querySelectorAll<HTMLElement>(`[data-slot="${CSS.escape(k)}"][data-slot-type="text"]`)) {
+        if (n.isContentEditable || n.children.length) continue;
+        if (n.textContent !== v) { n.textContent = v; n.style.whiteSpace ||= 'pre-line'; }
+      }
+    }
+    redraw();
+  }, [slots, ready, front, plan, redraw]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!ready) return;

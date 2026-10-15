@@ -38,7 +38,7 @@
   "slots": {
     "image-venue": {
       "type": "image",
-      "default": "assets/2BEBYSSVVPC4G27ANN2J3TW69R.png",
+      "default": "assets/2BEBYSSVVPC4G27ANN2J3TW69R.webp",
       "perFormat": {
         "post": {
           "nodes": 1
@@ -523,7 +523,7 @@
     },
     "image-photo": {
       "type": "image",
-      "default": "assets/49V35VNHD4PWVF383KRBPJRZRY.png",
+      "default": "assets/49V35VNHD4PWVF383KRBPJRZRY.webp",
       "perFormat": {
         "cover": {
           "nodes": 1

@@ -38,7 +38,7 @@
   "slots": {
     "image-illustration": {
       "type": "image",
-      "default": "assets/15J2ZJNWEW1FB7T25QWA4H8RVE.png",
+      "default": "assets/15J2ZJNWEW1FB7T25QWA4H8RVE.webp",
       "perFormat": {
         "post": {
           "nodes": 1
@@ -586,7 +586,7 @@
     },
     "image-venue": {
       "type": "image",
-      "default": "assets/1HGHQW5ZC0NF7BJ30QDAJWHWSP.png",
+      "default": "assets/1HGHQW5ZC0NF7BJ30QDAJWHWSP.webp",
       "perFormat": {
         "cover": {
           "nodes": 1
@@ -643,7 +643,7 @@
     },
     "image-photo": {
       "type": "image",
-      "default": "assets/01M48Z938HV2X0GCDFWM4AGYKJ.png",
+      "default": "assets/01M48Z938HV2X0GCDFWM4AGYKJ.webp",
       "perFormat": {
         "cover": {
           "nodes": 1

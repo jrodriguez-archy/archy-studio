@@ -1262,7 +1262,7 @@
     },
     "image-speaker-1": {
       "type": "image",
-      "default": "assets/5YKY4BK4PKDJPSDXW064N0P905.png",
+      "default": "assets/5YKY4BK4PKDJPSDXW064N0P905.webp",
       "perFormat": {
         "post": {
           "nodes": 1
@@ -1779,7 +1779,7 @@
     },
     "image-speaker-2": {
       "type": "image",
-      "default": "assets/5YKY4BK4PKDJPSDXW064N0P905.png",
+      "default": "assets/5YKY4BK4PKDJPSDXW064N0P905.webp",
       "perFormat": {
         "post": {
           "nodes": 1
@@ -2296,7 +2296,7 @@
     },
     "image-speaker-3": {
       "type": "image",
-      "default": "assets/5YKY4BK4PKDJPSDXW064N0P905.png",
+      "default": "assets/5YKY4BK4PKDJPSDXW064N0P905.webp",
       "perFormat": {
         "post": {
           "nodes": 1

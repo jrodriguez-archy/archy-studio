@@ -20,7 +20,7 @@
   "slots": {
     "image-ae": {
       "type": "image",
-      "default": "assets/01M3D77CMZYQ847ZDQD6TGEZPD.png",
+      "default": "assets/01M3D77CMZYQ847ZDQD6TGEZPD.webp",
       "perFormat": {
         "post": {
           "nodes": 1

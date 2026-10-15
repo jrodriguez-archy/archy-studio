@@ -26,7 +26,7 @@
   "slots": {
     "image-photo": {
       "type": "image",
-      "default": "assets/45S3BS5T9W7EB4TW6ZF88T8RZY.png",
+      "default": "assets/45S3BS5T9W7EB4TW6ZF88T8RZY.webp",
       "perFormat": {
         "post": {
           "nodes": 1

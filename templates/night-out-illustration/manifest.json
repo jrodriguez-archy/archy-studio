@@ -507,7 +507,7 @@
     },
     "image-venue": {
       "type": "image",
-      "default": "assets/5BDS4G9NVAWM876XJHSKFS5K9R.png",
+      "default": "assets/5BDS4G9NVAWM876XJHSKFS5K9R.webp",
       "perFormat": {
         "cover": {
           "nodes": 1
@@ -564,7 +564,7 @@
     },
     "image-photo": {
       "type": "image",
-      "default": "assets/688P15EV094TDZ0VBAZWA93KM3.png",
+      "default": "assets/688P15EV094TDZ0VBAZWA93KM3.webp",
       "perFormat": {
         "cover": {
           "nodes": 1

@@ -3,7 +3,7 @@ import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
 import { editCanvas, getCanvas, saveCanvas } from '@/lib/canvas-claude';
 import { MissingRequired, render, renderComposition } from '@/lib/renderer';
-import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, compose } from '@/lib/compose';
+import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, compose, withStableIds } from '@/lib/compose';
 import { randomUUID } from 'node:crypto';
 import { findAsset, shortId } from '@/lib/asset-ids';
 import { photoPlaceholder, placeholderNote, type Placeholder } from '@/lib/placeholders';
@@ -337,7 +337,7 @@ const handler = createMcpHandler(
               if (kept !== link) html = html.split(`"${link}"`).join(`"${kept}"`);
             }
             const checks = await checksFor(f.width, f.height, brand);
-            const comp = await compose({ html, width: f.width, height: f.height, brand, title });
+            const comp = await compose({ html: withStableIds(html), width: f.width, height: f.height, brand, title });
             const drawn = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, checks, scale: hiRes ? 2 : 1 });
             const errors = [...comp.problems, ...drawn.report.errors.map((e) => e.message)];
             const warnings = drawn.report.warnings.map((w) => w.message);
@@ -349,7 +349,7 @@ const handler = createMcpHandler(
             }
             let links = '';
             if (hiRes) {
-              const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: drawn.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html });
+              const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: drawn.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html: withStableIds(html) });
               if (rec) { saved++; links = ` Download (2x PNG): ${origin}/api/file/${rec.id} File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, rec.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${rec.id}`; }
             }
             out.push({ type: 'text', text: `${label}: ready, saved in the gallery as an Exploration.${links}${warnings.length ? `\nWorth fixing (guides, not refusals):\n- ${warnings.join('\n- ')}` : ''}` });
@@ -610,7 +610,8 @@ const handler = createMcpHandler(
             fill_around: z.boolean().optional().describe('With zoom below 1: AI paints the rest of the scene around the photo so it fills the frame (a new image in Assets; it can invent details).'),
           })).optional().describe('Per image slot (e.g. "image-photo"): where its photo sits in its frame. Use it when a render cuts off or hides what matters in the photo.'),
         }),
-        annotations: { readOnlyHint: true, openWorldHint: false },
+        // It saves designs and assets and may call Unsplash or the image models.
+        annotations: { readOnlyHint: false, openWorldHint: true },
       },
       async ({ template, formats, design, theme, slots, project, set, framing, smaller_text: smallerText = false }, ctx) => {
         let projectId: string | null = null;

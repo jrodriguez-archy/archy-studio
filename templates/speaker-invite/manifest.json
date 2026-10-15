@@ -633,7 +633,7 @@
     },
     "image-venue": {
       "type": "image",
-      "default": "assets/28WCH8BF37GTCV0TWA9P28YBG1.png",
+      "default": "assets/28WCH8BF37GTCV0TWA9P28YBG1.webp",
       "perFormat": {
         "cover": {
           "nodes": 1

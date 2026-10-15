@@ -5,6 +5,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { call, callJSON } from './paper.mjs';
+import { webpAssets } from './webp-assets.mjs';
 
 const dir = path.resolve(process.argv[2] ?? '');
 const offline = process.argv.includes('--offline');
@@ -317,4 +318,6 @@ for (const [role, slot] of Object.entries(manifest.slots)) {
 }
 stage(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 await writeStaged();
+// Template images are served as WebP (same look, a fraction of the weight).
+await webpAssets(dir);
 console.log(`manifest.json written${kept ? ` (length limits kept for ${kept} slots: run render.mjs --calibrate if the design changed)` : ''}`);

@@ -5,6 +5,7 @@ import { findAsset } from './asset-ids';
 import { MAX_PIXELS, createAsset, readAsset } from './assets';
 import type { Brand } from './brands';
 import { ORIGIN, resolveImage } from './fill';
+import { publicFetch } from './public-fetch';
 import { ROOT } from './templates';
 
 export type Expand = { top: number; right: number; bottom: number; left: number };
@@ -62,11 +63,12 @@ async function readSource(template: string, value: string): Promise<Buffer> {
   if (value.startsWith('upload:')) return (await readAsset(value.slice(7))).body;
   const url = await resolveImage(template, value, ORIGIN);
   if (url.startsWith(`${ORIGIN}/`)) {
+    // Only the template, library and brand files: never another file of the app.
     const file = path.resolve(ROOT, decodeURIComponent(url.slice(ORIGIN.length + 1)));
-    if (!file.startsWith(ROOT + path.sep)) throw new Error('Unknown photo.');
+    if (!['templates', 'library', 'brand-kit'].some((d) => file.startsWith(path.join(ROOT, d) + path.sep))) throw new Error('Unknown photo.');
     return fs.readFile(file);
   }
-  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(30_000) });
+  const res = await publicFetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`Could not open the photo (${res.status}).`);
   return Buffer.from(await res.arrayBuffer());
 }

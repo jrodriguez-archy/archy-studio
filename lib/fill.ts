@@ -7,6 +7,7 @@ import { STATIC, isPlaceholder, staticPlaceholder } from './placeholders';
 import { supabaseAdmin } from './supabase/admin';
 import { findAsset } from './asset-ids';
 import { uploadLink } from './upload-links';
+import { publicFetch } from './public-fetch';
 import { ROOT, comboFormats, loadConfig, loadLibrary, loadManifest, loadRules, resolveCombo, templateBrand } from './templates';
 
 // Deciding a piece before any page is opened: slot values, variant, fit rules, resolved images and
@@ -174,7 +175,7 @@ async function resolveLogo(template: string, v: string): Promise<string> {
   const id = v.startsWith('upload:') ? v : src;
   const known = remoteLogos.get(id);
   if (known) return known;
-  const res = await fetch(src, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(10_000) }).catch(() => null);
+  const res = await publicFetch(src, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(10_000) }).catch(() => null);
   if (!res?.ok) throw new Error(`Could not load the logo at ${v} (${res?.status ?? 'no answer in 10 s'})`);
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length > 5_000_000) throw new Error(`The logo at ${v} is larger than 5 MB`);

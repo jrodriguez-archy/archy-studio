@@ -9,6 +9,8 @@ const DAYS = 7;
 // Supabase key: those still open until they expire (7 days at most), so a link already shared keeps working.
 const own = () => process.env.FILE_LINK_SECRET || '';
 const legacy = () => process.env.SUPABASE_SECRET_KEY || '';
+// The last day a legacy-signed link can still be valid (FILE_LINK_SECRET came on 2026-10-15, plus 7 days).
+const LEGACY_UNTIL = Date.UTC(2026, 9, 23) / 1000;
 const sign = (key: string, id: string, exp: number) => createHmac('sha256', key).update(`file:${id}:${exp}`).digest('base64url');
 
 export function directFileLink(origin: string, id: string): string {
@@ -19,7 +21,8 @@ export function directFileLink(origin: string, id: string): string {
 export function directFileOk(id: string, exp: string | null, sig: string | null): boolean {
   if (!exp || !sig || !/^\d+$/.test(exp) || +exp < Date.now() / 1000) return false;
   const got = Buffer.from(sig);
-  return [own(), legacy()].filter(Boolean).some((key) => {
+  // Without FILE_LINK_SECRET (a deploy where it is missing) the Supabase key still signs, and verifies.
+  return [own(), !own() || +exp <= LEGACY_UNTIL ? legacy() : ''].filter(Boolean).some((key) => {
     const want = Buffer.from(sign(key, id, +exp));
     return want.length === got.length && timingSafeEqual(want, got);
   });

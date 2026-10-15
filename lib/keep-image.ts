@@ -1,6 +1,7 @@
 import 'server-only';
 import { MAX_PIXELS, createAsset } from './assets';
 import type { Brand } from './brands';
+import { publicFetch } from './public-fetch';
 import { supabaseAdmin, supabaseConfigured } from './supabase/admin';
 
 // An image Claude passes as a link (https) is kept in Assets the first time it is used: a signed link
@@ -40,9 +41,12 @@ async function keep(value: string, u: URL, key: string, opts: { ownerId: string;
   const { data: kept } = await db.from('assets').select('path').eq('prompt', key).eq('brand', opts.brand).is('deleted_at', null).limit(1).maybeSingle();
   if (kept?.path) return `upload:${kept.path}`;
 
-  // Only public addresses: never the server's own network.
-  if (/^(localhost|0\.|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[|.*\.(local|internal)$)/i.test(u.hostname)) throw new Error(`The image at ${u.origin} is not on a public address.`);
-  const res = await fetch(value, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(20_000) }).catch(() => null);
+  // Only public addresses: never the server's own network (checked again on every redirect).
+  let res: Response | null;
+  try { res = await publicFetch(value, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(20_000) }); } catch (e) {
+    if (/public address|Only https|No server|redirects/.test((e as Error).message)) throw e;
+    res = null;
+  }
   if (!res?.ok) throw new Error(`Could not open the image at ${u.origin}${u.pathname} (${res?.status ?? 'no answer'}). The link may have expired: ask for the photo with request_photos.`);
   const type = res.headers.get('content-type')?.split(';')[0] ?? '';
   if (!/^image\/(png|jpeg|webp|svg\+xml)$/.test(type)) throw new Error(`The link at ${u.origin}${u.pathname} is not a PNG, JPG, WebP or SVG image.`);

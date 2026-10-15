@@ -20,8 +20,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const direct = directFileOk(id, q.get('exp'), q.get('sig'));
   const [me, { data }] = await Promise.all([direct ? null : currentUser(), supabaseAdmin().from('renders').select('storage_path, archived_at, set_id, set_title, project_id, template, format, design, theme, width, height, slots').eq('id', id).maybeSingle()]);
   if (!me && !direct) return new Response('Sign in again.', { status: 401 });
-  // The Archive page still downloads archived designs; a link shared before stops working.
-  if (!data || (data.archived_at && new URL(req.url).searchParams.get('archived') !== '1')) return new Response('Not found', { status: 404 });
+  // The Archive page (signed in) still downloads archived designs; a link shared before, or a direct
+  // link, stops working.
+  if (!data || (data.archived_at && !(me && q.get('archived') === '1'))) return new Response('Not found', { status: 404 });
   return Response.redirect(await signedUrl(data.storage_path, 60 * 10, await nameOf(data)), 302);
 }
 

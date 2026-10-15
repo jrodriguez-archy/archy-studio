@@ -10,6 +10,7 @@ import { findAsset } from './asset-ids';
 import { getAsset } from './assets';
 import { iconMarkup } from './icons';
 import { AGENTS, BLEEDS, EXPRESSIONS, EYES, HEAD, POSES, RAISE, bleedBox, mascotSvg, type Agent, type Bleed, type Expression, type MascotGround, type Pose } from './mascot';
+import { publicFetch } from './public-fetch';
 import { ROOT } from './templates';
 
 // Explorations: a design for a brief no template covers, written by Claude as HTML in the brand kit
@@ -347,7 +348,7 @@ async function readImageInfo(v: string, url: string, origin: string): Promise<Im
   if (url.startsWith(`${UPLOAD_ROUTE}/`)) url = await resolveImage(EXPLORATION, v, ORIGIN);
   const body = url.startsWith(`${origin}/library/`)
     ? await fs.readFile(path.join(ROOT, decodeURIComponent(url.slice(origin.length + 1))))
-    : /^https:\/\//.test(url) ? await fetch(url, { signal: AbortSignal.timeout(15_000) }).then(async (r) => { if (!r.ok) throw new Error(`Image ${r.status}`); return Buffer.from(await r.arrayBuffer()); }) : null;
+    : /^https:\/\//.test(url) ? await publicFetch(url, { signal: AbortSignal.timeout(15_000) }).then(async (r) => { if (!r.ok) throw new Error(`Image ${r.status}`); return Buffer.from(await r.arrayBuffer()); }) : null;
   if (!body) return { kind };
   const box = await cutoutBox(body);
   return box ? { kind: 'cutout', ...box } : { kind };

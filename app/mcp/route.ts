@@ -22,6 +22,7 @@ import { createPhotoRequest, getPhotoRequest } from '@/lib/photo-requests';
 import { reportMissing } from '@/lib/missing-templates';
 import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo, templateBrand } from '@/lib/templates';
 import { BRAND_IDS } from '@/lib/brands';
+import plugin from '@/plugins/archy-studio/.claude-plugin/plugin.json';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -323,7 +324,10 @@ const handler = createMcpHandler(
         const origin = publicOrigin(ctx);
         const content: Content[] = [];
         let saved = 0;
-        for (const f of formats) {
+        // Each format drawn once (at 2x when it is kept; Claude sees it at 1x), all formats side by side.
+        const hiRes = supabaseConfigured();
+        const made = await Promise.all(formats.map(async (f): Promise<Content[]> => {
+          const out: Content[] = [];
           const label = `${f.name} (${f.width}×${f.height})`;
           let html = f.html;
           try {
@@ -334,25 +338,27 @@ const handler = createMcpHandler(
             }
             const checks = await checksFor(f.width, f.height, brand);
             const comp = await compose({ html, width: f.width, height: f.height, brand, title });
-            const out = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, checks });
-            const errors = [...comp.problems, ...out.report.errors.map((e) => e.message)];
-            const warnings = out.report.warnings.map((w) => w.message);
-            content.push({ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' });
+            const drawn = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, checks, scale: hiRes ? 2 : 1 });
+            const errors = [...comp.problems, ...drawn.report.errors.map((e) => e.message)];
+            const warnings = drawn.report.warnings.map((w) => w.message);
+            const preview = hiRes ? await (await import('sharp')).default(drawn.png).resize({ width: f.width }).png().toBuffer() : drawn.png;
+            out.push({ type: 'image', data: preview.toString('base64'), mimeType: 'image/png' });
             if (errors.length) {
-              content.push({ type: 'text', text: `${label}: not saved. Fix these and compose again:\n- ${errors.join('\n- ')}${warnings.length ? `\nAlso worth fixing:\n- ${warnings.join('\n- ')}` : ''}` });
-              continue;
+              out.push({ type: 'text', text: `${label}: not saved. Fix these and compose again:\n- ${errors.join('\n- ')}${warnings.length ? `\nAlso worth fixing:\n- ${warnings.join('\n- ')}` : ''}` });
+              return out;
             }
             let links = '';
-            if (supabaseConfigured()) {
-              const hi = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, scale: 2, checks });
-              const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: hi.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html });
+            if (hiRes) {
+              const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: drawn.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html });
               if (rec) { saved++; links = ` Download (2x PNG): ${origin}/api/file/${rec.id} File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, rec.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${rec.id}`; }
             }
-            content.push({ type: 'text', text: `${label}: ready, saved in the gallery as an Exploration.${links}${warnings.length ? `\nWorth fixing (guides, not refusals):\n- ${warnings.join('\n- ')}` : ''}` });
+            out.push({ type: 'text', text: `${label}: ready, saved in the gallery as an Exploration.${links}${warnings.length ? `\nWorth fixing (guides, not refusals):\n- ${warnings.join('\n- ')}` : ''}` });
           } catch (e) {
-            content.push({ type: 'text', text: `${label}: ${(e as Error).message}` });
+            out.push({ type: 'text', text: `${label}: ${(e as Error).message}` });
           }
-        }
+          return out;
+        }));
+        content.push(...made.flat());
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later compose of this brief).${saved ? ' Tell the requester it is an exploration that Design reviews, not an approved template. Small changes (copy, a colour, moving or scaling something) are made in Canvas (get_canvas / edit_canvas when they have it open); a new layout, ground or format is a new compose with the same set.' : ''}` });
         return { isError: saved === 0 && !content.some((c) => c.type === 'image'), content };
       },
@@ -639,15 +645,14 @@ const handler = createMcpHandler(
         const asked: Record<string, Framing> | undefined = framing && Object.keys(framing).length
           ? Object.fromEntries(Object.entries(framing).map(([k, f]) => [k, { focusX: f.focus_x, focusY: f.focus_y, zoom: f.zoom }])) : undefined;
         const keys = wanted.map((f) => (combo?.key ? `${f}--${combo.key}` : f));
-        const placeholders: Placeholder[] = [];
-        for (const [k, s] of Object.entries(m.slots)) {
-          if (s.type !== 'image' || slots[k] || optionalSlots.has(k)) continue;
-          if (s.perFormat && !keys.some((f) => f in s.perFormat!)) continue;
+        // The missing photos' stand-ins, looked for side by side.
+        const placeholders: Placeholder[] = await Promise.all(Object.entries(m.slots).filter(([k, s]) => {
+          if (s.type !== 'image' || slots[k] || optionalSlots.has(k)) return false;
+          if (s.perFormat && !keys.some((f) => f in s.perFormat!)) return false;
           // Made from another photo (the cover's ground from the city photo): that one is filled instead.
           const from = config.derive?.[k]?.from;
-          if (from && (slots[from] || m.slots[from]?.type === 'image')) continue;
-          placeholders.push(await photoPlaceholder({ slot: k, fact: config.facts?.[k] ?? null, slots, purpose: config.purpose, userId: userIdOf(ctx) }));
-        }
+          return !(from && (slots[from] || m.slots[from]?.type === 'image'));
+        }).map(([k]) => photoPlaceholder({ slot: k, fact: config.facts?.[k] ?? null, slots, purpose: config.purpose, userId: userIdOf(ctx) })));
         if (placeholders.length) slots = { ...slots, ...Object.fromEntries(placeholders.map((p) => [p.slot, p.value])) };
         const setId = await resolveSet({ userId: userIdOf(ctx), template, slots, requested: set });
         // New pieces of a set that is already filed in a project join that project.
@@ -663,73 +668,76 @@ const handler = createMcpHandler(
         // Formats whose copy fits in smaller text (offered as an option).
         const smallerOption: string[] = [];
         const extendNotes: string[] = [];
-        for (const format of wanted) {
+        // Each format drawn once, at 2x (the file kept); Claude's preview is that image at 1x. Formats are
+        // drawn side by side (three at a time), and one that fails never takes the others with it.
+        const hiRes = supabaseConfigured();
+        const at1x = async (png: Buffer, width: number) => hiRes ? (await import('sharp')).default(png).resize({ width }).png().toBuffer() : png;
+        type Made = { content: Content[]; refused?: string; smaller?: string; notes: string[]; coverNeeds?: string[]; missing?: MissingRequired; failed?: string };
+        const makeFormat = async (format: string): Promise<Made> => {
+          const made: Made = { content: [], notes: [] };
           let out;
           // This format's photos and framing: framing becomes crop edits, and a photo extended with
           // fill_around is this format's own (a new asset) with the crop that keeps it where it was.
           let fslots = slots;
           let fedits: Edits = {};
           try {
-            out = await render({ template, format, design, theme, slots, smallerText, framing: asked });
+            out = await render({ template, format, design, theme, slots, smallerText, framing: asked, scale: hiRes ? 2 : 1 });
             fedits = out.framed;
             const extended: string[] = [];
             for (const [slot, f] of Object.entries(framing ?? {})) {
               const at = f.fill_around ? out.fits[slot] : undefined;
               const plan = at && outpaintFor(at.fit);
               if (!at || !plan || !fslots[slot]) continue;
-              if (!owner || !(await useAi(owner, 'outpaint'))) { extendNotes.push(`${format}: ${slot} not extended (the daily limit of ${DAILY.outpaint} is reached)`); continue; }
+              if (!owner || !(await useAi(owner, 'outpaint'))) { made.notes.push(`${format}: ${slot} not extended (the daily limit of ${DAILY.outpaint} is reached)`); continue; }
               try {
                 const ext = await extendPhoto({ template, image: fslots[slot]!, expand: plan.expand, ownerId: owner, brand });
                 fslots = { ...fslots, [slot]: ext.value };
                 fedits = { ...fedits, [at.node]: { crop: plan.cropFor(ext.width, ext.height) } };
                 extended.push(slot);
               } catch (e) {
-                extendNotes.push(`${format}: ${slot} not extended (${(e as Error).message})`);
+                made.notes.push(`${format}: ${slot} not extended (${(e as Error).message})`);
               }
             }
             if (extended.length) {
-              out = await render({ template, format, design, theme, slots: fslots, smallerText, edits: fedits });
-              extendNotes.push(`${format}: ${extended.join(', ')} extended with AI to fill the frame (look at it: it can invent details)`);
+              out = await render({ template, format, design, theme, slots: fslots, smallerText, edits: fedits, scale: hiRes ? 2 : 1 });
+              made.notes.push(`${format}: ${extended.join(', ')} extended with AI to fill the frame (look at it: it can invent details)`);
             }
           } catch (e) {
             if (e instanceof MissingRequired) {
               // Only the cover is missing its own content (its ground photo): say so, keep the other formats.
-              if (format === 'cover' && wanted.length > 1) { coverNeeds = e.slots; continue; }
-              const have = await factsFromSlots(template, slots);
-              // Same purpose first (a booth invite suggests booth invites, not reminders).
-              const purpose = (await loadConfig(template)).purpose;
-              const brand = await templateBrand(template);
-              const fits = async (p?: string) => (await matchTemplates(have, p, brand)).filter((x) => x.eligible && x.template !== template).slice(0, 3).map((x) => x.template);
-              const same = await fits(purpose);
-              const alt = same.length ? same : await fits();
-              return { isError: true, content: [{ type: 'text', text: `${template} needs ${e.slots.join(', ')} (essential content; it never goes out half empty). Ask the requester for it${alt.length ? `, or use a template that fits what you have: ${alt.join(', ')}` : ''}.` }] };
+              if (format === 'cover' && wanted.length > 1) { made.coverNeeds = e.slots; return made; }
+              made.missing = e;
+              return made;
             }
-            throw e;
+            console.error(`render ${template}/${format}`, e);
+            made.failed = `${files[format]?.label ?? format}: ${(e as Error).message}`;
+            return made;
           }
-          const { png, report, variant, slots: used } = out;
+          const { report, variant, slots: used } = out;
+          const png = await at1x(out.png, out.width);
           if (!report.ok) {
-            refused.push(`${format}: ` + report.errors.map((e) => `${e.slot ?? e.node}: ${e.message}`).join(' | '));
+            made.refused = `${format}: ` + report.errors.map((e) => `${e.slot ?? e.node}: ${e.message}`).join(' | ');
             // The other option: the same copy in smaller text. A preview only (not saved): the requester
             // chooses, and "smaller text" renders again with smaller_text.
             if (!smallerText) {
-              const small = await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText: true }).catch(() => null);
+              const small = await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText: true }).catch((e) => { console.error(`smaller text ${template}/${format}`, e); return null; });
               if (small?.report.ok) {
                 const shrunk = Object.entries(small.report.slots).filter(([, x]) => x.scale && x.scale < 1).map(([k, x]) => `${k} at ${Math.round(x.scale! * 100)}%`);
-                content.push({ type: 'image', data: small.png.toString('base64'), mimeType: 'image/png' });
-                content.push({ type: 'text', text: `${files[format]?.label ?? format}: the copy does not fit at the normal size. Option "smaller text" (preview above, not saved): it fits as written with ${shrunk.join(', ') || 'the type reduced'}.` });
-                smallerOption.push(format);
+                made.content.push({ type: 'image', data: small.png.toString('base64'), mimeType: 'image/png' });
+                made.content.push({ type: 'text', text: `${files[format]?.label ?? format}: the copy does not fit at the normal size. Option "smaller text" (preview above, not saved): it fits as written with ${shrunk.join(', ') || 'the type reduced'}.` });
+                made.smaller = format;
               }
             }
-            continue;
+            return made;
           }
           // The 2x file goes to the shared gallery (Supabase) and the link is a signed download.
           // Without Supabase configured, the link re-renders the same piece (every decision explicit).
           let download: string;
-          const saved = supabaseConfigured()
-            ? await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText, scale: 2 }).then((hi) => saveRender({
-                userId: userIdOf(ctx), template, format, slots: used, png: hi.png, width: hi.width, height: hi.height, scale: 2, projectId, setId, variant: hi.variant,
-                design: hi.design, theme: hi.theme, smallerText, ...(Object.keys(fedits).length ? { edits: fedits } : {}),
-              }))
+          const saved = hiRes
+            ? await saveRender({
+                userId: userIdOf(ctx), template, format, slots: used, png: out.png, width: out.width, height: out.height, scale: 2, projectId, setId, variant: out.variant,
+                design: out.design, theme: out.theme, smallerText, ...(Object.keys(fedits).length ? { edits: fedits } : {}),
+              })
             : null;
           // A link that lasts (for people signed in to Studio) until the design is archived or deleted.
           if (saved) download = `${origin}/api/file/${saved.id}`;
@@ -750,11 +758,41 @@ const handler = createMcpHandler(
             .filter(([, s]) => s.status !== 'removed' && ((s.scale && s.scale < 1) || s.wrapped || s.groupWrapped))
             .map(([k, s]) => `${k} ${[s.scale && s.scale < 1 ? `at ${Math.round(s.scale * 100)}%` : '', s.wrapped || s.groupWrapped ? `on ${s.lines ?? 2} lines` : ''].filter(Boolean).join(', ')}`);
           if (fitted.length) notes.push(`fitted: ${fitted.join('; ')}`);
-          content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
-          content.push({
+          made.content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
+          made.content.push({
             type: 'text',
             text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, saved.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
           });
+          return made;
+        };
+        const results: Made[] = new Array(wanted.length);
+        let next = 0;
+        await Promise.all(Array.from({ length: Math.min(3, wanted.length) }, async () => {
+          while (next < wanted.length) { const i = next++; results[i] = await makeFormat(wanted[i]); }
+        }));
+        const missing = results.find((r) => r.missing)?.missing;
+        if (missing) {
+          const have = await factsFromSlots(template, slots);
+          // Same purpose first (a booth invite suggests booth invites, not reminders).
+          const purpose = (await loadConfig(template)).purpose;
+          const brand = await templateBrand(template);
+          const fits = async (p?: string) => (await matchTemplates(have, p, brand)).filter((x) => x.eligible && x.template !== template).slice(0, 3).map((x) => x.template);
+          const same = await fits(purpose);
+          const alt = same.length ? same : await fits();
+          return { isError: true, content: [{ type: 'text', text: `${template} needs ${missing.slots.join(', ')} (essential content; it never goes out half empty). Ask the requester for it${alt.length ? `, or use a template that fits what you have: ${alt.join(', ')}` : ''}.` }] };
+        }
+        const failed: string[] = [];
+        for (const r of results) {
+          content.push(...r.content);
+          if (r.refused) refused.push(r.refused);
+          if (r.smaller) smallerOption.push(r.smaller);
+          if (r.coverNeeds) coverNeeds = r.coverNeeds;
+          if (r.failed) failed.push(r.failed);
+          extendNotes.push(...r.notes);
+        }
+        if (failed.length) {
+          if (!content.length && !refused.length && !coverNeeds) return { isError: true, content: [{ type: 'text', text: `Could not render: ${failed.join(' | ')}. Try again in a moment.` }] };
+          content.push({ type: 'text', text: `Not made this time (a server error, not the copy): ${failed.join(' | ')}. Render only ${failed.length > 1 ? 'those formats' : 'that format'} again, with the same set.` });
         }
         if (refused.length) {
           content.push({ type: 'text', text: [
@@ -774,7 +812,7 @@ const handler = createMcpHandler(
     );
   },
   {
-    serverInfo: { name: 'archy-studio', version: '0.7.0' },
+    serverInfo: { name: 'archy-studio', version: plugin.version },
     instructions: INSTRUCTIONS,
   },
 );

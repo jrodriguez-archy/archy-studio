@@ -14,6 +14,7 @@ const fileId = config.paperFileId;
 if (config.discover && !offline) {
   const info = await callJSON('get_basic_info', { fileId });
   const page = info.pages.find((p) => p.name === config.discover.page);
+  if (!page) throw new Error(`No page "${config.discover.page}" in the Paper file (pages: ${info.pages.map((p) => p.name).join(', ')}).`);
   const pi = await callJSON('get_basic_info', { fileId, pageId: page.id });
   config.formats = {};
   for (const a of pi.artboards) {
@@ -29,30 +30,51 @@ if (config.discover && !offline) {
   config.formats = Object.fromEntries(Object.entries(config.formats).sort(([a], [b]) => rank(a) - rank(b)));
   await fs.writeFile(path.join(dir, 'template.config.json'), JSON.stringify(config, null, 2) + '\n');
 }
+// Files are written together at the end (each to a temp name, then moved in place): a sync that stops
+// halfway (Paper closed, a timeout) leaves the template as it was, never new pages next to an old manifest.
+const staged = new Map();
+const stage = (file, data) => staged.set(file, data);
+async function writeStaged() {
+  for (const [file, data] of staged) await fs.writeFile(`${file}.tmp`, data);
+  for (const file of staged.keys()) await fs.rename(`${file}.tmp`, file);
+}
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
 
 // ---------- 1. Dump from Paper ----------
+// Paper is read eight calls at a time (one at a time took minutes on a big artboard); the nodes are then
+// put back in the tree's order, so the files written are the same as before.
+const POOL = Number(process.env.PAPER_CONCURRENCY) || 8;
+let active = 0;
+const queue = [];
+async function limited(fn) {
+  if (active >= POOL) await new Promise((r) => queue.push(r));
+  active++;
+  try { return await fn(); } finally { active--; queue.shift()?.(); }
+}
+
 async function dump(rootId) {
-  const nodes = {};
-  const svgs = {};
+  const found = {};
+  const svgFound = {};
   async function walk(id) {
-    const info = await callJSON('get_node_info', { fileId, nodeId: id });
+    const info = await limited(() => callJSON('get_node_info', { fileId, nodeId: id }));
     const node = {
       id, name: info.name, component: info.component, visible: info.isVisible,
       text: info.textContent ?? null, children: [],
     };
-    nodes[id] = node;
+    found[id] = node;
     if (info.component === 'SVG') {
-      svgs[id] = await call('get_jsx', { fileId, nodeId: id, format: 'inline-styles' });
+      svgFound[id] = await limited(() => call('get_jsx', { fileId, nodeId: id, format: 'inline-styles' }));
       return;
     }
     if (info.childCount > 0) {
-      const { children } = await callJSON('get_children', { fileId, nodeId: id });
+      const { children } = await limited(() => callJSON('get_children', { fileId, nodeId: id }));
       node.children = children.map((c) => c.id);
-      for (const c of node.children) await walk(c);
+      await Promise.all(node.children.map(walk));
     }
   }
   await walk(rootId);
+  const nodes = {}, svgs = {};
+  (function order(id) { nodes[id] = found[id]; if (id in svgFound) svgs[id] = svgFound[id]; for (const c of found[id].children) order(c); })(rootId);
   const { styles } = await callJSON('get_computed_styles', { fileId, nodeIds: Object.keys(nodes) });
   const tokensCss = await call('get_tokens', { fileId, format: 'css' });
   return { rootId, nodes, styles, svgs, tokensCss };
@@ -145,7 +167,7 @@ async function build(key, label, d) {
     for (const [u, rel] of Object.entries(assetMap)) {
       const dest = path.join(dir, rel);
       try { await fs.access(dest); continue; } catch {}
-      const res = await fetch(u, { headers: { 'User-Agent': UA } });
+      const res = await fetch(u, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(60_000) });
       if (!res.ok) throw new Error(`Asset ${u}: ${res.status}`);
       await fs.writeFile(dest, Buffer.from(await res.arrayBuffer()));
     }
@@ -234,7 +256,7 @@ ${doc ? '' : `  /* Paper does not apply optical sizing (Inter 4 renders at opsz 
 ${body}</body>
 </html>
 `;
-  await fs.writeFile(path.join(dir, `${key}.html`), html);
+  stage(path.join(dir, `${key}.html`), html);
   return { width: parseInt(rootStyle.width), height: parseInt(rootStyle.height), slots, optionals };
 }
 
@@ -259,13 +281,15 @@ if (config.combos) {
     for (const [format, f] of Object.entries(c.formats)) jobs.push({ key: `${format}--${combo}`, format, combo, ...f });
   }
 }
-for (const { key, format, variant, combo, nodeId, label } of jobs) {
+// Every artboard is read from Paper side by side (the calls share one pool), then built in order.
+const dumps = offline ? null : await Promise.all(jobs.map((j) => dump(j.nodeId)));
+for (const [i, { key, format, variant, combo, nodeId, label }] of jobs.entries()) {
   const srcFile = path.join(dir, 'source', `${key}.json`);
   let d;
   if (offline) d = JSON.parse(await fs.readFile(srcFile, 'utf8'));
   else {
-    d = await dump(nodeId);
-    await fs.writeFile(srcFile, JSON.stringify(d, null, 2));
+    d = dumps[i];
+    stage(srcFile, JSON.stringify(d, null, 2));
   }
   const r = await build(key, label, d);
   const entry = { label, width: r.width, height: r.height, html: `${key}.html` };
@@ -281,5 +305,16 @@ for (const { key, format, variant, combo, nodeId, label } of jobs) {
   Object.assign(manifest.optionals, r.optionals);
   console.log(`${key}: ${r.width}×${r.height}, slots: ${Object.keys(r.slots).join(', ')}`);
 }
-await fs.writeFile(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-console.log('manifest.json written');
+// The length limits measured by `render.mjs --calibrate` are kept for the slots and formats that are still
+// there (recalibrate after a change to the design: they may no longer be right).
+const before = await fs.readFile(path.join(dir, 'manifest.json'), 'utf8').then(JSON.parse).catch(() => null);
+let kept = 0;
+for (const [role, slot] of Object.entries(manifest.slots)) {
+  const old = before?.slots?.[role]?.limits;
+  if (!old) continue;
+  const still = Object.fromEntries(Object.entries(old).filter(([k]) => k in slot.perFormat));
+  if (Object.keys(still).length) { slot.limits = still; kept++; }
+}
+stage(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2));
+await writeStaged();
+console.log(`manifest.json written${kept ? ` (length limits kept for ${kept} slots: run render.mjs --calibrate if the design changed)` : ''}`);

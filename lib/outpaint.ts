@@ -20,6 +20,7 @@ export async function outpaint(imageUrl: string, expand: Expand): Promise<Buffer
   const res = await fetch('https://fal.run/fal-ai/flux-2-pro/outpaint', {
     method: 'POST',
     headers: { Authorization: `Key ${process.env.FAL_KEY}`, 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(120_000), // a model that never answers fails the call instead of the function
     body: JSON.stringify({
       image_url: imageUrl, expand_top: expand.top, expand_right: expand.right, expand_bottom: expand.bottom, expand_left: expand.left,
       mode: 'high', output_format: 'png',
@@ -28,7 +29,7 @@ export async function outpaint(imageUrl: string, expand: Expand): Promise<Buffer
   const out = await res.json().catch(() => null);
   const url = out?.images?.[0]?.url;
   if (!res.ok || !url) throw new Error(out?.detail?.[0]?.msg ?? (typeof out?.detail === 'string' ? out.detail : 'The photo could not be extended. Try again.'));
-  return Buffer.from(await (await fetch(url)).arrayBuffer());
+  return Buffer.from(await (await fetch(url, { signal: AbortSignal.timeout(30_000) })).arrayBuffer());
 }
 
 // A slot photo extended by `expand` (its own pixels, upright) and kept as a new asset ("generated").
@@ -65,7 +66,7 @@ async function readSource(template: string, value: string): Promise<Buffer> {
     if (!file.startsWith(ROOT + path.sep)) throw new Error('Unknown photo.');
     return fs.readFile(file);
   }
-  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' } });
+  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(30_000) });
   if (!res.ok) throw new Error(`Could not open the photo (${res.status}).`);
   return Buffer.from(await res.arrayBuffer());
 }

@@ -1,4 +1,5 @@
 import 'server-only';
+import { mergeOnto } from './canvas-sync';
 import { cleanEdits, RECOLOR, type Edits, type Layout, type NodeEdit, type Preset } from './canvas-shared';
 import { explorationOf, loadSet, loadSource, type PieceSource } from './canvas';
 import { saveEdited } from './canvas-render';
@@ -96,7 +97,7 @@ export async function editCanvas(me: Who, input: { piece?: string; changes: Canv
   const working = (status: string | null) => markClaude({ pieceId: piece.id, userId: me.id, slots, edits, status }).catch(() => {});
   await working('Working on the design');
   try {
-    const out = await applyChanges(me, piece, slots, edits, input, working);
+    const out = await applyChanges(me, piece, draft, slots, edits, input, working);
     // What Claude did not do: the person's own edits since Claude's last change (a recolour in the app
     // shows in Claude's image and reads as Claude's), and the formats its copy and images follow to.
     const was = draft?.slots ?? piece.slots;
@@ -110,7 +111,7 @@ export async function editCanvas(me: Who, input: { piece?: string; changes: Canv
   }
 }
 
-async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, string | null>, edits: Edits, input: { changes: CanvasChange[]; recolor?: Preset; fix?: 'all' }, working: (s: string | null) => Promise<void>) {
+async function applyChanges(me: Who, piece: PieceSource, draft: Draft | null, slots: Record<string, string | null>, edits: Edits, input: { changes: CanvasChange[]; recolor?: Preset; fix?: 'all' }, working: (s: string | null) => Promise<void>) {
   const before = await describe(piece, slots, edits);
   const tokens = before.tokens;
   const edit = (id: string, e: NodeEdit) => {
@@ -151,7 +152,7 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
     if (ch.text != null) {
       const slot = c.kind === 'button' ? c.textSlot : c.slot;
       if (slot) slots[slot] = ch.text;
-      else edit(c.kind === 'button' ? c.textId! : c.id, { text: ch.text });
+      else edit(c.kind === 'button' ? c.textId! : c.id, { text: ch.text, html: undefined }); // plain copy replaces typed rich copy
     }
     if (ch.color) edit(c.kind === 'button' && c.textId ? c.textId : c.id, { style: { color: colour(ch.color) } });
     if (ch.fill) edit(c.id, { style: { backgroundColor: colour(ch.fill) } });
@@ -197,7 +198,13 @@ async function applyChanges(me: Who, piece: PieceSource, slots: Record<string, s
   // The note people see in Canvas is always in English, written here from the changes.
   const parts = [...new Set(done)];
   const note = [parts.length ? `changed ${list(parts)}` : '', fixedCount ? `fixed ${fixedCount} Inspector suggestion${fixedCount > 1 ? 's' : ''}` : ''].filter(Boolean).join(' and ') || 'looked over the design';
-  await saveDraft({ pieceId: piece.id, userId: me.id, slots, edits: final, by: 'claude', note: note.charAt(0).toUpperCase() + note.slice(1) });
+  // Edited in Canvas while Claude worked: Claude's changes go over the person's newer draft, never instead of it.
+  let out = { slots, edits: final };
+  const latest = await getDraft(piece.id);
+  if (latest && latest.version !== (draft?.version ?? 0) && latest.updated_by === 'app') {
+    out = mergeOnto({ slots: latest.slots, edits: latest.edits }, { slots: draft?.slots ?? piece.slots, edits: draft?.edits ?? piece.edits }, out);
+  }
+  await saveDraft({ pieceId: piece.id, userId: me.id, slots: out.slots, edits: out.edits, by: 'claude', note: note.charAt(0).toUpperCase() + note.slice(1) });
   return { piece, png: after.png, note, suggestions: tips.map((t) => `${t.title}: ${t.detail} [id ${t.id}]`) };
 }
 

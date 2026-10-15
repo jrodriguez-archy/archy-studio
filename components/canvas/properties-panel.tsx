@@ -106,7 +106,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, recolor = tru
     <Panel comp={comp} onReset={edited ? onReset : undefined}>
       {comp.kind === 'text' && me && (
         <TextControls id={comp.id} info={me} edit={edit} tokens={tokens} slot={slot} advanced={advanced} designFontSize={designFontSize}
-          onText={(t) => (comp.slot ? onSlot(comp.slot, t) : onEdit(comp.id, { text: t }))} onEdit={(e, c) => onEdit(comp.id, e, c)} />
+          onText={(t) => (comp.slot ? onSlot(comp.slot, t) : onEdit(comp.id, { text: t, html: undefined }))} onEdit={(e, c) => onEdit(comp.id, e, c)} />
       )}
 
       {comp.kind === 'button' && (
@@ -115,7 +115,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, recolor = tru
             <Section title="Label">
               <TextField
                 value={comp.textSlot ? slots[comp.textSlot] ?? '' : edits[comp.textId]?.text ?? info(comp.textId)?.text ?? ''}
-                onCommit={(t) => (comp.textSlot ? onSlot(comp.textSlot, t) : onEdit(comp.textId!, { text: t }))}
+                onCommit={(t) => (comp.textSlot ? onSlot(comp.textSlot, t) : onEdit(comp.textId!, { text: t, html: undefined }))}
                 optional={comp.textSlot ? slotMeta[comp.textSlot]?.optional : false}
               />
               <Row label="Text"><ColorField tokens={tokens} current={info(comp.textId)?.color ?? ''} onPick={(v) => onEdit(comp.textId!, { style: { color: v } })} /></Row>
@@ -143,7 +143,7 @@ export function PropertiesPanel({ comp, alignIn, preset, onPreset, recolor = tru
 
       {(comp.kind === 'photo' || comp.kind === 'partner') && (
         <Section title={comp.kind === 'partner' ? 'Logo' : 'Photo'}>
-          <ImagePicker kind={comp.kind} preview={slot?.preview ?? null} library={comp.kind === 'partner' ? [] : library}
+          <ImagePicker kind={comp.kind} preview={slot?.preview ?? (comp.slot ? null : me?.image ?? null)} library={comp.kind === 'partner' ? [] : library}
             onPick={(v) => (comp.slot ? onSlot(comp.slot, v) : onEdit(comp.id, { image: v }))} />
           {slot?.meta?.optional && slot.value && (
             <button type="button" onClick={() => onSlot(comp.slot!, null)} className="flex h-7 w-full items-center justify-center gap-1.5 rounded-md text-foreground/60 hover:bg-foreground/[0.05] hover:text-foreground">

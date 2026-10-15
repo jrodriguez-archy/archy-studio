@@ -1,4 +1,5 @@
 import { getAsset, readAsset } from '@/lib/assets';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 import { currentUser } from '@/lib/team';
 
 // The full image, from this origin: shown large, drawn on a canvas (pixel effects), or downloaded.
@@ -7,12 +8,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!(await currentUser())) return new Response('Sign in again.', { status: 401 });
   const asset = await getAsset((await params).id);
   if (!asset) return new Response('Not found', { status: 404 });
-  const file = await readAsset(asset.path).catch(() => null);
-  if (!file) return new Response('Not found', { status: 404 });
   // ?download=1: saved with its name (Assets → View large → Download).
   const download = new URL(req.url).searchParams.has('download');
   const ext = asset.path.split('.').pop();
   const name = `${asset.name.replace(/·/g, '-').replace(/[\\/:*?"<>|\r\n]+/g, '').trim() || 'image'}.${ext}`;
+  const file = await readAsset(asset.path).catch(() => null);
+  if (!file) return new Response('Not found', { status: 404 });
+  // Past what a function may answer (about 4.5 MB): straight from storage, by a short link. Never an SVG
+  // (those stay here, inert).
+  if (file.body.length > 4_000_000 && ext !== 'svg') {
+    const { data } = await supabaseAdmin().storage.from('uploads').createSignedUrl(asset.path, 60 * 60, download ? { download: name } : undefined);
+    if (data) return Response.redirect(data.signedUrl, 302);
+  }
   const ascii = name.normalize('NFD').replace(/[^\x20-\x7E]/g, '').replace(/"/g, '') || `image.${ext}`;
   return new Response(new Uint8Array(file.body), { headers: {
     'Content-Type': file.type, 'Cache-Control': 'private, max-age=31536000, immutable',

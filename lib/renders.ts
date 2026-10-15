@@ -51,7 +51,12 @@ export async function saveRender(input: {
     storage_path: path, width: input.width, height: input.height, scale: input.scale, source: input.source ?? 'mcp', project_id: input.projectId ?? null, set_id: input.setId ?? null,
     set_title: input.setTitle ?? null, variant: input.variant ?? null, design: input.design ?? null, theme: input.theme ?? null, smaller_text: input.smallerText ?? false, edits: input.edits ?? {}, parent_id: input.parentId ?? null, ...(input.html != null ? { html: input.html } : {}), edited_at: input.parentId ? new Date().toISOString() : null,
   });
-  if (ins.error) throw new Error(`Could not record the render: ${ins.error.message}`);
+  if (ins.error) {
+    // Nothing points to the files just stored: they go too.
+    await db.storage.from(BUCKET).remove([path]).catch(() => {});
+    await removeImages([path]).catch(() => {});
+    throw new Error(`Could not record the render: ${ins.error.message}`);
+  }
   return { id, path, url: await signedUrl(path) };
 }
 
@@ -112,7 +117,8 @@ export async function storeUpload(userId: string | null, body: Buffer, type: str
   if (!ext) throw new Error('Use a PNG, JPG, WebP or SVG image.');
   if (body.length > MAX_UPLOAD) throw new Error('The image is larger than 8 MB.');
   const path = `${userId ?? 'studio'}/${randomUUID()}.${ext}`;
-  const { error } = await supabaseAdmin().storage.from('uploads').upload(path, body, { contentType: type, upsert: false });
+  // A new name per file, never rewritten: the browser may keep it as long as its link works.
+  const { error } = await supabaseAdmin().storage.from('uploads').upload(path, body, { contentType: type, upsert: false, cacheControl: '31536000' });
   if (error) throw new Error(`Could not store the image: ${error.message}`);
   return `upload:${path}`;
 }

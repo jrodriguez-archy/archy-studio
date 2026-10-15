@@ -17,6 +17,90 @@ function shiftBy(el, dx, dy) {
   el.style.translate = `calc(${parts[0] ?? '0px'} + ${dx}px) calc(${parts[1] ?? '0px'} + ${dy}px)`;
 }
 
+// A photo decoded once (framing and its size read the same one), never waited on for more than 10 s: a
+// slow or broken image leaves the photo unframed instead of holding the whole fill. In Canvas, where each
+// copy change reloads the page, the decoded photo is kept by the editor window (made there, so it outlives
+// this page) and the next redraw does not fetch or decode it again.
+const host = (() => { try { return window.parent.document ? window.parent : window; } catch { return window; } })();
+const keptImages = (host.__decodedImages ??= new Map());
+const decoding = new Map();
+function decoded(src) {
+  if (keptImages.has(src)) return Promise.resolve(keptImages.get(src));
+  if (!decoding.has(src)) {
+    const img = new host.Image();
+    img.crossOrigin = 'anonymous';
+    img.src = src;
+    decoding.set(src, Promise.race([
+      img.decode().then(() => {
+        if (keptImages.size > 40) keptImages.delete(keptImages.keys().next().value);
+        keptImages.set(src, img);
+        return img;
+      }),
+      new Promise((_, no) => setTimeout(() => no(new Error(`Image took too long: ${src.slice(0, 80)}`)), 10_000)),
+    ]).finally(() => decoding.delete(src)));
+  }
+  return decoding.get(src);
+}
+
+// ---- Explorations (lib/compose.ts): shared by fit, edits and components ----
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const isExploration = (root) => root?.getAttribute('data-node') === 'root';
+// The ground Claude draws as its own full-size first layer ("Ground"): the piece's real background, so
+// Canvas edits it (not the white page under it) and a recolor repaints it. A full-size texture above it
+// is skipped; the first layer that is not full size ends the search.
+window.__groundLayer = function groundLayer(root) {
+  if (!isExploration(root)) return null;
+  const R = root.getBoundingClientRect();
+  for (const k of root.children) {
+    if (!k.hasAttribute('data-node') || k.namespaceURI === SVG_NS) return null;
+    const b = k.getBoundingClientRect();
+    const full = Math.abs(b.left - R.left) < 2 && Math.abs(b.top - R.top) < 2 && Math.abs(b.width - R.width) < 2 && Math.abs(b.height - R.height) < 2;
+    const empty = !k.querySelector('[data-node]') && !k.textContent.trim() && !k.dataset.image && !k.dataset.kind;
+    if (!full || !empty) return null;
+    if (!k.dataset.texture) return k;
+  }
+  return null;
+};
+// A text with inline runs (a word in bold, a two-tone headline): one text, typed and styled as a whole.
+const INLINE_TAGS = /^(SPAN|STRONG|EM|B|I|U|S|SMALL|SUP|SUB|MARK|A|BR)$/;
+window.__richText = function richText(el) {
+  if (!el || el.namespaceURI === SVG_NS || !el.children.length || !el.textContent.trim()) return false;
+  return [...el.querySelectorAll('*')].every((c) => INLINE_TAGS.test(c.tagName) && (c.tagName === 'BR' || getComputedStyle(c).display === 'inline'));
+};
+// Typed rich copy, kept to inline runs and their style (no links, scripts or outside images).
+window.__cleanInline = function cleanInline(html) {
+  const t = document.createElement('template');
+  t.innerHTML = html;
+  const clean = (n) => {
+    for (const c of [...n.childNodes]) {
+      if (c.nodeType === 3) continue;
+      if (c.nodeType !== 1) { c.remove(); continue; }
+      if (/^(SCRIPT|STYLE|TEMPLATE|IFRAME|OBJECT|SVG)$/i.test(c.tagName)) { c.remove(); continue; }
+      if (!INLINE_TAGS.test(c.tagName)) {
+        // A block the browser added while typing (a <div> per line): its words stay, on a new line.
+        clean(c);
+        if (/^(DIV|P)$/.test(c.tagName) && c.previousSibling) c.before(document.createElement('br'));
+        c.replaceWith(...c.childNodes);
+        continue;
+      }
+      for (const a of [...c.attributes]) if (a.name !== 'style') c.removeAttribute(a.name);
+      if (/url\(|expression|@import/i.test(c.getAttribute('style') ?? '')) c.removeAttribute('style');
+      clean(c);
+    }
+  };
+  clean(t.content);
+  return t.innerHTML;
+};
+// An exploration's photo (data-image) gets its own size, as a template's slot photo does in __fill, so
+// Canvas can reframe it by hand.
+async function sizeExplorationPhotos(root) {
+  await Promise.all([...root.querySelectorAll('[data-image]:not([data-img-w])')].map(async (n) => {
+    const src = getComputedStyle(n).backgroundImage.match(/url\("?(.*?)"?\)/)?.[1];
+    if (!src || n.querySelector('[data-node]')) return;
+    try { const im = await decoded(src); n.dataset.imgW = String(im.naturalWidth); n.dataset.imgH = String(im.naturalHeight); n.dataset.slotSrc = `${im.naturalWidth}x${im.naturalHeight}`; } catch {}
+  }));
+}
+
 window.__fill = async function fill({ format, formats, values, rules, limits }) {
   const root = document.querySelector('body > [data-node]');
   const byName = (name) =>
@@ -125,6 +209,10 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
 
   // ---- Fill values ----
   const touchedParents = [];
+  // Every photo starts downloading at once; each slot then waits only for its own.
+  for (const [role, value] of Object.entries(values)) {
+    if (value && root.querySelector(`[data-slot="${role}"][data-slot-type="image"]`)) decoded(value).catch(() => {});
+  }
   // An empty text slot is removed and the layout closes up; an optional block left with no slot
   // content (a pill with only its dot, a plate with no name or title) is removed whole.
   for (let [role, value] of Object.entries(values)) {
@@ -147,7 +235,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
         if (/\/placeholders\//.test(value)) n.dataset.placeholder = n.style.backgroundImage;
         // Its own size, for a reframe by hand in Canvas (edits.js crop).
         if (!n.dataset.toneOwn) {
-          try { const im = new Image(); im.crossOrigin = 'anonymous'; im.src = value; await im.decode(); n.dataset.imgW = String(im.naturalWidth); n.dataset.imgH = String(im.naturalHeight); n.dataset.slotSrc = `${im.naturalWidth}x${im.naturalHeight}`; } catch {}
+          try { const im = await decoded(value); n.dataset.imgW = String(im.naturalWidth); n.dataset.imgH = String(im.naturalHeight); n.dataset.slotSrc = `${im.naturalWidth}x${im.naturalHeight}`; } catch {}
         }
         continue;
       }
@@ -607,6 +695,7 @@ window.__fill = async function fill({ format, formats, values, rules, limits }) 
     report.ok = false;
     report.errors.push({ code: 'container_overflow', ...c, message: `${c.node} ${c.reason ?? 'overflows'} by ${c.overflowPx}px. Shorten the longest slot inside it.` });
   }
+  if (isExploration(root)) await sizeExplorationPhotos(root);
   if (report.errors.length) report.ok = false;
   return report;
 
@@ -1156,10 +1245,7 @@ async function framePhoto(n, src, role, format, coverTone = 'royal') {
   }
   const vw = V.right - V.left, vh = V.bottom - V.top;
   if (vw * vh < R.width * R.height * 0.12 || getComputedStyle(n).borderRadius.startsWith('50%')) return; // small or round: a portrait
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.src = src;
-  await img.decode();
+  const img = await decoded(src);
   const iw = img.naturalWidth, ih = img.naturalHeight;
   if (!iw || !ih) return;
   // Where the subject starts and where it sits across: detail (luminance edges) per row and column.
@@ -1221,7 +1307,18 @@ async function framePhoto(n, src, role, format, coverTone = 'royal') {
   n.dataset.toneNavy = coverTone === 'navy' ? url : window.__pixelTone(img, { vw, vh, s, ox, oy, base: TONES.navy[0], front: TONES.navy[1], steps: 4, scale: 2 });
 }
 
-window.__pixelTone = function pixelTone(img, { vw, vh, s, ox, oy, base, front, steps = 4, scale = 2 }) {
+// Kept by the editor window across redraws (Canvas reloads the page on every copy change; the tone of the
+// same photo in the same frame is the same picture, and drawing it is a per-pixel loop).
+const toneCache = (host.__toneCache ??= new Map());
+window.__pixelTone = function (img, o) {
+  const key = JSON.stringify([img.src, o]);
+  if (toneCache.has(key)) return toneCache.get(key);
+  const url = pixelTone(img, o);
+  if (toneCache.size > 24) toneCache.delete(toneCache.keys().next().value);
+  toneCache.set(key, url);
+  return url;
+};
+function pixelTone(img, { vw, vh, s, ox, oy, base, front, steps = 4, scale = 2 }) {
   const W = Math.round(vw * scale), H = Math.round(vh * scale);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const cx = cv.getContext('2d', { willReadFrequently: true });
@@ -1248,4 +1345,4 @@ window.__pixelTone = function pixelTone(img, { vw, vh, s, ox, oy, base, front, s
   }
   cx.putImageData(im, 0, 0);
   return cv.toDataURL('image/png');
-};
+}

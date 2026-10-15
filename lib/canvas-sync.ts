@@ -17,6 +17,7 @@ function shared(e: NodeEdit | undefined, scale = 1, base?: number): NodeEdit {
   if (!e) return {};
   const out: NodeEdit = {};
   if (e.text != null) out.text = e.text;
+  if (e.html != null) out.html = e.html;
   if (e.image) out.image = e.image;
   if (e.icon) out.icon = e.icon;
   if (e.hidden) out.hidden = true;
@@ -144,4 +145,19 @@ export function splitHeadline(v: string | null): [string | null, string | null] 
   if (!spaces.length) return [one, null];
   const at = spaces.reduce((a, b) => (Math.abs(b - one.length / 2) < Math.abs(a - one.length / 2) ? b : a));
   return [one.slice(0, at), one.slice(at + 1)];
+}
+
+/** `onto` with every change `mine` made since `base` laid over it (slot by slot, layer by layer): two people
+ * (or a person and Claude) editing the same draft at once keep each other's work. */
+export function mergeOnto(onto: Snap, base: Snap, mine: Snap): Snap {
+  const slots = { ...onto.slots };
+  for (const k of new Set([...Object.keys(base.slots), ...Object.keys(mine.slots)])) {
+    if ((mine.slots[k] ?? null) !== (base.slots[k] ?? null)) slots[k] = mine.slots[k] ?? null;
+  }
+  const edits = { ...onto.edits };
+  for (const id of new Set([...Object.keys(base.edits), ...Object.keys(mine.edits)])) {
+    if (sameJson(mine.edits[id], base.edits[id])) continue;
+    if (mine.edits[id]) edits[id] = mine.edits[id]; else delete edits[id];
+  }
+  return { slots, edits: cleanEdits(edits) };
 }

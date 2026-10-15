@@ -162,7 +162,8 @@ async function resolveLogo(template: string, v: string, origin = ORIGIN): Promis
   if (src.startsWith(`${origin}/`)) {
     const rel = decodeURIComponent(src.slice(origin.length + 1));
     const file = path.resolve(ROOT, rel);
-    if (!file.startsWith(ROOT + path.sep)) throw new Error(`Unknown logo: ${v}`);
+    // Only the folders a template page may read (as the renderer and /api/template-files allow).
+    if (!['templates', 'library', 'brand-kit'].some((d) => file.startsWith(path.join(ROOT, d) + path.sep))) throw new Error(`Unknown logo: ${v}`);
     const body = await fs.readFile(file);
     return `data:${MIME[path.extname(file)] ?? 'image/png'};base64,${body.toString('base64')}`;
   }
@@ -171,8 +172,8 @@ async function resolveLogo(template: string, v: string, origin = ORIGIN): Promis
   const id = v.startsWith('upload:') ? v : src;
   const known = remoteLogos.get(id);
   if (known) return known;
-  const res = await fetch(src, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' } });
-  if (!res.ok) throw new Error(`Could not load the logo at ${v} (${res.status})`);
+  const res = await fetch(src, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(10_000) }).catch(() => null);
+  if (!res?.ok) throw new Error(`Could not load the logo at ${v} (${res?.status ?? 'no answer in 10 s'})`);
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length > 5_000_000) throw new Error(`The logo at ${v} is larger than 5 MB`);
   const type = res.headers.get('content-type')?.split(';')[0] || 'image/png';

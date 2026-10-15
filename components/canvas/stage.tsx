@@ -16,6 +16,7 @@ type Win = Window & {
   __autofix: (e: Edits, rules: unknown, format: string, u: Record<string, string>, i: Record<string, string>) => Edits;
   __components: () => { comps: Comp[]; safe: Box };
   __alignBox: (id: string) => Box | null;
+  __richText?: (el: Element) => boolean;
   __keys: () => Keys;
   __canCrop: (el: Element) => boolean;
   __cropOf: (el: Element) => Crop | null;
@@ -34,13 +35,13 @@ let loads = 0;
 // This deploy's copy (a new deploy, a new address: never an old engine from the browser cache).
 const BUILD = process.env.NEXT_PUBLIC_BUILD ?? 'dev';
 const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}?v=${BUILD}`).then((r) => r.text()));
-// Formats not being edited draw their first time one after another (the one being edited never waits),
+// Formats not being edited draw their first time two at a time (the one being edited never waits),
 // so opening a set shows the active format first instead of every format at once on one thread.
 let busy = 0;
 const waiting: (() => void)[] = [];
 const turn = () => new Promise<() => void>((done) => {
   const go = () => { busy++; let out = false; done(() => { if (out) return; out = true; busy--; waiting.shift()?.(); }); };
-  if (busy < 1) go(); else waiting.push(go);
+  if (busy < 2) go(); else waiting.push(go);
 });
 
 // A template page, fetched once per tab: each redraw writes it into the iframe (no network), and its
@@ -50,6 +51,13 @@ const templatePage = (html: string) => (pages[html] ??= fetch(`/api/template-fil
   .then((r) => { if (!r.ok) throw new Error(`Template page ${r.status}`); return r.text(); })
   .then((t) => t.replace(/<head([^>]*)>/i, `<head$1><base href="${location.origin}/api/template-files/${html}">`))
   .catch((e) => { delete pages[html]; throw e; })); // a failed fetch is tried again next time
+
+// The template's sample photo in an image slot the fill is about to set (or remove): taken out of the page
+// before it is written, so the iframe's load does not wait for a multi-MB PNG that is thrown away.
+const withoutSamples = (t: string, values: Record<string, string | null>) => t.replace(/<[^>]*data-slot-type="image"[^>]*>/g, (tag) => {
+  const role = tag.match(/data-slot="([^"]+)"/)?.[1];
+  return role && role in values ? tag.replace(/background-image:\s*url\([^)]*\);?\s*/g, '') : tag;
+});
 
 export type StageHandle = {
   info: (id: string) => LayerInfo | null;
@@ -83,7 +91,8 @@ type Props = {
   /** Live changes while dragging (commit=false) and the final ones (commit=true, one history step). */
   onEdit: (changes: Record<string, NodeEdit>, commit: boolean) => void;
   /** Typed in place. False when refused: the page is drawn again as it was. */
-  onText: (nodeId: string, text: string) => boolean;
+  /** `html`: a text with inline runs (bold words, two tones), typed with its runs kept. */
+  onText: (nodeId: string, text: string, html?: string) => boolean;
   onInfo: () => void;
   /** The Inspector's suggestions after each change (same review as the server). */
   onReview: (items: Suggestion[]) => void;
@@ -141,6 +150,9 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
   const [outside, setOutside] = useState(false);
   const [, setTick] = useState(0);
   const [nonce, setNonce] = useState(0);
+  // A first draw that failed: tried again once by itself, then a Retry on the board (never a grey board for good).
+  const [failed, setFailed] = useState(false);
+  const retried = useRef(0);
   const redraw = useCallback(() => setTick((t) => t + 1), []);
   const live = useRef({ edits, plan, onReady, onInfo, onReview });
   live.current = { edits, plan, onReady, onInfo, onReview };
@@ -295,7 +307,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     // The first time (or another page or size) it draws in place; after that, behind the design on screen.
     const behind = drawn.current === page;
     const target = behind ? 1 - frontRef.current : frontRef.current;
-    if (behind) setRefitting(true); else { setRefitting(false); setReady(false); }
+    if (behind) setRefitting(true); else { setRefitting(false); setReady(false); setFailed(false); }
     const f = (target ? frameB : frameA).current;
     if (!f) return;
     // Hidden at once (it may still be fading out under the design from the last swap).
@@ -333,6 +345,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
       }, 400);
       setRefitting(false);
       setReady(true);
+      retried.current = 0;
       release?.(); release = null;
       live.current.onReady({ comps, safe, tokens, report, keys });
       check();
@@ -346,13 +359,15 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
         loading.current = null;
         setRefitting(false);
         if (behind) toast.error('Could not update the design. Undo the last change, or reload the page.');
+        else if (retried.current++ < 1) setNonce((n) => n + 1);
+        else setFailed(true);
       });
     };
     f.addEventListener('load', onLoad);
     // Written in, so a redraw does not go back to the network for the page (if that fails, loaded
     // from its address; srcdoc would win over src, so it goes first).
     // An exploration brings its page (composed on the server); a template's comes from its file.
-    const write = () => (plan.page != null ? Promise.resolve(plan.page) : templatePage(plan.html)).then((t) => { if (!stale) f.srcdoc = `${t}<!--${++loads}-->`; })
+    const write = () => (plan.page != null ? Promise.resolve(plan.page) : templatePage(plan.html).then((t) => withoutSamples(t, plan.fill.values))).then((t) => { if (!stale) f.srcdoc = `${t}<!--${++loads}-->`; })
       .catch(() => { if (stale) return; f.removeAttribute('srcdoc'); f.src = `/api/template-files/${plan.html}?load=${++loads}`; });
     // A format waiting its turn never holds the others for long, even if its page never loads.
     let safety: ReturnType<typeof setTimeout> | undefined;
@@ -634,7 +649,9 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     }
     n.dataset.canvasEditing = '';
     n.style.caretColor = getComputedStyle(n).color;
-    n.contentEditable = 'plaintext-only';
+    // A text with inline runs keeps them while typing (plain text everywhere else).
+    const rich = !!win()?.__richText?.(n);
+    n.contentEditable = rich ? 'true' : 'plaintext-only';
     n.focus({ preventScroll: true });
     const { x, y } = local(e);
     const range = d.caretRangeFromPoint?.(x, y) ?? null;
@@ -656,7 +673,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
     const done = (save: boolean) => {
       off();
       setEditing(null);
-      if (!save || !onText(nodeId, n.textContent ?? '')) setNonce((x) => x + 1);
+      if (!save || !onText(nodeId, n.textContent ?? '', rich ? n.innerHTML : undefined)) setNonce((x) => x + 1);
     };
     cancelEdit.current = off;
     const onBlur = () => done(true);
@@ -712,7 +729,13 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, edits
           style={{ width: plan.width, height: plan.height, transform: `scale(${zoom})` }}
         />
       ))}
-      {!ready && <div className="absolute inset-0 animate-pulse bg-foreground/[0.04]" />}
+      {!ready && !failed && <div className="absolute inset-0 animate-pulse bg-foreground/[0.04]" />}
+      {!ready && failed && (
+        <div className="absolute inset-0 grid place-items-center bg-foreground/[0.04]">
+          <button type="button" className="rounded-md bg-background px-3 py-1.5 text-xs font-medium shadow-sm ring-1 ring-border hover:bg-muted"
+            onClick={() => { retried.current = 0; setNonce((n) => n + 1); }}>Couldn’t draw · Retry</button>
+        </div>
+      )}
       {/* Fitting the new copy: a thin line along the top, only if it takes a moment. */}
       {refitting && (
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-[2px] overflow-hidden animate-in fade-in-0 fill-mode-both delay-300 duration-200">

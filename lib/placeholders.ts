@@ -62,11 +62,11 @@ async function fromUnsplash(query: string): Promise<{ body: Buffer; credit: stri
   const key = process.env.UNSPLASH_ACCESS_KEY;
   if (!key) return null;
   const headers = { Authorization: `Client-ID ${key}`, 'Accept-Version': 'v1' };
-  const res = await fetch(`https://api.unsplash.com/search/photos?${new URLSearchParams({ query, per_page: '5', content_filter: 'high' })}`, { headers });
+  const res = await fetch(`https://api.unsplash.com/search/photos?${new URLSearchParams({ query, per_page: '5', content_filter: 'high' })}`, { headers, signal: AbortSignal.timeout(8_000) });
   if (!res.ok) return null;
   const hit = (await res.json()).results?.[0] as { urls: { raw: string }; links: { download_location: string }; user: { name: string } } | undefined;
   if (!hit) return null;
-  const img = await fetch(`${hit.urls.raw}&w=2000&q=80&fm=jpg`);
+  const img = await fetch(`${hit.urls.raw}&w=2000&q=80&fm=jpg`, { signal: AbortSignal.timeout(15_000) });
   if (!img.ok) return null;
   // Unsplash asks for a download to be counted when a photo is used.
   fetch(hit.links.download_location, { headers }).catch(() => {});

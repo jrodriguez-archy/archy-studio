@@ -63,7 +63,9 @@ export async function addPhoto(id: string, key: string, me: { id: string }, file
       // The photo as it came is kept; Claude says the cutout did not happen.
     }
   }
-  const items = req.items.map((i) => (i.key === key ? { ...i, asset_id: asset.id } : i));
+  // Read again just before writing: another photo dropped meanwhile (the cutout takes seconds) keeps its place.
+  const latest = (await getPhotoRequest(id)) ?? req;
+  const items = latest.items.map((i) => (i.key === key ? { ...i, asset_id: asset.id } : i));
   const { error } = await supabaseAdmin().from('photo_requests').update({ items }).eq('id', id);
   if (error) throw new Error(error.message);
   return { asset, cutout: asset.kind === 'cutout' };

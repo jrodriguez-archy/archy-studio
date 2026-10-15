@@ -25,6 +25,8 @@ const sizeOf = (img: HTMLImageElement) => (img.naturalWidth && img.naturalHeight
 async function load(src: string) {
   const img = new Image();
   img.decoding = 'async';
+  // A large original comes from storage by a redirect: asked with CORS so the canvas can still be read.
+  img.crossOrigin = 'anonymous';
   img.src = src;
   await img.decode();
   return img;

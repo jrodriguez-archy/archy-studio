@@ -100,7 +100,9 @@ export async function compose(input: { html: string; width: number; height: numb
   const iconTags = [...html.matchAll(/<(span|div|i)\b([^>]*\bdata-icon="([A-Za-z0-9]+)"[^>]*)>\s*<\/\1>/g)];
   for (const [whole, tag, attrs, name] of iconTags) {
     const inner = await iconMarkup(name);
-    if (!inner) { problems.push(`Unknown icon "${name}" (use a Hugeicons export name, e.g. Calendar03Icon).`); continue; }
+    // An icon gone from the set still takes its place (an empty drawing): every later layer keeps its id,
+    // so the edits saved on them stay where they were.
+    if (!inner) { problems.push(`Unknown icon "${name}" (use a Hugeicons export name, e.g. Calendar03Icon).`); html = html.replace(whole, `<${tag}${attrs}><svg data-missing="icon" viewBox="0 0 24 24" width="100%" height="100%"></svg></${tag}>`); continue; }
     const svg = `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">${inner.replace(/stroke-width="[^"]*"/g, 'stroke-width="1.5"')}</svg>`;
     const named = /\bdata-name=/.test(attrs) ? '' : ` data-name="Icon ${name.replace(/Icon$/, '')}"`;
     html = html.replace(whole, `<${tag}${attrs}${named}>${svg}</${tag}>`);
@@ -170,16 +172,18 @@ export async function compose(input: { html: string; width: number; height: numb
   // The product: a whole screen as a window (it may bleed off the artboard) or a crop of it as a card.
   // Drawn from the kit's export of Master - Product, never redrawn.
   const screens = await productScreens(brand);
+  // A screen that cannot be drawn leaves an empty layer in its place (not nothing), so later ids hold.
+  const missing = (tag: string) => `<${tag} data-missing="product" style="display: none"></${tag}>`;
   for (const [whole, tag, attrs] of [...html.matchAll(/<(div|span)\b([^>]*\bdata-piece="product"[^>]*)>\s*<\/\1>/gi)]) {
     const id = attrs.match(/\bdata-screen="([a-z0-9-]+)"/i)?.[1] ?? '';
     const sc = screens[id];
-    if (!sc) { problems.push(`Unknown product screen "${id}". Screens: ${Object.keys(screens).join(', ') || 'none yet'}.`); html = html.replace(whole, ''); continue; }
+    if (!sc) { problems.push(`Unknown product screen "${id}". Screens: ${Object.keys(screens).join(', ') || 'none yet'}.`); html = html.replace(whole, missing(tag)); continue; }
     const style = attrs.match(/\bstyle="([^"]*)"/i)?.[1] ?? '';
     const w = Number(style.match(/(?:^|;)\s*width\s*:\s*([\d.]+)px/i)?.[1]);
-    if (!w) { problems.push(`The product "${id}" needs a width in px.`); html = html.replace(whole, ''); continue; }
+    if (!w) { problems.push(`The product "${id}" needs a width in px.`); html = html.replace(whole, missing(tag)); continue; }
     const cropRef = attrs.match(/\bdata-crop="([^"]+)"/i)?.[1];
     const crop = cropRef ? (sc.crops?.[cropRef]?.box ?? (/^[\d.]+(,[\d.]+){3}$/.test(cropRef) ? cropRef.split(',').map(Number) : null)) : [0, 0, sc.width, sc.height];
-    if (!crop) { problems.push(`Unknown crop "${cropRef}" of ${id}. Crops: ${Object.keys(sc.crops ?? {}).join(', ') || 'none'} (or x,y,w,h in screen px).`); html = html.replace(whole, ''); continue; }
+    if (!crop) { problems.push(`Unknown crop "${cropRef}" of ${id}. Crops: ${Object.keys(sc.crops ?? {}).join(', ') || 'none'} (or x,y,w,h in screen px).`); html = html.replace(whole, missing(tag)); continue; }
     const [cx, cy, cw, ch] = crop, k = w / cw;
     const url = `${origin}/brand-kit/${brand}/product/${sc.file}`;
     images.add(url);

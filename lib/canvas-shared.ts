@@ -5,6 +5,9 @@
 export type NodeEdit = {
   /** New copy for a text layer that is not a slot. */
   text?: string;
+  /** New copy for a text with inline runs (a word in bold, a two-tone headline), typed in place: inline
+   * tags with their style only (scripts/fit.js __cleanInline). Wins over `text`. */
+  html?: string;
   /** New image for a layer that is not a slot: asset:<id> or upload:<path>. */
   image?: string;
   /** Another Hugeicons icon for an icon layer (export name, e.g. "Calendar03Icon"). */
@@ -109,6 +112,7 @@ export function cleanEdits(edits: Edits): Edits {
     const style = Object.fromEntries(Object.entries(e.style ?? {}).filter(([, v]) => v != null && v !== ''));
     const n: NodeEdit = {};
     if (e.text != null) n.text = e.text;
+    if (e.html != null) n.html = e.html;
     if (e.image) n.image = e.image;
     if (e.icon) n.icon = e.icon;
     if (e.preset) n.preset = e.preset;

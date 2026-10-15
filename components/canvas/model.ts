@@ -20,6 +20,8 @@ export type Token = { name: string; value: string; hex: string; group: 'Blues' |
 export type LayerInfo = {
   width: number; height: number; fontSize: number; fontWeight: number;
   color: string; backgroundColor: string; text: string; opacity: number;
+  /** The picture it shows now (a photo's background or an <img>), for the panel's preview. */
+  image?: string;
   /** For flex frames (groups, tags, buttons): how the content is laid out now. */
   layout?: { direction: 'row' | 'column'; distribute: 'packed' | 'space-between'; gap: number; position: 'start' | 'center' | 'end'; align: 'start' | 'center' | 'end' };
   /** For a photo that can be reframed: how it is framed now (by hand or automatically). */
@@ -109,6 +111,7 @@ export function readInfo(el: HTMLElement | SVGElement, scale = 1): LayerInfo {
     fontSize: Math.round(parseFloat(cs.fontSize)), fontWeight: Number(cs.fontWeight) || 400,
     color: toHex(stroke ?? cs.color) ?? '', backgroundColor: toHex(cs.backgroundColor) ?? '',
     text: el.textContent ?? '', opacity: Number(cs.opacity),
+    image: (el as HTMLImageElement).tagName === 'IMG' ? (el as HTMLImageElement).currentSrc || undefined : cs.backgroundImage.match(/url\("?(.*?)"?\)/)?.[1],
     layout: cs.display.includes('flex') ? {
       direction: cs.flexDirection.startsWith('column') ? 'column' : 'row',
       distribute: /space-(between|around|evenly)/.test(cs.justifyContent) ? 'space-between' : 'packed',

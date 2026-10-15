@@ -11,10 +11,11 @@ let browserPromise: Promise<Browser> | null = null;
 
 async function getBrowser(): Promise<Browser> {
   if (browserPromise) {
-    const b = await browserPromise;
-    if (b.isConnected()) return b;
+    // A launch that failed is forgotten (the next render tries again), never kept as this instance's browser.
+    const b = await browserPromise.catch(() => null);
+    if (b?.isConnected()) return b;
   }
-  browserPromise = (async () => {
+  const launching = (async () => {
     const { chromium } = await import('playwright-core');
     if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
       const sparticuz = (await import('@sparticuz/chromium')).default;
@@ -26,7 +27,53 @@ async function getBrowser(): Promise<Browser> {
     // Local: the Chromium downloaded by `npx playwright install chromium`.
     return chromium.launch({ headless: true });
   })();
-  return browserPromise;
+  browserPromise = launching;
+  launching.catch(() => { if (browserPromise === launching) browserPromise = null; });
+  return launching;
+}
+
+const fontFiles = new Map<string, Promise<{ body: Buffer; type: string }>>();
+function fontshare(url: string) {
+  let p = fontFiles.get(url);
+  if (!p) {
+    p = fetch(url, { signal: AbortSignal.timeout(10_000) }).then(async (r) => {
+      if (!r.ok) throw new Error(`Fontshare ${r.status}`);
+      return { body: Buffer.from(await r.arrayBuffer()), type: r.headers.get('content-type') ?? 'application/octet-stream' };
+    });
+    p.catch(() => fontFiles.delete(url));
+    fontFiles.set(url, p);
+  }
+  return p;
+}
+
+// A fresh context. A warm instance can hold a dead browser: if it does not answer quickly, a new one starts.
+async function newContext(options: Parameters<Browser['newContext']>[0]) {
+  const browser = await getBrowser();
+  const context = await withTimeout(browser.newContext(options), 5000).catch(() => null);
+  if (context) return context;
+  await browser.close().catch(() => {});
+  browserPromise = null;
+  return (await getBrowser()).newContext(options);
+}
+
+// In the page: every image it shows, loaded (or given up on after 15 s, so one stuck image never holds
+// the render until the function's limit). Plain code only, no named inner functions: it runs in the page
+// as written (a bundler's name helpers are not there).
+async function imagesReady(selector: string) {
+  await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 10_000))]);
+  const urls = new Set<string>();
+  for (const el of document.querySelectorAll<HTMLElement>(selector)) {
+    const m = getComputedStyle(el).backgroundImage.match(/url\("?(.*?)"?\)/);
+    if (m) urls.add(m[1]);
+  }
+  const waits: Promise<unknown>[] = [];
+  for (const u of urls) {
+    waits.push(new Promise((res) => { const t = setTimeout(res, 15_000); const i = new Image(); i.onload = i.onerror = () => { clearTimeout(t); res(null); }; i.src = u; }));
+  }
+  for (const i of Array.from(document.images)) {
+    if (!i.complete) waits.push(new Promise((res) => { const t = setTimeout(res, 15_000); i.onload = i.onerror = () => { clearTimeout(t); res(null); }; }));
+  }
+  await Promise.all(waits);
 }
 
 let fitJs: string | null = null;
@@ -51,15 +98,7 @@ export async function render({ template, format, design, theme, slots: given, sc
   let t0 = Date.now();
   const mark = (k: string) => { t[k] = Date.now() - t0; t0 = Date.now(); };
   const contextOptions = { viewport: { width, height }, deviceScaleFactor: Math.min(Math.max(scale, 1), 3) };
-  let browser = await getBrowser();
-  // A warm instance can hold a dead browser: if it does not answer quickly, start a fresh one.
-  let context = await withTimeout(browser.newContext(contextOptions), 5000).catch(() => null);
-  if (!context) {
-    await browser.close().catch(() => {});
-    browserPromise = null;
-    browser = await getBrowser();
-    context = await browser.newContext(contextOptions);
-  }
+  const context = await newContext(contextOptions);
   mark('browser');
   try {
     const page = await context.newPage();
@@ -76,6 +115,14 @@ export async function render({ template, format, design, theme, slots: given, sc
       } catch {
         await route.fulfill({ status: 404 });
       }
+    });
+    // DOC's Satoshi comes from Fontshare: fetched once per server instance, not on every render (and a
+    // failed fetch is tried again next time instead of the PNG quietly using a fallback font).
+    await page.route(/^https:\/\/(api|cdn)\.fontshare\.com\//, async (route) => {
+      try {
+        const got = await fontshare(route.request().url());
+        await route.fulfill({ body: got.body, contentType: got.type, headers: { 'Access-Control-Allow-Origin': '*' } });
+      } catch { await route.abort(); }
     });
     await page.goto(`${ORIGIN}/${plan.page ? '__exploration.html' : plan.html}`, { waitUntil: 'load' });
     mark('load');
@@ -125,15 +172,7 @@ export async function render({ template, format, design, theme, slots: given, sc
     }
     mark('fit');
 
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      const urls = new Set<string>();
-      for (const el of document.querySelectorAll<HTMLElement>('[style*="background-image"]')) {
-        const m = getComputedStyle(el).backgroundImage.match(/url\("?(.*?)"?\)/);
-        if (m) urls.add(m[1]);
-      }
-      await Promise.all([...urls].map((u) => new Promise((res) => { const i = new Image(); i.onload = i.onerror = res; i.src = u; })));
-    });
+    await page.evaluate(imagesReady, '[style*="background-image"]');
     mark('images');
     const png = await page.locator('body > [data-node]').screenshot({ animations: 'disabled', type: 'png' });
     mark('screenshot');
@@ -190,8 +229,7 @@ export type ExploreChecks = { maskW: number; maskH: number; safe: { x: number; y
 // The page is cut off from everything but the kit, the fonts and the images it was given.
 export async function renderComposition({ page: html, images, width, height, scale = 1, checks }: { page: string; images: string[]; width: number; height: number; scale?: number; checks: ExploreChecks }) {
   exploreJs ??= await fs.readFile(path.join(ROOT, 'scripts', 'explore-check.js'), 'utf8');
-  const browser = await getBrowser();
-  const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: Math.min(Math.max(scale, 1), 3) });
+  const context = await newContext({ viewport: { width, height }, deviceScaleFactor: Math.min(Math.max(scale, 1), 3) });
   try {
     const page = await context.newPage();
     const allowed = new Set(images);
@@ -207,16 +245,7 @@ export async function renderComposition({ page: html, images, width, height, sca
       return route.abort();
     });
     await page.goto(`${ORIGIN}/__exploration.html`, { waitUntil: 'load' });
-    await page.evaluate(async () => {
-      await document.fonts.ready;
-      const urls = new Set<string>();
-      for (const el of document.querySelectorAll<HTMLElement>('[data-image]')) {
-        const m = getComputedStyle(el).backgroundImage.match(/url\("?(.*?)"?\)/);
-        if (m) urls.add(m[1]);
-      }
-      await Promise.all([...urls].map((u) => new Promise((res) => { const i = new Image(); i.onload = i.onerror = res; i.src = u; })));
-      await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((res) => { i.onload = i.onerror = res; }))));
-    });
+    await page.evaluate(imagesReady, '[data-image]');
     await page.addScriptTag({ content: exploreJs });
     const seen = (await page.evaluate((o) => (window as unknown as { __exploreCheck: (o: unknown) => unknown }).__exploreCheck(o), checks)) as {
       errors: ExploreIssue[]; warnings: ExploreIssue[]; texts: SeenText[];

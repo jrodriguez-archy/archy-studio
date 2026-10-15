@@ -21,10 +21,13 @@ export async function keepLinkedImage(value: string, opts: { ownerId: string | n
   const { data: kept } = await db.from('assets').select('path').eq('prompt', key).eq('brand', opts.brand).is('deleted_at', null).limit(1).maybeSingle();
   if (kept?.path) return `upload:${kept.path}`;
 
+  // Only public addresses: never the server's own network.
+  if (/^(localhost|0\.|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[|.*\.(local|internal)$)/i.test(u.hostname)) throw new Error(`The image at ${u.origin} is not on a public address.`);
   const res = await fetch(value, { headers: { 'User-Agent': 'Mozilla/5.0 ArchyStudio' }, signal: AbortSignal.timeout(20_000) }).catch(() => null);
   if (!res?.ok) throw new Error(`Could not open the image at ${u.origin}${u.pathname} (${res?.status ?? 'no answer'}). The link may have expired: ask for the photo with request_photos.`);
   const type = res.headers.get('content-type')?.split(';')[0] ?? '';
   if (!/^image\/(png|jpeg|webp|svg\+xml)$/.test(type)) throw new Error(`The link at ${u.origin}${u.pathname} is not a PNG, JPG, WebP or SVG image.`);
+  if (Number(res.headers.get('content-length') ?? 0) > MAX_FETCH) throw new Error('The image at that link is larger than 30 MB.');
   let body: Buffer = Buffer.from(await res.arrayBuffer());
   if (body.length > MAX_FETCH) throw new Error('The image at that link is larger than 30 MB.');
   let stored = type;

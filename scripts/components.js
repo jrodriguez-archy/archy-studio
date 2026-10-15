@@ -73,6 +73,13 @@
       if ((DECORATION.test(name) || el.dataset?.optional === 'illustration') && el.querySelector('[data-slot]')) return kids(el).sort(visual).flatMap(walk);
       if (DECORATION.test(name) || el.dataset?.optional === 'illustration') return [add({ id, kind: 'decoration', name: human(name) })];
       if (isSvg(el)) return [add({ id, kind: 'decoration', name: GENERIC.test(name) ? 'Graphic' : human(name) })];
+      // A text with inline runs (a word in bold, a two-tone headline) is one text.
+      if (window.__richText?.(el)) {
+        const n = GENERIC.test(name) || !name ? fromText(el.textContent) : human(name);
+        return [add({ id, kind: 'text', name: n, text: el.textContent.trim(), rich: true })];
+      }
+      // An exploration's <img>: a photo that can be replaced.
+      if (el.tagName === 'IMG') return [add({ id, kind: 'photo', name: GENERIC.test(name) || !name || /^photo$/i.test(name) ? 'Photo' : `${human(name)} photo` })];
       const children = kids(el);
       if (!children.length && el.textContent.trim()) {
         // Field labels set in capitals ("LOCATION", "BOOTH") read as labels.
@@ -88,20 +95,28 @@
       // A container: a pill, plate or badge with its own fill (tag), a named frame holding several
       // things (group), or a wrapper that is flattened away.
       const opt = el.dataset?.optional;
-      const tag = opt && hasFill(el);
+      // In an exploration, a pill, chip, badge or card (its own fill or outline, smaller than half the
+      // piece) is one thing too: it moves and takes a colour as a whole.
+      const R = r.getBoundingClientRect(), B = el.getBoundingClientRect();
+      const boxed = explore && !el.dataset?.image && !el.dataset?.kind && (hasFill(el) || parseFloat(getComputedStyle(el).borderTopWidth) > 0)
+        && B.width * B.height < R.width * R.height * 0.5;
+      const tag = (opt && hasFill(el)) || boxed;
       const at = comps.length;
-      const own = { id, kind: tag ? 'tag' : 'group', name: tag ? `${human(opt)} tag` : human(name || 'Group') };
+      const named = name && !GENERIC.test(name) && !/^TPL/.test(name);
+      const own = { id, kind: tag ? 'tag' : 'group', name: opt && tag ? `${human(opt)} tag` : tag ? (named ? human(name) : 'Card') : human(name || 'Group') };
       if (tag) comps.push(own);
       const items = children.sort(visual).flatMap(walk);
-      const named = name && !GENERIC.test(name) && !/^TPL/.test(name);
       if (!tag && !(named && items.length >= 2)) return items;
       if (!tag) comps.splice(at, 0, own);
       for (const c of comps) if (items.includes(c.id) && c.parent === undefined) c.parent = id;
       return [id];
     };
 
-    comps.push({ id: idOf(r), kind: 'background', name: 'Background', parent: null });
-    kids(r).sort(visual).forEach(walk);
+    // An exploration's ground layer is its background (edited and recoloured as one).
+    const explore = idOf(r) === 'root';
+    const ground = window.__groundLayer?.(r) ?? null;
+    comps.push({ id: idOf(ground ?? r), kind: 'background', name: 'Background', parent: null });
+    kids(r).filter((k) => k !== ground).sort(visual).forEach(walk);
     for (const c of comps) c.parent ??= null; // top level
     // Repeated names of the same kind get a number ("Line 2"); "Date • Group" and "Date • Text" can share one.
     const key = (c) => `${c.kind}:${c.name}`;
@@ -119,6 +134,22 @@
   window.__keys = function keys() {
     const r = root();
     const out = { [idOf(r)]: { key: ':root' } };
+    // An exploration's formats are separate pages, each laid out its own way: a layer follows by its name
+    // only (the first "Headline" with the first "Headline"), and a layer without a name never follows
+    // (by its place it could land on something else). Its ground is the background in every format.
+    if (idOf(r) === 'root') {
+      const seen = {};
+      const ground = window.__groundLayer?.(r);
+      if (ground) out[idOf(ground)] = { key: ':ground' };
+      for (const k of r.querySelectorAll('[data-node]')) {
+        if (k === ground) continue;
+        const n = nameOf(k);
+        seen[n] = (seen[n] ?? 0) + 1;
+        const leaf = !isSvg(k) && (!k.querySelector('[data-node]') || window.__richText?.(k)) && k.textContent.trim();
+        out[idOf(k)] = { key: n && !GENERIC.test(n) ? `name:${n}#${seen[n]}` : `own:${idOf(k)}:${Math.random()}`, ...(leaf ? { fontSize: parseFloat(getComputedStyle(k).fontSize) } : {}) };
+      }
+      return out;
+    }
     const visit = (el, path) => {
       const count = {};
       for (const k of kids(el)) {

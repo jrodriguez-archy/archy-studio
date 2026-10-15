@@ -32,7 +32,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
   const images = comps.filter((c) => (c.kind === 'photo' || c.kind === 'partner') && c.slot);
   // An exploration has no slots: its texts and photos are its content (edited by hand, as layers).
   const free = !Object.keys(slotMeta).length;
-  const freeTexts = free ? comps.filter((c) => c.kind === 'text' && !c.slot) : [];
+  const freeTexts = free ? comps.filter((c) => (c.kind === 'text' && !c.slot) || (c.kind === 'button' && !c.textSlot)) : [];
   const freePhotos = free ? comps.filter((c) => c.kind === 'photo' && !c.slot) : [];
   const archy = comps.find((c) => c.kind === 'archy');
   // Optional details this design leaves out right now: listed too, so they can come back.
@@ -93,7 +93,7 @@ export function ContentPanel({ comps, edits, slots, slotMeta, previews, preset, 
             <div key={c.id} {...pick(c.id)} className={rowClass(c.id)}>
               <div className={`min-w-0 flex-1 ${hidden ? 'opacity-45' : ''}`}>
                 <p className="truncate text-foreground/50">{c.name}</p>
-                <p className="truncate text-[13px] text-foreground">{(edits[c.id]?.text ?? c.text ?? '').replace(/\n/g, ' ')}</p>
+                <p className="truncate text-[13px] text-foreground">{(c.kind === 'button' ? (c.textId && edits[c.textId]?.text) ?? c.name : edits[c.id]?.text ?? c.text ?? '').replace(/\n/g, ' ')}</p>
               </div>
               {eye(c.id, hidden)}
             </div>

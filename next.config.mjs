@@ -45,6 +45,10 @@ export default {
     return [
       { source: '/api/template-files/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=600' }] },
       { source: '/api/template-files/fonts/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }] },
+      // Template images are named by their content (Paper's ids), and library images rarely change: a day,
+      // then revalidated in the background, so reopening Canvas does not download them again.
+      { source: '/api/template-files/templates/:t/assets/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }] },
+      { source: '/api/template-files/library/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' }] },
     ];
   },
 };

@@ -21,7 +21,7 @@ import { supabaseBrowser } from '@/lib/supabase/browser';
 import type { Brand } from '@/lib/brands';
 import type { CanvasLibrary } from '@/lib/canvas';
 import { LEFT_OUT, RECOLOR, cleanEdits, type Edits, type FillPlan, type NodeEdit, type Preset, type RenderReport, type Suggestion } from '@/lib/canvas-shared';
-import { carried, follow, match, type Keys, type Snap } from '@/lib/canvas-sync';
+import { carried, follow, match, mergeOnto, type Keys, type Snap } from '@/lib/canvas-sync';
 import { BoardLabel, GhostBoard } from './artboards';
 import { AssetsTab, withSession } from './assets-tab';
 import { CanvasPanel, LibraryTab, type PanelTab } from './canvas-panel';
@@ -428,13 +428,13 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   };
 
   // Typed on the piece: a slot changes the brief (fit rules apply); other text is a hand edit.
-  const typed = (nodeId: string, text: string) => {
+  const typed = (nodeId: string, text: string, html?: string) => {
     const c = comps.find((x) => x.id === nodeId) ?? comps.find((x) => x.textId === nodeId);
     const slot = c?.id === nodeId ? c.slot : c?.textSlot;
     if (slot) {
       if (!text.trim() && !slotMeta[slot]?.optional) { toast.error('This copy is essential to the design.'); return false; }
       if (text !== (snap.slots[slot] ?? '')) setSlot(slot, text);
-    } else editLayer(nodeId, { text });
+    } else editLayer(nodeId, { text, html });
     return true;
   };
 
@@ -482,6 +482,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   // ---- Each format's fill follows its copy, images and icons (debounced round trip) ----
   const planKeys = boards.map((b) => [b.ref, planKeyOf(doc[b.ref])] as const);
   const planned = useRef<Record<string, string>>(Object.fromEntries(firstBoards.filter((b) => b.plan).map((b) => [b.ref, planKeyOf(b.initial)])));
+  // The last fill asked for per format: an older answer arriving after a newer one is dropped.
+  const asked = useRef<Record<string, string>>({});
   const planSig = JSON.stringify(planKeys);
   useEffect(() => {
     const due = planKeys.filter(([ref, k]) => planned.current[ref] !== k);
@@ -490,7 +492,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     const t = setTimeout(() => {
       for (const [ref, k] of due) {
         const s = docRef.current[ref];
+        asked.current[ref] = k;
         prepareAction(ref, s.slots, s.edits).then((r) => {
+          if (asked.current[ref] !== k) return;
           if (r.ok) { planned.current[ref] = k; setPlans((p) => ({ ...p, [ref]: r.plan })); setPlanErrors((e) => ({ ...e, [ref]: null })); }
           else setPlanErrors((e) => ({ ...e, [ref]: r.error }));
         }).catch(() => {});
@@ -547,6 +551,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     for (const b of firstBoards) if (!b.isNew) drafted.current[b.ref] = keyOf(b.ref, d0, firstBoards);
   }
   const sent = useRef<Record<string, string[]>>({}); // this tab's recent drafts: their echo is not news
+  // Per format, the draft as the server last had it (sent from here or received): what was typed here since
+  // is laid over an edit Claude sends in, instead of being replaced by it.
+  const serverSnap = useRef<Record<string, Snap>>(Object.fromEntries(firstBoards.filter((b) => !b.isNew).map((b) => [b.ref, b.initial])));
   // Kept on the server ('saved'), on its way ('saving'), or not kept ('error').
   const [keeping, setKeeping] = useState<'saved' | 'saving' | 'error'>('saved');
   const inFlight = useRef(0);
@@ -565,6 +572,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
         const d = docRef.current, s = d[b.ref];
         const added = b.ref === home ? addedOf(d, boardsRef.current) : undefined;
         drafted.current[b.ref] = keyOf(b.ref, d, boardsRef.current);
+        serverSnap.current[b.ref] = s;
         sent.current[b.ref] = [...(sent.current[b.ref] ?? []).slice(-19), drafted.current[b.ref]];
         inFlight.current++;
         saveDraftAction(b.ref, s.slots, s.edits, added)
@@ -644,6 +652,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
             if (sent.current[ref]?.includes(rowKey)) return;
             sent.current[ref] = [];
             drafted.current[ref] = rowKey;
+            serverSnap.current[ref] = next;
             if (newBoards.length) {
               const order = [...boardsRef.current, ...ghostsRef.current].map((b) => b.format);
               setBoards(bs.sort((a, b) => order.indexOf(a.format) - order.indexOf(b.format)));
@@ -660,7 +669,9 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           for (const [k, v] of Object.entries(next.slots)) if ((prev.slots[k] ?? null) !== v) { const c = comps.find((x) => x.slot === k || x.textSlot === k); if (c) ids.add(c.id); }
           setFlash({ ref, ids: [...ids], at: Date.now() });
           drafted.current[ref] = rowKey;
-          commitTo(ref, next); // one step: undo takes it back; synced formats follow
+          const base = serverSnap.current[ref];
+          serverSnap.current[ref] = next;
+          commitTo(ref, base ? mergeOnto(next, base, docRef.current[ref]) : next); // one step: undo takes it back; synced formats follow
           toast(`Claude ${row.note ? row.note.charAt(0).toLowerCase() + row.note.slice(1) : 'edited the design'}`, { action: { label: 'Undo', onClick: () => undo() } });
         })
         .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });

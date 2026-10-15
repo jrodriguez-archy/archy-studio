@@ -166,7 +166,9 @@ export async function useAi(userId: string, kind: keyof typeof DAILY): Promise<b
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
   const { count } = await db.from('ai_usage').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('kind', kind).gte('created_at', since);
   if ((count ?? 0) >= DAILY[kind]) return false;
-  await db.from('ai_usage').insert({ user_id: userId, kind });
+  // Not counted, not allowed: a failed write must never lift the limit.
+  const { error } = await db.from('ai_usage').insert({ user_id: userId, kind });
+  if (error) return false;
   // Parallel calls past the limit: whoever ends up over it gives way.
   const { count: now } = await db.from('ai_usage').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('kind', kind).gte('created_at', since);
   return (now ?? 0) <= DAILY[kind];

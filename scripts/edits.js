@@ -19,8 +19,9 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     const cs = getComputedStyle(el);
     el.dataset.editFont = cs.fontSize;
     el.dataset.editLine = cs.lineHeight;
-    if (isSvg(el)) el.dataset.editHtml = el.innerHTML;
+    if (isSvg(el) || window.__richText?.(el)) el.dataset.editHtml = el.innerHTML;
     else if (!el.children.length) el.dataset.editText = el.textContent;
+    if (el.tagName === 'IMG') el.dataset.editSrc = el.getAttribute('src') ?? '';
   };
   const setAttr = (el, attr, value) => {
     const k = attr === 'fill' ? 'themeFill' : 'themeStroke';
@@ -40,6 +41,7 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     el.setAttribute('style', el.dataset.editStyle);
     if ('editText' in el.dataset) el.textContent = el.dataset.editText;
     if ('editHtml' in el.dataset) el.innerHTML = el.dataset.editHtml;
+    if ('editSrc' in el.dataset) el.setAttribute('src', el.dataset.editSrc);
   }
   for (const el of root.querySelectorAll('[data-on-badge]')) delete el.dataset.onBadge;
   for (const el of root.querySelectorAll('[data-theme-attrs]')) {
@@ -98,11 +100,16 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
   if (t) {
     keep(root);
     root.style.background = t.bg;
+    // An exploration's ground layer is its background: it takes the theme's ground too.
+    const ground = window.__groundLayer?.(root);
+    if (ground) { keep(ground); ground.style.background = t.bg; }
     const rgb = (c) => (c.match(/\d+(\.\d+)?/g) ?? []).map(Number);
     const lum = (c) => { const [r, g, b] = rgb(c); return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
     const saturated = (c) => { const [r, g, b, a] = rgb(c); return a !== 0 && Math.max(r, g, b) - Math.min(r, g, b) > 90; };
     const filled = (el) => { const bg = getComputedStyle(el).backgroundColor; return bg && !/rgba\(0, 0, 0, 0\)|transparent/.test(bg); };
-    const skip = (el) => inArchyLogo(el) || !!inside(el, (n) => DECORATION.test(nameOf(n)) || n.dataset?.optional === 'illustration' || n.dataset?.slotType === 'image');
+    // Photos, product screens, mascots and textures keep their own colours (and their pictures).
+    const skip = (el) => el === ground || inArchyLogo(el) || !!inside(el, (n) => DECORATION.test(nameOf(n)) || n.dataset?.optional === 'illustration' || n.dataset?.slotType === 'image'
+      || n.dataset?.image != null || n.dataset?.texture != null || /^(product|mascot)$/.test(n.dataset?.kind ?? '') || n.tagName === 'IMG');
     // Buttons and royal boxes (booth badges) carry their own pair of colours. Roles are read from the
     // design first, then applied, so one change never misleads the next.
     const all = [...root.querySelectorAll('*')].filter((el) => !isSvg(el) && !skip(el));
@@ -173,8 +180,10 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
     if (b.dx || b.dy) moveBy(el, b.dx ?? 0, b.dy ?? 0);
     if (b.scale && b.scale !== 1) s.scale = String(b.scale);
     if (logo) continue;
-    if (e.text != null && !svg && !el.children.length) el.textContent = e.text;
-    if (e.image && urls?.[e.image]) s.backgroundImage = `url("${urls[e.image]}")`;
+    const rich = !svg && window.__richText?.(el);
+    if (e.html != null && rich) el.innerHTML = window.__cleanInline(e.html);
+    else if (e.text != null && !svg && (!el.children.length || rich)) el.textContent = e.text;
+    if (e.image && urls?.[e.image]) { if (el.tagName === 'IMG') el.setAttribute('src', urls[e.image]); else s.backgroundImage = `url("${urls[e.image]}")`; }
     if (svg && e.icon && icons?.[e.icon]) {
       // Another Hugeicons drawing in the same box, in the colour the icon had.
       const was = [...el.querySelectorAll('[stroke]')].map((n) => n.getAttribute('stroke')).find((c) => c && c !== 'none') ?? getComputedStyle(el).color;
@@ -188,7 +197,7 @@ window.__applyEdits = function applyEdits(edits, urls, icons) {
       for (const n of el.querySelectorAll('[stroke]')) if (n.getAttribute('stroke') !== 'none') n.setAttribute('stroke', 'currentColor');
     }
     // A text's box hugs its copy: its height follows the lines, a narrower width wraps them.
-    const text = !svg && !el.children.length && !!el.textContent.trim();
+    const text = !svg && (!el.children.length || rich) && !!el.textContent.trim();
     if (b.width != null) {
       s.width = `${b.width}px`; s.flexShrink = '0';
       if (text && /^(pre|nowrap)$/.test(getComputedStyle(el).whiteSpace)) s.whiteSpace = 'pre-wrap';

@@ -4,6 +4,7 @@ import { canvasLibrary, explorationOf, isNew, loadSource } from '@/lib/canvas';
 import type { Edits, FillPlan } from '@/lib/canvas-shared';
 import { saveDraft, type AddedFormat } from '@/lib/drafts';
 import { MissingRequired, prepareFill } from '@/lib/fill';
+import { supabaseAdmin } from '@/lib/supabase/admin';
 import { currentUser } from '@/lib/team';
 
 // Light Canvas actions (no browser): the fill for the editor, the draft, the panel's library. Export
@@ -48,4 +49,12 @@ export async function libraryAction() {
   const me = await currentUser();
   if (!me) return null;
   return canvasLibrary(me);
+}
+
+// The design this person has open in Canvas now (Claude's "the design I have open").
+export async function openAction(id: string) {
+  const me = await currentUser();
+  if (!me || !/^[0-9a-f-]{36}$/i.test(id)) return { ok: false as const, error: 'Not a design.' };
+  const { error } = await supabaseAdmin().from('profiles').update({ canvas_piece: id, canvas_seen_at: new Date().toISOString() }).eq('id', me.id);
+  return error ? { ok: false as const, error: error.message } : { ok: true as const };
 }

@@ -2,7 +2,7 @@ import { createMcpHandler, withMcpAuth } from 'mcp-handler';
 import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
 import { editCanvas, getCanvas, saveCanvas } from '@/lib/canvas-claude';
-import { MissingRequired, render, renderComposition } from '@/lib/renderer';
+import { MissingRequired, prepareFill, render, renderComposition } from '@/lib/renderer';
 import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, compose, withStableIds } from '@/lib/compose';
 import { randomUUID } from 'node:crypto';
 import { findAsset, shortId } from '@/lib/asset-ids';
@@ -114,9 +114,11 @@ const handler = createMcpHandler(
         annotations: { readOnlyHint: true },
       },
       async ({ template, design, theme }) => {
-        const m = await loadManifest(template);
+        const m = await loadManifest(template).catch(() => null);
+        if (!m) return { isError: true, content: [{ type: 'text', text: `No template "${template}". Templates: ${(await listTemplates()).map((t) => t.id).join(', ')}.` }] };
         const c = await loadConfig(template);
-        const combo = resolveCombo(m, design, theme);
+        let combo;
+        try { combo = resolveCombo(m, design, theme); } catch (e) { return { isError: true, content: [{ type: 'text', text: (e as Error).message }] }; }
         // Limits and slot presence of this design × theme, keyed by plain format.
         const keyOf = (f: string) => (combo?.key ? `${f}--${combo.key}` : f);
         const formats = comboFormats(m, combo);
@@ -341,8 +343,8 @@ const handler = createMcpHandler(
             const drawn = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, checks, scale: hiRes ? 2 : 1 });
             const errors = [...comp.problems, ...drawn.report.errors.map((e) => e.message)];
             const warnings = drawn.report.warnings.map((w) => w.message);
-            const preview = hiRes ? await (await import('sharp')).default(drawn.png).resize({ width: f.width }).png().toBuffer() : drawn.png;
-            out.push({ type: 'image', data: preview.toString('base64'), mimeType: 'image/png' });
+            const preview = await previewOf(drawn.png, DESIGN);
+            out.push({ type: 'image', data: preview.toString('base64'), mimeType: 'image/jpeg' });
             if (errors.length) {
               out.push({ type: 'text', text: `${label}: not saved. Fix these and compose again:\n- ${errors.join('\n- ')}${warnings.length ? `\nAlso worth fixing:\n- ${warnings.join('\n- ')}` : ''}` });
               return out;
@@ -404,17 +406,17 @@ const handler = createMcpHandler(
         annotations: { readOnlyHint: true },
       },
       async ({ search, kind, folder, brand }) => {
-        const q = search?.trim().toLowerCase();
         const folders = await listFolders(brand);
         const folderName = new Map(folders.map((f) => [f.id, f.name]));
-        const inFolder = folder ? folders.find((f) => f.name.toLowerCase() === folder.trim().toLowerCase())?.id ?? '-' : null;
-        // A folder is listed whole (in the database), whatever its size.
-        const assets = await listAssets(inFolder ? { folderId: inFolder, limit: 1000, brand } : { limit: 300, brand });
-        const items = assets
-          .filter((a) => (!q || a.name.toLowerCase().includes(q)) && (!kind || a.kind === kind) && (!inFolder || a.folderId === inFolder))
-          .slice(0, 60)
+        const inFolder = folder ? folders.find((f) => f.name.toLowerCase() === folder.trim().toLowerCase())?.id : null;
+        if (folder && !inFolder) return { content: [{ type: 'text', text: `No folder "${folder}". Folders: ${folders.map((f) => f.name).join(', ') || 'none yet'}.` }] };
+        // Searched in the database (the whole library, not only the newest images).
+        const MAX = 60;
+        const assets = await listAssets({ ...(inFolder ? { folderId: inFolder } : {}), search, kind, limit: MAX + 1, brand });
+        const items = assets.slice(0, MAX)
           .map((a) => ({ id: shortId(a.id), value: a.value, name: a.name, kind: a.kind, folder: a.folderId ? folderName.get(a.folderId) ?? null : null, by: a.author, size: a.width && a.height ? `${a.width}×${a.height}` : null, added: a.createdAt }));
-        return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
+        const more = assets.length > MAX ? `\nThe ${MAX} newest are listed; there are more: narrow with search, kind or folder.` : '';
+        return { content: [{ type: 'text', text: JSON.stringify(items) + more }] };
       },
     );
 
@@ -513,7 +515,7 @@ const handler = createMcpHandler(
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
           const out = await getCanvas(me, piece);
-          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: out.text }] };
+          return { content: [{ type: 'image', data: (await previewOf(out.png, DESIGN)).toString('base64'), mimeType: 'image/jpeg' }, { type: 'text', text: out.text }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
         }
@@ -563,7 +565,7 @@ const handler = createMcpHandler(
           const tips = out.suggestions.length ? ` The Inspector still suggests: ${out.suggestions.join(' | ')}. Fix the ones your change caused (fix: "all", or your own change).` : ' The Inspector has nothing to flag.';
           const theirs = out.personEdited ? ` The person has also changed this design in Canvas since Claude's last change${out.recolor ? ` (recolour now: ${out.recolor})` : ''}; the image shows their changes too, so do not take them for yours (get_canvas to see them).` : '';
           const synced = out.synced.length ? ` While the set is open in Canvas, ${out.syncedSlots.join(', ')} also follow to its other formats (${out.synced.join(', ')}): say so, and check them when the change is only meant for this one.` : '';
-          return { content: [{ type: 'image', data: out.png.toString('base64'), mimeType: 'image/png' }, { type: 'text', text: `Done in Canvas: ${out.note}. The person sees it live and can undo it.${theirs}${synced}${tips} Save with save_canvas only when they ask.` }] };
+          return { content: [{ type: 'image', data: (await previewOf(out.png, DESIGN)).toString('base64'), mimeType: 'image/jpeg' }, { type: 'text', text: `Done in Canvas (${out.piece.set_title ?? out.piece.template}, ${out.piece.format}): ${out.note}. The person sees it live and can undo it.${theirs}${synced}${tips} Save with save_canvas only when they ask.` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
         }
@@ -622,12 +624,19 @@ const handler = createMcpHandler(
           if (!found) return { isError: true, content: [{ type: 'text', text: `No project "${project}" for this account. Call list_projects, or create_project first.` }] };
           projectId = found.id;
         }
-        const m = await loadManifest(template);
+        const m = await loadManifest(template).catch(() => null);
+        if (!m) return { isError: true, content: [{ type: 'text', text: `No template "${template}". Templates: ${(await listTemplates()).map((t) => t.id).join(', ')}.` }] };
         let combo;
         try { combo = resolveCombo(m, design, theme); } catch (e) { return { isError: true, content: [{ type: 'text', text: (e as Error).message }] }; }
         const files = comboFormats(m, combo);
         // "All formats" are the social ones: the event page cover is made only when asked for.
-        const wanted = formats?.length ? formats : Object.keys(files).filter((f) => f !== 'cover');
+        let wanted = formats?.length ? formats : Object.keys(files).filter((f) => f !== 'cover');
+        // A format or slot the template does not have is a mistake in the call, said as one (never a
+        // "server error, try again").
+        const badFormats = wanted.filter((f) => !files[f]);
+        if (badFormats.length) return { isError: true, content: [{ type: 'text', text: `${template} has no format ${badFormats.join(', ')}. Formats: ${Object.keys(files).join(', ')}.` }] };
+        const badSlots = Object.keys(slots).filter((k) => !m.slots[k]);
+        if (badSlots.length) return { isError: true, content: [{ type: 'text', text: `${template} has no slot ${badSlots.join(', ')}. Slots: ${Object.keys(m.slots).join(', ')}.` }] };
         // Photos the brief does not have yet: placeholders close to it (Unsplash, else AI, else neutral; a
         // person's photo is a neutral silhouette), for the formats asked for. The real ones replace them later.
         const config = await loadConfig(template);
@@ -655,6 +664,27 @@ const handler = createMcpHandler(
           return !(from && (slots[from] || m.slots[from]?.type === 'image'));
         }).map(([k]) => photoPlaceholder({ slot: k, fact: config.facts?.[k] ?? null, slots, purpose: config.purpose, userId: userIdOf(ctx) })));
         if (placeholders.length) slots = { ...slots, ...Object.fromEntries(placeholders.map((p) => [p.slot, p.value])) };
+        // Every format checked for its essential content before any is drawn: one that cannot be made never
+        // leaves the others saved behind an error (and a retry saving them twice).
+        // The cover asked for with the social formats but missing its own content (its ground photo).
+        let coverNeeds: string[] | null = null;
+        const checks = await Promise.all(wanted.map((format) => prepareFill({ template, format, design, theme, slots, smallerText }, undefined, true).then(() => null, (e: unknown) => ({ format, e }))));
+        for (const c of checks) {
+          if (!c) continue;
+          if (!(c.e instanceof MissingRequired)) return { isError: true, content: [{ type: 'text', text: (c.e as Error).message }] };
+          if (c.format === 'cover') {
+            coverNeeds = c.e.slots;
+            if (wanted.length === 1) return { isError: true, content: [{ type: 'text', text: `The cover needs ${coverNeeds.join(', ')} (the event page cover's own copy). Ask the requester for it, then render formats: ["cover"].` }] };
+            wanted = wanted.filter((f) => f !== 'cover');
+            continue;
+          }
+          const have = await factsFromSlots(template, slots);
+          // Same purpose first (a booth invite suggests booth invites, not reminders).
+          const fits = async (p?: string) => (await matchTemplates(have, p, brand)).filter((x) => x.eligible && x.template !== template).slice(0, 3).map((x) => x.template);
+          const same = await fits(config.purpose);
+          const alt = same.length ? same : await fits();
+          return { isError: true, content: [{ type: 'text', text: `${template} needs ${c.e.slots.join(', ')} (essential content; it never goes out half empty). Nothing was made. Ask the requester for it${alt.length ? `, or use a template that fits what you have: ${alt.join(', ')}` : ''}.` }] };
+        }
         const setId = await resolveSet({ userId: userIdOf(ctx), template, slots, requested: set });
         // New pieces of a set that is already filed in a project join that project.
         if (!projectId && supabaseConfigured()) {
@@ -664,16 +694,17 @@ const handler = createMcpHandler(
         const origin = publicOrigin(ctx);
         const content: Content[] = [];
         const refused: string[] = [];
-        // The cover asked for with the social formats but missing its own content (its ground photo).
-        let coverNeeds: string[] | null = null;
         // Formats whose copy fits in smaller text (offered as an option).
         const smallerOption: string[] = [];
         const extendNotes: string[] = [];
-        // Each format drawn once, at 2x (the file kept); Claude's preview is that image at 1x. Formats are
+        // Each format drawn once, at 2x (the file kept); Claude's preview is a light JPEG of it. Formats are
         // drawn side by side (three at a time), and one that fails never takes the others with it.
         const hiRes = supabaseConfigured();
-        const at1x = async (png: Buffer, width: number) => hiRes ? (await import('sharp')).default(png).resize({ width }).png().toBuffer() : png;
         type Made = { content: Content[]; refused?: string; smaller?: string; notes: string[]; coverNeeds?: string[]; missing?: MissingRequired; failed?: string };
+        // fill_around: the same extension asked by two formats is made once, and none starts this late in
+        // the call (each can take two minutes; the call has five).
+        const started = Date.now();
+        const extensions = new Map<string, ReturnType<typeof extendPhoto>>();
         const makeFormat = async (format: string): Promise<Made> => {
           const made: Made = { content: [], notes: [] };
           let out;
@@ -689,9 +720,12 @@ const handler = createMcpHandler(
               const at = f.fill_around ? out.fits[slot] : undefined;
               const plan = at && outpaintFor(at.fit);
               if (!at || !plan || !fslots[slot]) continue;
-              if (!owner || !(await useAi(owner, 'outpaint'))) { made.notes.push(`${format}: ${slot} not extended (the daily limit of ${DAILY.outpaint} is reached)`); continue; }
+              if (Date.now() - started > 120_000) { made.notes.push(`${format}: ${slot} not extended this time (no time left in this call; render this format again with the same framing)`); continue; }
+              const key = JSON.stringify([slot, fslots[slot], plan.expand]);
+              if (!extensions.has(key) && (!owner || !(await useAi(owner, 'outpaint')))) { made.notes.push(`${format}: ${slot} not extended (the daily limit of ${DAILY.outpaint} is reached)`); continue; }
               try {
-                const ext = await extendPhoto({ template, image: fslots[slot]!, expand: plan.expand, ownerId: owner, brand });
+                if (!extensions.has(key)) extensions.set(key, extendPhoto({ template, image: fslots[slot]!, expand: plan.expand, ownerId: owner!, brand }));
+                const ext = await extensions.get(key)!;
                 fslots = { ...fslots, [slot]: ext.value };
                 fedits = { ...fedits, [at.node]: { crop: plan.cropFor(ext.width, ext.height) } };
                 extended.push(slot);
@@ -715,7 +749,7 @@ const handler = createMcpHandler(
             return made;
           }
           const { report, variant, slots: used } = out;
-          const png = await at1x(out.png, out.width);
+          const png = await previewOf(out.png, DESIGN);
           if (!report.ok) {
             made.refused = `${format}: ` + report.errors.map((e) => `${e.slot ?? e.node}: ${e.message}`).join(' | ');
             // The other option: the same copy in smaller text. A preview only (not saved): the requester
@@ -724,7 +758,7 @@ const handler = createMcpHandler(
               const small = await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText: true }).catch((e) => { console.error(`smaller text ${template}/${format}`, e); return null; });
               if (small?.report.ok) {
                 const shrunk = Object.entries(small.report.slots).filter(([, x]) => x.scale && x.scale < 1).map(([k, x]) => `${k} at ${Math.round(x.scale! * 100)}%`);
-                made.content.push({ type: 'image', data: small.png.toString('base64'), mimeType: 'image/png' });
+                made.content.push({ type: 'image', data: (await previewOf(small.png, DESIGN)).toString('base64'), mimeType: 'image/jpeg' });
                 made.content.push({ type: 'text', text: `${files[format]?.label ?? format}: the copy does not fit at the normal size. Option "smaller text" (preview above, not saved): it fits as written with ${shrunk.join(', ') || 'the type reduced'}.` });
                 made.smaller = format;
               }
@@ -759,7 +793,7 @@ const handler = createMcpHandler(
             .filter(([, s]) => s.status !== 'removed' && ((s.scale && s.scale < 1) || s.wrapped || s.groupWrapped))
             .map(([k, s]) => `${k} ${[s.scale && s.scale < 1 ? `at ${Math.round(s.scale * 100)}%` : '', s.wrapped || s.groupWrapped ? `on ${s.lines ?? 2} lines` : ''].filter(Boolean).join(', ')}`);
           if (fitted.length) notes.push(`fitted: ${fitted.join('; ')}`);
-          made.content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/png' });
+          made.content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/jpeg' });
           made.content.push({
             type: 'text',
             text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, saved.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
@@ -845,8 +879,10 @@ const authed = withMcpAuth(handler, verifyMcpToken, {
 
 export { authed as GET, authed as POST, authed as DELETE };
 
-// A light JPEG of an image for Claude to look at (the full PNG stays in Assets).
-async function previewOf(png: Buffer): Promise<Buffer> {
+// A light JPEG of an image for Claude to look at (the full PNG stays in Assets or the gallery). A design
+// gets as much as Claude reads (its small print checked), a photo less; a few hundred KB, never MBs.
+const DESIGN = 1568;
+async function previewOf(png: Buffer, max = 900): Promise<Buffer> {
   const sharp = (await import('sharp')).default;
-  return sharp(png).resize({ width: 900, height: 900, fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 80 }).toBuffer();
+  return sharp(png).resize({ width: max, height: max, fit: 'inside', withoutEnlargement: true }).flatten({ background: '#ffffff' }).jpeg({ quality: max > 900 ? 85 : 80 }).toBuffer();
 }

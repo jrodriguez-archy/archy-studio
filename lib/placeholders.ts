@@ -50,7 +50,7 @@ export async function photoPlaceholder(input: { slot: string; fact: string | nul
   } catch { /* next source */ }
   try {
     if (input.userId && (await useAi(input.userId, 'generate'))) {
-      const png = await generateImage(`A photo for a placeholder: ${query}.`, '4:5');
+      const png = await generateImage(`A photo for a placeholder: ${query}.`, '4:5', null, 'archy', 45_000); // the design waits for it: the neutral photo after 45 s
       const path = await store(key, 'ai', png);
       return { slot, value: `upload:${path}`, source: 'ai', query };
     }

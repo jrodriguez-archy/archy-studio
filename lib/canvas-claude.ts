@@ -20,14 +20,21 @@ export { clearDraft, getDraft, saveDraft };
 // and colour untouched.
 
 type Who = { id: string; is_admin: boolean };
-// The piece Claude means: the id it was given, or the one this person has open in Canvas most recently.
+const OPEN_FOR = 3 * 60_000; // Canvas says which design is open every minute while its tab is in front
+
+// The piece Claude means: the id it was given, or the one this person has open in Canvas right now. Never
+// a guess from an old draft (yesterday's design, or one a teammate touched).
 async function findPiece(me: Who, ref?: string): Promise<{ piece: PieceSource; draft: Draft | null }> {
   let id = ref?.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i)?.[0];
   if (!id) {
-    const { data } = await supabaseAdmin().from('canvas_drafts').select('piece_id').eq('user_id', me.id).order('updated_at', { ascending: false }).limit(1);
-    id = data?.[0]?.piece_id;
+    const db = supabaseAdmin();
+    const { data, error } = await db.from('profiles').select('canvas_piece, canvas_seen_at').eq('id', me.id).maybeSingle();
+    const open = data as { canvas_piece: string | null; canvas_seen_at: string | null } | null;
+    if (open?.canvas_piece && open.canvas_seen_at && Date.now() - new Date(open.canvas_seen_at).getTime() < OPEN_FOR) id = open.canvas_piece;
+    // Before the canvas_open migration: the person's most recent draft, as before.
+    if (error) id = ((await db.from('canvas_drafts').select('piece_id').eq('user_id', me.id).order('updated_at', { ascending: false }).limit(1)).data?.[0]?.piece_id as string | undefined);
   }
-  if (!id) throw new Error('No design open in Canvas. Ask the person to open the design in Archy Studio → Canvas (or give its canvas id).');
+  if (!id) throw new Error('No design open in Canvas right now. Ask the person to open it in Archy Studio → Canvas, or to paste its Canvas link.');
   const piece = await loadSource(id);
   if (!piece) throw new Error(`No design ${id}.`);
   return { piece, draft: await getDraft(id) };

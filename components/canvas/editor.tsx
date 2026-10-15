@@ -9,7 +9,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { canon, cleanSnap, libraryAction, luminance, planKeyOf, prepareAction, same, saveDraftAction } from './editor-calls';
+import { canon, cleanSnap, libraryAction, luminance, openAction, planKeyOf, prepareAction, same, saveDraftAction } from './editor-calls';
 import { useRendersLive } from '@/components/use-renders-live';
 
 // Export and save render with Chromium in their own route (/api/canvas), not in this page's function.
@@ -595,6 +595,17 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     const t = setTimeout(() => { setKeeping('saving'); setDoc({ ...docRef.current }); }, 5000);
     return () => clearTimeout(t);
   }, [keeping, setDoc]);
+  // The design open here, told to Studio (and again every minute while the tab is in front): what Claude
+  // edits when the person speaks of "the design I have open".
+  useEffect(() => {
+    if (board.isNew) return;
+    const tell = () => { if (document.visibilityState === 'visible') openAction(board.ref).catch(() => {}); };
+    tell();
+    const t = setInterval(tell, 60_000);
+    document.addEventListener('visibilitychange', tell);
+    return () => { clearInterval(t); document.removeEventListener('visibilitychange', tell); };
+  }, [board.ref, board.isNew]);
+
   // Leaving Canvas (another page here, or the tab closed) sends what was not sent yet.
   const leaving = useRef(false);
   const flush = useRef(() => {});

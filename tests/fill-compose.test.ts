@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compose, sanitize, withStableIds } from '@/lib/compose';
-import { prepareFill } from '@/lib/fill';
+import { MissingRequired, prepareFill } from '@/lib/fill';
 
 // Template files and the brand kit are read from disk; nothing here reaches Supabase.
 
@@ -9,6 +9,12 @@ describe('prepareFill', () => {
     const plan = await prepareFill({ template: 'booth-invite-photo', format: 'post', slots: {}, fillDefaults: true });
     expect(plan.width).toBe(1080);
     expect(plan.html).toBe('templates/booth-invite-photo/post.html');
+  });
+  it('checks essential content without drawing (render checks every format before making any)', async () => {
+    await expect(prepareFill({ template: 'ae-spotlight', format: 'post', slots: {} }, undefined, true)).rejects.toBeInstanceOf(MissingRequired);
+    await expect(prepareFill({ template: 'ae-spotlight', format: 'banner', slots: {} }, undefined, true)).rejects.toThrow(/has no format "banner"/);
+    const ok = await prepareFill({ template: 'booth-invite-photo', format: 'post', slots: {}, fillDefaults: true }, undefined, true);
+    expect(Object.keys(ok.slots).length).toBeGreaterThan(0);
   });
   it('reads a logo only from the template folders', async () => {
     const ok = await prepareFill({ template: 'booth-invite-photo', format: 'post', slots: { 'logo-partner': '../../brand-kit/archy/logo.svg' }, fillDefaults: true });

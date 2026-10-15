@@ -15,13 +15,17 @@ const WHO: Record<Brand, string> = {
 };
 const guide = (brand: Brand) => `You make images for ${WHO[brand]}, used in marketing designs. Photographic, natural light, clean and modern. Do not add text, logos or watermarks unless asked.`;
 
+// A model that stops answering never holds a render (or the MCP call) until the function's limit.
+const AI_TIMEOUT = 90_000;
+
 // A PNG at exactly the ratio asked for (centre crop). `source`: an image to edit instead.
-export async function generateImage(prompt: string, ratio: string, source?: { body: Buffer; type: string } | null, brand: Brand = 'archy'): Promise<Buffer> {
+export async function generateImage(prompt: string, ratio: string, source?: { body: Buffer; type: string } | null, brand: Brand = 'archy', timeout = AI_TIMEOUT): Promise<Buffer> {
   const instruction = `${guide(brand)}\n\n${source ? 'Edit this image: ' : 'Create an image: '}${prompt}\nAspect ratio ${ratio}.`;
   const result = await generateText({
     model: MODEL,
     messages: [{ role: 'user', content: [{ type: 'text', text: instruction }, ...(source ? [{ type: 'image' as const, image: source.body, mediaType: source.type }] : [])] }],
     providerOptions: { google: { imageConfig: { aspectRatio: ratio } } },
+    abortSignal: AbortSignal.timeout(timeout),
   });
   const file = result.files.find((f) => f.mediaType?.startsWith('image/'));
   if (!file) throw new Error(result.text?.trim() || 'No image came back. Try describing it differently.');
@@ -64,6 +68,7 @@ export async function generateForFrame(input: { prompt: string; width: number; h
     model: MODEL,
     messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }],
     providerOptions: { google: { imageConfig: { aspectRatio: ratio } } },
+    abortSignal: AbortSignal.timeout(AI_TIMEOUT),
   });
   const file = result.files.find((f) => f.mediaType?.startsWith('image/'));
   if (!file) throw new Error(result.text?.trim() || 'No image came back. Try describing it differently.');
@@ -82,10 +87,12 @@ export async function generateForFrame(input: { prompt: string; width: number; h
 export const TONES = { royal: [[1, 61, 245], [1, 105, 250]], navy: [[0, 0, 78], [0, 4, 132]], ice: [[204, 234, 255], [230, 244, 255]] } as const;
 export type Tone = keyof typeof TONES;
 
-/** The photo in two brand tones: autocontrast (1%), 4 steps, Bayer 8×8, one cell per pixel at 2x of the frame. */
+/** The photo in two brand tones: autocontrast (1%), 4 steps, Bayer 8×8, one cell per pixel at 2x of the frame
+ * (less for a very large frame: about 8 megapixels at most, so a banner never runs the function out of memory). */
 export async function pixelTone(body: Buffer, frame: { width: number; height: number }, tone: Tone): Promise<Buffer> {
   const sharp = (await import('sharp')).default;
-  const W = Math.round(frame.width * 2), H = Math.round(frame.height * 2);
+  const k = Math.min(2, Math.sqrt(8_000_000 / (frame.width * frame.height)));
+  const W = Math.round(frame.width * k), H = Math.round(frame.height * k);
   const { data } = await sharp(body, { limitInputPixels: MAX_PIXELS }).rotate().resize(W, H, { fit: 'cover' }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   const n = W * H, lum = new Float32Array(n), hist = new Array(256).fill(0);
   for (let i = 0; i < n; i++) { const v = 0.299 * data[i * 3] + 0.587 * data[i * 3 + 1] + 0.114 * data[i * 3 + 2]; lum[i] = v; hist[Math.round(v)]++; }

@@ -83,7 +83,7 @@ async function thumbnail(path: string, body: Buffer) {
 // The newest assets: everyone's (Team) or one person's (Mine). One person's older uploads (from before
 // assets were kept) join the list the first time they look (once per server instance).
 const adopted = new Set<string>();
-export async function listAssets(opts: { ownerId?: string; folderId?: string; search?: string; limit?: number; brand?: Brand } = {}): Promise<Asset[]> {
+export async function listAssets(opts: { ownerId?: string; folderId?: string; search?: string; kind?: AssetKind; limit?: number; brand?: Brand } = {}): Promise<Asset[]> {
   // In the background, after the response: never on the way of the list itself.
   if (opts.ownerId && !adopted.has(opts.ownerId)) {
     adopted.add(opts.ownerId);
@@ -96,6 +96,7 @@ export async function listAssets(opts: { ownerId?: string; folderId?: string; se
   // By name: the LIKE wildcards are taken literally (PostgREST reads * as a wildcard and cannot escape it).
   const term = opts.search?.trim().slice(0, 80).replace(/[\\%_]/g, '\\$&').replace(/\*/g, '');
   if (term) q = q.ilike('name', `%${term}%`);
+  if (opts.kind) q = q.eq('kind', opts.kind);
   if (opts.folderId) q = /^[0-9a-f-]{36}$/i.test(opts.folderId) ? q.eq('folder_id', opts.folderId) : q.eq('id', '00000000-0000-0000-0000-000000000000');
   const { data } = await q;
   return ((data ?? []) as unknown as Row[]).map(toAsset);

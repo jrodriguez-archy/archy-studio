@@ -325,7 +325,9 @@ const infos = new Map<string, Promise<ImageInfo>>();
 function imageInfo(v: string, url: string, origin: string): Promise<ImageInfo> {
   let p = infos.get(v);
   if (!p) {
-    p = readImageInfo(v, url, origin).catch(() => ({ kind: null }));
+    // A read that failed (a blip, a slow link) is not remembered: the next compose reads it again.
+    const read: Promise<ImageInfo> = readImageInfo(v, url, origin).catch(() => { if (infos.get(v) === read) infos.delete(v); return { kind: null }; });
+    p = read;
     if (infos.size > 200) infos.delete(infos.keys().next().value!);
     infos.set(v, p);
   }
@@ -345,7 +347,7 @@ async function readImageInfo(v: string, url: string, origin: string): Promise<Im
   if (url.startsWith(`${UPLOAD_ROUTE}/`)) url = await resolveImage(EXPLORATION, v, ORIGIN);
   const body = url.startsWith(`${origin}/library/`)
     ? await fs.readFile(path.join(ROOT, decodeURIComponent(url.slice(origin.length + 1))))
-    : /^https:\/\//.test(url) ? Buffer.from(await (await fetch(url, { signal: AbortSignal.timeout(15_000) })).arrayBuffer()) : null;
+    : /^https:\/\//.test(url) ? await fetch(url, { signal: AbortSignal.timeout(15_000) }).then(async (r) => { if (!r.ok) throw new Error(`Image ${r.status}`); return Buffer.from(await r.arrayBuffer()); }) : null;
   if (!body) return { kind };
   const box = await cutoutBox(body);
   return box ? { kind: 'cutout', ...box } : { kind };

@@ -1,5 +1,5 @@
 // The editor's server calls and the small pure helpers it keys its state with.
-import type { libraryAction as LibraryCall, prepareAction as PrepareCall, saveDraftAction as DraftCall } from '@/app/(app)/canvas/actions';
+import type { libraryAction as LibraryCall, openAction as OpenCall, prepareAction as PrepareCall, saveDraftAction as DraftCall } from '@/app/(app)/canvas/actions';
 import { cleanEdits } from '@/lib/canvas-shared';
 import type { Snap } from '@/lib/canvas-sync';
 
@@ -13,6 +13,7 @@ async function live(kind: string, args: unknown[]) {
 export const prepareAction = (...a: Parameters<typeof PrepareCall>): ReturnType<typeof PrepareCall> => live('prepare', a);
 export const saveDraftAction = (...a: Parameters<typeof DraftCall>): ReturnType<typeof DraftCall> => live('draft', a);
 export const libraryAction = (): ReturnType<typeof LibraryCall> => live('library', []);
+export const openAction = (...a: Parameters<typeof OpenCall>): ReturnType<typeof OpenCall> => live('open', a);
 
 export const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 export const cleanSnap = (s: Snap) => ({ slots: s.slots, edits: cleanEdits(s.edits) });

@@ -119,6 +119,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
   const loading = useRef<number | null>(null); // the frame a fill is being drawn in
   // Typing in place, ended without saving (a new fill arrived, so the typed copy is no longer current).
   const cancelEdit = useRef<(() => void) | null>(null);
+  // Ends the typing in place keeping what was typed (a new fill, Claude's edit arriving mid-sentence).
+  const finishEdit = useRef<(() => void) | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [badge, setBadge] = useState<string | null>(null);
@@ -278,7 +280,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
   const fillKey = useMemo(() => JSON.stringify([plan.html, plan.fill]), [plan.html, plan.fill]);
   const page = `${plan.html}|${plan.width}x${plan.height}`;
   useEffect(() => {
-    cancelEdit.current?.();
+    if (finishEdit.current) finishEdit.current(); else cancelEdit.current?.();
     setEditing(null);
     // The first time (or another page or size) it draws in place; after that, behind the design on screen.
     const behind = drawn.current === page;
@@ -378,14 +380,16 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
   }, [slots, ready, front, plan, redraw]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!ready) return;
+    // While typing in place the text being typed is not put back to its saved copy; the edits are
+    // applied again once the typing ends (with what was typed).
+    if (!ready || editing) return;
     win()?.__applyEdits(edits, plan.imageUrls, plan.iconSvgs);
     // While dragging, check once the layout settles (the next frame).
     const raf = requestAnimationFrame(check);
     redraw();
     live.current.onInfo();
     return () => cancelAnimationFrame(raf);
-  }, [edits, plan.imageUrls, plan.iconSvgs, ready, front, redraw, check]);
+  }, [edits, plan.imageUrls, plan.iconSvgs, ready, front, redraw, check, editing]);
 
   const screen = (b: Box | null): Rect | null => b && { x: b.x * zoom, y: b.y * zoom, w: b.w * zoom, h: b.h * zoom };
   const union = (bs: Box[]): Box => {
@@ -656,6 +660,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     const onInput = () => redraw();
     const off = () => {
       cancelEdit.current = null;
+      finishEdit.current = null;
       n.removeEventListener('blur', onBlur);
       n.removeEventListener('keydown', onKey);
       n.removeEventListener('input', onInput);
@@ -670,6 +675,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
       if (!save || !onText(nodeId, n.textContent ?? '', rich ? n.innerHTML : undefined)) setNonce((x) => x + 1);
     };
     cancelEdit.current = off;
+    finishEdit.current = () => done(true);
     const onBlur = () => done(true);
     const onKey = (k: KeyboardEvent) => {
       if (k.key === 'Escape') { k.preventDefault(); done(false); }

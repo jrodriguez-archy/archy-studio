@@ -253,44 +253,47 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     setDoc({ ...docRef.current, ...f[0] });
   }, [setDoc]);
 
-  // Several layer edits at once (a drag of many, an align): one history step.
-  const editMany = useCallback((changes: Record<string, NodeEdit>, final = true) => {
-    const s = cur();
+  // Several layer edits at once (a drag of many, an align): one history step. On the artboard the edit was
+  // started on (a commit that lands after a click on another artboard still goes to its own).
+  const editMany = useCallback((changes: Record<string, NodeEdit>, final = true, ref = activeRef.current) => {
+    const s = docRef.current[ref];
     const edits = { ...s.edits };
     for (const [id, e] of Object.entries(changes)) {
       const one = cleanEdits({ [id]: merge(s.edits[id], e) });
       if (one[id]) edits[id] = one[id]; else delete edits[id];
     }
     const next = { ...s, edits };
-    if (final) commit(next);
-    else { liveBase.current ??= docRef.current; setDoc(spread(docRef.current, activeRef.current, next)); }
-  }, [commit, cur, setDoc, spread]);
-  const editLayer = useCallback((id: string, e: NodeEdit, final = true) => editMany({ [id]: e }, final), [editMany]);
+    if (final) commitTo(ref, next);
+    else { liveBase.current ??= docRef.current; setDoc(spread(docRef.current, ref, next)); }
+  }, [commitTo, setDoc, spread]);
+  const editLayer = useCallback((id: string, e: NodeEdit, final = true, ref = activeRef.current) => editMany({ [id]: e }, final, ref), [editMany]);
 
-  const setSlot = useCallback((name: string, value: string | null) => {
-    const s = cur();
-    if ((s.slots[name] ?? null) === value) return;
-    commit({ ...s, slots: { ...s.slots, [name]: value } });
-  }, [commit, cur]);
+  const setSlot = useCallback((name: string, value: string | null, ref = activeRef.current) => {
+    const s = docRef.current[ref];
+    if (!s || (s.slots[name] ?? null) === value) return;
+    commitTo(ref, { ...s, slots: { ...s.slots, [name]: value } });
+  }, [commitTo]);
 
   // "Generate content around": the photo smaller than its frame comes back with the scene painted on
   // past its edges, framed so the photo stays where it was. New photo and framing are one history step.
   const outpaint = useCallback(async (id: string) => {
-    const comp = meta[activeRef.current]?.comps.find((c) => c.id === id), s = cur(), p = plans[activeRef.current];
+    const ref = activeRef.current; // the photo extended lands on this artboard, wherever the person is by then
+    const comp = meta[ref]?.comps.find((c) => c.id === id), s = docRef.current[ref], p = plans[ref];
     const image = comp?.slot ? s.slots[comp.slot] : null;
-    const job = stages.current[activeRef.current]?.outpaint(id);
+    const job = stages.current[ref]?.outpaint(id);
     if (!comp?.slot || !image || !p) { toast.error('Pick a photo first.'); return; }
     if (!job) { toast.message('The photo already fills its frame.'); return; }
     const res = await fetch('/api/canvas/outpaint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ template: p.template, image, expand: job.expand }) });
     const out = await res.json().catch(() => ({ error: `The server did not answer (${res.status}).` }));
     if (!res.ok || !out.value) { toast.error(out.error ?? 'The photo could not be extended. Try again.'); return; }
-    const now = cur();
+    const now = docRef.current[ref];
+    if (!now) return;
     const edits = { ...now.edits };
     const one = cleanEdits({ [id]: merge(now.edits[id], { crop: job.cropFor(out.width, out.height) }) });
     if (one[id]) edits[id] = one[id];
-    commit({ ...now, slots: { ...now.slots, [comp.slot]: out.value }, edits });
+    commitTo(ref, { ...now, slots: { ...now.slots, [comp.slot]: out.value }, edits });
     toast.success('Done. The new photo is also in Assets.');
-  }, [meta, plans, cur, commit]);
+  }, [meta, plans, commitTo]);
 
   // Simple by default (made for people who are not designers); every layer and designer control is one
   // click away, and the choice is remembered.
@@ -409,14 +412,17 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     commit({ edits, slots });
   };
 
-  // Typed on the piece: a slot changes the brief (fit rules apply); other text is a hand edit.
-  const typed = (nodeId: string, text: string, html?: string) => {
-    const c = comps.find((x) => x.id === nodeId) ?? comps.find((x) => x.textId === nodeId);
+  // Typed on the piece: a slot changes the brief (fit rules apply); other text is a hand edit. On the
+  // artboard typed on, even when the typing ends with a click on another one.
+  const typed = (ref: string, nodeId: string, text: string, html?: string) => {
+    const list = metaRef.current[ref]?.comps ?? [];
+    const c = list.find((x) => x.id === nodeId) ?? list.find((x) => x.textId === nodeId);
     const slot = c?.id === nodeId ? c.slot : c?.textSlot;
+    const format = boardsRef.current.find((b) => b.ref === ref)?.format;
     if (slot) {
-      if (!text.trim() && !slotMeta[slot]?.optional) { toast.error('This copy is essential to the design.'); return false; }
-      if (text !== (snap.slots[slot] ?? '')) setSlot(slot, text);
-    } else editLayer(nodeId, { text, html });
+      if (!text.trim() && !(format && slotMetaOf[format]?.[slot]?.optional)) { toast.error('This copy is essential to the design.'); return false; }
+      if (text !== (docRef.current[ref]?.slots[slot] ?? '')) setSlot(slot, text, ref);
+    } else editLayer(nodeId, { text, html }, true, ref);
     return true;
   };
 
@@ -467,6 +473,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   // The last fill asked for per format: an older answer arriving after a newer one is dropped.
   const asked = useRef<Record<string, string>>({});
   const planSig = JSON.stringify(planKeys);
+  const [planRetry, setPlanRetry] = useState(0);
   useEffect(() => {
     const due = planKeys.filter(([ref, k]) => planned.current[ref] !== k);
     for (const [ref] of planKeys) if (!due.some(([r]) => r === ref) && planErrors[ref]) setPlanErrors((e) => ({ ...e, [ref]: null }));
@@ -479,12 +486,17 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           if (asked.current[ref] !== k) return;
           if (r.ok) { planned.current[ref] = k; setPlans((p) => ({ ...p, [ref]: r.plan })); setPlanErrors((e) => ({ ...e, [ref]: null })); }
           else setPlanErrors((e) => ({ ...e, [ref]: r.error }));
-        }).catch(() => {});
+        }).catch(() => {
+          // No answer (offline, a cold start that timed out): said on the artboard, and asked again soon.
+          if (asked.current[ref] !== k) return;
+          setPlanErrors((e) => ({ ...e, [ref]: 'Could not reach Studio. Trying again…' }));
+          setTimeout(() => { if (asked.current[ref] === k) setPlanRetry((n) => n + 1); }, 4000);
+        });
       }
     }, 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planSig]);
+  }, [planSig, planRetry]);
 
   const refreshInfo = useCallback(() => setInfoTick((t) => t + 1), []);
   useEffect(() => { refreshInfo(); }, [refreshInfo, selected, comps]);
@@ -545,41 +557,67 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     if (d?.by === 'claude') toast(`Claude’s changes are here: ${d.note ?? 'edited by Claude'}`);
   }, [firstBoards, firstActive]);
   const due = saved.filter((b) => keyOf(b.ref, doc, boards) !== drafted.current[b.ref]);
+  // One draft per format on its way at a time: a slow one never lands after a newer one. What was typed
+  // meanwhile goes out when it is back.
+  const sending = useRef<Record<string, boolean>>({});
+  const [back, setBack] = useState(0);
+  const sendDraft = (ref: string, keepalive = false) => {
+    const d = docRef.current, s = d[ref];
+    if (!s) return;
+    const added = ref === home ? addedOf(d, boardsRef.current) : undefined;
+    drafted.current[ref] = keyOf(ref, d, boardsRef.current);
+    serverSnap.current[ref] = s;
+    sent.current[ref] = [...(sent.current[ref] ?? []).slice(-19), drafted.current[ref]];
+    if (keepalive) {
+      // Leaving the page: sent with the page gone (the browser finishes it).
+      const body = JSON.stringify({ kind: 'draft', args: [ref, s.slots, s.edits, added] });
+      try { fetch('/api/canvas/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: body.length < 60_000 }).catch(() => {}); } catch {}
+      return;
+    }
+    sending.current[ref] = true;
+    inFlight.current++;
+    saveDraftAction(ref, s.slots, s.edits, added)
+      .then((r) => { if (r.ok) versions.current[ref] = Math.max(versions.current[ref] ?? 0, r.version); else throw new Error(r.error); })
+      .then(() => { if (!--inFlight.current) setKeeping((k) => (k === 'error' ? k : 'saved')); })
+      .catch(() => { inFlight.current--; drafted.current[ref] = ''; setKeeping('error'); })
+      .finally(() => { sending.current[ref] = false; setBack((n) => n + 1); });
+  };
   useEffect(() => {
     // Nothing left to keep (an edit undone before it went out): kept.
     if (!due.length) { if (!inFlight.current) setKeeping((k) => (k === 'saving' ? 'saved' : k)); return; }
     setKeeping('saving');
-    const t = setTimeout(() => {
-      for (const b of due) {
-        const d = docRef.current, s = d[b.ref];
-        const added = b.ref === home ? addedOf(d, boardsRef.current) : undefined;
-        drafted.current[b.ref] = keyOf(b.ref, d, boardsRef.current);
-        serverSnap.current[b.ref] = s;
-        sent.current[b.ref] = [...(sent.current[b.ref] ?? []).slice(-19), drafted.current[b.ref]];
-        inFlight.current++;
-        saveDraftAction(b.ref, s.slots, s.edits, added)
-          .then((r) => { if (r.ok) versions.current[b.ref] = Math.max(versions.current[b.ref] ?? 0, r.version); else throw new Error(r.error); })
-          .then(() => { if (!--inFlight.current) setKeeping((k) => (k === 'error' ? k : 'saved')); })
-          .catch(() => { inFlight.current--; drafted.current[b.ref] = ''; setKeeping('error'); });
-      }
-    }, 800);
+    const t = setTimeout(() => { for (const b of due) if (!sending.current[b.ref]) sendDraft(b.ref); }, 800);
     return () => clearTimeout(t);
-  }, [doc, boards]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [doc, boards, back]); // eslint-disable-line react-hooks/exhaustive-deps -- a change, or a draft back with more to send
   // Failed: tried again a little later (the next edit tries too).
   useEffect(() => {
     if (keeping !== 'error') return;
     const t = setTimeout(() => { setKeeping('saving'); setDoc({ ...docRef.current }); }, 5000);
     return () => clearTimeout(t);
   }, [keeping, setDoc]);
-
-  // Leaving is safe once the work is kept; a design new from a template has nowhere to keep it yet.
-  const unkept = (!home && changed) || (!!home && (due.length > 0 || keeping !== 'saved'));
+  // Leaving Canvas (another page here, or the tab closed) sends what was not sent yet.
+  const leaving = useRef(false);
+  const flush = useRef(() => {});
+  flush.current = () => {
+    if (leaving.current) return;
+    for (const b of boardsRef.current) if (!b.isNew && docRef.current[b.ref] && keyOf(b.ref, docRef.current, boardsRef.current) !== drafted.current[b.ref]) sendDraft(b.ref, true);
+  };
   useEffect(() => {
-    if (!unkept) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    const out = () => flush.current();
+    window.addEventListener('pagehide', out);
+    return () => { window.removeEventListener('pagehide', out); out(); };
+  }, []);
+
+  // Leaving is safe once the work is kept or on its way; a design new from a template has nowhere to keep
+  // it yet. Closing the tab also waits for a draft still being sent.
+  const unkept = (!home && changed) || (!!home && keeping === 'error');
+  const unkeptRef = useRef(unkept);
+  unkeptRef.current = unkept;
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => { if (unkeptRef.current || inFlight.current > 0) e.preventDefault(); };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
-  }, [unkept]);
+  }, []);
   const confirmLeave = () => !unkept || window.confirm('Leave without saving your changes?');
 
   useEffect(() => {
@@ -587,13 +625,14 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     const db = supabaseBrowser();
     let channel: ReturnType<typeof db.channel> | null = null;
     let gone = false;
+    let catchUp = async () => {};
     (async () => {
       // Drafts are readable by signed-in people only (RLS): Realtime needs the session's token.
       const { data } = await db.auth.getSession();
       if (gone) return;
       db.realtime.setAuth(data.session?.access_token ?? null);
-      channel = db.channel(`canvas:${savedIds}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=in.(${savedIds})` }, (payload) => {
+      type Change = { eventType: string; new: unknown; old: unknown };
+      const onChange = (payload: Change) => {
           if (payload.eventType === 'DELETE') {
             const ref = (payload.old as { piece_id?: string })?.piece_id;
             if (!ref || !docRef.current[ref]) return;
@@ -601,7 +640,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
             versions.current[ref] = 0;
             // Saved to the gallery elsewhere (another tab, or Claude): open what was saved, so added
             // formats are not saved twice.
-            if (Date.now() - ownSave.current > 90_000) { toast('Saved elsewhere. Opening what was saved…', { id: 'saved-elsewhere' }); setTimeout(() => window.location.assign(`/canvas/${ref}?latest=1`), 1200); }
+            if (Date.now() - ownSave.current > 90_000) { toast('Saved elsewhere. Opening what was saved…', { id: 'saved-elsewhere' }); setTimeout(() => { leaving.current = true; window.location.assign(`/canvas/${ref}?latest=1`); }, 1200); }
             return;
           }
           const row = payload.new as { piece_id?: string; slots?: Snap['slots']; edits?: Edits; version?: number; updated_by?: string; note?: string | null; claude_working_at?: string | null; claude_status?: string | null; added?: { ref: string; slots: Snap['slots']; edits: Edits }[] };
@@ -627,6 +666,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           // What the database holds (the row alone): formats added only here are sent again on the next pass.
           const rowKey = canon(ref === home ? { ...cleanSnap(next), added: (row.added ?? []).map((a) => ({ ref: a.ref, slots: a.slots ?? {}, edits: cleanEdits(a.edits ?? {}) })) } : cleanSnap(next));
           if (key === keyOf(ref, docRef.current, boardsRef.current)) return;
+          // Nothing new in the row (Claude only saying it is looking): what was typed here stays as it is.
+          if (rowKey === drafted.current[ref]) return;
           if (row.updated_by !== 'claude') {
             // Edited in another tab (or by a teammate): this tab follows. Its own echo is skipped, unless
             // another draft came in since (then the echo is what the database kept). Not an undo step:
@@ -634,7 +675,10 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
             if (sent.current[ref]?.includes(rowKey)) return;
             sent.current[ref] = [];
             drafted.current[ref] = rowKey;
+            // What was typed here and not sent yet is laid over theirs (and goes out with the next draft).
+            const theirsOver = serverSnap.current[ref];
             serverSnap.current[ref] = next;
+            if (theirsOver) there[ref] = mergeOnto(next, theirsOver, docRef.current[ref]);
             if (newBoards.length) {
               const order = [...boardsRef.current, ...ghostsRef.current].map((b) => b.format);
               setBoards(bs.sort((a, b) => order.indexOf(a.format) - order.indexOf(b.format)));
@@ -655,10 +699,23 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           serverSnap.current[ref] = next;
           commitTo(ref, base ? mergeOnto(next, base, docRef.current[ref]) : next); // one step: undo takes it back; synced formats follow
           toast(`Claude ${row.note ? row.note.charAt(0).toLowerCase() + row.note.slice(1) : 'edited the design'}`, { action: { label: 'Undo', onClick: () => undo() } });
-        })
-        .subscribe((status, err) => { if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status); });
+      };
+      // What changed while not listening (before the first subscribe, a dropped connection, a laptop
+      // asleep, a hidden tab): read once, as if it had just arrived.
+      catchUp = async () => {
+        const { data: rows } = await db.from('canvas_drafts').select('*').in('piece_id', savedIds.split(','));
+        if (!gone) for (const r of rows ?? []) onChange({ eventType: 'UPDATE', new: r, old: null });
+      };
+      channel = db.channel(`canvas:${savedIds}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'canvas_drafts', filter: `piece_id=in.(${savedIds})` }, (p) => onChange(p as Change))
+        .subscribe((status, err) => {
+          if (status === 'SUBSCRIBED') catchUp().catch(() => {});
+          if (status === 'CHANNEL_ERROR' && !gone) console.warn('Canvas live updates:', err?.message ?? status);
+        });
     })();
-    return () => { gone = true; if (channel) db.removeChannel(channel); };
+    const onVisible = () => { if (document.visibilityState === 'visible') catchUp().catch(() => {}); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => { gone = true; document.removeEventListener('visibilitychange', onVisible); if (channel) db.removeChannel(channel); };
   }, [savedIds, home, commitTo, undo, setDoc]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The Inspector: its review of the edits, plus copy from the brief the template could not fit.
@@ -714,6 +771,10 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   const canReplace = existing.every((b) => b.canReplace);
   const save = (mode: 'version' | 'replace') => start(async () => {
     ownSave.current = Date.now();
+    // What is being saved goes to the gallery: its draft (cleared there) is not sent again after.
+    for (const b of boardsRef.current) if (!b.isNew && docRef.current[b.ref]) drafted.current[b.ref] = keyOf(b.ref, docRef.current, boardsRef.current);
+    // A draft still on its way lands before the save clears it (never after, as an older draft).
+    for (let i = 0; inFlight.current > 0 && i < 50; i++) await new Promise((r) => setTimeout(r, 100));
     const items = pending.map((b) => ({ id: b.ref, slots: doc[b.ref].slots, edits: doc[b.ref].edits }));
     const from = boards.find((b) => !b.isNew)?.ref ?? null;
     const r = await canvasCall<{ saved: { ref: string; id: string }[] }>({ action: 'save-set', items, mode, from });
@@ -805,8 +866,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
           {tab === 'layers' && !allLayers && (
             <ContentPanel comps={comps} edits={snap.edits} slots={snap.slots} slotMeta={slotMeta} previews={plan?.fill.values ?? {}} preset={piece.preset} recolor={brand !== 'doc'}
               selected={selected} hover={hover} onHover={setHover} onSelect={(id) => select([id], 'replace')}
-              onSlotToggle={toggleSlot} onSlot={setSlot} onHide={(id) => hideMany([id], !snap.edits[id]?.hidden)} onPreset={setPreset} onAdvanced={() => setAllLayers(true)}
-              onLogoColors={(id, colors) => editLayer(id, { colors })} onSlotRemove={removeSlot} />
+              onSlotToggle={toggleSlot} onSlot={(k, v) => setSlot(k, v, board.ref)} onHide={(id) => hideMany([id], !snap.edits[id]?.hidden)} onPreset={setPreset} onAdvanced={() => setAllLayers(true)}
+              onLogoColors={(id, colors) => editLayer(id, { colors }, true, board.ref)} onSlotRemove={removeSlot} />
           )}
           {tab === 'layers' && allLayers && (
             <>
@@ -861,8 +922,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
                         onSelect={select}
                         onHover={setHover}
                         onReady={(r) => { setMeta(b.ref, { comps: r.comps, safe: r.safe, tokens: r.tokens, report: r.report, keys: r.keys }); settle(); }}
-                        onEdit={editMany}
-                        onText={typed}
+                        onEdit={(c, f) => editMany(c, f, b.ref)}
+                        onText={(id, t, h) => typed(b.ref, id, t, h)}
                         onInfo={refreshInfo}
                         onReview={(items) => setMeta(b.ref, { review: items })}
                       />
@@ -923,8 +984,8 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
               previews={plan.fill.values}
               tokens={tokens}
               library={pickerImages}
-              onEdit={(id, e, final = true) => (one.kind === 'background' && e.style?.backgroundColor ? pickBackground(id, e.style.backgroundColor) : editLayer(id, e, final))}
-              onSlot={setSlot}
+              onEdit={(id, e, final = true) => (one.kind === 'background' && e.style?.backgroundColor ? pickBackground(id, e.style.backgroundColor) : editLayer(id, e, final, board.ref))}
+              onSlot={(k, v) => setSlot(k, v, board.ref)}
               onReset={() => resetIds([one.id])}
               onAlign={(a) => align(a)}
               essential={essential(one.id)}
@@ -941,7 +1002,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
         </aside>
       </div>
 
-      <Dialog open={saving} onOpenChange={setSaving}>
+      <Dialog open={saving} onOpenChange={(o) => { if (!busy) setSaving(o); }}>
         <DialogContent className="gap-5 rounded-md p-6 text-[13px] sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="text-[15px] font-medium">Update images</DialogTitle>

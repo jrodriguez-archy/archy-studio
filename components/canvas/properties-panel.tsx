@@ -478,7 +478,15 @@ function TextField({ value, onCommit, optional }: { value: string; onCommit: (v:
     if (v === value) return;
     if (!v.trim() && !optional) { toast.error('This copy is essential to the design. Write something shorter instead.'); setV(value); return; }
     onCommit(v);
+    latest.current.value = v; // kept: not committed again if the panel closes before it re-renders
   };
+  // Another layer picked while typing closes the panel before the field can blur: what was typed is kept.
+  const latest = useRef({ v, value, optional, onCommit });
+  latest.current = { v, value, optional, onCommit };
+  useEffect(() => () => {
+    const l = latest.current;
+    if (l.v !== l.value && (l.v.trim() || l.optional)) l.onCommit(l.v);
+  }, []);
   return (
     <Textarea value={v} onChange={(e) => setV(e.target.value)} onBlur={commit} rows={Math.min(5, Math.max(2, v.split('\n').length))}
       onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); commit(); } }}

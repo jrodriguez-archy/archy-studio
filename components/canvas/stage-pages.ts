@@ -4,7 +4,9 @@
 const scripts: Record<string, Promise<string>> = {};
 // This deploy's copy (a new deploy, a new address: never an old engine from the browser cache).
 const BUILD = process.env.NEXT_PUBLIC_BUILD ?? 'dev';
-export const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}?v=${BUILD}`).then((r) => r.text()));
+export const script = (name: string) => (scripts[name] ??= fetch(`/api/template-files/scripts/${name}?v=${BUILD}`)
+  .then((r) => { if (!r.ok) throw new Error(`Page script ${r.status}`); return r.text(); })
+  .catch((e) => { delete scripts[name]; throw e; })); // a failed fetch is tried again (Retry draws again)
 // The page is written into a same-origin iframe: only Canvas's own scripts (with this nonce) run in it, never
 // a handler or a javascript: link that came in with a design's HTML.
 export const guarded = (t: string, nonce: string) => {

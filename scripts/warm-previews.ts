@@ -1,7 +1,7 @@
 // Renders every catalog preview that is not stored yet (each template format, and each design × theme, current version), so
 // nobody waits for one in /templates or Canvas. Run after changing or adding templates:
 //
-//   set -a; source .env.local; set +a; NODE_OPTIONS=--conditions=react-server npx tsx scripts/warm-previews.ts
+//   set -a; source .env.local; set +a; NODE_OPTIONS="--conditions=react-server --import ./scripts/next-stubs.mjs" npx tsx scripts/warm-previews.ts
 import { catalog } from '../lib/catalog';
 import { previewKey } from '../lib/previews';
 import { render } from '../lib/renderer';

@@ -2,7 +2,7 @@
 // `<format>--<design>--<theme>`) rendered with the production engine and stored for an admin to evaluate
 // in Studio (Admin → Template review). Recolour cases run on the default design and theme only.
 //
-//   set -a; source .env.local; set +a; NODE_OPTIONS=--conditions=react-server npx tsx scripts/review-round.ts [--templates a,b] [--note "..."]
+//   set -a; source .env.local; set +a; NODE_OPTIONS="--conditions=react-server --import ./scripts/next-stubs.mjs" npx tsx scripts/review-round.ts [--templates a,b] [--note "..."]
 //   … scripts/review-round.ts --template <id>    a new template: realistic + short in every format, 3 themes
 //
 // With --templates only those are rendered again; the rest of the round is carried over from the last

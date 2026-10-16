@@ -10,3 +10,7 @@ next-env.d.ts
 *.tsbuildinfo
 .qa/
 .docs-shots/
+
+# Local Claude Code files (preview server, plugin on for this folder)
+.claude/launch.json
+.claude/settings.json

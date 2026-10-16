@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition, type RefObject } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -9,6 +9,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { canon, cleanSnap, libraryAction, luminance, openAction, planKeyOf, prepareAction, same, saveDraftAction } from './editor-calls';
 import { useRendersLive } from '@/components/use-renders-live';
 
@@ -32,7 +33,7 @@ import { LayersPanel } from './layers-panel';
 import { merge, within, type Box, type Comp, type Token } from './model';
 import { MultiPanel, PiecePanel, PropertiesPanel, type Align, type SlotMeta } from './properties-panel';
 import { Stage, type SelectMode, type StageHandle } from './stage';
-import { useViewport } from './viewport';
+import { useLiveZoom, useViewport, type Viewport } from './viewport';
 
 /** One format of the design on the canvas (a saved design, or a format being added). */
 export type Board = {
@@ -54,6 +55,7 @@ type Doc = Record<string, Snap>;
 type Meta = { comps: Comp[]; safe: Box | null; tokens: Token[]; report: RenderReport | null; keys: Keys | null; review: Suggestion[] };
 const EMPTY: Meta = { comps: [], safe: null, tokens: [], report: null, keys: null, review: [] };
 const GAP = 120; // between artboards, in design px
+const NONE: string[] = [];
 
 // Canvas, Relume-like: Canvas's own panel on the left (layers, library, assets, inspector), the design's
 // formats side by side as artboards in a pannable, zoomable viewport, the selection's properties on the
@@ -173,7 +175,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   })();
   const allW = boards.reduce((s, b) => s + b.width, 0) + GAP * (boards.length - 1);
   const allH = Math.max(...boards.map((b) => b.height));
-  const vp = useViewport(allW, allH);
+  const vp = useViewport(allW, allH, { onTap: () => setSelected([]) });
   const frameBoard = (ref: string) => {
     const b = [...boards, ...ghosts].find((x) => x.ref === ref);
     if (b) vp.frame({ x: place[ref], y: 0, w: b.width, h: b.height }, false);
@@ -298,6 +300,7 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
   // Simple by default (made for people who are not designers); every layer and designer control is one
   // click away, and the choice is remembered.
   const rightSize = useSideWidth('canvas.right', 280, 260, 420);
+  const wide = useWide();
   const [allLayers, setAllLayers] = useStored('canvas.allLayers');
   const [advanced, setAdvanced] = useStored('canvas.advanced');
   // Copy or images from the brief that are not optional are essential: they can be edited, never hidden.
@@ -819,6 +822,19 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     router.replace(`/canvas/${next}`);
   });
 
+  // What the artboards call back, one stable object (the latest handlers behind it): a pan, a zoom or an
+  // edit on one board never re-renders the others.
+  const boardApi = useRef<BoardApi>(null!);
+  boardApi.current = {
+    register: (ref, h) => { stages.current[ref] = h; },
+    activate: (ref, id) => activate(ref, id && metaRef.current[ref]?.comps.find((c) => c.id === id)?.kind !== 'background' ? id : null),
+    ready: (ref, r) => { setMeta(ref, { comps: r.comps, safe: r.safe, tokens: r.tokens, report: r.report, keys: r.keys }); settle(); },
+    edit: (ref, c, f) => editMany(c, f, ref),
+    text: (ref, id, t, h) => typed(ref, id, t, h),
+    review: (ref, items) => setMeta(ref, { review: items }),
+    select, hover: setHover, info: refreshInfo,
+  };
+
   const imageTarget = one && (one.kind === 'photo' || one.kind === 'partner') ? one : null;
   // Brought here to use an image: with one photo on the design it is selected (a click places the
   // image); with several, the person picks one.
@@ -835,10 +851,46 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
     if (imageTarget.slot) setSlot(imageTarget.slot, value); else editLayer(imageTarget.id, { image: value });
   };
   const pickerImages = (library ? withSession(library.assets).team : []).map((a) => ({ value: a.value, title: a.name, url: a.thumb }));
-  const pct = Math.round(vp.zoom * 100);
   const allNew = boards.every((b) => b.isNew);
   // The work is kept as it goes; the gallery's images change with "Update images".
   const saveState = allNew ? 'new' : keeping === 'error' ? 'error' : due.length || keeping === 'saving' ? 'saving' : 'saved';
+
+  const properties = (
+    <>
+      {selected.length > 1 ? (
+        <MultiPanel count={selected.length} onAlign={(a, to) => align(a, to)} onReset={() => resetIds(selected)}
+          onHide={() => hideMany(selected)} />
+      ) : one && plan ? (
+        <PropertiesPanel
+          key={`${board.ref}:${one.id}`}
+          comp={one}
+          alignIn={one.kind === 'background' ? undefined : stage.current?.alignBox(one.id)?.name}
+          preset={piece.preset}
+          recolor={brand !== 'doc'}
+          onPreset={setPreset}
+          info={(id) => (id ? stage.current?.info(id) ?? null : null)}
+          edits={snap.edits}
+          slots={snap.slots}
+          slotMeta={slotMeta}
+          previews={plan.fill.values}
+          tokens={tokens}
+          library={pickerImages}
+          onEdit={(id, e, final = true) => (one.kind === 'background' && e.style?.backgroundColor ? pickBackground(id, e.style.backgroundColor) : editLayer(id, e, final, board.ref))}
+          onSlot={(k, v) => setSlot(k, v, board.ref)}
+          onReset={() => resetIds([one.id])}
+          onAlign={(a) => align(a)}
+          essential={essential(one.id)}
+          designFontSize={meta[board.ref]?.keys?.[one.id]?.fontSize}
+          advanced={advanced}
+          onAdvanced={setAdvanced}
+          onOutpaint={outpaint}
+          scaled={(id, z) => stage.current?.scaled(id, z) ?? null}
+        />
+      ) : (
+        <PiecePanel pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />
+      )}
+    </>
+  );
 
   return (
     <div data-fullbleed className="flex h-dvh flex-col bg-[#F5F5F5] text-[13px]">
@@ -906,11 +958,11 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
 
         <main
           ref={vp.area}
-          className={`relative min-w-0 flex-1 overflow-hidden ${vp.panning ? (vp.grabbing ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+          className={`relative min-w-0 flex-1 touch-none overflow-hidden ${vp.panning ? (vp.grabbing ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
           {...vp.handlers}
-          onPointerDownCapture={(e) => { if (!vp.panning && !(e.target as Element).closest('[data-stage], [data-toolbar], [data-board-label]')) setSelected([]); }}
+          onPointerDownCapture={(e) => { if (e.pointerType !== 'touch' && !vp.panning && !(e.target as Element).closest('[data-stage], [data-toolbar], [data-board-label]')) setSelected([]); }}
         >
-          <div className="absolute top-0 left-0" style={{ transform: `translate(${vp.pan.x}px, ${vp.pan.y}px)` }}>
+          <div ref={vp.layer} className="absolute top-0 left-0 origin-top-left">
             {boards.map((b) => {
               const isActive = b.ref === board.ref;
               const p = plans[b.ref];
@@ -925,28 +977,21 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
                   )}
                   {p ? (
                     <div className={isActive || boards.length === 1 ? '' : 'opacity-[0.97] transition-opacity hover:opacity-100'}>
-                      <Stage
-                        ref={(h) => { stages.current[b.ref] = h; }}
+                      <BoardStage
+                        boardRef={b.ref}
+                        api={boardApi}
                         passive={!isActive}
-                        onActivate={(id) => activate(b.ref, id && m.comps.find((c) => c.id === id)?.kind !== 'background' ? id : null)}
                         claude={busyClaude}
-                        flash={flash?.ref === b.ref ? flash.ids : []}
+                        flash={flash?.ref === b.ref ? flash.ids : NONE}
                         plan={p}
                         slots={doc[b.ref].slots}
                         edits={doc[b.ref].edits}
                         zoom={vp.zoom}
-                        selected={isActive ? selected : []}
+                        selected={isActive ? selected : NONE}
                         hover={isActive ? hover : null}
                         comps={m.comps}
                         safe={m.safe}
                         panning={vp.panning}
-                        onSelect={select}
-                        onHover={setHover}
-                        onReady={(r) => { setMeta(b.ref, { comps: r.comps, safe: r.safe, tokens: r.tokens, report: r.report, keys: r.keys }); settle(); }}
-                        onEdit={(c, f) => editMany(c, f, b.ref)}
-                        onText={(id, t, h) => typed(b.ref, id, t, h)}
-                        onInfo={refreshInfo}
-                        onReview={(items) => setMeta(b.ref, { review: items })}
                       />
                     </div>
                   ) : (
@@ -975,52 +1020,31 @@ function Editor({ title, backHref, active: firstActive, boards: firstBoards, gho
             <ToolButton label="Select (V)" icon={Cursor01Icon} active={!vp.hand} onClick={() => vp.setHand(false)} />
             <ToolButton label="Hand (H, or hold Space)" icon={HandGrabIcon} active={vp.hand} onClick={() => vp.setHand(true)} />
             <span className="mx-1 h-5 w-px bg-foreground/10" />
-            <ToolButton label="Zoom out (⌘−)" icon={MinusSignIcon} onClick={() => vp.zoomTo(vp.zoom / 1.25)} />
-            <button type="button" onClick={vp.fit} title="Fit all formats (⌘0)" className="h-7 w-12 rounded-md text-[12px] tabular-nums hover:bg-foreground/[0.06]">{pct}%</button>
-            <ToolButton label="Zoom in (⌘+)" icon={PlusSignIcon} onClick={() => vp.zoomTo(vp.zoom * 1.25)} />
+            <ToolButton label="Zoom out (⌘−)" icon={MinusSignIcon} onClick={() => vp.zoomBy(1 / 1.25)} />
+            <ZoomButton vp={vp} />
+            <ToolButton label="Zoom in (⌘+)" icon={PlusSignIcon} onClick={() => vp.zoomBy(1.25)} />
             {boards.length > 1 && (
               <button type="button" onClick={() => frameBoard(board.ref)} title={`Frame ${board.label}`} className="h-7 rounded-md px-2 text-[12px] text-foreground/70 hover:bg-foreground/[0.06]">{board.label}</button>
             )}
           </div>
         </main>
 
-        <aside ref={rightSize.ref} data-panel className="relative shrink-0 border-l border-foreground/[0.06] bg-background max-lg:hidden" style={{ width: rightSize.width }}>
-          <ResizeHandle side="right" width={rightSize.width} onWidth={rightSize.set} onReset={rightSize.reset} />
-          <div className="h-full overflow-y-auto [scrollbar-width:thin]">
-          {selected.length > 1 ? (
-            <MultiPanel count={selected.length} onAlign={(a, to) => align(a, to)} onReset={() => resetIds(selected)}
-              onHide={() => hideMany(selected)} />
-          ) : one && plan ? (
-            <PropertiesPanel
-              key={`${board.ref}:${one.id}`}
-              comp={one}
-              alignIn={one.kind === 'background' ? undefined : stage.current?.alignBox(one.id)?.name}
-              preset={piece.preset}
-              recolor={brand !== 'doc'}
-              onPreset={setPreset}
-              info={(id) => (id ? stage.current?.info(id) ?? null : null)}
-              edits={snap.edits}
-              slots={snap.slots}
-              slotMeta={slotMeta}
-              previews={plan.fill.values}
-              tokens={tokens}
-              library={pickerImages}
-              onEdit={(id, e, final = true) => (one.kind === 'background' && e.style?.backgroundColor ? pickBackground(id, e.style.backgroundColor) : editLayer(id, e, final, board.ref))}
-              onSlot={(k, v) => setSlot(k, v, board.ref)}
-              onReset={() => resetIds([one.id])}
-              onAlign={(a) => align(a)}
-              essential={essential(one.id)}
-              designFontSize={meta[board.ref]?.keys?.[one.id]?.fontSize}
-              advanced={advanced}
-              onAdvanced={setAdvanced}
-              onOutpaint={outpaint}
-              scaled={(id, z) => stage.current?.scaled(id, z) ?? null}
-            />
-          ) : (
-            <PiecePanel pieceId={isNew ? undefined : board.ref} title={title} seenAt={seenAt} />
-          )}
-          </div>
-        </aside>
+        {wide ? (
+          <aside ref={rightSize.ref} data-panel className="relative shrink-0 border-l border-foreground/[0.06] bg-background" style={{ width: rightSize.width }}>
+            <ResizeHandle side="right" width={rightSize.width} onWidth={rightSize.set} onReset={rightSize.reset} />
+            <div className="h-full overflow-y-auto [scrollbar-width:thin]">{properties}</div>
+          </aside>
+        ) : (
+          // Tablets: the selection's properties in a sheet from the bottom; the canvas stays live above it.
+          <Sheet open={selected.length > 0} onOpenChange={(o) => { if (!o) setSelected([]); }} modal={false} disablePointerDismissal>
+            <SheetContent side="bottom" showOverlay={false} initialFocus={false} finalFocus={false} data-panel
+              className="max-h-[min(46dvh,420px)] rounded-t-xl text-[13px] shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.25)] [&>[data-slot=sheet-close]]:top-2 [&>[data-slot=sheet-close]]:right-2">
+              <SheetTitle className="sr-only">Properties</SheetTitle>
+              <div className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-foreground/15" />
+              <div className="min-h-0 flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)] [scrollbar-width:thin]"><div className="mx-auto max-w-[560px]">{properties}</div></div>
+            </SheetContent>
+          </Sheet>
+        )}
       </div>
 
       <Dialog open={saving} onOpenChange={(o) => { if (!busy) setSaving(o); }}>
@@ -1070,6 +1094,16 @@ function SaveOption({ title, text, onClick, disabled, primary }: { title: string
   );
 }
 
+// The properties panel fits beside the canvas (1024 px and up); below, it comes up as a sheet.
+const WIDE = '(min-width: 1024px)';
+function useWide() {
+  return useSyncExternalStore(
+    (f) => { const m = window.matchMedia(WIDE); m.addEventListener('change', f); return () => m.removeEventListener('change', f); },
+    () => window.matchMedia(WIDE).matches,
+    () => true,
+  );
+}
+
 // A yes/no preference kept in this browser (the page works the same without storage).
 function useStored(key: string): [boolean, (v: boolean) => void] {
   const [v, setV] = useState(false);
@@ -1103,4 +1137,39 @@ function SaveStatus({ state }: { state: 'new' | 'error' | 'saving' | 'saved' }) 
       {look.text}
     </span>
   );
+}
+
+type StageProps = React.ComponentProps<typeof Stage>;
+type BoardApi = {
+  register: (ref: string, h: StageHandle | null) => void;
+  activate: (ref: string, id: string | null) => void;
+  ready: (ref: string, r: Parameters<StageProps['onReady']>[0]) => void;
+  edit: (ref: string, changes: Record<string, NodeEdit>, final: boolean) => void;
+  text: (ref: string, id: string, text: string, html?: string) => boolean;
+  review: (ref: string, items: Suggestion[]) => void;
+  select: (ids: string[], mode: SelectMode) => void;
+  hover: (id: string | null) => void;
+  info: () => void;
+};
+
+// One artboard's Stage, with its handlers bound to the board (an edit that lands after a click on
+// another artboard still goes to its own) and stable, so it draws again only when its own props change.
+const BoardStage = memo(function BoardStage({ boardRef, api, ...props }: { boardRef: string; api: RefObject<BoardApi> } & Omit<StageProps,
+  'ref' | 'onActivate' | 'onReady' | 'onEdit' | 'onText' | 'onReview' | 'onSelect' | 'onHover' | 'onInfo'>) {
+  const register = useCallback((h: StageHandle | null) => api.current.register(boardRef, h), [api, boardRef]);
+  const onActivate = useCallback((id: string | null) => api.current.activate(boardRef, id), [api, boardRef]);
+  const onReady = useCallback((r: Parameters<StageProps['onReady']>[0]) => api.current.ready(boardRef, r), [api, boardRef]);
+  const onEdit = useCallback((c: Record<string, NodeEdit>, f: boolean) => api.current.edit(boardRef, c, f), [api, boardRef]);
+  const onText = useCallback((id: string, t: string, h?: string) => api.current.text(boardRef, id, t, h), [api, boardRef]);
+  const onReview = useCallback((items: Suggestion[]) => api.current.review(boardRef, items), [api, boardRef]);
+  const onSelect = useCallback((ids: string[], mode: SelectMode) => api.current.select(ids, mode), [api]);
+  const onHover = useCallback((id: string | null) => api.current.hover(id), [api]);
+  const onInfo = useCallback(() => api.current.info(), [api]);
+  return <Stage ref={register} {...props} onActivate={onActivate} onReady={onReady} onEdit={onEdit} onText={onText} onReview={onReview} onSelect={onSelect} onHover={onHover} onInfo={onInfo} />;
+});
+
+// The zoom as it moves; a click fits every format.
+function ZoomButton({ vp }: { vp: Viewport }) {
+  const z = useLiveZoom(vp);
+  return <button type="button" onClick={vp.fit} title="Fit all formats (⌘0)" className="h-7 w-12 rounded-md text-[12px] tabular-nums hover:bg-foreground/[0.06]">{Math.round(z * 100)}%</button>;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { LockIcon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
@@ -8,6 +8,7 @@ import { outpaintFor, type Crop, type Edits, type FillPlan, type NodeEdit, type 
 import type { Keys } from '@/lib/canvas-sync';
 import { movingEdges, snap, type Guide } from './guides';
 import { guarded, script, templatePage, turn, withoutSamples } from './stage-pages';
+import { GESTURE_EVENT } from './viewport';
 import { componentAt, innermostAt, parentOf, readInfo, readTokens, within, type Box, type Comp, type LayerInfo, type Token } from './model';
 
 type Win = Window & {
@@ -105,7 +106,7 @@ function scaleAround(f: Fit, crop: Crop, zoom: number): Crop {
 
 // The design itself: the real template page in a same-origin iframe, filled by fit.js, edited by edits.js
 // and read by components.js exactly as on the server, under an overlay that selects, moves and resizes.
-export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview, claude, flash = [], passive = false, onActivate }, ref) {
+export const Stage = memo(forwardRef<StageHandle, Props>(function Stage({ plan, slots, edits, zoom, selected, hover, comps, safe, panning, onSelect, onHover, onReady, onEdit, onText, onInfo, onReview, claude, flash = [], passive = false, onActivate }, ref) {
   // Two pages, double-buffered: a new fill is drawn in the hidden one while the current one stays on
   // screen, then fades in over it. `frame` is always the one on screen.
   const frameA = useRef<HTMLIFrameElement>(null);
@@ -152,8 +153,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
   const win = () => frame.current?.contentWindow as Win | null;
   const root = () => doc()?.querySelector('body > [data-node]') ?? null;
   const el = useCallback((id: string | null) => (id ? doc()?.querySelector<HTMLElement>(`[data-node="${CSS.escape(id)}"]`) ?? null : null), []);
-  const boxOf = useCallback((id: string | null): Box | null => {
-    const n = el(id), r0 = root()?.getBoundingClientRect();
+  const boxOf = useCallback((id: string | null, r0 = root()?.getBoundingClientRect()): Box | null => {
+    const n = el(id);
     if (!n || !r0 || !n.isConnected) return null;
     const r = n.getBoundingClientRect();
     if (!r.width && !r.height) return null;
@@ -397,8 +398,9 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     return { x, y, w: Math.max(...bs.map((b) => b.x + b.w)) - x, h: Math.max(...bs.map((b) => b.y + b.h)) - y };
   };
   const local = (e: { clientX: number; clientY: number }) => {
-    const box = frame.current!.getBoundingClientRect();
-    return { x: (e.clientX - box.left) / zoom, y: (e.clientY - box.top) / zoom };
+    // The scale on screen (a zoom under way scales the canvas before the boards are drawn at it).
+    const box = frame.current!.getBoundingClientRect(), k = box.width / plan.width || zoom;
+    return { x: (e.clientX - box.left) / k, y: (e.clientY - box.top) / k };
   };
   const pointAt = (e: { clientX: number; clientY: number }) => {
     const d = doc();
@@ -430,7 +432,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
         return;
       }
     }
-    const boxes = ids.map(boxOf).filter((b): b is Box => !!b);
+    const boxes = ids.map((id) => boxOf(id)).filter((b): b is Box => !!b);
     if (handle !== 'marquee' && !boxes.length) return;
     const box = handle === 'marquee' ? { ...local(e), w: 0, h: 0 } : union(boxes);
     const bases = Object.fromEntries(ids.map((id) => [id, edits[id] ?? {}]));
@@ -635,6 +637,26 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     setOutside(false);
   };
 
+  // Two fingers down (the canvas pans and zooms): what the first one started here is put back as it was.
+  const abort = useRef(() => {});
+  abort.current = () => {
+    last.current = null;
+    const p = pan.current;
+    // Back where it was as a live change, so no history step is made.
+    if (p) { pan.current = null; if (reframeRef.current) setCrop(reframeRef.current, p.crop, false); }
+    const g = drag.current;
+    if (!g) return;
+    const back = { clientX: g.x, clientY: g.y, shiftKey: false, altKey: false, metaKey: false, ctrlKey: false } as React.PointerEvent;
+    if (g.moved && g.handle !== 'marquee') dragTo(back, false);
+    g.moved = false;
+    onPointerUp(back);
+  };
+  useEffect(() => {
+    const on = () => abort.current();
+    window.addEventListener(GESTURE_EVENT, on);
+    return () => window.removeEventListener(GESTURE_EVENT, on);
+  }, []);
+
   // Double-click a text (or a button's label) to type in place.
   const onDoubleClick = (e: React.MouseEvent) => {
     if (passive || refitting) return; // a new version is on its way: type in it once it is here
@@ -698,15 +720,20 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     n.addEventListener('input', onInput);
   };
 
-  const sel = ready ? selected.filter((id) => kindOf(id) !== 'background').map((id) => ({ id, r: screen(boxOf(kindOf(id) === 'photo' ? maskOf(id) : id)) })).filter((s) => s.r) as { id: string; r: Rect }[] : [];
+  // The overlay's geometry, read from the page once per render, and only on the board being edited
+  // (another format shows no selection or hover; only Claude's flash).
+  const geo = ready && !passive;
+  const r0 = ready && (geo || flash.length) ? root()?.getBoundingClientRect() : undefined;
+  const at = (id: string | null) => boxOf(id, r0);
+  const sel = geo ? selected.filter((id) => kindOf(id) !== 'background').map((id) => ({ id, r: screen(at(kindOf(id) === 'photo' ? maskOf(id) : id)) })).filter((s) => s.r) as { id: string; r: Rect }[] : [];
   const single = sel.length === 1 ? sel[0] : null;
   const logo = single && kindOf(single.id) === 'archy';
   const group = sel.length > 1 ? screen(union(sel.map((s) => ({ x: s.r.x / zoom, y: s.r.y / zoom, w: s.r.w / zoom, h: s.r.h / zoom })))) : null;
   const hovComp = comps.find((c) => c.id === hover);
-  const hov = ready && hovComp && hovComp.kind !== 'background' && !selected.includes(hovComp.id) && !drag.current ? screen(boxOf(hovComp.kind === 'photo' ? maskOf(hovComp.id) : hover)) : null;
+  const hov = geo && hovComp && hovComp.kind !== 'background' && !selected.includes(hovComp.id) && !drag.current ? screen(at(hovComp.kind === 'photo' ? maskOf(hovComp.id) : hover)) : null;
   // The group around what is hovered, faint, so its container is easy to see (and pick).
-  const ctxComp = ready && !drag.current ? parentOf(comps, hover) : null;
-  const ctx = ctxComp && !selected.includes(ctxComp.id) ? screen(boxOf(ctxComp.id)) : null;
+  const ctxComp = geo && !drag.current ? parentOf(comps, hover) : null;
+  const ctx = ctxComp && !selected.includes(ctxComp.id) ? screen(at(ctxComp.id)) : null;
   // Texts hug their copy: only their width is pulled; the logo only scales from its corners.
   const handles: readonly Handle[] = logo ? ['nw', 'ne', 'se', 'sw'] : single && kindOf(single.id) === 'text' ? ['e', 'w'] : HANDLES;
   // While typing, one thin frame around the text being edited, nothing else.
@@ -714,8 +741,8 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
   // Reframing: the photo's window, and the whole photo faint beyond it (what the frame cuts away).
   const ghostOf = reframe ?? scaling;
   const refr = (() => {
-    if (!ghostOf || !ready) return null;
-    const n = el(ghostOf), w = win(), r0 = root()?.getBoundingClientRect();
+    if (!ghostOf || !geo) return null;
+    const n = el(ghostOf), w = win();
     if (!n || !w || !r0) return null;
     const E = n.getBoundingClientRect(), W = w.__photoWindow(n), cs = w.getComputedStyle(n);
     const [bw, bh] = cs.backgroundSize.split(' ').map(parseFloat), [px, py] = cs.backgroundPosition.split(' ').map(parseFloat);
@@ -723,7 +750,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
     const img = { x: E.left - r0.left + px, y: E.top - r0.top + py, w: bw, h: bh };
     return { win: screen(win0)!, img: screen(img)!, bg: cs.backgroundImage };
   })();
-  const editBox = editing && ready ? screen(boxOf(editing)) : null;
+  const editBox = editing && geo ? screen(at(editing)) : null;
   const safeR = screen(safe);
 
   return (
@@ -800,7 +827,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
             {badge && <span className={`absolute top-full left-1/2 mt-1.5 -translate-x-1/2 rounded-[4px] px-1.5 py-0.5 text-[10px] font-medium whitespace-pre text-white tabular-nums ${outside ? 'bg-[#F2385A]' : 'bg-[#FF2BD6]'}`}>{outside ? `${badge}   Outside the safe area` : badge}</span>}
           </div>
         )}
-        {flash.map((id) => { const r = ready ? screen(boxOf(id)) : null; return r && <div key={`f-${id}`} className="pointer-events-none absolute rounded-[2px] bg-[#FF2BD6]/10 ring-2 ring-[#FF2BD6] animate-out fade-out-0 duration-[1600ms] fill-mode-forwards" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} />; })}
+        {flash.map((id) => { const r = ready ? screen(at(id)) : null; return r && <div key={`f-${id}`} className="pointer-events-none absolute rounded-[2px] bg-[#FF2BD6]/10 ring-2 ring-[#FF2BD6] animate-out fade-out-0 duration-[1600ms] fill-mode-forwards" style={{ left: r.x, top: r.y, width: r.w, height: r.h }} />; })}
         {refr && (
           <>
             {/* The rest of the photo, faint, outside its frame. */}
@@ -823,7 +850,7 @@ export const Stage = forwardRef<StageHandle, Props>(function Stage({ plan, slots
       </div>
     </div>
   );
-});
+}));
 
 function Tag({ icon, right, children }: { icon?: boolean; right?: boolean; children: React.ReactNode }) {
   return (

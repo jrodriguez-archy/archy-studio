@@ -92,5 +92,5 @@ async function store(key: string, source: 'unsplash' | 'ai', body: Buffer): Prom
 export function placeholderNote(list: Placeholder[]) {
   if (!list.length) return '';
   const what = list.map((p) => `${p.slot} (${p.source === 'unsplash' ? `Unsplash, "${p.query}"` : p.source === 'ai' ? `made with AI, "${p.query}"` : 'a neutral placeholder'})`).join(', ');
-  return `Placeholder photos, not the real ones: ${what}. Tell the requester and ask for the real photos: an https link, an image uploaded in Studio → Assets (give its ID), or replaced by hand in Canvas. Render again with the same set when they arrive.`;
+  return `Placeholder photos, not the real ones: ${what}. Tell the requester and ask for the real photos: an https link, an image uploaded in Studio → Assets (give its ID), or replaced by hand in Canvas. Photos attached in the chat (Studio cannot read them) or on their computer: give them one link to send them (request_photos), then get_photos. Render again with the same set when they arrive.`;
 }

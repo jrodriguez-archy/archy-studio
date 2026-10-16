@@ -40,6 +40,7 @@ A person with Pixel Dissolve or Pixels Behind (below) is image-led too: the pers
 
 ### Composition guides (not rules: use them when they fit)
 
+- **Scale**: type bigger than feels safe (a post headline from 120 px, bigger when it has room); the logo at full size with its air.
 - **A person on a colour ground**: the headline big at the top; the person large, pushed to the right (they may bleed off the right edge) and off the bottom; the logo in the corner the person leaves free (bottom left). With the logo there, no pixels under it: Pixel Dissolve and Pixels Behind are optional, and a pixel gradient ground is often enough.
 - **The copy and the person**: some air between the headline and the top of the head (about a third of the headline size or more); the copy never sits on the person.
 - **Framing a photo** (generated or real): the subjects large and central to the frame, close under the headline but never behind it. Scale the image beyond cover and anchor it to the bottom to bring them up and closer (`background-size: auto 112%; background-position: 40% 100%`), then look at the result.

@@ -27,47 +27,48 @@ import plugin from '@/plugins/archy-studio/.claude-plugin/plugin.json';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const INSTRUCTIONS = `Archy Studio: Archy marketing templates. Turn a brief ("we have booth #1211 at the Chicago Midwinter Meeting, Feb 18 to 20") into finished PNGs built from Archy's approved Paper templates.
+const INSTRUCTIONS = `Archy Studio turns a marketing brief ("booth #1211 at the Chicago Midwinter Meeting, Feb 18 to 20") into finished PNGs from Archy's approved Paper templates. With the archy-studio plugin, its studio skill holds this whole guide: load it.
 
-Template ID given: when the requester names a template ID (e.g. "booth-icon-list", copied from the Studio app) or a /templates?t=<id> link, use that template directly: skip match_templates, call get_template, ask once only for its missing essential facts, then render. A prompt that says "Keep it in set <id>" renders with that set.
+Core steps:
+1. A template ID ("booth-icon-list", copied from the Studio app) or a /templates?t=<id> link: use that template (no match_templates), get_template, ask once only for its missing essential facts, render. "Keep it in set <id>" renders in that set.
+2. Otherwise read the whole brief, list the facts it brings (event name, city, venue, date, time, booth, photos, logos, speaker...; match_templates' fact names) and call match_templates (with the purpose when clear).
+3. Ask once, in one short message, for what is missing or would unlock a better template (the partner logo, the time). Never invent facts. Photos never hold a design back: templates with photos are made with placeholders close to the brief, and the real photos are asked for in that same message (photos_to_ask_for).
+4. With the answers, match_templates again and pick the best eligible template (offer two when equally good). Options are different templates, designs or themes, never the same design with other copy. None eligible: say what is missing; never force one.
+5. get_template for slots and limits, then render. Essential content is always filled; an optional detail you lack is left out.
+6. Copy that does not fit is not delivered: show both options (shorter copy within the maximum, or smaller text, then render with smaller_text: true) and let them choose.
+7. Deliver: the images, the links, which template and why in one line, what was left out, which photos are placeholders. Pass "Set: <id>" as set to every later render of the same brief.
+All copy on designs in US English. "Explore", or no template fits: an exploration (get_brand_kit, then compose).
 
-Brief first, then the best template:
-1. Read the whole brief and list the facts it brings (event name, city, venue, date, time, booth, photos, logos, speaker...). Use the fact names of match_templates.
-2. Call match_templates with those facts (and the purpose if clear). It returns the templates that can be made with them, best first, and for the others what is missing.
-3. Ask once, in one short message, for what would unlock a better template or is missing (the partner logo, the time...). Never invent facts. Photos never hold a design back: a template that shows photos is made anyway, with placeholder photos close to the brief, and the real ones are asked for in that same message (photos_to_ask_for).
-4. With the answers, call match_templates again and pick the best eligible template (offer two when they are equally good). When the requester asks for options, make each option a different template (or design or theme), not the same design with other copy; a copy-only variation only when they ask for one, and then without set, so it stands on its own in the gallery. If none is eligible, say what is missing; never force a template.
-4b. (When the requester asked to explore, skip this and go to Explorations.) No template for it: when the kind of piece or size is not in the catalog (a LinkedIn banner, a flyer, an email header), even if templates are eligible by their facts, or match_templates has nothing: offer the closest template adapted in one line (closest_made_for_another_purpose, or a format the requester can use instead) and make it if they take it. If nothing is close, or they decline it, call report_missing_template once (so Marketing & Design see what is asked for) and offer an exploration (below) in the same message; never promise a date for a template.
-5. get_template for its slots and limits, then render. Each template has essential content (always filled) and minor optional details: an optional detail you do not have is left out with its label (no time: the date stays alone).
-6. If copy does not fit, the format is not delivered and the answer brings two options: shorter copy (with the exact maximum) and, when it works, smaller text (a preview, down to 70%). Show both and let the requester choose; offer a shorter version written by you (same facts, their wording). If they choose smaller text, render again with smaller_text: true. Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline takes the size and lines its room allows, the logo stays at the bottom), so never add words just to fill space. A headline on three or four big lines is right, not a problem.
-7. Show the images, give the download links and the Edit in Canvas link (where the requester can fix copy, colours, images or sizes by hand), and say in one line which template you chose and why, what was left out, and which photos are placeholders.
+Templates:
+- No template for the kind of piece or size (a LinkedIn banner, a flyer, an email header), even when templates are eligible by their facts, or match_templates has nothing: offer the closest template adapted, in one line (closest_made_for_another_purpose, or a format they can use instead), and make it if they take it. If nothing is close or they decline, call report_missing_template once (Marketing & Design see what is asked for) and offer an exploration in the same message; never promise a date for a template. When they asked to explore, skip this.
+- A copy-only variation only when they ask for one, rendered without set so it stands on its own in the gallery.
+- An optional detail you lack is left out with its label (no time: the date stays alone).
+- Copy that does not fit: also offer a shorter version you write (same facts, their wording). Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline takes the size and lines its room allows, the logo stays at the bottom); never add words to fill space. A headline on three or four big lines is right.
+- Designs and themes: some templates (list_templates shows them) come in several designs (layouts) and themes (White, Royal Blue, Navy) with the same slots. Use the default unless asked; for options render two or three designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits; some slots exist only in some designs (only_in_designs). Another design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
+- Event page cover (1200×900, the Webflow event page thumbnail), a format of the event templates: never part of "all formats". After the social formats, offer it in one short line; if they want it, render formats: ["cover"] with the same facts, design, theme and set. It splits the headline in two and prints "Booth" with the number by itself; its own photos (a city or venue ground, on a few covers a guest photo) come as placeholders when the brief has none (ask for the real ones); its short cover-subhead is written from the brief, never the template's sample.
+- Projects (gallery folders, one per design): only when the requester names one ("save it in Chicago Midwinter"): list_projects and pass it to render; if it does not exist, create_project (shared with the team unless only for them). Never ask about projects otherwise.
+- Sets: all designs from one brief (more formats, retries after shortening copy, other templates or options) pass the same set. A new brief starts without set.
+- Keep the template's fixed text and design; only the slots change.
 
-Explorations (Archy only): a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it: no match_templates. Otherwise it comes after the closest template (4b). Call get_brand_kit once, then compose: write each format as HTML in the kit (its tokens, type, grounds, textures and pieces; the real logo through data-piece="logo"). Decide first which kind of piece it is: image-led (a photo fills the artboard and is the subject; the copy sits on its calm part on a scrim, white behind dark text and navy behind white text, toward where the copy is) or typographic (the headline is the design and holds the centre, on a colour ground, a pixel gradient or a Pixel Tone place as atmosphere); never a band of photo stopping mid-piece, never a hole. Start with the format they need; add more only when asked. Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance the layout to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Look at every image as a designer would: hierarchy, scale (type bigger than feels safe: a post headline from 120 px, bigger when it has room), the logo with its own air (half its height clear all around, usually at the other end from the headline) and full size, a person big and bleeding off the bottom (a person on a colour ground often reads best pushed right, bleeding off the right edge, with the logo in the free bottom-left corner and no pixels under it; Pixel Dissolve is optional), subjects in a photo framed large and close under the headline but never behind it, leading open enough that descenders never meet the next line, the safe area, nothing floating; fix what a designer would, and every hard problem the check reports, then compose again with the same set. Sky is never a ground (only an accent). When they ask for options, make each one a different composition (image-led or typographic, ground, where the copy sits). A reference image in the brief (their mock-up, or one from another generator) is the idea, not the design: rebuild its message and composition with the kit and its rules, never its fonts, colours or logos. The product: Archy's real screens are in the kit (data-piece="product": a window bleeding off the right and bottom, or a card cropped from a screen), for pieces about what the product does; never redraw or invent product UI. Images: a real photo first (list_assets, or the requester's; a specific person is always their real photo); otherwise generate_image for the whole artboard, with copy_space where the copy goes and a prompt written as an art director (an editorial, magazine-quality moment: a subject large and close, something happening, framing and light; never an empty room; a studio still life, a prop or a product on a seamless backdrop, when the object is the idea; generic people are fine; never a specific real person, a real venue as itself or a logo; one at a time, look at each). The mascot (Archy, the robot) through data-piece="mascot" when the brief asks for him or the piece wants warmth (launch, welcome, thanks, celebration): pick the expression (neutral, happy, joyful, love) and the edge he peeks in from, or his full body with a pose (listen, look, tilt, laugh, jump, crush) or as an agent with the objects of a feature (insight, scribe, connect, verify, revenue; any ground); Studio rotates and places him (antenna into the canvas, two thirds showing, eyes whole); never redraw him; copy never over him. Textures as Archy's brand defines them: a pixel gradient for a colour ground, Pixel Dissolve for a person bleeding off the bottom, Pixels Behind for a tight headshot, Pixel Tone for a place behind type (never on people, never on the subject). Say which images are AI-generated. Never invent facts; copy in US English. Say plainly it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design (small changes there, with get_canvas / edit_canvas when it is open); a new layout, ground or format is a new compose with the same set.
+Photos and logos:
+- People are always the person's real photo: from the team's images (list_assets; a cutout without background works best) or an https link to a cutout PNG. Never generate a person or use someone else's photo; a neutral silhouette holds the place until it comes. A photo attached in the chat (Studio cannot read it) or on their computer: make the design with its placeholder, give one link for every photo still missing (request_photos), and when they say they are done, get_photos and render again with the same set.
+- An https image (Notion, Drive or another signed link) is kept in Assets on first use, so the design outlives the link; if the link no longer opens, request_photos.
+- Partner and sponsor logos come as https links (PNG or SVG), set in the design's colour at an optically balanced size.
+- Framing: a photo is cropped to its frame from its centre. Look at every render: when what matters (a face, a tattoo, a product) is cut off or hidden behind the design (a pixel band, the copy), render again with framing for that slot: focus_x / focus_y (0–100 %, where the subject is, across and down) keep it at the frame's centre as far as the photo allows; zoom above 1 comes closer. When the photo is too tall or too wide to show the subject whole, zoom below 1 with fill_around: true: AI paints the rest of the scene around it (it can invent details: look, and say it was extended). Canvas opens the framing as rendered.
 
-Framing photos: a photo is cropped to its frame from its centre unless you say otherwise. Look at every render: when what matters in a photo (a face, a tattoo, a product) is cut off or hidden behind the design (a pixel band, the copy), render again with framing for that slot: focus_x / focus_y (0–100 %, where that subject is in the photo, across and down) keep it at the frame's centre as far as the photo allows; zoom above 1 comes closer. When the photo is too tall or too wide for the frame to show the subject whole, use zoom below 1 with fill_around: true: AI paints the rest of the scene around the photo so it fills the frame (it can invent details: look at the result and say it was extended). Framing is kept in the design, so Canvas opens it as rendered.
+Links: each format gives "Download (2x PNG)" (lasting, for people signed in to Studio: the one to share), "File" (no sign-in, a few days: save files with it) and "Edit in Canvas" (where the requester fixes copy, colours, images or sizes by hand).
 
-Images from links: an https image (a Notion, Drive or other signed link) is kept in Assets the first time it is used, so the design keeps working after the link expires. If the link no longer opens, ask for the photo with request_photos.
+Brands: Studio makes work for two brands that never mix. Archy (default) and DOC, the Dental Ownership Collective (ownership education for dentists; Archy appears on DOC only as its sponsor). When the brief is for DOC (it says DOC, Dental Ownership Collective, Foundations / Startup / Acquisition tracks), pass brand: "doc" to list_templates, match_templates, list_assets, list_projects and create_project. Never put an Archy template, image or project on a DOC brief or the other way round. DOC templates come in five themes (Foundations, Startup, Acquisition, Dark, Light); never invent a DOC figure, price, date or quote.
 
-Downloads: each format gives "Download (2x PNG)" (the lasting link for people signed in to Studio, to share) and "File" (works without signing in for a few days): save files with the File link.
+Explorations (Archy only): a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it, without match_templates; otherwise it comes after the closest template. Call get_brand_kit once (its rules, guides and pieces are how an exploration is built: follow them), then compose each format as HTML in the kit. Start with the format they need; more only when asked. Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Look at every image as a designer would and fix what a designer would, and every hard problem the check reports, then compose again with the same set. Options are different compositions (image-led or typographic, ground, where the copy sits). Say which images are AI-generated, and plainly that it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design; a new layout, ground or format is a new compose with the same set.
 
-Designs and themes: some templates (list_templates shows designs and themes) come in several designs (layouts) and themes (White, Royal Blue, Navy grounds) with the same slots. Use the default unless the requester asks for one or for options; to offer options, render two or three different designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits, and some slots exist only in some designs (only_in_designs). Changing the design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
-
-Event page covers: the event templates have a cover format (1200×900, the Webflow event page thumbnail) next to Post, Square, Stories and OG. It is never part of "all formats": after making the social formats, offer the cover in one short line; never force it. If they want it, render the same template with formats: ["cover"], the same facts, design, theme and set, so it stacks with the social formats. The cover splits the headline in two and prints "Booth" with the number by itself; its own photos (a city or venue photo for its ground, on a few covers a guest photo) come as placeholders when the brief has none: ask for the real ones. Its short cover-subhead is written from the brief, never the template's sample.
-
-Projects: designs can be filed into project folders in the Studio gallery (one project per design). When the requester names a project or campaign ("save it in Chicago Midwinter"), call list_projects and pass that project to render. If it does not exist, create it with create_project (shared with the team unless they say it is only for them). Do not ask about projects when the requester does not mention one.
-
-Sets: every render answer ends with "Set: <id>". All designs from one brief (more formats, retries after shortening copy, other templates or options) belong together: pass that id as set to every later render of the same brief. A new brief starts without set.
-
-Brands: Studio makes work for two brands that never mix. Archy (default) and DOC, the Dental Ownership Collective (ownership education for dentists; Archy appears on DOC only as its sponsor). When the brief is for DOC (it says DOC, Dental Ownership Collective, Foundations / Startup / Acquisition tracks), pass brand: "doc" to list_templates, match_templates, list_assets, list_projects and create_project; otherwise leave the default. Never put an Archy template, image or project on a DOC brief or the other way round. DOC templates come in five themes (Foundations, Startup, Acquisition, Dark, Light); never invent a DOC figure, price, date or quote.
-
-Brand rules:
-- All copy on the design is in US English, even when the conversation is not.
-- Photos of people are always the person's real photo, from the team's images (list_assets; a cutout without background works best) or provided by the requester as an https link to a cutout PNG. When they attach a photo in the chat (Studio cannot read it) or have it on their computer, make the design with its placeholder, then give one photo link for every photo still missing (request_photos) and, when they say they are done, get_photos and render again with the same set. Never generate a person or use someone else's photo; until the person's photo comes, a neutral silhouette holds its place.
-- Partner and sponsor logos come as https links (PNG or SVG); they are set in the design's colour at an optically balanced size.
-- Keep the template's fixed text and design as they are; only the slots change.
-
-Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: call get_canvas, then make the change yourself with edit_canvas (they watch it happen live and can undo it). Refer to components by their id from get_canvas. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (the Inspector's own exact fixes) or your own change, and check again. Never tell the person how to do something by hand in Canvas when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, naming the places in plain words, before you make it. Change only what they ask: copy on the design that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other in Canvas while it is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the brand logo (Archy logo, DOC lockup) can only be moved, aligned or scaled. Save with save_canvas only when they ask.`;
+Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: get_canvas, then make the change yourself with edit_canvas (they watch it live and can undo it), referring to components by their id. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (its exact fixes) or your own change, and check again. Never tell the person how to do something by hand when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, in plain words. Change only what they ask: copy that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other while Canvas is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the brand logo (Archy logo, DOC lockup) can only be moved, aligned or scaled. save_canvas only when they ask.`;
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string };
+
+// A saved design's links: each format lists the addresses, and the answer explains them once.
+const linksOf = (origin: string, id: string) => `Download (2x PNG): ${origin}/api/file/${id} · File: ${directFileLink(origin, id)} · Edit in Canvas: ${origin}/canvas/${id}`;
+const LINKS_NOTE = `Links: "Download (2x PNG)" lasts (for people signed in to Studio): the one to share. "File" works without signing in for ${DIRECT_DAYS} days: use it to save the PNG. "Edit in Canvas" is where the requester changes copy, colours, images or sizes by hand.`;
 
 const handler = createMcpHandler(
   (server) => {
@@ -97,7 +98,7 @@ const handler = createMcpHandler(
             slots: Object.keys(m.slots),
           };
         }));
-        return { content: [{ type: 'text', text: JSON.stringify(list, null, 2) }] };
+        return { content: [{ type: 'text', text: JSON.stringify(list) }] };
       },
     );
 
@@ -161,7 +162,7 @@ const handler = createMcpHandler(
               formats: Object.fromEntries(Object.entries(formats).map(([k, f]) => [k, `${f.width}×${f.height}`])),
               slots, guidance: c.guidance,
               notes: 'Limits are measured guides; render is the final check and reports the exact maximum when copy does not fit.',
-            }, null, 2),
+            }),
           }],
         };
       },
@@ -176,11 +177,12 @@ const handler = createMcpHandler(
           facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue; ad-photo = a scene photo that shows a product claim (photo-led ads); stat = a real, sourced figure (DOC); object-photo = a staged photo that is the idea of a DOC ad.'),
           purpose: z.enum(PURPOSES).optional().describe('What the design is for, when clear from the brief.'),
           brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'),
+          formats: z.array(z.string()).optional().describe('Formats that will be rendered, as in render (e.g. ["post", "cover"]); photos_to_ask_for lists the photos they draw. Default: as render (all but the cover; the cover alone for event-cover).'),
         }),
         annotations: { readOnlyHint: true },
       },
-      async ({ facts, purpose, brand }) => {
-        const all = await matchTemplates(facts, purpose, brand);
+      async ({ facts, purpose, brand, formats }) => {
+        const all = await matchTemplates(facts, purpose, brand, formats);
         const eligible = all.filter((m) => m.eligible).slice(0, 6).map((m) => ({ template: m.template, title: m.title, purpose: m.purpose, shows: m.shows, not_shown: m.unused, ...(m.photos.length ? { photos_to_ask_for: m.photos } : {}) }));
         const almost = all.filter((m) => !m.eligible && m.missing.length <= 2).slice(0, 6).map((m) => ({ template: m.template, title: m.title, needs: m.missing }));
         // No template for this purpose: the closest ones made for something else, to offer adapted.
@@ -188,7 +190,7 @@ const handler = createMcpHandler(
           ? (await matchTemplates(facts, undefined, brand)).filter((m) => m.eligible).slice(0, 3).map((m) => ({ template: m.template, title: m.title, purpose: m.purpose, shows: m.shows }))
           : [];
         const note = !eligible.length && !almost.length ? 'No template fits this brief. Offer the closest one adapted when it works; if not, or when the requester declines it, call report_missing_template.' : undefined;
-        return { content: [{ type: 'text', text: JSON.stringify({ eligible, would_fit_with_more_info: almost, ...(closest.length ? { closest_made_for_another_purpose: closest } : {}), ...(note ? { note } : {}) }, null, 2) }] };
+        return { content: [{ type: 'text', text: JSON.stringify({ eligible, would_fit_with_more_info: almost, ...(closest.length ? { closest_made_for_another_purpose: closest } : {}), ...(note ? { note } : {}) }) }] };
       },
     );
 
@@ -352,7 +354,7 @@ const handler = createMcpHandler(
             let links = '';
             if (hiRes) {
               const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: drawn.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html: withStableIds(html) });
-              if (rec) { saved++; links = ` Download (2x PNG): ${origin}/api/file/${rec.id} File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, rec.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${rec.id}`; }
+              if (rec) { saved++; links = ` ${linksOf(origin, rec.id)}`; }
             }
             out.push({ type: 'text', text: `${label}: ready, saved in the gallery as an Exploration.${links}${warnings.length ? `\nWorth fixing (guides, not refusals):\n- ${warnings.join('\n- ')}` : ''}` });
           } catch (e) {
@@ -361,6 +363,7 @@ const handler = createMcpHandler(
           return out;
         }));
         content.push(...made.flat());
+        if (saved) content.push({ type: 'text', text: LINKS_NOTE });
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later compose of this brief).${saved ? ' Tell the requester it is an exploration that Design reviews, not an approved template. Small changes (copy, a colour, moving or scaling something) are made in Canvas (get_canvas / edit_canvas when they have it open); a new layout, ground or format is a new compose with the same set.' : ''}` });
         return { isError: saved === 0 && !content.some((c) => c.type === 'image'), content };
       },
@@ -463,7 +466,7 @@ const handler = createMcpHandler(
           return { label: i.label, slot: i.slot, photo: a ? `asset:${shortId(a.id)}` : null, cut_out: a ? a.kind === 'cutout' : undefined, status: a ? 'arrived' : 'not yet' };
         }));
         const waiting = items.filter((i) => !i.photo).length;
-        return { content: [{ type: 'text', text: JSON.stringify({ items, ...(waiting ? { note: `${waiting} not arrived yet${req.expired ? '; the link has expired, make a new one' : ''}.` } : {}) }, null, 2) }] };
+        return { content: [{ type: 'text', text: JSON.stringify({ items, ...(waiting ? { note: `${waiting} not arrived yet${req.expired ? '; the link has expired, make a new one' : ''}.` } : {}) }) }] };
       },
     );
 
@@ -479,7 +482,7 @@ const handler = createMcpHandler(
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Projects need a signed-in Studio account.' }] };
         const list = (await listProjects(me, brand)).map((p) => ({ project: p.name, id: p.id, visible_to: p.shared ? 'team' : 'only the requester', pieces: p.count }));
-        return { content: [{ type: 'text', text: JSON.stringify(list, null, 2) }] };
+        return { content: [{ type: 'text', text: JSON.stringify(list) }] };
       },
     );
 
@@ -584,7 +587,7 @@ const handler = createMcpHandler(
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
           const saved = await saveCanvas(me, piece);
-          return { content: [{ type: 'text', text: `Saved as a new version. Download (2x PNG): ${publicOrigin(ctx)}/api/file/${saved.id} · File (no sign-in, ${DIRECT_DAYS} days): ${directFileLink(publicOrigin(ctx), saved.id)} · Edit in Canvas: ${publicOrigin(ctx)}/canvas/${saved.id}` }] };
+          return { content: [{ type: 'text', text: `Saved as a new version. ${linksOf(publicOrigin(ctx), saved.id)}\n${LINKS_NOTE}` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
         }
@@ -664,6 +667,13 @@ const handler = createMcpHandler(
           return !(from && (slots[from] || m.slots[from]?.type === 'image'));
         }).map(([k]) => photoPlaceholder({ slot: k, fact: config.facts?.[k] ?? null, slots, purpose: config.purpose, userId: userIdOf(ctx) })));
         if (placeholders.length) slots = { ...slots, ...Object.fromEntries(placeholders.map((p) => [p.slot, p.value])) };
+        // Framing that cannot apply is said, never silently dropped.
+        const framingNotes: string[] = [];
+        for (const [k, f] of Object.entries(framing ?? {})) {
+          if (m.slots[k]?.type !== 'image') framingNotes.push(`framing for ${k} ignored: not a photo slot (photo slots: ${Object.keys(m.slots).filter((s) => m.slots[s].type === 'image').join(', ') || 'none'})`);
+          else if (!slots[k]) framingNotes.push(`framing for ${k} ignored: it has no photo in this design`);
+          else if (f.fill_around && (f.zoom ?? 1) >= 1) framingNotes.push(`fill_around for ${k} ignored: it works only with zoom below 1 (at zoom ${f.zoom ?? 1} the photo already covers its frame)`);
+        }
         // Every format checked for its essential content before any is drawn: one that cannot be made never
         // leaves the others saved behind an error (and a retry saving them twice).
         // The cover asked for with the social formats but missing its own content (its ground photo).
@@ -696,11 +706,11 @@ const handler = createMcpHandler(
         const refused: string[] = [];
         // Formats whose copy fits in smaller text (offered as an option).
         const smallerOption: string[] = [];
-        const extendNotes: string[] = [];
+        const extendNotes: string[] = [...framingNotes];
         // Each format drawn once, at 2x (the file kept); Claude's preview is a light JPEG of it. Formats are
         // drawn side by side (three at a time), and one that fails never takes the others with it.
         const hiRes = supabaseConfigured();
-        type Made = { content: Content[]; refused?: string; smaller?: string; notes: string[]; coverNeeds?: string[]; missing?: MissingRequired; failed?: string };
+        type Made = { content: Content[]; refused?: string; smaller?: string; notes: string[]; coverNeeds?: string[]; missing?: MissingRequired; failed?: string; saved?: boolean };
         // fill_around: the same extension asked by two formats is made once, and none starts this late in
         // the call (each can take two minutes; the call has five).
         const started = Date.now();
@@ -767,19 +777,19 @@ const handler = createMcpHandler(
           }
           // The 2x file goes to the shared gallery (Supabase) and the link is a signed download.
           // Without Supabase configured, the link re-renders the same piece (every decision explicit).
-          let download: string;
           const saved = hiRes
             ? await saveRender({
                 userId: userIdOf(ctx), template, format, slots: used, png: out.png, width: out.width, height: out.height, scale: 2, projectId, setId, variant: out.variant,
                 design: out.design, theme: out.theme, smallerText, ...(Object.keys(fedits).length ? { edits: fedits } : {}),
               })
             : null;
-          // A link that lasts (for people signed in to Studio) until the design is archived or deleted.
-          if (saved) download = `${origin}/api/file/${saved.id}`;
+          // Saved: links that last (for people signed in to Studio) until the design is archived or deleted.
+          let links: string;
+          if (saved) { links = linksOf(origin, saved.id); made.saved = true; }
           else {
             const q = new URLSearchParams({ template, format, scale: '2', ...(combo ? { design: combo.design, theme: combo.theme } : {}), ...(smallerText ? { smaller_text: '1' } : {}) });
             for (const [k, v] of Object.entries(used)) q.set(`slot.${k}`, v ?? '');
-            download = `${origin}/api/render?${q.toString()}`;
+            links = `Download (2x PNG): ${origin}/api/render?${q.toString()}`;
           }
           const notes: string[] = [];
           if (combo) notes.push(`${m.designs![combo.design].label} design, ${m.themes![combo.theme].label} theme`);
@@ -796,7 +806,7 @@ const handler = createMcpHandler(
           made.content.push({ type: 'image', data: png.toString('base64'), mimeType: 'image/jpeg' });
           made.content.push({
             type: 'text',
-            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} Download (2x PNG): ${download}${saved ? ` File (no sign-in, ${DIRECT_DAYS} days; use it to save the PNG): ${directFileLink(origin, saved.id)} Edit in Canvas (change copy, colours, images or sizes by hand): ${origin}/canvas/${saved.id}` : ''}`,
+            text: `${files[format]?.label ?? format}: ready.${notes.length ? ` ${notes.join('. ')}.` : ''} ${links}`,
           });
           return made;
         };
@@ -841,6 +851,7 @@ const handler = createMcpHandler(
         if (coverNeeds) content.push({ type: 'text', text: `Cover not made: it needs ${coverNeeds.join(', ')} (the event page cover's own copy). Ask the requester for it, then render formats: ["cover"] with the same set.` });
         if (extendNotes.length) content.push({ type: 'text', text: extendNotes.join('\n') });
         if (placeholders.length && content.some((c) => c.type === 'image')) content.push({ type: 'text', text: placeholderNote(placeholders) });
+        if (results.some((r) => r.saved)) content.push({ type: 'text', text: LINKS_NOTE });
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the designs stay together in the gallery).` });
         return { isError: refused.length + (coverNeeds ? 1 : 0) === wanted.length && !smallerOption.length, content };
       },

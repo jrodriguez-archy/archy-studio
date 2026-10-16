@@ -20,14 +20,16 @@ export type Match = {
   purpose: string;
   eligible: boolean;
   missing: string[];      // essential facts the brief does not have (never a photo: a placeholder holds its place)
-  photos: string[];       // photos the template shows that the brief does not have yet (placeholders until they come)
+  photos: string[];       // photos the requested formats draw that the brief does not have yet (placeholders until they come)
   shows: string[];        // provided facts this template puts on the piece
   unused: string[];       // provided facts this template has no place for
   score: number;
 };
 
 // Only within one brand: an Archy brief never gets a DOC template, and the other way round.
-export async function matchTemplates(provided: string[], purpose?: string, brand: Brand = 'archy'): Promise<Match[]> {
+// `formats`: the ones that will be rendered (default as render: the cover alone for `event-cover`, else
+// every social format); the photos to ask for are the ones those formats draw.
+export async function matchTemplates(provided: string[], purpose?: string, brand: Brand = 'archy', formats?: string[]): Promise<Match[]> {
   const have = new Set(provided);
   const has = (fact: string) => (SATISFIES[fact] ?? [fact]).some((f) => have.has(f));
   const out: Match[] = [];
@@ -44,7 +46,17 @@ export async function matchTemplates(provided: string[], purpose?: string, brand
     // A missing photo never makes a template ineligible: it goes out with a placeholder and the real
     // photo is asked for. Real photos still count in `shows`, so they win when the brief has them.
     const missing = essentialFacts.filter((f) => !has(f) && !/-photo$/.test(f));
-    const photos = essentialFacts.filter((f) => !has(f) && /-photo$/.test(f));
+    // The photos are the ones render would hold with placeholders: every essential image slot the
+    // requested formats draw (a cover's own ground or guest photo only when the cover is made). A photo
+    // made from another (the cover's ground from the city photo) is asked for as that one.
+    const optional = new Set(c.optional ?? []);
+    const wanted = formats?.length ? formats : cover ? ['cover'] : Object.keys(m.formats).filter((f) => f !== 'cover');
+    const draws = (k: string) => !m.slots[k].perFormat || Object.keys(m.slots[k].perFormat!).some((key) => wanted.some((f) => key === f || key.startsWith(`${f}--`)));
+    const photoSlots = Object.keys(m.slots).filter((k) => m.slots[k].type === 'image' && !optional.has(k) && draws(k)).map((k) => {
+      const from = c.derive?.[k]?.from;
+      return from && m.slots[from]?.type === 'image' ? from : k;
+    });
+    const photos = [...new Set(photoSlots.map(factOf))].filter((f): f is string => !!f && /-photo$/.test(f) && !has(f));
     const shows = provided.filter((f) => allFacts.has(f) || [...allFacts].some((a) => SATISFIES[a]?.includes(f)));
     const unused = provided.filter((f) => !shows.includes(f));
     // Use as much of the brief as possible; leaving facts out costs a little.

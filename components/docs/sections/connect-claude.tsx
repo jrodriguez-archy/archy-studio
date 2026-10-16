@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CopyText } from '@/components/copy-text';
-import { Callout, H2, H3, Rows, Step, Steps, Ui } from '../ui';
+import { RELEASES } from '@/lib/whats-new';
+import { Callout, H2, H3, Kbd, Rows, Step, Steps, Ui } from '../ui';
 
 export function ConnectClaude() {
   return (
@@ -20,6 +21,7 @@ export function ConnectClaude() {
         <Step>Ask for a design in your own words. That is it.</Step>
       </Steps>
       <Callout kind="note">You can also add it from <strong>Connectors</strong> in the Claude app settings. Either way, you only sign in once.</Callout>
+      <Callout kind="tip">Right after installing, <a href="#auto-update">turn on auto-update</a>. It is off for this marketplace until you turn it on.</Callout>
 
       <H2 id="terminal">Claude Code in a terminal</H2>
       <Steps>
@@ -44,23 +46,47 @@ export function ConnectClaude() {
 
       <H2 id="update">Update the plugin</H2>
       <p>
-        New versions bring new templates and fixes. <Link href="/docs/whats-new">What’s new</Link> shows the latest one; your version is
-        in Claude’s plugin list.
+        New versions bring new templates and fixes. The latest is <strong>{RELEASES[0].version}</strong>
+        (<Link href="/docs/whats-new">What’s new</Link>). Your version is next to <strong>Archy - Studio</strong> in
+        Claude’s plugin list.
       </p>
-      <H3>In the Claude app</H3>
+
+      <H3 id="auto-update">Turn on auto-update (once)</H3>
+      <p>
+        Auto-update is set <strong>per marketplace</strong>, and it starts <strong>off</strong> for archy-studio, even when it is on
+        for your other plugins. Until you turn it on, Claude does not see new versions and <Ui>Update</Ui> stays greyed out.
+      </p>
+      <Steps>
+        <Step>In the Claude app, open <Ui>Customize</Ui> → <Ui>Plugins</Ui>.</Step>
+        <Step>Find the <strong>archy-studio</strong> marketplace (not the plugin) and turn on <Ui>Sync automatically</Ui>.</Step>
+        <Step>Quit Claude completely (<Kbd>⌘Q</Kbd>) and open it again.</Step>
+      </Steps>
+      <p>From then on, new versions arrive on their own. A new version loads in a <strong>new conversation</strong>.</p>
+
+      <H3>Update now, in the Claude app</H3>
       <Steps>
         <Step>Open <Ui>Customize</Ui> → <Ui>Plugins</Ui>.</Step>
-        <Step>Find the <strong>archy-studio</strong> marketplace and choose <Ui>Check for updates</Ui>.</Step>
-        <Step>Start a <strong>new conversation</strong>: the new version loads there.</Step>
+        <Step>On the <strong>archy-studio</strong> marketplace, choose <Ui>Check for updates</Ui>. This makes Claude read the new version first.</Step>
+        <Step>Update <strong>Archy - Studio</strong> if it offers it.</Step>
+        <Step>Quit Claude (<Kbd>⌘Q</Kbd>), open it again and start a new conversation.</Step>
       </Steps>
-      <Callout kind="tip">Turn on <Ui>Sync automatically</Ui> for the archy-studio marketplace and new versions arrive on their own.</Callout>
-      <H3>Claude Code in a terminal</H3>
+
+      <H3>Update now, in a terminal</H3>
+      <p>Only with Claude Code installed in your terminal.</p>
       <Steps>
         <Step><CopyText wrap text="claude plugin marketplace update archy-studio" /></Step>
         <Step><CopyText wrap text="claude plugin update archy-studio@archy-studio" /></Step>
         <Step>Start a new session, or type <CopyText text="/reload-plugins" /> in the one you have open.</Step>
       </Steps>
-      <Callout kind="tip">To update on its own: type <CopyText text="/plugin" />, open <Ui>Marketplaces</Ui>, choose <strong>archy-studio</strong> and <Ui>Enable auto-update</Ui>.</Callout>
+      <Callout kind="note">If the terminal says <code>command not found: claude</code>, Claude Code is not installed there. Use the steps in the Claude app instead.</Callout>
+      <Callout kind="tip">For auto-update in the terminal: type <CopyText text="/plugin" />, open <Ui>Marketplaces</Ui>, choose <strong>archy-studio</strong> and <Ui>Enable auto-update</Ui>.</Callout>
+
+      <H3>Still on an old version?</H3>
+      <ul>
+        <li><Ui>Update</Ui> greyed out: the marketplace has not been read again. Choose <Ui>Check for updates</Ui> on the archy-studio marketplace, then try again.</li>
+        <li>The new version is installed but Claude still acts the old way: quit Claude with <Kbd>⌘Q</Kbd> (closing the window is not enough) and start a new conversation.</li>
+        <li>Still nothing: <a href="#reinstall">remove it and install it fresh</a>. Your designs stay in Studio.</li>
+      </ul>
 
       <H2 id="signed-out">If Claude is not signed in</H2>
       <p>If Claude says Archy Studio needs you to sign in (or its tools are missing), connect again:</p>

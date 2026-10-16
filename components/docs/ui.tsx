@@ -25,8 +25,8 @@ export function H2({ id, children }: { id: string; children: React.ReactNode }) 
   );
 }
 
-export function H3({ children }: { children: React.ReactNode }) {
-  return <h3 className="pt-2 text-[16px] font-medium text-foreground">{children}</h3>;
+export function H3({ id, children }: { id?: string; children: React.ReactNode }) {
+  return <h3 id={id} className="scroll-mt-28 pt-2 lg:scroll-mt-8 text-[16px] font-medium text-foreground">{children}</h3>;
 }
 
 // A label as it appears in Studio (a button, a menu item, a tab).

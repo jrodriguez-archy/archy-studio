@@ -1,5 +1,36 @@
 # Changelog
 
+## archy-studio 0.21.0 (2026-10-15)
+
+Security
+- Profiles are written only by the server: nobody can make themselves admin from the browser (migration `20261026000000_profiles_server_writes_only`).
+- Explorations: handlers and `javascript:` links are stripped however they are written, and the Canvas iframe runs only Canvas's own scripts (CSP nonce).
+- MCP sign-in: the consent page shows the account and where access goes, and refuses redirects that are not Claude (`lib/oauth-clients.ts`, `OAUTH_ALLOWED_HOSTS` for more). Sign-in pages cannot be framed.
+- Sign-in and brand-switch redirects stay in Studio (`lib/safe-next.ts`).
+- Image links (kept links, partner logos, compose, outpaint) are fetched from public addresses only, every redirect checked (`lib/public-fetch.ts`); outpaint reads only template, library and brand files.
+- An archived design's file opens only for a signed-in session; legacy-signed direct links end on 2026-10-23.
+
+Gallery and team
+- Sets in a personal project (Only me) show to no one else, in any list.
+- Removing a member passes their designs, projects, images, folders, drafts, proposals and review comments to the admin who removes them; nothing is removed if a step fails.
+- A set link opens that set even when it is older than the first page; archived ones open in Archive. The gallery's next page is asked for again after a failure. Switching brand clears the other brand's local images and folders.
+
+Canvas
+- Edits land on the artboard they started on (typing, panel fields, outpaint, uploads); the panel's copy field keeps what was typed when another layer is picked.
+- Drafts: one per format on its way at a time, the rest sent when leaving the page; a save waits for drafts in flight. Another tab's draft is merged, Claude's "looking" updates change nothing, and Canvas catches up after a reconnect or a hidden tab. Typing in place survives an edit arriving mid-sentence.
+- Tablets: properties in a bottom sheet, one-finger pan on the empty canvas, two-finger pan and pinch. Pan and zoom no longer re-render the editor.
+- Keys work after a panel button; a cancelled drag ends where it was; Space never sticks; holding an arrow is one history step. A failed page script or fill request is tried again.
+- Faster images (parallel draws, decode cache, WebP template images, stable upload addresses), editable explorations, instant typed copy (health pass).
+
+MCP
+- `render` checks every format's essential content before drawing anything (no format saved behind an error); an unknown template, format, slot, design or theme is said as such.
+- Canvas tells Studio which design is open; `get_canvas` / `edit_canvas` / `save_canvas` without a piece use it (seen within 3 minutes) or ask for the link (migration `20261027000000_canvas_open`).
+- Previews as JPEG (about 5–8× lighter); compact JSON; links explained once per answer.
+- AI images time out (90 s; placeholders 45 s); identical `fill_around` extensions are made once; Pixel Tone capped at about 8 MP; `list_assets` searches the whole library.
+- Linked images are told apart by their meaningful query (Drive files no longer share one); the renderer spares a busy browser and relaunches once.
+- `match_templates` takes the formats to render and asks for every photo they draw (a cover's own photos only with the cover).
+- Guidance: a self-contained summary within the first 2048 characters Claude Code shows, each rule once; exploration design rules live in the brand kit; render notes ignored framing; the placeholder note mentions `request_photos`.
+
 ## archy-studio 0.20.6 (2026-10-10)
 
 - Docs, Connect Claude: **Update the plugin** (Claude app: Customize → Plugins → Check for updates, or Sync automatically; terminal: `claude plugin marketplace update archy-studio` then `claude plugin update archy-studio@archy-studio`, or auto-update from `/plugin`) and **If the plugin is not enabled** (remove it and its marketplace, install fresh and sign in again with `/mcp`). Rules' troubleshooting links to it.

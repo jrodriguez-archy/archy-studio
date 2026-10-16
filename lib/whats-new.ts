@@ -6,6 +6,17 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.21.0', date: '2026-10-15', title: 'Safer, steadier, and Canvas on tablets',
+    notes: [
+      'Canvas never loses an edit: what you type stays on its own format, two tabs or Claude editing at the same time are merged, and leaving the page keeps your last change.',
+      'Canvas works on a tablet: the properties come up from the bottom, and two fingers move and zoom the canvas.',
+      'Designs in a personal project (Only me) are now only yours.',
+      'When someone leaves the team, their designs, projects and images pass to the admin who removes them.',
+      'Claude edits the design you have open in Canvas right now, asks for every photo a design needs, and answers faster.',
+      'Several security fixes, including how Claude connects to Studio.',
+    ],
+  },
+  {
     version: '0.20.6', date: '2026-10-10', title: 'Update and reinstall the plugin',
     notes: [
       'Docs → Connect Claude now shows how to update the plugin in Claude, and how to have it update on its own.',

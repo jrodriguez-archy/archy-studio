@@ -231,7 +231,8 @@
       const head = runs.reduce((a, t) => (parseFloat(t.cs.fontSize) > parseFloat(a.cs.fontSize) ? t : a));
       const size = parseFloat(head.cs.fontSize);
       const wide = Math.max(...head.lines.map((ln) => ln.width));
-      if (size < opts.minHeadline) err(head.el, 'headline-size', `The headline "${head.text.slice(0, 30)}" is ${Math.round(size)} px; on this format it starts at ${Math.round(opts.minHeadline)} px. Type runs bigger than feels safe.`);
+      // A quiet headline is a choice (a paragraph or a quote as the hero): said, never refused.
+      if (size < opts.minHeadline) warn(head.el, 'headline-size', `The largest copy ("${head.text.slice(0, 30)}") reads small for a scroll-stopper. Archy type usually runs bigger than feels safe; when the copy itself is the hero (a monologue, a quote), keep it and give it air.`);
       else {
         // Its column: the block it sits in, never wider than the safe area.
         const col = Math.min(safe.right - safe.left, head.el.parentElement && head.el.parentElement !== r ? head.el.parentElement.getBoundingClientRect().width : Infinity);

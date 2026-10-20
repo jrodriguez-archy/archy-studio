@@ -1,6 +1,6 @@
 # Archy brand kit for explorations
 
-An exploration is a new Archy design for a brief no template covers. It is not an approved template: it goes to the gallery labelled Exploration and Design reviews it. It must still look unmistakably Archy, so the type, colours, logo and textures below are the only ones you use. The guides bend when the design needs it; the hard rules do not.
+An exploration is a new Archy design for a brief no template covers. It is not an approved template: it goes to the gallery labelled Exploration and Design reviews it. It must still look unmistakably Archy, so the type, colours, logo and textures below are the only ones you use. Nothing here stops a design: every format is saved, and the check reads it back as a designer would. The strong guides are what make a piece Archy; bend one only when the design intent asks for it, and say why.
 
 ## How you build one
 
@@ -8,22 +8,22 @@ You write the artboard's content as HTML with inline styles (double-quoted attri
 
 **A reference in the brief** (a mock-up the requester made, or an image from another generator, with other fonts and colours) is the idea, not the design: take its message, its composition and the kind of image, and rebuild it with this kit (type, colours, logo, textures, pieces, the real product) and its rules. Never copy its fonts, colours, logos or made-up text. Where it shows a photo or the product, use the real thing: a team photo, `generate_image`, or a product screen below.
 
-## Hard rules (the check refuses the design otherwise)
+## Strong guides (the check names these first)
 
 1. **The Archy logo appears once**, as `<div data-piece="logo" style="width: 234px"></div>` (height follows, 18:7), at least 200 px wide on a 1080 piece (scaled with the format). Never draw or type it. **It has its own air**: nothing (text, icon, button, pill, a small photo) within half its height all around; it usually anchors the other end of the piece from the headline. It is white on dark and blue grounds and Royal Blue 500 on white and light grounds: add `data-on="light"` on a light ground. Partner logos are images (`data-image`).
 2. **Type is Onest (headings, `var(--font-heading)`) and Inter (body, `var(--font-body)`)**, nothing else.
 3. **No text is cut off or outside the artboard**, and no text overlaps other text.
-4. **The headline runs big**: at least 110 px on a 1080 piece (about 60 on a banner or an email header), and bigger when it has room.
+4. **The headline runs big**: bigger than feels safe, taking the room it has. When the copy itself is the hero (a monologue, a quote, a long line read as a voice), the paragraph is the design: set it large for a paragraph, with generous leading and air, and keep the rest quiet.
 5. **Text reads**: contrast at least 3:1 with what it sits on (4.5:1 under 24 px), the logo too.
 6. **Text over a photo sits on a scrim** (below): a gradient from the colour opposite the text to transparent, toward where the copy is. A solid block (a pill, a button) also carries text, and so does a calm, even part of the image that already reads (a clear dark sky, the inside of an open mouth), as long as the copy touches nothing else.
 7. **A generated image is the subject**: it fills the whole artboard. A large photo never stops across the piece with a hard line: it runs to the edges, or that edge blends into the ground under a scrim.
 8. **No holes**: without an image, the type is the design and holds the centre of the piece.
 9. **A person is the subject**: a cut-out person is big (from the chest or waist down) and bleeds off the bottom edge, never floating.
 10. **Sky (`--color-sky-blue-400`) is never a ground**: not as a background, a block's fill or a pixel gradient. It stays an accent (an icon, a label on dark, a few cells).
-11. **Nothing smaller than 18 px** on a 1080-wide piece (scale it with the width).
+11. **Small copy stays readable on a phone**: the smallest line is still easy to read at feed size.
 12. **No invented facts**: dates, prices, names, numbers come from the brief. All copy is US English.
 
-## Guides (warnings, not refusals)
+## Guides
 
 - Keep text and logo inside the safe area of the format.
 - Colours only from the tokens below.
@@ -35,6 +35,7 @@ Every exploration is one of these. Decide which before you write it.
 
 - **Image-led**: a photo (real or generated) fills the artboard and is the subject. The copy goes on its calm part, on a scrim, toward one side or edge. No bands that start mid-piece, no empty ground beside the photo.
 - **Typographic**: no photo, or only a quiet texture. The headline is the design: big enough to hold the centre (often 140–200 px on a 1080 post), on a colour ground, a pixel gradient, or a Pixel Tone place as atmosphere behind it.
+- **Copy-led** (a typographic piece where a paragraph is the hero: a monologue, a quote, a list read as a voice): a short kicker, the paragraph large and calm in a panel or on the ground, a sign-off, the logo with its air. The paragraph holds the centre the way a headline would.
 
 A person with Pixel Dissolve or Pixels Behind (below) is image-led too: the person is the subject.
 

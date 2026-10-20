@@ -51,6 +51,10 @@ export type Exploration = { html: string; width: number; height: number; brand?:
 // How far "smaller text" lets copy shrink (the design's own floor is usually 85%).
 export const SMALLER_TEXT = 0.7;
 
+// Essential copy that was not given, printed as what it stands for: "event-name" → "[Event name]".
+export const textPlaceholder = (slot: string) => `[${slot.charAt(0).toUpperCase()}${slot.slice(1).replace(/-/g, ' ')}]`;
+export const isTextPlaceholder = (v: string | null | undefined) => !!v && /^\[[^\]]+\]$/.test(v);
+
 export class MissingRequired extends Error {
   constructor(public slots: string[]) {
     super(`Missing required: ${slots.join(', ')}`);
@@ -85,6 +89,17 @@ export async function prepareFill({ template, format, design, theme, slots: give
     const v = given[k];
     slots[k] = v != null && v !== '' ? v : k in given || !fillDefaults ? null : sampleOf(k);
   }
+  // Everything not marked optional is essential: a template never goes out half empty.
+  const optional = new Set(config.optional ?? []);
+  // Essential copy nobody gave never holds a design back either: it prints as a visible placeholder
+  // ("[Date]") to be filled in Canvas or in the next render. Lines derived from it follow it.
+  if (!fillDefaults) {
+    const derived = Object.entries(config.derive ?? {});
+    for (const [k, s] of Object.entries(manifest.slots)) {
+      if (s.type !== 'text' || slots[k] || optional.has(k) || config.derive?.[k]) continue;
+      if (slotInFormat(manifest, k, fileKey) || derived.some(([t, d]) => d.from === k && slotInFormat(manifest, t, fileKey))) slots[k] = textPlaceholder(k);
+    }
+  }
   for (const [k, d] of Object.entries(config.derive ?? {})) {
     const src = slots[d.from];
     // A headline split follows the event's own headline even where the format has a sample of its own.
@@ -93,9 +108,7 @@ export async function prepareFill({ template, format, design, theme, slots: give
     slots[k] = d.line != null ? splitHeadline(src)[d.line] : (d.firstWord ? src.trim().split(/\s+/)[0] : src) + (d.suffix ?? '');
   }
   // The booth in the shape this format prints it ("#1039" or "Booth #1039").
-  if (slots.booth && manifest.slots.booth) slots.booth = boothLike(slots.booth, sampleOf('booth'));
-  // Everything not marked optional is essential: a template never goes out half empty.
-  const optional = new Set(config.optional ?? []);
+  if (slots.booth && manifest.slots.booth && !isTextPlaceholder(slots.booth)) slots.booth = boothLike(slots.booth, sampleOf('booth'));
   const missingEssential = Object.keys(manifest.slots).filter((k) => !optional.has(k) && !slots[k] && slotInFormat(manifest, k, fileKey));
   // A missing photo never holds a design back: a neutral placeholder takes its place until the real one
   // comes (the MCP's render brings one closer to the brief first; see lib/placeholders.ts).

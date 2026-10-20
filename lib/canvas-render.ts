@@ -11,7 +11,7 @@ import { replaceRender, saveRender, storeExport } from './renders';
 
 type Who = { id: string; is_admin: boolean };
 
-// Render the edited piece at 2x. Copy that does not fit is refused, as in the MCP.
+// Render the edited piece at 2x.
 async function renderEdited(piece: PieceSource, slots: Record<string, string | null>, edits: Edits) {
   // Nothing blocks a save: the Inspector suggests, the person decides.
   return render({ template: piece.template, format: piece.format, design: piece.design, theme: piece.theme, smallerText: !!piece.smaller_text, slots: pick(piece, slots), edits: cleanEdits(edits), scale: 2, exploration: explorationOf(piece) });

@@ -3,6 +3,7 @@ import { verifyMcpToken } from '@/lib/mcp-auth';
 import { z } from 'zod';
 import { editCanvas, getCanvas, saveCanvas } from '@/lib/canvas-claude';
 import { MissingRequired, prepareFill, render, renderComposition } from '@/lib/renderer';
+import { isTextPlaceholder } from '@/lib/fill';
 import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, compose, withStableIds } from '@/lib/compose';
 import { randomUUID } from 'node:crypto';
 import { findAsset, shortId } from '@/lib/asset-ids';
@@ -35,7 +36,7 @@ Core steps:
 3. Ask once, in one short message, for what is missing or would unlock a better template (the partner logo, the time). Never invent facts. Photos never hold a design back: templates with photos are made with placeholders close to the brief, and the real photos are asked for in that same message (photos_to_ask_for).
 4. With the answers, match_templates again and pick the best eligible template (offer two when equally good). Options are different templates, designs or themes, never the same design with other copy. None eligible: say what is missing; never force one.
 5. get_template for slots and limits, then render. Essential content is always filled; an optional detail you lack is left out.
-6. Copy that does not fit is not delivered: show both options (shorter copy within the maximum, or smaller text, then render with smaller_text: true) and let them choose.
+6. Copy that does not fit at the normal size is set smaller and delivered: say so and offer a shorter version you write (same facts, their wording) that keeps the normal size.
 7. Deliver: the images, the links, which template and why in one line, what was left out, which photos are placeholders. Pass "Set: <id>" as set to every later render of the same brief.
 All copy on designs in US English. "Explore", or no template fits: an exploration (get_brand_kit, then compose).
 
@@ -43,7 +44,7 @@ Templates:
 - No template for the kind of piece or size (a LinkedIn banner, a flyer, an email header), even when templates are eligible by their facts, or match_templates has nothing: offer the closest template adapted, in one line (closest_made_for_another_purpose, or a format they can use instead), and make it if they take it. If nothing is close or they decline, call report_missing_template once (Marketing & Design see what is asked for) and offer an exploration in the same message; never promise a date for a template. When they asked to explore, skip this.
 - A copy-only variation only when they ask for one, rendered without set so it stands on its own in the gallery.
 - An optional detail you lack is left out with its label (no time: the date stays alone).
-- Copy that does not fit: also offer a shorter version you write (same facts, their wording). Never deliver a render that did not fit. Short copy needs no padding: the design fills its room by itself (the headline takes the size and lines its room allows, the logo stays at the bottom); never add words to fill space. A headline on three or four big lines is right.
+- Nothing holds a design back: an essential detail still missing after you asked prints as a visible [placeholder] (say so; render again when it comes), and copy that runs long is set smaller. Short copy needs no padding: the design fills its room by itself (the headline takes the size and lines its room allows, the logo stays at the bottom); never add words to fill space. A headline on three or four big lines is right.
 - Designs and themes: some templates (list_templates shows them) come in several designs (layouts) and themes (White, Royal Blue, Navy) with the same slots. Use the default unless asked; for options render two or three designs (and themes when they ask about colour) in the same set and say which is which. get_template with the design and theme gives that combination's limits; some slots exist only in some designs (only_in_designs). Another design or theme of a design already made is a new render with the same facts and set, not a Canvas recolour.
 - Event page cover (1200×900, the Webflow event page thumbnail), a format of the event templates: never part of "all formats". After the social formats, offer it in one short line; if they want it, render formats: ["cover"] with the same facts, design, theme and set. It splits the headline in two and prints "Booth" with the number by itself; its own photos (a city or venue ground, on a few covers a guest photo) come as placeholders when the brief has none (ask for the real ones); its short cover-subhead is written from the brief, never the template's sample.
 - Projects (gallery folders, one per design): only when the requester names one ("save it in Chicago Midwinter"): list_projects and pass it to render; if it does not exist, create_project (shared with the team unless only for them). Never ask about projects otherwise.
@@ -60,7 +61,7 @@ Links: each format gives "Download (2x PNG)" (lasting, for people signed in to S
 
 Brands: Studio makes work for two brands that never mix. Archy (default) and DOC, the Dental Ownership Collective (ownership education for dentists; Archy appears on DOC only as its sponsor). When the brief is for DOC (it says DOC, Dental Ownership Collective, Foundations / Startup / Acquisition tracks), pass brand: "doc" to list_templates, match_templates, list_assets, list_projects and create_project. Never put an Archy template, image or project on a DOC brief or the other way round. DOC templates come in five themes (Foundations, Startup, Acquisition, Dark, Light); never invent a DOC figure, price, date or quote.
 
-Explorations (Archy only): a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it, without match_templates; otherwise it comes after the closest template. Call get_brand_kit once (its rules, guides and pieces are how an exploration is built: follow them), then compose each format as HTML in the kit. Start with the format they need; more only when asked. Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Look at every image as a designer would and fix what a designer would, and every hard problem the check reports, then compose again with the same set. Options are different compositions (image-led or typographic, ground, where the copy sits). Say which images are AI-generated, and plainly that it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design; a new layout, ground or format is a new compose with the same set.
+Explorations (Archy only): a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it, without match_templates; otherwise it comes after the closest template. Call get_brand_kit once (its rules, guides and pieces are how an exploration is built: follow them), then compose each format as HTML in the kit. Start with the format they need; more only when asked. Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Every format is saved; look at every image as a designer would, fix what a designer would (the check's notes are guides: the design intent wins), then compose again with the same set. Options are different compositions (image-led or typographic, ground, where the copy sits). Say which images are AI-generated, and plainly that it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design; a new layout, ground or format is a new compose with the same set.
 
 Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: get_canvas, then make the change yourself with edit_canvas (they watch it live and can undo it), referring to components by their id. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (its exact fixes) or your own change, and check again. Never tell the person how to do something by hand when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, in plain words. Change only what they ask: copy that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other while Canvas is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the brand logo (Archy logo, DOC lockup) can only be moved, aligned or scaled. save_canvas only when they ask.`;
 
@@ -294,7 +295,7 @@ const handler = createMcpHandler(
       'compose',
       {
         title: 'Compose an exploration',
-        description: 'Draw a new design in the brand kit for a brief no template covers (an exploration, not an approved template): you write each format as HTML (read get_brand_kit first), Studio puts in the real logo, icons, textures and images, renders it and checks it against the brand. A format that breaks a hard rule (the logo missing, too small or without its air, fonts, a small headline, text cut off or overlapping, text on a photo without a scrim, a generated image that does not fill the artboard, a photo cutting across the piece, a floating person, a hole in a typographic piece, Sky as a ground, contrast, tiny text) is shown with the problems and not saved: fix them and compose again. A format that passes goes to the gallery labelled Exploration, with its download links. Look at every image before showing it.',
+        description: 'Draw a new design in the brand kit for a brief no template covers (an exploration, not an approved template): you write each format as HTML (read get_brand_kit first), Studio puts in the real logo, icons, textures and images, renders it and reads it against the brand. Every format is saved in the gallery labelled Exploration, with its download links, and comes back with what a designer would still look at (the logo and its air, fonts, text cut off or overlapping, text that does not read on its ground, a photo cutting across the piece, a floating person, a hole, Sky as a ground…), the strongest first. These are guides, never refusals: fix what serves the design and compose again with the same set; when the intent asks for something else (a paragraph as the hero, a quiet headline), keep it. Look at every image before showing it.',
         inputSchema: z.object({
           title: z.string().min(3).max(80).describe('The design\'s name in the gallery, in English ("Spring webinar · LinkedIn banner").'),
           formats: z.array(z.object({
@@ -343,20 +344,16 @@ const handler = createMcpHandler(
             const checks = await checksFor(f.width, f.height, brand);
             const comp = await compose({ html: withStableIds(html), width: f.width, height: f.height, brand, title });
             const drawn = await renderComposition({ page: comp.page, images: comp.images, width: f.width, height: f.height, checks, scale: hiRes ? 2 : 1 });
-            const errors = [...comp.problems, ...drawn.report.errors.map((e) => e.message)];
-            const warnings = drawn.report.warnings.map((w) => w.message);
+            // Nothing the check finds holds a design back: the strongest notes first, then the softer ones.
+            const notes = [...comp.problems, ...drawn.report.errors.map((e) => e.message), ...drawn.report.warnings.map((w) => w.message)];
             const preview = await previewOf(drawn.png, DESIGN);
             out.push({ type: 'image', data: preview.toString('base64'), mimeType: 'image/jpeg' });
-            if (errors.length) {
-              out.push({ type: 'text', text: `${label}: not saved. Fix these and compose again:\n- ${errors.join('\n- ')}${warnings.length ? `\nAlso worth fixing:\n- ${warnings.join('\n- ')}` : ''}` });
-              return out;
-            }
             let links = '';
             if (hiRes) {
               const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: drawn.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html: withStableIds(html) });
               if (rec) { saved++; links = ` ${linksOf(origin, rec.id)}`; }
             }
-            out.push({ type: 'text', text: `${label}: ready, saved in the gallery as an Exploration.${links}${warnings.length ? `\nWorth fixing (guides, not refusals):\n- ${warnings.join('\n- ')}` : ''}` });
+            out.push({ type: 'text', text: `${label}: saved in the gallery as an Exploration.${links}${notes.length ? `\nA designer would still look at (guides, never refusals; fix what serves the design, keep what the intent asks for):\n- ${notes.join('\n- ')}` : ''}` });
           } catch (e) {
             out.push({ type: 'text', text: `${label}: ${(e as Error).message}` });
           }
@@ -598,13 +595,13 @@ const handler = createMcpHandler(
       'render',
       {
         title: 'Render a design',
-        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts. A missing photo never stops it: a placeholder photo close to the brief takes its place (a neutral silhouette for a person) and the answer lists them, to ask for the real ones. Copy that does not fit is not delivered: the answer gives two options, shorter copy (with the exact maximum) or smaller text (a preview at down to 70%), for the requester to choose.',
+        description: 'Fill a template with the information available and render it as PNG at the exact format size. Missing optional copy is left out and the layout adapts. A missing photo never stops it: a placeholder photo close to the brief takes its place (a neutral silhouette for a person) and the answer lists them, to ask for the real ones. Essential copy not given prints as a visible [placeholder] to fill later. Copy that does not fit at the normal size is set smaller (down to 70%) and delivered, and the answer says so, to offer a shorter version.',
         inputSchema: z.object({
           template: z.string().describe('Template id, e.g. "ae-spotlight"'),
           formats: z.array(z.string()).optional().describe('Formats to render, e.g. ["post", "stories"], or ["cover"] for the event page cover. Default: all but the cover.'),
           design: z.string().optional().describe('Design id, on templates that offer several (list_templates), e.g. "the-arch". Default: the template\'s default design.'),
           theme: z.string().optional().describe('Theme id, on templates that offer several (list_templates), e.g. "navy". Default: the template\'s default theme.'),
-          smaller_text: z.boolean().optional().describe('Only when the requester chose "smaller text" after a render said the copy does not fit: the copy keeps its wording and may shrink to 70% (never under 14px).'),
+          smaller_text: z.boolean().optional().describe('Set the copy smaller from the start (down to 70%, never under 14px), when the requester asks for it. Without it, copy that does not fit is set smaller anyway.'),
           slots: z.record(z.string(), z.string().nullable()).describe('Slot values you have. Text slots: the copy. Image slots: "asset:<id>" (the ID from Studio → Assets), an upload:<path> value from list_assets, or an https URL (a cutout PNG for a person). Leave out (or null) what you do not have.'),
           project: z.string().optional().describe('Project to file the designs in (name or id from list_projects). Only when the requester mentions one.'),
           set: z.string().optional().describe('Set id returned by an earlier render of the same brief. Pass it for every later render of that brief (other formats, retries, other templates or options) so the gallery stacks them together.'),
@@ -758,42 +755,39 @@ const handler = createMcpHandler(
             made.failed = `${files[format]?.label ?? format}: ${(e as Error).message}`;
             return made;
           }
+          // Copy that does not fit at the normal size never holds a design back: it is set smaller (down to
+          // 70%) and delivered, and the answer offers a shorter version that keeps the normal size.
+          let shrunkToFit = smallerText;
+          if (!out.report.ok && !smallerText) {
+            const small = await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText: true, scale: hiRes ? 2 : 1 }).catch((e) => { console.error(`smaller text ${template}/${format}`, e); return null; });
+            if (small) { out = small; shrunkToFit = true; }
+          }
           const { report, variant, slots: used } = out;
           const png = await previewOf(out.png, DESIGN);
-          if (!report.ok) {
-            made.refused = `${format}: ` + report.errors.map((e) => `${e.slot ?? e.node}: ${e.message}`).join(' | ');
-            // The other option: the same copy in smaller text. A preview only (not saved): the requester
-            // chooses, and "smaller text" renders again with smaller_text.
-            if (!smallerText) {
-              const small = await render({ template, format, design, theme, slots: fslots, edits: fedits, smallerText: true }).catch((e) => { console.error(`smaller text ${template}/${format}`, e); return null; });
-              if (small?.report.ok) {
-                const shrunk = Object.entries(small.report.slots).filter(([, x]) => x.scale && x.scale < 1).map(([k, x]) => `${k} at ${Math.round(x.scale! * 100)}%`);
-                made.content.push({ type: 'image', data: (await previewOf(small.png, DESIGN)).toString('base64'), mimeType: 'image/jpeg' });
-                made.content.push({ type: 'text', text: `${files[format]?.label ?? format}: the copy does not fit at the normal size. Option "smaller text" (preview above, not saved): it fits as written with ${shrunk.join(', ') || 'the type reduced'}.` });
-                made.smaller = format;
-              }
-            }
-            return made;
-          }
+          if (!report.ok) made.refused = `${format}: ` + report.errors.map((e) => `${e.slot ?? e.node}: ${e.message}`).join(' | ');
+          else if (shrunkToFit && !smallerText) made.smaller = format;
           // The 2x file goes to the shared gallery (Supabase) and the link is a signed download.
           // Without Supabase configured, the link re-renders the same piece (every decision explicit).
           const saved = hiRes
             ? await saveRender({
                 userId: userIdOf(ctx), template, format, slots: used, png: out.png, width: out.width, height: out.height, scale: 2, projectId, setId, variant: out.variant,
-                design: out.design, theme: out.theme, smallerText, ...(Object.keys(fedits).length ? { edits: fedits } : {}),
+                design: out.design, theme: out.theme, smallerText: shrunkToFit, ...(Object.keys(fedits).length ? { edits: fedits } : {}),
               })
             : null;
           // Saved: links that last (for people signed in to Studio) until the design is archived or deleted.
           let links: string;
           if (saved) { links = linksOf(origin, saved.id); made.saved = true; }
           else {
-            const q = new URLSearchParams({ template, format, scale: '2', ...(combo ? { design: combo.design, theme: combo.theme } : {}), ...(smallerText ? { smaller_text: '1' } : {}) });
+            const q = new URLSearchParams({ template, format, scale: '2', ...(combo ? { design: combo.design, theme: combo.theme } : {}), ...(shrunkToFit ? { smaller_text: '1' } : {}) });
             for (const [k, v] of Object.entries(used)) q.set(`slot.${k}`, v ?? '');
             links = `Download (2x PNG): ${origin}/api/render?${q.toString()}`;
           }
           const notes: string[] = [];
           if (combo) notes.push(`${m.designs![combo.design].label} design, ${m.themes![combo.theme].label} theme`);
           if (smallerText) notes.push('smaller text, as chosen');
+          else if (shrunkToFit) notes.push(report.ok ? 'copy set smaller to fit as written' : 'copy set smaller and still runs over its room');
+          const pending = Object.entries(used).filter(([k, v]) => m.slots[k]?.type === 'text' && isTextPlaceholder(v)).map(([k, v]) => `${k} ${v}`);
+          if (pending.length) notes.push(`placeholder copy, not given yet: ${pending.join(', ')}`);
           if (variant) notes.push(`${m.variants?.[variant]?.label ?? variant} version`);
           const derived = Object.entries(used).filter(([k, v]) => v && !fslots[k] && m.slots[k].type === 'text').map(([k, v]) => `${k} "${v}" (derived)`);
           if (derived.length) notes.push(...derived);
@@ -839,21 +833,15 @@ const handler = createMcpHandler(
           if (!content.length && !refused.length && !coverNeeds) return { isError: true, content: [{ type: 'text', text: `Could not render: ${failed.join(' | ')}. Try again in a moment.` }] };
           content.push({ type: 'text', text: `Not made this time (a server error, not the copy): ${failed.join(' | ')}. Render only ${failed.length > 1 ? 'those formats' : 'that format'} again, with the same set.` });
         }
-        if (refused.length) {
-          content.push({ type: 'text', text: [
-            'Not rendered: the copy does not fit at the normal size. Give the requester the options and let them choose (never pick for them):',
-            `- Shorter copy: rewrite it within the maximum, same facts, and render again.\n${refused.join('\n')}`,
-            smallerOption.length
-              ? `- Smaller text (${smallerOption.join(', ')}): keeps the copy as written; the preview is above. If they choose it, render again with smaller_text: true.`
-              : '- Smaller text does not make it fit either: only shorter copy works here.',
-          ].join('\n') });
-        }
+        if (smallerOption.length) content.push({ type: 'text', text: `Copy set smaller to fit as written (${smallerOption.join(', ')}). Delivered as it is; also offer a shorter version you write (same facts, their wording) that keeps the normal size.` });
+        if (refused.length) content.push({ type: 'text', text: `Delivered, but the copy still runs over its room even at the smallest size; say so and offer a shorter version within these limits (same facts), rendered with the same set:\n${refused.join('\n')}` });
+        if (content.some((c) => c.type === 'text' && c.text.includes('placeholder copy, not given yet'))) content.push({ type: 'text', text: 'Copy in [brackets] is a placeholder for an essential detail nobody gave yet: ask for it, then render again with the same set (or fill it in Canvas).' });
         if (coverNeeds) content.push({ type: 'text', text: `Cover not made: it needs ${coverNeeds.join(', ')} (the event page cover's own copy). Ask the requester for it, then render formats: ["cover"] with the same set.` });
         if (extendNotes.length) content.push({ type: 'text', text: extendNotes.join('\n') });
         if (placeholders.length && content.some((c) => c.type === 'image')) content.push({ type: 'text', text: placeholderNote(placeholders) });
         if (results.some((r) => r.saved)) content.push({ type: 'text', text: LINKS_NOTE });
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later render of this brief so the designs stay together in the gallery).` });
-        return { isError: refused.length + (coverNeeds ? 1 : 0) === wanted.length && !smallerOption.length, content };
+        return { isError: !results.some((r) => r.content.length), content };
       },
     );
   },

@@ -1,5 +1,9 @@
 # Changelog
 
+## archy-studio 0.21.1 (2026-10-20)
+
+- Night Out Scorecard, Stories: synced from Paper (Content at 432 px with an 84 px gap; smaller bowling pins, set higher). The headline now takes up to 3 lines (16 characters per line); the content closes up and the button stays 367 px from the bottom.
+
 ## archy-studio 0.21.0 (2026-10-15)
 
 Security

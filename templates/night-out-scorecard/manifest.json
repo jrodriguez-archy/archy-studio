@@ -108,7 +108,7 @@
         },
         "stories": {
           "maxCharsPerLine": 16,
-          "maxLines": 2,
+          "maxLines": 3,
           "fontSize": {
             "max": 116,
             "min": 99

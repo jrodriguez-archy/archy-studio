@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Alert02Icon, CheckmarkCircle02Icon, Comment01Icon, Copy01Icon, Delete02Icon, Task01Icon } from '@hugeicons/core-free-icons';
+import { Alert02Icon, CheckmarkCircle02Icon, Comment01Icon, Copy01Icon, Delete02Icon, PaintBoardIcon, Task01Icon } from '@hugeicons/core-free-icons';
 import { toast } from 'sonner';
 import { Inspector, useInspector } from '@/components/inspector';
 import { addCommentAction, deleteCommentAction, moveCommentAction, pasteCommentsAction, setStatusAction } from '@/app/(app)/admin/review/actions';
@@ -23,15 +23,17 @@ const caseOf = (c: string): CaseKey => (c.startsWith('theme:') ? 'theme' : (c as
 const caseLabel = (c: string) => (c.startsWith('theme:') ? `${c.slice(6, 7).toUpperCase()}${c.slice(7)} theme` : CASES.find(([k]) => k === c)?.[1] ?? c);
 
 // Template review: a row per template with its formats side by side, one case at a time. A click opens
-// the design large: approve it, or click on it to leave a comment on that spot.
+// the design large: approve it, or click on it to leave a comment on that spot. Exploration rounds: a
+// row per set (all its formats), no cases.
 export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRound[]; round: ReviewRound; items: ReviewItem[] }) {
   const [items, setItems] = useState(given);
   useEffect(() => setItems(given), [given]);
+  const explore = round.kind === 'exploration';
   const [tab, setTab] = useState<CaseKey>('realistic');
   const [filter, setFilter] = useState<ReviewStatus | 'all'>('all');
   const counts = useMemo(() => items.reduce((a, i) => ({ ...a, [i.status]: (a[i.status] ?? 0) + 1 }), {} as Record<string, number>), [items]);
   const order = useMemo(() => [...new Set(items.map((i) => i.template))].sort((a, b) => items.find((i) => i.template === a)!.title.localeCompare(items.find((i) => i.template === b)!.title)), [items]);
-  const shown = items.filter((i) => caseOf(i.case) === tab && (filter === 'all' || i.status === filter));
+  const shown = items.filter((i) => (explore || caseOf(i.case) === tab) && (filter === 'all' || i.status === filter));
   const ids = order.flatMap((t) => shown.filter((i) => i.template === t).map((i) => i.id));
   const { openId, open, close, step } = useInspector('item', ids);
   const current = items.find((i) => i.id === openId) ?? null;
@@ -47,7 +49,7 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
       <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-3">
         <div className="flex items-center gap-1.5">
           {rounds.slice(0, 8).map((r) => (
-            <Link key={r.id} href={`/admin/review?round=${r.id}`} title={r.note ?? undefined}
+            <Link key={r.id} href={`/admin/review?${explore ? 'kind=exploration&' : ''}round=${r.id}`} title={r.note ?? undefined}
               className={`flex h-7 items-center rounded-md px-2.5 ${r.id === round.id ? 'bg-foreground text-background' : 'bg-foreground/[0.05] text-foreground/70 hover:bg-foreground/[0.09]'}`}>Round {r.number}</Link>
           ))}
         </div>
@@ -62,12 +64,14 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
       </div>
       {round.note && <p className="-mt-2 mb-5 max-w-3xl text-foreground/55">{round.note}</p>}
 
-      <div className="mb-6 inline-grid h-8 grid-flow-col items-center gap-0.5 rounded-md bg-foreground/[0.05] p-0.5">
-        {CASES.map(([k, label]) => (
-          <button key={k} type="button" onClick={() => setTab(k)}
-            className={`h-7 rounded-[5px] px-3 ${tab === k ? 'bg-background font-medium shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/55 hover:text-foreground'}`}>{label}</button>
-        ))}
-      </div>
+      {!explore && (
+        <div className="mb-6 inline-grid h-8 grid-flow-col items-center gap-0.5 rounded-md bg-foreground/[0.05] p-0.5">
+          {CASES.map(([k, label]) => (
+            <button key={k} type="button" onClick={() => setTab(k)}
+              className={`h-7 rounded-[5px] px-3 ${tab === k ? 'bg-background font-medium shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/55 hover:text-foreground'}`}>{label}</button>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-8">
         {order.map((t) => {
@@ -78,6 +82,7 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
             <section key={t}>
               <div className="mb-2.5 flex items-baseline gap-2">
                 <h2 className="text-[15px] font-medium">{row[0].title}</h2>
+                {row[0].exploration?.requester && <span className="text-foreground/60">{row[0].exploration.requester}</span>}
                 <span className="text-foreground/40">{all.filter((i) => i.status === 'approved').length}/{all.length} approved</span>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
@@ -95,7 +100,8 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
                     </div>
                     <p className="mt-1.5 flex items-center gap-1.5 text-foreground/60">
                       <span className={`size-1.5 rounded-full ${STATUS[i.status].dot}`} />
-                      {tab === 'theme' ? caseLabel(i.case) : i.formatLabel}{i.prev?.url ? <span className="text-foreground/35">· updated</span> : null}
+                      {!explore && tab === 'theme' ? caseLabel(i.case) : i.formatLabel}{i.prev?.url ? <span className="text-foreground/35">· updated</span> : null}
+                      {i.exploration?.after ? <span className="text-[#047A43]">· corrected</span> : null}
                     </p>
                   </button>
                 ))}
@@ -107,7 +113,7 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
       </div>
 
       {current && (
-        <Viewer key={current.id} item={current} onClose={close} onStep={step} onPatch={patch} clip={clip} setClip={setClip}
+        <Viewer key={current.id} item={current} onClose={close} onStep={step} onPatch={patch} clip={clip} setClip={setClip} onOpen={open}
           siblings={items.filter((i) => i.template === current.template && i.case === current.case && i.id !== current.id)} />
       )}
     </div>
@@ -117,10 +123,18 @@ export function ReviewBoard({ rounds, round, items: given }: { rounds: ReviewRou
 type Patch = (id: string, p: Partial<ReviewItem> | ((i: ReviewItem) => Partial<ReviewItem>)) => void;
 const comment = (id: string, body: string, x: number | null, y: number | null) => ({ id, body, x, y, author: 'You', created_at: new Date().toISOString(), resolved_at: null, resolution: null });
 
-function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch }: {
+function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch, onOpen }: {
   item: ReviewItem; siblings: ReviewItem[]; clip: Clip | null; setClip: (c: Clip | null) => void;
-  onClose: () => void; onStep: (d: 1 | -1) => void; onPatch: Patch;
+  onClose: () => void; onStep: (d: 1 | -1) => void; onPatch: Patch; onOpen: (id: string) => void;
 }) {
+  const ex = item.exploration;
+  // Explorations: the brief's reference and the Canvas correction, next to the original.
+  const extras = ex ? [ex.reference ? { key: 'ref', label: 'Reference', url: ex.reference, ratio: null as number | null } : null, ex.after ? { key: 'after', label: 'Corrected', url: ex.after.url, ratio: ex.after.width / ex.after.height } : null].filter(Boolean) as { key: string; label: string; url: string; ratio: number | null }[] : [];
+  const [compare, setCompare] = useState(true);
+  const side = compare ? extras : [];
+  const GAP = Math.round(item.height * 0.04);
+  const paneW = (e: { ratio: number | null }) => Math.round(item.height * (e.ratio ?? item.width / item.height));
+  const stageW = item.width + side.reduce((w, e) => w + GAP + paneW(e), 0);
   const [busy, start] = useTransition();
   // The same comment on the other formats of this template (remembered).
   const [also, setAlsoState] = useState(false);
@@ -194,7 +208,7 @@ function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch }: {
     <Inspector
       onClose={onClose}
       onStep={onStep}
-      eyebrow={`${item.formatLabel} · ${caseLabel(item.case)}`}
+      eyebrow={ex ? [item.formatLabel, ex.requester].filter(Boolean).join(' · ') : `${item.formatLabel} · ${caseLabel(item.case)}`}
       title={item.title}
       info={
         <div className="space-y-5">
@@ -208,6 +222,27 @@ function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch }: {
               Needs work <kbd className="text-[10px] opacity-50">N</kbd>
             </button>
           </div>
+
+          {ex && (
+            <div className="space-y-2.5">
+              {ex.canvas && (
+                <Link href={ex.canvas} target="_blank" className="flex h-8 items-center justify-center gap-1.5 rounded-md bg-foreground/[0.05] font-medium hover:bg-foreground/[0.09]">
+                  <HugeiconsIcon icon={PaintBoardIcon} className="size-3.5" /> Open in Canvas
+                </Link>
+              )}
+              {siblings.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]">
+                  {siblings.map((s) => (
+                    <button key={s.id} type="button" onClick={() => onOpen(s.id)} title={s.formatLabel} className="group shrink-0 text-left">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={s.thumb} alt="" style={{ height: 56, width: (56 * s.width) / s.height }} className="rounded-[3px] bg-foreground/[0.04] object-cover ring-1 ring-foreground/[0.06] group-hover:ring-primary/50" />
+                      <p className="mt-1 text-[11px] text-foreground/50">{s.formatLabel}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div>
             <p className="mb-1.5 text-[11px] font-medium tracking-[0.02em] text-foreground/40">{pin ? 'Comment on the marked spot' : 'Click on the design to point at something, or just write'}</p>
@@ -278,7 +313,7 @@ function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch }: {
             </div>
           )}
 
-          <details className="text-foreground/55">
+          {!ex && <details className="text-foreground/55">
             <summary className="cursor-default text-[11px] font-medium tracking-[0.02em] text-foreground/40">Engine report</summary>
             <div className="mt-2 space-y-1">
               <p>{item.report.ok === false ? 'Some copy does not fit:' : 'All copy fits.'}</p>
@@ -287,18 +322,27 @@ function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch }: {
               {!!item.report.trimmed?.length && <p>Written shorter to fit (as Claude would): {item.report.trimmed.join(' · ')}</p>}
               {item.report.review?.map((r, i) => <p key={i}>· Inspector: {r.title}</p>)}
             </div>
-          </details>
+          </details>}
         </div>
       }
       stage={
-        <ZoomStage width={item.width} height={item.height}
-          top={item.prev?.url ? (
+        <ZoomStage width={stageW} height={item.height}
+          top={extras.length ? (
+            <div className="inline-grid h-7 grid-flow-col items-center gap-0.5 rounded-md bg-background/80 p-0.5 text-[12px] shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">
+              {[[false, 'Original'], [true, extras.map((e) => e.label).join(' + ')]].map(([b, label]) => (
+                <button key={String(b)} type="button" onClick={() => setCompare(b as boolean)} className={`h-6 rounded-[4px] px-2.5 ${compare === b ? 'bg-foreground text-background' : 'text-foreground/60'}`}>{label}</button>
+              ))}
+            </div>
+          ) : item.prev?.url ? (
             <div className="inline-grid h-7 grid-flow-col items-center gap-0.5 rounded-md bg-background/80 p-0.5 text-[12px] shadow-[0_0_0_1px_rgba(0,0,0,0.06)]">
               {[[true, 'Before'], [false, 'After']].map(([b, label]) => (
                 <button key={String(label)} type="button" onClick={() => setBefore(b as boolean)} className={`h-6 rounded-[4px] px-2.5 ${before === b ? 'bg-foreground text-background' : 'text-foreground/60'}`}>{label}</button>
               ))}
             </div>
           ) : null}>
+          <div className="flex size-full" style={{ gap: `${(GAP / stageW) * 100}%` }}>
+          <div className="relative h-full shrink-0" style={{ width: `${(item.width / stageW) * 100}%` }}>
+          {side.length > 0 && <span className="absolute -top-6 left-0 text-[12px] text-foreground/55">Original</span>}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={before && item.prev?.url ? item.prev.url : item.url} alt="" draggable={false}
             onClick={(e) => { if (before) return; const r = e.currentTarget.getBoundingClientRect(); setPin({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }); box.current?.focus(); }}
@@ -312,6 +356,15 @@ function Viewer({ item, siblings, clip, setClip, onClose, onStep, onPatch }: {
               <span className="absolute inset-0 rounded-full bg-[#3DF5B0] ring-2 ring-[#00004E] shadow-[0_2px_8px_rgba(0,0,0,0.35)]" />
             </span>
           )}
+          </div>
+          {side.map((e) => (
+            <div key={e.key} className="relative h-full shrink-0" style={{ width: `${(paneW(e) / stageW) * 100}%` }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={e.url} alt={e.label} draggable={false} className={`size-full rounded-[3px] ${e.ratio ? '' : 'object-contain'} shadow-[0_1px_3px_rgba(0,0,0,0.08),0_24px_60px_-24px_rgba(0,0,0,0.35)]`} />
+              <span className="absolute -top-6 left-0 text-[12px] text-foreground/55">{e.label}</span>
+            </div>
+          ))}
+          </div>
         </ZoomStage>
       }
     />

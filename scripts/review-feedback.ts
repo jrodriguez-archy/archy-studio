@@ -2,11 +2,13 @@
 // marked), and resolving them once fixed.
 //
 //   … npx tsx scripts/review-feedback.ts                      list open comments (latest round)
+//   … npx tsx scripts/review-feedback.ts --kind exploration   the latest exploration round
 //   … npx tsx scripts/review-feedback.ts --pins <dir>         also save each commented image with its pins drawn
 //   … npx tsx scripts/review-feedback.ts --resolve <id,id> --note "fit.js: …"
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
+import { missingColumn } from '../lib/explore-round';
 import { supabaseAdmin } from '../lib/supabase/admin';
 
 const arg = (name: string) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : undefined; };
@@ -21,7 +23,11 @@ async function main() {
     console.log(`Resolved ${ids.length}.`);
     process.exit(0);
   }
-  const { data: round } = await db.from('review_rounds').select('id, number').order('number', { ascending: false }).limit(1).single();
+  // --kind exploration: the latest exploration round (default: templates).
+  const kind = arg('kind') ?? 'template';
+  const latest = (byKind: boolean) => { const q = db.from('review_rounds').select('id, number'); return (byKind ? q.eq('kind', kind) : q).order('number', { ascending: false }).limit(1).single(); };
+  let { data: round, error: roundError } = await latest(true);
+  if (missingColumn(roundError) && kind === 'template') ({ data: round } = await latest(false));
   const { data: items } = await db.from('review_items').select('id, template, format, case, status, storage_path, width, height').eq('round_id', round!.id);
   const byId = new Map((items ?? []).map((i) => [i.id, i]));
   const { data: comments } = await db.from('review_comments').select('id, item_id, body, x, y, created_at').in('item_id', [...byId.keys()]).is('resolved_at', null).order('created_at');
@@ -30,7 +36,7 @@ async function main() {
   const pins = arg('pins');
   if (pins) await mkdir(pins, { recursive: true });
   const groups = new Map<string, NonNullable<typeof comments>>();
-  for (const c of comments ?? []) { const it = byId.get(c.item_id)!; const k = it.template; groups.set(k, [...(groups.get(k) ?? []), c]); }
+  for (const c of comments ?? []) { const it = byId.get(c.item_id)!; const k = it.template === 'exploration' ? it.case : it.template; groups.set(k, [...(groups.get(k) ?? []), c]); }
   for (const [template, list] of groups) {
     console.log(`## ${template}`);
     // The same comment on several formats (written once with "Same for…", or pasted) is one finding.
@@ -50,7 +56,7 @@ async function main() {
         const marks = list.filter((c) => c.item_id === itemId && c.x != null).map((c, n) =>
           `<g><circle cx="${c.x! * width}" cy="${c.y! * height}" r="${width / 40}" fill="#F2385A" stroke="white" stroke-width="${width / 300}"/><text x="${c.x! * width}" y="${c.y! * height + width / 110}" font-size="${width / 32}" font-family="sans-serif" font-weight="700" fill="white" text-anchor="middle">${n + 1}</text></g>`).join('');
         const out = await img.composite([{ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">${marks}</svg>`) }]).png().toBuffer();
-        await writeFile(path.join(pins, `${it.template}-${it.format}-${it.case.replace(':', '-')}.png`), out);
+        await writeFile(path.join(pins, `${it.template}-${it.format}-${it.case.replace(/[^a-z0-9]+/gi, '-').slice(0, 60)}.png`), out);
       }
     }
     console.log('');

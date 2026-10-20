@@ -50,4 +50,27 @@ describe('MCP answers', () => {
     expect(all).toContain('fill_around for image-ae ignored');
     expect(all).toContain('request_photos');
   });
+
+  it('nothing holds a design back: a missing date prints [Date], long copy is set smaller and delivered', async () => {
+    const r = await call('render', {
+      template: 'night-out-venue', formats: ['post'],
+      slots: { headline: 'An Unforgettable Evening of Dinner, Drinks and Conversation for Every Dentist in the Greater Phoenix Metropolitan Area', city: 'Phoenix, AZ', venue: 'The Henry' },
+    });
+    const all = texts(r).join('\n');
+    expect(r.isError).toBeFalsy();
+    expect(all).toContain('Download (2x PNG)');
+    expect(all).toContain('date [Date]');
+    expect(all).toMatch(/copy set smaller/);
+    expect(all).not.toContain('Not rendered');
+  });
+
+  it('compose saves every format, with notes instead of refusals', async () => {
+    const html = '<div data-name="Content" style="position: absolute; left: 90px; top: 90px; width: 900px"><div data-name="Monologue" style="font: 500 40px/52px var(--font-body); color: var(--color-blue-tint-800)">monday, 8:02 am. the EOBs are in.</div></div><div data-piece="logo" data-on="light" data-name="Logo Archy" style="position: absolute; right: 90px; bottom: 90px; width: 220px"></div>';
+    const r = await call('compose', { title: 'Monologue test', formats: [{ name: 'square', width: 1080, height: 1080, html }] });
+    const all = texts(r).join('\n');
+    expect(r.isError).toBeFalsy();
+    expect(all).toContain('saved in the gallery as an Exploration');
+    expect(all).toContain('A designer would still look at');
+    expect(all).not.toContain('not saved');
+  });
 });

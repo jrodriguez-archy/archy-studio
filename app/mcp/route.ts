@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { editCanvas, getCanvas, saveCanvas } from '@/lib/canvas-claude';
 import { MissingRequired, prepareFill, render, renderComposition } from '@/lib/renderer';
 import { isTextPlaceholder } from '@/lib/fill';
-import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, compose, withStableIds } from '@/lib/compose';
+import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, compose, differingFigures, withStableIds } from '@/lib/compose';
 import { randomUUID } from 'node:crypto';
 import { findAsset, shortId } from '@/lib/asset-ids';
 import { photoPlaceholder, placeholderNote, type Placeholder } from '@/lib/placeholders';
@@ -61,7 +61,7 @@ Links: each format gives "Download (2x PNG)" (lasting, for people signed in to S
 
 Brands: Studio makes work for two brands that never mix. Archy (default) and DOC, the Dental Ownership Collective (ownership education for dentists; Archy appears on DOC only as its sponsor). When the brief is for DOC (it says DOC, Dental Ownership Collective, Foundations / Startup / Acquisition tracks), pass brand: "doc" to list_templates, match_templates, list_assets, list_projects and create_project. Never put an Archy template, image or project on a DOC brief or the other way round. DOC templates come in five themes (Foundations, Startup, Acquisition, Dark, Light); never invent a DOC figure, price, date or quote.
 
-Explorations (Archy only): a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it, without match_templates; otherwise it comes after the closest template. Call get_brand_kit once (its rules, guides and pieces are how an exploration is built: follow them), then compose each format as HTML in the kit. Start with the format they need; more only when asked. Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Every format is saved; look at every image as a designer would, fix what a designer would (the check's notes are guides: the design intent wins), then compose again with the same set. Options are different compositions (image-led or typographic, ground, where the copy sits). Say which images are AI-generated, and plainly that it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design; a new layout, ground or format is a new compose with the same set.
+Explorations (Archy only): a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it, without match_templates; otherwise it comes after the closest template. Call get_brand_kit once (its rules, guides and pieces are how an exploration is built: follow them), then compose each format as HTML in the kit. Start with the format they need; more only when asked. A reference in the brief (a mock-up made in ChatGPT or another tool) is rebuilt in the brand: keep its idea, message, hierarchy and composition, and redo its type, colours, logo and images with the kit; pass it as reference so Design sees both (one only in the chat: request_photos with a "Reference" item first). Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Every format is saved; look at every image as a designer would, fix what a designer would (the check's notes are guides: the design intent wins), then compose again with the same set. Options are different compositions (image-led or typographic, ground, where the copy sits). Say which images are AI-generated, and plainly that it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design; a new layout, ground or format is a new compose with the same set.
 
 Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: get_canvas, then make the change yourself with edit_canvas (they watch it live and can undo it), referring to components by their id. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (its exact fixes) or your own change, and check again. Never tell the person how to do something by hand when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, in plain words. Change only what they ask: copy that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other while Canvas is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the brand logo (Archy logo, DOC lockup) can only be moved, aligned or scaled. save_canvas only when they ask.`;
 
@@ -307,10 +307,11 @@ const handler = createMcpHandler(
           brand: z.enum(BRAND_IDS).default('archy'),
           project: z.string().optional().describe('Project to file it in (name or id from list_projects). Only when the requester mentions one.'),
           set: z.string().optional().describe('Set id from an earlier compose of the same brief (more formats, a fixed version, another option), so the gallery stacks them.'),
+          reference: z.string().optional().describe('The reference the brief brings (a mock-up from ChatGPT or another tool), when it is rebuilt in the brand: "asset:<id>", an upload:<path> from list_assets or get_photos, or an https link. Kept with the design so Design sees both side by side.'),
         }),
         annotations: { openWorldHint: false },
       },
-      async ({ title, formats, brand, project, set }, ctx) => {
+      async ({ title, formats, brand, project, set, reference }, ctx) => {
         if (!EXPLORATION_BRANDS.includes(brand)) return { isError: true, content: [{ type: 'text', text: `Explorations are for Archy only for now. For ${brand.toUpperCase()}, call report_missing_template.` }] };
         const owner = userIdOf(ctx);
         let projectId: string | null = null;
@@ -325,6 +326,14 @@ const handler = createMcpHandler(
         if (!projectId && setId === set) {
           const { data } = await supabaseAdmin().from('renders').select('project_id').eq('set_id', setId).not('project_id', 'is', null).limit(1);
           projectId = (data?.[0]?.project_id as string | undefined) ?? null;
+        }
+        // The reference is kept with every format (an https one in Assets first, so it outlives the link).
+        let ref: string | null = null;
+        if (reference) {
+          if (/^https:\/\//i.test(reference)) ref = await keepLinkedImage(reference, { ownerId: owner, brand, name: `${title} (reference)` }).catch(() => null);
+          else if (/^asset:/.test(reference)) ref = await findAsset(reference.slice(6)).then((a) => (a ? `upload:${a.path}` : null), () => null);
+          else if (/^upload:/.test(reference)) ref = reference;
+          if (!ref) return { isError: true, content: [{ type: 'text', text: `The reference "${reference}" is not an image Studio can open. Use asset:<id>, an upload: value from list_assets or get_photos, or an https link; when it is only in the chat, request_photos with a "Reference" item.` }] };
         }
         const origin = publicOrigin(ctx);
         const content: Content[] = [];
@@ -350,7 +359,7 @@ const handler = createMcpHandler(
             out.push({ type: 'image', data: preview.toString('base64'), mimeType: 'image/jpeg' });
             let links = '';
             if (hiRes) {
-              const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: {}, png: drawn.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html: withStableIds(html) });
+              const rec = await saveRender({ userId: owner, template: EXPLORATION, format: f.name, slots: ref ? { reference: ref } : {}, png: drawn.png, width: f.width, height: f.height, scale: 2, projectId, setId, setTitle: title, brand, html: withStableIds(html) });
               if (rec) { saved++; links = ` ${linksOf(origin, rec.id)}`; }
             }
             out.push({ type: 'text', text: `${label}: saved in the gallery as an Exploration.${links}${notes.length ? `\nA designer would still look at (guides, never refusals; fix what serves the design, keep what the intent asks for):\n- ${notes.join('\n- ')}` : ''}` });
@@ -360,6 +369,19 @@ const handler = createMcpHandler(
           return out;
         }));
         content.push(...made.flat());
+        // A figure that differs between formats of the set (a price, a percentage, a time) is said: one of
+        // them is wrong. Leaving one out in a shorter format is not a difference.
+        const others = supabaseConfigured()
+          ? ((await supabaseAdmin().from('renders').select('format, html').eq('set_id', setId).eq('template', EXPLORATION).is('archived_at', null).order('created_at', { ascending: false }).limit(40)).data ?? [])
+          : [];
+        const drawn = new Map(formats.map((f) => [f.name, f.html]));
+        for (const o of others) if (o.html && !drawn.has(o.format)) drawn.set(o.format, o.html);
+        const names = [...drawn.keys()], differs: string[] = [];
+        for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
+          if (!formats.some((f) => f.name === names[i] || f.name === names[j])) continue;
+          for (const d of differingFigures(drawn.get(names[i])!, drawn.get(names[j])!)) differs.push(`${names[i]} / ${names[j]}: ${d}`);
+        }
+        if (differs.length) content.push({ type: 'text', text: `Figures that differ between formats (check which is right, and make them match):\n- ${differs.join('\n- ')}` });
         if (saved) content.push({ type: 'text', text: LINKS_NOTE });
         content.push({ type: 'text', text: `Set: ${setId} (pass it as set to every later compose of this brief).${saved ? ' Tell the requester it is an exploration that Design reviews, not an approved template. Small changes (copy, a colour, moving or scaling something) are made in Canvas (get_canvas / edit_canvas when they have it open); a new layout, ground or format is a new compose with the same set.' : ''}` });
         return { isError: saved === 0 && !content.some((c) => c.type === 'image'), content };

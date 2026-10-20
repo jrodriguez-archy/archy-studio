@@ -38,9 +38,11 @@ const read = (file: string) => {
 /** The brand kit Claude reads before composing (get_brand_kit). */
 export async function brandKit(brand: Brand): Promise<string> {
   if (!EXPLORATION_BRANDS.includes(brand)) throw new Error(`Explorations are for Archy only for now. For ${brand.toUpperCase()}, report the missing template.`);
-  const [kit, screens] = await Promise.all([read(kitFile(brand, 'kit.md')), productScreens(brand)]);
+  // The lessons approved in review (Admin › Lessons) close it: they reach every exploration at once.
+  const { learnedSection } = await import('./lessons');
+  const [kit, screens, learned] = await Promise.all([read(kitFile(brand, 'kit.md')), productScreens(brand), learnedSection(brand).catch(() => '')]);
   const list = Object.entries(screens).map(([id, sc]) => `- \`${id}\` (${sc.width}×${sc.height}): ${sc.about}${Object.keys(sc.crops ?? {}).length ? ` Crops: ${Object.entries(sc.crops!).map(([c, v]) => `\`${c}\` (${v.about})`).join('; ')}.` : ''}`);
-  return list.length ? `${kit}\n\n## Product screens available\n\n${list.join('\n')}\n` : kit;
+  return [kit, list.length ? `## Product screens available\n\n${list.join('\n')}\n` : '', learned].filter(Boolean).join('\n\n');
 }
 
 // The product (Master - Product in Paper), exported to brand-kit/<brand>/product: whole screens and named
@@ -93,6 +95,35 @@ function numberLayers(html: string): string {
     if (/^br$/i.test(tag)) { n++; return m; }
     return SVG_PARTS.test(tag) ? m : `<${tag} data-node="x${(n++).toString(36)}"`;
   });
+}
+
+// Figures in a design's copy, by kind: "$899/mo" and "$899" are the same price; a format that leaves one
+// out is shorter, not different. Two formats differ when each has a figure of a kind the other lacks.
+const FIGURE = /(\$\s?\d[\d,]*(?:\.\d+)?)|(\d[\d,]*(?:\.\d+)?\s?%)|(\d{1,2}:\d{2})|(\d[\d,]*(?:\.\d+)?)/g;
+export function figuresOf(html: string): Record<string, Set<string>> {
+  const text = html.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ');
+  const out: Record<string, Set<string>> = { price: new Set(), percent: new Set(), time: new Set(), number: new Set() };
+  for (const m of text.matchAll(FIGURE)) {
+    const [kind, v] = m[1] ? ['price', m[1]] : m[2] ? ['percent', m[2]] : m[3] ? ['time', m[3]] : ['number', m[4]];
+    out[kind].add(v.replace(/[\s,]/g, ''));
+  }
+  return out;
+}
+export function differingFigures(a: string, b: string): string[] {
+  const fa = figuresOf(a), fb = figuresOf(b);
+  return Object.keys(fa).flatMap((k) => {
+    const onlyA = [...fa[k]].filter((v) => !fb[k].has(v)), onlyB = [...fb[k]].filter((v) => !fa[k].has(v));
+    return onlyA.length && onlyB.length ? [`${onlyA.join(', ')} vs ${onlyB.join(', ')}`] : [];
+  });
+}
+
+/** Each layer's id → its data-name (or its tag), as numbered when the piece is drawn: what an edit points to. */
+export function layerNames(html: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const m of numberLayers(html.replace(STABLE_IDS, '')).matchAll(/<([a-z][a-z0-9]*)\b[^>]*\bdata-node="([^"]+)"[^>]*>/gi)) {
+    out[m[2]] = m[0].match(/\bdata-name="([^"]+)"/)?.[1] ?? m[1];
+  }
+  return out;
 }
 
 // The artboard page for one format. `origin` is where the page reads the repo files (the renderer's).

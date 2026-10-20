@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+Nothing holds a design back
+- Explorations: every format is saved; what the check finds comes back as "what a designer would still look at", strongest first. The kit's hard rules are strong guides, a small headline is a note (a paragraph can be the hero), and copy-led pieces are a kind of piece of their own.
+- Templates: copy that does not fit at the normal size is set smaller (down to 70%) and delivered, with a shorter version offered; an essential detail nobody gave prints as a visible `[placeholder]` ("[Date]").
+
+Explorations that learn
+- Lessons from review (migration `20261028000000_explore_lessons`, Admin › Lessons): Claude proposes principles from Design's Canvas corrections and review comments (`scripts/explore-feedback.ts`); approved ones close `get_brand_kit` at once, no deploy.
+- `compose` takes the brief's `reference` (a mock-up from ChatGPT or another tool) and keeps it with the design; the kit and skill say how to rebuild one in the brand.
+- `compose` says when a figure differs between formats of a set ($899 in one, $999 in another); a format that writes it shorter or leaves it out is fine.
+
 ## archy-studio 0.21.0 (2026-10-15)
 
 Security

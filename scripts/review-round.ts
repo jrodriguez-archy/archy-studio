@@ -12,6 +12,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { catalog } from '../lib/catalog';
+import { missingColumn } from '../lib/explore-round';
 import { render } from '../lib/renderer';
 import { storeFiles } from '../lib/renders';
 import { supabaseAdmin } from '../lib/supabase/admin';
@@ -41,7 +42,10 @@ async function main() {
   const db = supabaseAdmin();
   const ROOT = process.cwd();
   const engine = (await Promise.all(['fit.js', 'edits.js', 'components.js'].map((f) => readFile(path.join(ROOT, 'scripts', f), 'utf8')))).join('\n');
-  const { data: last } = await db.from('review_rounds').select('id, number').order('number', { ascending: false }).limit(1).maybeSingle();
+  // Template rounds only (exploration rounds count on their own); before the exploration_review migration, every round.
+  const lastOf = (kind: boolean) => { const q = db.from('review_rounds').select('id, number'); return (kind ? q.eq('kind', 'template') : q).order('number', { ascending: false }).limit(1).maybeSingle(); };
+  let { data: last, error: lastError } = await lastOf(true);
+  if (missingColumn(lastError)) ({ data: last } = await lastOf(false));
   const prev = new Map<string, Prev>();
   if (last) {
     const { data } = await db.from('review_items').select('id, template, format, case, status, storage_path, width, height, report, slots, edits, fingerprint').eq('round_id', last.id);

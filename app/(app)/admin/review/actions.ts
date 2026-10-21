@@ -1,5 +1,7 @@
 'use server';
 
+import type { Brand } from '@/lib/brands';
+import { createExplorationRound } from '@/lib/explore-round';
 import { addComments, deleteComment, moveComment, setStatus, type ReviewStatus } from '@/lib/review';
 import { currentUser } from '@/lib/team';
 
@@ -38,4 +40,10 @@ export async function moveCommentAction(commentId: string, x: number, y: number)
 export async function deleteCommentAction(commentId: string) {
   await admin();
   await deleteComment(commentId);
+}
+
+// A round of the explorations made since the last one, in this brand.
+export async function newExplorationRoundAction(brand: Brand) {
+  await admin();
+  return createExplorationRound({ brand: brand === 'doc' ? 'doc' : 'archy' });
 }

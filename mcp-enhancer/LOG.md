@@ -45,5 +45,5 @@ Decisions from Juan (2026-10-08), the rules future fixes follow:
 | 2026-10-08 | phoenix-dinner C5 | Photo inserted where Claude guessed | instructions | Canvas: when a change could go in several places, ask once where, in plain words | fixed |
 | 2026-10-08 | phoenix-dinner P14 | 4 ToolSearch round trips | client | Studio skill: load every Studio tool in one `ToolSearch select:` | fixed |
 | 2026-10-08 | phoenix-dinner P6 | Cover palette changed | — | Juan's own recolour; edit_canvas now says when the person changed the design too | by person |
-| 2026-10-08 | phoenix-dinner P9 | OG has no CTA | template | No OG of any template has a CTA in Paper; a design decision for Paper | for designers |
+| 2026-10-08 | phoenix-dinner P9 | OG has no CTA | template | No OG of any template has a CTA in Paper. Decided 2026-10-20 (Juan): OGs stay without a CTA (the whole link preview is the link) | won't fix |
 | 2026-10-08 | phoenix-dinner P1, P8 | Not signed in at start; OG 1200×630 vs 628 | — | Fine as is (Juan) | won't fix |

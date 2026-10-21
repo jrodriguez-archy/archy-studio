@@ -6,6 +6,13 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.21.1', date: '2026-10-20', title: 'Night Out Scorecard Stories, refreshed',
+    notes: [
+      'The Night Out Scorecard Stories has the latest design: the bowling pins are smaller and sit higher.',
+      'Its headline can now run to three lines.',
+    ],
+  },
+  {
     version: '0.21.0', date: '2026-10-15', title: 'Safer, steadier, and Canvas on tablets',
     notes: [
       'Canvas never loses an edit: what you type stays on its own format, two tabs or Claude editing at the same time are merged, and leaving the page keeps your last change.',

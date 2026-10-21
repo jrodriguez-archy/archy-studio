@@ -11,6 +11,10 @@ Explorations that learn
 - `compose` takes the brief's `reference` (a mock-up from ChatGPT or another tool) and keeps it with the design; the kit and skill say how to rebuild one in the brand.
 - `compose` says when a figure differs between formats of a set ($899 in one, $999 in another); a format that writes it shorter or leaves it out is fine.
 
+## archy-studio 0.21.1 (2026-10-20)
+
+- Night Out Scorecard, Stories: synced from Paper (Content at 432 px with an 84 px gap; smaller bowling pins, set higher). The headline now takes up to 3 lines (16 characters per line); the content closes up and the button stays 367 px from the bottom.
+
 ## archy-studio 0.21.0 (2026-10-15)
 
 Security

@@ -31,7 +31,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
       {round ? <ReviewBoard key={round.id} rounds={rounds} round={round} items={items} /> : (
         <div className="mx-auto max-w-md py-20 text-center text-[13px]">
           <p className="text-[15px] font-medium">{explore ? 'No exploration round yet' : 'No template in review'}</p>
-          <p className="mt-1.5 text-foreground/55">{explore ? 'Start one with New round.' : 'Ask Claude: “review the template booth-icon-list”.'}</p>
+          <p className="mt-1.5 text-foreground/55">{explore ? 'Start one with New exploration round.' : 'Ask Claude: “review the template booth-icon-list”.'}</p>
         </div>
       )}
     </div>

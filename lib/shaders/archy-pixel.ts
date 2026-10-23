@@ -1,4 +1,4 @@
-// Archy Pixel Gradient as a live shader, faithful to the brand tool (archy-design: tools/pixel/pixel.py):
+// Archy Pixel Gradient as a live shader, faithful to the brand tool (archy plugin: tools/pixel/pixel.py):
 // six Gaussian blobs (presets.json recipe.blobs), scale 1.08, ordered 8x8 Bayer dithering into a short
 // tone ramp. On top, a cursor field dithered with the same Bayer matrix into Archy's blue ramp, so the
 // blue appears as pixels that follow the pointer and dissolve at the edges.

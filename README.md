@@ -51,5 +51,5 @@ node scripts/compare.mjs out/original-post.png templates/ae-spotlight/reference/
 - Fonts are the same Google Fonts files Paper loads (self-hosted in `fonts/`).
 
 ## Explorations: brand kit
-- `brand-kit/archy/`: the guide Claude reads (`kit.md`), tokens, the wordmark, the pixel gradients (`textures/`, from archy-design's `pixel.py gradient png all --size 4000x4000`) and the product screens (`product/`, `product.json`).
+- `brand-kit/archy/`: the guide Claude reads (`kit.md`), tokens, the wordmark, the pixel gradients (`textures/`, from the archy plugin's `pixel.py gradient png all --size 4000x4000`) and the product screens (`product/`, `product.json`).
 - Product screens come from Paper › Master - Product, the `TPL · … · Desktop 2056×1160` artboards exported at 2x and converted to sRGB WebP (Paper exports Display P3). Paper renders only the open file: open Master - Product before exporting. When a screen changes, export it again under the same name; crops in `product.json` are in screen px.

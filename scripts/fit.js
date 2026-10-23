@@ -1229,7 +1229,7 @@ async function sampleInk(frame) {
 // A place photo (a skyline, a venue) is framed on what matters: the skyline whole with a little sky
 // above it, centred across, a little closer than "cover" so water and ground take less room. Photos of
 // people are left as the designer framed them. On event covers the place photo carries Pixel Tone (the
-// brand's tool, archy-design pixel: the photo dithered on the Royal Blue gradient's two tones).
+// brand's tool, the archy plugin's pixel: the photo dithered on the Royal Blue gradient's two tones).
 async function framePhoto(n, src, role, format, coverTone = 'royal') {
   const root = document.querySelector('body > [data-node]');
   if (/speaker|person|portrait|ae\b|^image-ae/i.test(role)) return;

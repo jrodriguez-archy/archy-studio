@@ -4,7 +4,7 @@ Admin → Template review is where a new template (or one that changed a lot in 
 
 ## When
 
-- A template newly prepared in Paper (archy-design `prepare-template`).
+- A template newly prepared in Paper (the archy plugin's `prepare-template`).
 - A template whose layout changed a lot.
 
 Fine adjustments of a single design (a size, framing a photo) are done by hand in Canvas, not here.

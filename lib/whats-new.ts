@@ -6,6 +6,15 @@ export type Release = { version: string; date: string; title: string; notes: str
 
 export const RELEASES: Release[] = [
   {
+    version: '0.22.0', date: '2026-10-28', title: 'Every design delivered, and explorations that learn',
+    notes: [
+      'Nothing holds a design back: copy that runs long is set a little smaller and delivered, with a shorter version offered, and a detail nobody gave shows as a visible [placeholder].',
+      'Explorations learn from Design’s reviews, and a reference you made in another tool is rebuilt in the brand.',
+      'Claude points out when a figure differs between the formats of a set.',
+      'When Claude cannot see the Studio tools, it gives you the sign-in steps right away.',
+    ],
+  },
+  {
     version: '0.21.1', date: '2026-10-20', title: 'Night Out Scorecard Stories, refreshed',
     notes: [
       'The Night Out Scorecard Stories has the latest design: the bowling pins are smaller and sit higher.',

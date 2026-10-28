@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Callout, H2, Shot, Ui } from '../ui';
 
-export function Overview() {
+export function Overview({ doc }: { doc: boolean }) {
   return (
     <>
       <H2 id="what">What Studio does</H2>
@@ -29,12 +29,16 @@ export function Overview() {
         Exploration in the gallery. <Link href="/docs/explorations">Explorations</Link>
       </p>
 
-      <H2 id="brands">Archy and DOC</H2>
-      <p>
-        Studio works for two brands: <strong>Archy</strong> (the default) and <strong>DOC</strong>, the Dental Ownership Collective. Each
-        has its own templates, images, gallery and projects, and they never mix. Switch brand at the bottom of the sidebar.{' '}
-        <Link href="/docs/brands">Archy and DOC</Link>
-      </p>
+      {doc && (
+        <>
+          <H2 id="brands">Archy and DOC</H2>
+          <p>
+            Studio works for two brands: <strong>Archy</strong> (the default) and <strong>DOC</strong>, the Dental Ownership Collective. Each
+            has its own templates, images, gallery and projects, and they never mix. Switch brand at the bottom of the sidebar.{' '}
+            <Link href="/docs/brands">Archy and DOC</Link>
+          </p>
+        </>
+      )}
 
       <H2 id="start">Start here</H2>
       <ol className="list-decimal space-y-1.5 pl-5 marker:text-foreground/40">

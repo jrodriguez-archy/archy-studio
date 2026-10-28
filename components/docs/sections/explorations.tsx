@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { EXAMPLE_BRIEFS } from '@/lib/example-briefs';
 import { Briefs, Callout, H2, H3, Rows, Shot, Ui } from '../ui';
 
-export function Explorations() {
+export function Explorations({ doc }: { doc: boolean }) {
   return (
     <>
       <H2 id="what">What an exploration is</H2>
@@ -104,8 +104,12 @@ export function Explorations() {
         <strong>Template proposals</strong> and turns the good ones into templates.
       </p>
 
-      <H2 id="not-yet">Not yet</H2>
-      <p>DOC has no explorations yet: for DOC, Claude tells Design what is missing.</p>
+      {doc && (
+        <>
+          <H2 id="not-yet">Not yet</H2>
+          <p>DOC has no explorations yet: for DOC, Claude tells Design what is missing.</p>
+        </>
+      )}
     </>
   );
 }

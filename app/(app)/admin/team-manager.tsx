@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import type { Member } from '@/lib/team';
-import { addMemberAction, removeMemberAction, resetPasswordAction } from './actions';
+import { addMemberAction, removeMemberAction, resetPasswordAction, setDocAccessAction } from './actions';
 
-export function TeamManager({ team, me }: { team: Member[]; me: string }) {
+export function TeamManager({ team, me, canDoc }: { team: Member[]; me: string; canDoc: boolean }) {
   const [email, setEmail] = useState('');
   const [admin, setAdmin] = useState(false);
   const [pending, start] = useTransition();
@@ -49,6 +49,9 @@ export function TeamManager({ team, me }: { team: Member[]; me: string }) {
             <span className={`size-1.5 shrink-0 rounded-full ${m.status === 'active' ? 'bg-emerald-500' : 'bg-foreground/20'}`} aria-hidden />
             <span className="min-w-0 truncate">{m.email}</span>
             {m.is_admin && <span className="text-foreground/40">Admin</span>}
+            {canDoc && <label className="flex items-center gap-1.5 text-foreground/40">
+              <Checkbox checked={!!m.doc_access} disabled={pending} onCheckedChange={(v) => act(() => setDocAccessAction(m.email, v === true), v === true ? `${m.email} sees DOC` : `DOC hidden for ${m.email}`)} /> DOC
+            </label>}
             <span className="text-foreground/40">
               {m.status === 'active' ? (m.last_sign_in ? <>Last in <LocalDate iso={m.last_sign_in} opts={DAY} /></> : 'Active') : 'Waiting for first sign-in'}
             </span>

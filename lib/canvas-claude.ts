@@ -1,4 +1,5 @@
 import 'server-only';
+import { brandOf } from './brands';
 import { mergeOnto } from './canvas-sync';
 import { cleanEdits, RECOLOR, type Edits, type Layout, type NodeEdit, type Preset } from './canvas-shared';
 import { explorationOf, loadSet, loadSource, type PieceSource } from './canvas';
@@ -19,7 +20,8 @@ export { clearDraft, getDraft, saveDraft };
 // the changes and fixes what the Inspector flags itself. Brand colours only; the Archy logo's drawing
 // and colour untouched.
 
-type Who = { id: string; is_admin: boolean };
+// doc false: someone without DOC, for whom a DOC design is not there.
+type Who = { id: string; is_admin: boolean; doc?: boolean };
 const OPEN_FOR = 3 * 60_000; // Canvas says which design is open every minute while its tab is in front
 
 // The piece Claude means: the id it was given, or the one this person has open in Canvas right now. Never
@@ -36,7 +38,7 @@ async function findPiece(me: Who, ref?: string): Promise<{ piece: PieceSource; d
   }
   if (!id) throw new Error('No design open in Canvas right now. Ask the person to open it in Archy Studio → Canvas, or to paste its Canvas link.');
   const piece = await loadSource(id);
-  if (!piece) throw new Error(`No design ${id}.`);
+  if (!piece || (me.doc === false && brandOf(piece.brand ?? undefined) === 'doc')) throw new Error(`No design ${id}.`);
   return { piece, draft: await getDraft(id) };
 }
 

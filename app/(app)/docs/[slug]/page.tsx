@@ -8,12 +8,15 @@ const find = (slug: string) => DOCS.find((d) => d.slug === slug && slug);
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const doc = find((await params).slug);
-  return { title: doc ? `${doc.title} · Docs` : 'Docs' };
+  const me = await currentUser();
+  const shown = doc && (!doc.admin || me?.is_admin) && (!doc.doc || me?.doc);
+  return { title: shown ? `${doc.title} · Docs` : 'Docs' };
 }
 
 export default async function DocPage({ params }: { params: Promise<{ slug: string }> }) {
   const doc = find((await params).slug);
-  if (!doc || (doc.admin && !(await currentUser())?.is_admin)) notFound();
+  const me = await currentUser();
+  if (!doc || (doc.admin && !me?.is_admin) || (doc.doc && !me?.doc)) notFound();
   const Content = SECTIONS[doc.slug];
-  return <Section doc={doc}><Content /></Section>;
+  return <Section doc={doc}><Content doc={!!me?.doc} /></Section>;
 }

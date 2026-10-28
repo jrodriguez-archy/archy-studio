@@ -1,9 +1,8 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { PageHeader, Pills } from '@/components/app-shell';
 import { NewExplorationRound } from '@/components/review/new-exploration-round';
 import { ReviewBoard } from '@/components/review/review-board';
-import { BRAND_COOKIE, brandOf } from '@/lib/brands';
+import { currentBrand } from '@/lib/brand';
 import { listRounds, loadRound, type ReviewKind } from '@/lib/review';
 import { currentUser } from '@/lib/team';
 
@@ -20,7 +19,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
   const rounds = await listRounds(kind);
   const round = rounds.find((r) => r.id === wanted) ?? rounds[0];
   const items = round ? await loadRound(round) : [];
-  const brand = brandOf((await cookies()).get(BRAND_COOKIE)?.value);
+  const brand = await currentBrand();
   const explore = kind === 'exploration';
   return (
     <div>

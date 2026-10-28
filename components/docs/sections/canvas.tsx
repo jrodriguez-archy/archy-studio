@@ -1,6 +1,6 @@
 import { Callout, H2, H3, Kbd, Rows, Shot, Ui } from '../ui';
 
-export function Canvas() {
+export function Canvas({ doc }: { doc: boolean }) {
   return (
     <>
       <p>
@@ -58,8 +58,8 @@ export function Canvas() {
       <H2 id="recolor">Recolor</H2>
       <p>
         Archy designs can be recolored in one click from <Ui>Look</Ui> in Content (or the background’s <Ui>Recolor</Ui>):{' '}
-        <Ui>Dark</Ui>, <Ui>Blue</Ui>, <Ui>Ice</Ui> or <Ui>Light</Ui>. Text, buttons, lines, icons and the logo follow. DOC designs do not
-        recolor this way: ask Claude for the design in another of its themes. Explorations open in Canvas like any design; a recolour
+        <Ui>Dark</Ui>, <Ui>Blue</Ui>, <Ui>Ice</Ui> or <Ui>Light</Ui>. Text, buttons, lines, icons and the logo follow.
+        {doc && ' DOC designs do not recolor this way: ask Claude for the design in another of its themes.'} Explorations open in Canvas like any design; a recolour
         does not repaint a pixel texture.
       </p>
 

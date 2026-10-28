@@ -13,7 +13,7 @@ import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
 import { ResizeHandle, useSideWidth } from '@/components/resizable';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { NavItem, NavSection } from '@/components/app-shell';
-import { BRAND_IDS, BRANDS, brandCookie, type Brand } from '@/lib/brands';
+import { BRANDS, brandCookie, type Brand } from '@/lib/brands';
 import { firstName } from '@/lib/names';
 import { resetSession } from '@/components/assets/session';
 
@@ -71,7 +71,7 @@ const ResizeContext = createContext<ReturnType<typeof useSideWidth> | null>(null
 
 // Left rail on a faint grey layer (the login's card-on-ground idea): Studio lockup, icon nav with the
 // active page lifted onto white, account at the bottom. Collapsed, only icons remain, with tooltips.
-export function Sidebar({ sections, admin, projects, me, email, name, brand }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; name: string; brand: Brand }) {
+export function Sidebar({ sections, admin, projects, me, email, name, brand, brands }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; name: string; brand: Brand; brands: Brand[] | null }) {
   const { collapsed } = useSidebar();
   const toggle = useContext(ToggleContext);
   const size = useContext(ResizeContext);
@@ -104,7 +104,7 @@ export function Sidebar({ sections, admin, projects, me, email, name, brand }: {
       </nav>
       <AppUpdate />
       <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
-        <BrandMenu brand={brand} />
+        {brands && <BrandMenu brand={brand} brands={brands} />}
         <NavLink href="/docs" icon="docs">Docs</NavLink>
         {admin && <AdminMenu items={admin} />}
         <AccountMenu name={name} email={email} />
@@ -129,7 +129,7 @@ export function useSwitchBrand() {
   };
 }
 
-function BrandMenu({ brand }: { brand: Brand }) {
+function BrandMenu({ brand, brands }: { brand: Brand; brands: Brand[] }) {
   const { collapsed } = useSidebar();
   const switchTo = useSwitchBrand();
   // However the brand changed (this menu, or a link to the other brand's design), the images and folders
@@ -147,7 +147,7 @@ function BrandMenu({ brand }: { brand: Brand }) {
     <DropdownMenu>
       {collapsed ? <Tooltip><TooltipTrigger render={trigger} /><TooltipContent side="right">{BRANDS[brand].name}</TooltipContent></Tooltip> : trigger}
       <DropdownMenuContent {...menuSide(collapsed)} sideOffset={6} className="w-56">
-        {BRAND_IDS.map((b) => (
+        {brands.map((b) => (
           <DropdownMenuItem key={b} onClick={() => b !== brand && switchTo(b)} className="gap-2 text-[13px]">
             <span className="flex size-4 items-center justify-center"><BrandMark brand={b} /></span>
             <span className="flex-1">{BRANDS[b].name}</span>

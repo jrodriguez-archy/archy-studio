@@ -51,8 +51,21 @@ export const currentUser = cache(async () => {
   const id = data?.claims?.sub;
   if (!id) return null;
   const { data: profile } = await supabaseAdmin().from('profiles').select('id, email, full_name, is_admin').eq('id', id).maybeSingle();
-  return profile as { id: string; email: string; full_name: string | null; is_admin: boolean } | null;
+  if (!profile) return null;
+  return { ...(profile as { id: string; email: string; full_name: string | null; is_admin: boolean }), doc: await hasDocAccess(profile.email) };
 });
+
+// DOC is only for the people an admin turns it on for; the rest see Archy alone (no switcher, no DOC
+// in the Docs, the MCP refuses it). Until the doc_access column exists, admins keep it.
+export async function hasDocAccess(rawEmail: string): Promise<boolean> {
+  const email = norm(rawEmail);
+  const { data, error } = await supabaseAdmin().from('allowed_emails').select('is_admin, doc_access').eq('email', email).maybeSingle();
+  if (error) {
+    const { data: a } = await supabaseAdmin().from('allowed_emails').select('is_admin').eq('email', email).maybeSingle();
+    return !!a?.is_admin;
+  }
+  return !!data?.doc_access;
+}
 
 async function requireAdmin() {
   const me = await currentUser();
@@ -60,20 +73,20 @@ async function requireAdmin() {
   return me;
 }
 
-export type Member = { email: string; is_admin: boolean; status: 'active' | 'pending'; full_name: string | null; last_sign_in: string | null };
+export type Member = { email: string; is_admin: boolean; doc_access?: boolean; status: 'active' | 'pending'; full_name: string | null; last_sign_in: string | null };
 
 export async function listTeam(): Promise<Member[]> {
   await requireAdmin();
   const db = supabaseAdmin();
   const [{ data: allowed }, { data: profiles }, { data: users }] = await Promise.all([
-    db.from('allowed_emails').select('email, is_admin').order('created_at'),
+    db.from('allowed_emails').select('*').order('created_at'),
     db.from('profiles').select('email, full_name, password_set'),
     db.auth.admin.listUsers({ perPage: 1000 }),
   ]);
   const prof = new Map((profiles ?? []).map((p) => [p.email, p]));
   const last = new Map((users?.users ?? []).map((u) => [u.email?.toLowerCase(), u.last_sign_in_at ?? null]));
   return (allowed ?? []).map((a) => ({
-    email: a.email, is_admin: a.is_admin, full_name: prof.get(a.email)?.full_name ?? null,
+    email: a.email, is_admin: a.is_admin, doc_access: !!a.doc_access, full_name: prof.get(a.email)?.full_name ?? null,
     status: prof.get(a.email)?.password_set ? 'active' : 'pending', last_sign_in: last.get(a.email) ?? null,
   }));
 }
@@ -83,6 +96,13 @@ export async function addMember(rawEmail: string, isAdmin = false) {
   const email = norm(rawEmail);
   if (!/^[^@\s]+@archy\.com$/.test(email)) throw new Error('Use an @archy.com address.');
   const { error } = await supabaseAdmin().from('allowed_emails').upsert({ email, is_admin: isAdmin, added_by: me.id });
+  if (error) throw new Error(error.message);
+}
+
+export async function setDocAccess(rawEmail: string, on: boolean) {
+  const me = await requireAdmin();
+  if (!me.doc) throw new Error('Only admins can manage the team.');
+  const { error } = await supabaseAdmin().from('allowed_emails').update({ doc_access: on }).eq('email', norm(rawEmail));
   if (error) throw new Error(error.message);
 }
 

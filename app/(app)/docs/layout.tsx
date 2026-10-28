@@ -8,7 +8,7 @@ import { currentUser } from '@/lib/team';
 // screens.
 export default async function DocsLayout({ children }: { children: React.ReactNode }) {
   const me = await currentUser();
-  const sections = docsFor(!!me?.is_admin);
+  const sections = docsFor(!!me?.is_admin, !!me?.doc);
   return (
     <>
       <DocsBar sections={sections} />

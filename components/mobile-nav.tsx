@@ -7,14 +7,14 @@ import { Menu01Icon } from '@hugeicons/core-free-icons';
 import { ArchyWordmark } from '@/components/archy-wordmark';
 import { BrandLockup, BrandMark } from '@/components/brand-lockup';
 import { useSwitchBrand } from '@/components/sidebar';
-import { BRAND_IDS, BRANDS, type Brand } from '@/lib/brands';
+import { BRANDS, type Brand } from '@/lib/brands';
 import { NavLink, SignOutLink } from '@/components/nav-link';
 import { ProjectsNav, type ProjectLink } from '@/components/projects-nav';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import type { NavItem, NavSection } from '@/components/app-shell';
 
-export function MobileNav({ sections, admin, projects, me, email, brand }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; brand: Brand }) {
+export function MobileNav({ sections, admin, projects, me, email, brand, brands }: { sections: NavSection[]; admin: NavItem[] | null; projects: ProjectLink[]; me?: { id: string; is_admin: boolean }; email: string; brand: Brand; brands: Brand[] | null }) {
   const [open, setOpen] = useState(false);
   const switchTo = useSwitchBrand();
   const close = () => setOpen(false);
@@ -46,14 +46,18 @@ export function MobileNav({ sections, admin, projects, me, email, brand }: { sec
               </Fragment>
             ))}
             <div className="space-y-0.5 border-t border-foreground/[0.06] pt-4">
-              <p className="px-2 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/35">Brand</p>
-              {BRAND_IDS.map((b) => (
-                <button key={b} type="button" onClick={() => { close(); if (b !== brand) switchTo(b); }}
-                  className={`flex h-8 w-full items-center gap-2 rounded-md px-2 text-[13px] ${b === brand ? 'bg-background text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/60'}`}>
-                  <span className="flex size-4 items-center justify-center"><BrandMark brand={b} /></span>{BRANDS[b].name}
-                </button>
-              ))}
-              <div className="h-3" />
+              {brands && (
+                <>
+                  <p className="px-2 pb-1 text-[11px] font-medium tracking-[0.02em] text-foreground/35">Brand</p>
+                  {brands.map((b) => (
+                    <button key={b} type="button" onClick={() => { close(); if (b !== brand) switchTo(b); }}
+                      className={`flex h-8 w-full items-center gap-2 rounded-md px-2 text-[13px] ${b === brand ? 'bg-background text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.06)]' : 'text-foreground/60'}`}>
+                      <span className="flex size-4 items-center justify-center"><BrandMark brand={b} /></span>{BRANDS[b].name}
+                    </button>
+                  ))}
+                  <div className="h-3" />
+                </>
+              )}
               <NavLink href="/docs" icon="docs" onNavigate={close}>Docs</NavLink>
               {admin && (
                 <>

@@ -3,7 +3,7 @@ import { RELEASES, releaseId } from './whats-new';
 // The Docs: one page per section, in reading order. The index, search, "On this page", prev/next and
 // page titles all come from here; each section's content lives in components/docs/sections.
 
-export type DocHeading = { id: string; title: string };
+export type DocHeading = { id: string; title: string; /** Only for people with DOC. */ doc?: boolean };
 export type DocSection = {
   slug: string;
   title: string;
@@ -13,12 +13,14 @@ export type DocSection = {
   /** Extra words people may search for. */
   keywords?: string;
   admin?: boolean;
+  /** Only for people with DOC. */
+  doc?: boolean;
 };
 
 export const DOCS: DocSection[] = [
   {
     slug: '', title: 'Overview', group: 'Start', summary: 'What Archy Studio does and where to start.',
-    headings: [{ id: 'what', title: 'What Studio does' }, { id: 'ways', title: 'Three ways to work' }, { id: 'brands', title: 'Archy and DOC' }, { id: 'start', title: 'Start here' }],
+    headings: [{ id: 'what', title: 'What Studio does' }, { id: 'ways', title: 'Three ways to work' }, { id: 'brands', title: 'Archy and DOC', doc: true }, { id: 'start', title: 'Start here' }],
     keywords: 'intro welcome getting started',
   },
   {
@@ -48,7 +50,7 @@ export const DOCS: DocSection[] = [
   },
   {
     slug: 'explorations', title: 'Explorations', group: 'Use', summary: 'New designs in the brand when no template fits.',
-    headings: [{ id: 'what', title: 'What an exploration is' }, { id: 'when', title: 'When Claude explores' }, { id: 'ask', title: 'How to ask' }, { id: 'references', title: 'References and Notion briefs' }, { id: 'kinds', title: 'Two kinds of piece' }, { id: 'images', title: 'Images' }, { id: 'product', title: 'The product' }, { id: 'mascot', title: 'The mascot' }, { id: 'checks', title: 'What Studio checks' }, { id: 'change', title: 'Change it' }, { id: 'propose', title: 'Propose it as a template' }, { id: 'not-yet', title: 'Not yet' }],
+    headings: [{ id: 'what', title: 'What an exploration is' }, { id: 'when', title: 'When Claude explores' }, { id: 'ask', title: 'How to ask' }, { id: 'references', title: 'References and Notion briefs' }, { id: 'kinds', title: 'Two kinds of piece' }, { id: 'images', title: 'Images' }, { id: 'product', title: 'The product' }, { id: 'mascot', title: 'The mascot' }, { id: 'checks', title: 'What Studio checks' }, { id: 'change', title: 'Change it' }, { id: 'propose', title: 'Propose it as a template' }, { id: 'not-yet', title: 'Not yet', doc: true }],
     keywords: 'explore exploration new design no template banner linkedin email flyer reference notion generated ai image mascot robot agent pose product screen scrim propose',
   },
   {
@@ -62,7 +64,7 @@ export const DOCS: DocSection[] = [
     keywords: 'images photos upload folder remove background cutout pixel generate ai edit id',
   },
   {
-    slug: 'brands', title: 'Archy and DOC', group: 'Reference', summary: 'Two brands in one Studio, never mixed.',
+    slug: 'brands', title: 'Archy and DOC', group: 'Reference', summary: 'Two brands in one Studio, never mixed.', doc: true,
     headings: [{ id: 'switch', title: 'Switch brand' }, { id: 'separate', title: 'What each brand keeps' }, { id: 'doc-templates', title: 'DOC templates' }, { id: 'doc-rules', title: 'DOC rules' }],
     keywords: 'dental ownership collective brand switch tracks foundations startup acquisition',
   },
@@ -84,4 +86,6 @@ export const DOCS: DocSection[] = [
 ];
 
 export const docHref = (slug: string) => (slug ? `/docs/${slug}` : '/docs');
-export const docsFor = (isAdmin: boolean) => DOCS.filter((d) => !d.admin || isAdmin);
+// What one person sees: admin pages for admins, DOC (sections and headings) for people with DOC.
+export const docsFor = (isAdmin: boolean, doc: boolean) =>
+  DOCS.filter((d) => (!d.admin || isAdmin) && (!d.doc || doc)).map((d) => (doc ? d : { ...d, headings: d.headings.filter((h) => !h.doc) }));

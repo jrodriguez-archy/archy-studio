@@ -10,6 +10,12 @@ export const FACTS = [
 
 export const PURPOSES = ['booth-invite', 'reminder', 'hosted-evening', 'speaker-invite', 'event-cover', 'spotlight', 'photo-claim', 'claim', 'stat', 'list', 'explainer', 'scroll-stopper', 'faculty', 'event'] as const;
 
+// Facts and purposes only DOC templates use: people without DOC never see them.
+const DOC_FACTS: readonly string[] = ['stat', 'object-photo'];
+const DOC_PURPOSES: readonly string[] = ['claim', 'stat', 'list', 'explainer', 'scroll-stopper', 'faculty', 'event'];
+export const factsFor = (withDoc: boolean) => (withDoc ? FACTS : FACTS.filter((f) => !DOC_FACTS.includes(f))) as unknown as typeof FACTS;
+export const purposesFor = (withDoc: boolean) => (withDoc ? PURPOSES : PURPOSES.filter((p) => !DOC_PURPOSES.includes(p))) as unknown as typeof PURPOSES;
+
 // A city or venue photo can also serve as a cover's ground photo.
 // `event-cover` is not a template's own purpose: it asks for the event page cover format of any template that has one.
 const SATISFIES: Record<string, string[]> = { 'ground-photo': ['ground-photo', 'city-photo', 'venue-photo'] };

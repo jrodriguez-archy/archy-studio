@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { EXAMPLE_BRIEFS } from '@/lib/example-briefs';
 import { Briefs, Callout, H2, H3, Rows, Shot, Step, Steps, Ui } from '../ui';
 
-export function MakeDesigns() {
+export function MakeDesigns({ doc }: { doc: boolean }) {
   return (
     <>
       <p>
@@ -14,7 +14,7 @@ export function MakeDesigns() {
       <H2 id="brief">Write a brief</H2>
       <p>A good brief gives Claude the <strong>facts</strong>. Claude writes the <strong>copy</strong> (headlines, short lines, calls to action) from them, so you do not need to.</p>
       <Rows rows={[
-        ['Facts to include', 'The event name, city, venue, dates and times, booth number, the people featured (name and title), partner names. For DOC: the track, real figures, real dates.'],
+        ['Facts to include', `The event name, city, venue, dates and times, booth number, the people featured (name and title), partner names.${doc ? ' For DOC: the track, real figures, real dates.' : ''}`],
         ['Photos and logos', 'Say which you have: a photo in Assets, a link, or a file you can upload. See Photos and logos.'],
         ['What it is for', 'A booth invite, a reminder, an evening you host, a speaker, an ad… Claude finds the template; you can also name one.'],
         ['Formats', 'Leave it out to get every social format, or ask for one (“just the Story”).'],
@@ -26,10 +26,9 @@ export function MakeDesigns() {
 
       <H2 id="examples">Example briefs</H2>
       <p>Click one to copy it, then paste it in Claude and change the details.</p>
-      <H3>Archy</H3>
+      {doc && <H3>Archy</H3>}
       <Briefs items={EXAMPLE_BRIEFS.archy} />
-      <H3>DOC</H3>
-      <Briefs items={EXAMPLE_BRIEFS.doc} />
+      {doc && <><H3>DOC</H3><Briefs items={EXAMPLE_BRIEFS.doc} /></>}
 
       <H2 id="what-happens">What Claude does</H2>
       <Steps>
@@ -60,7 +59,7 @@ export function MakeDesigns() {
       <p>
         Ask for options (“give me two options”) and each one is a <strong>different template, design or theme</strong>, not the same
         design with other words. Some templates come in several <strong>designs</strong> (layouts) and <strong>themes</strong> (colour
-        grounds, like Navy or Royal Blue for Archy, or the three tracks, Dark and Light for DOC). Ask for one by name: “the Navy theme”,
+        grounds, like Navy or Royal Blue{doc ? ' for Archy, or the three tracks, Dark and Light for DOC' : ''}). Ask for one by name: “the Navy theme”,
         “the Grid Card design”.
       </p>
 

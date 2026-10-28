@@ -13,7 +13,7 @@ import { Templates } from './templates';
 import { WhatsNew } from './whats-new';
 
 // Each Docs section's content, by slug (lib/docs.ts has their titles and headings).
-export const SECTIONS: Record<string, () => React.ReactNode> = {
+export const SECTIONS: Record<string, (p: { doc: boolean }) => React.ReactNode> = {
   '': Overview, 'connect-claude': ConnectClaude, 'make-designs': MakeDesigns, 'photos-logos': PhotosLogos, gallery: Gallery,
   templates: Templates, explorations: Explorations, canvas: Canvas, assets: Assets, brands: Brands, rules: Rules, admin: Admin, 'whats-new': WhatsNew,
 };

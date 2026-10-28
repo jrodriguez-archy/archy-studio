@@ -8,7 +8,7 @@ import { EXPLORATION, EXPLORATION_BRANDS, MAX_HTML, SIZE, brandKit, checksFor, c
 import { randomUUID } from 'node:crypto';
 import { findAsset, shortId } from '@/lib/asset-ids';
 import { photoPlaceholder, placeholderNote, type Placeholder } from '@/lib/placeholders';
-import { FACTS, PURPOSES, factsFromSlots, matchTemplates } from '@/lib/match';
+import { factsFor, factsFromSlots, matchTemplates, purposesFor } from '@/lib/match';
 import { createProject, findProject, listProjects } from '@/lib/projects';
 import { keepSet, resolveSet, saveRender } from '@/lib/renders';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -23,12 +23,14 @@ import { createPhotoRequest, getPhotoRequest } from '@/lib/photo-requests';
 import { reportMissing } from '@/lib/missing-templates';
 import { comboFormats, listTemplates, loadConfig, loadManifest, resolveCombo, templateBrand } from '@/lib/templates';
 import { BRAND_IDS } from '@/lib/brands';
+import { hasDocAccess } from '@/lib/team';
 import plugin from '@/plugins/archy-studio/.claude-plugin/plugin.json';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const INSTRUCTIONS = `Archy Studio turns a marketing brief ("booth #1211 at the Chicago Midwinter Meeting, Feb 18 to 20") into finished PNGs from Archy's approved Paper templates. With the archy-studio plugin, its studio skill holds this whole guide: load it.
+// What Claude reads first. People without DOC get Archy alone: no word of a second brand.
+const instructions = (withDoc: boolean) => `Archy Studio turns a marketing brief ("booth #1211 at the Chicago Midwinter Meeting, Feb 18 to 20") into finished PNGs from Archy's approved Paper templates. With the archy-studio plugin, its studio skill holds this whole guide: load it.
 
 Core steps:
 1. A template ID ("booth-icon-list", copied from the Studio app) or a /templates?t=<id> link: use that template (no match_templates), get_template, ask once only for its missing essential facts, render. "Keep it in set <id>" renders in that set.
@@ -59,11 +61,11 @@ Photos and logos:
 
 Links: each format gives "Download (2x PNG)" (lasting, for people signed in to Studio: the one to share), "File" (no sign-in, a few days: save files with it) and "Edit in Canvas" (where the requester fixes copy, colours, images or sizes by hand).
 
-Brands: Studio makes work for two brands that never mix. Archy (default) and DOC, the Dental Ownership Collective (ownership education for dentists; Archy appears on DOC only as its sponsor). When the brief is for DOC (it says DOC, Dental Ownership Collective, Foundations / Startup / Acquisition tracks), pass brand: "doc" to list_templates, match_templates, list_assets, list_projects and create_project. Never put an Archy template, image or project on a DOC brief or the other way round. DOC templates come in five themes (Foundations, Startup, Acquisition, Dark, Light); never invent a DOC figure, price, date or quote.
+${withDoc ? `Brands: Studio makes work for two brands that never mix. Archy (default) and DOC, the Dental Ownership Collective (ownership education for dentists; Archy appears on DOC only as its sponsor). When the brief is for DOC (it says DOC, Dental Ownership Collective, Foundations / Startup / Acquisition tracks), pass brand: "doc" to list_templates, match_templates, list_assets, list_projects and create_project. Never put an Archy template, image or project on a DOC brief or the other way round. DOC templates come in five themes (Foundations, Startup, Acquisition, Dark, Light); never invent a DOC figure, price, date or quote.
 
-Explorations (Archy only): a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it, without match_templates; otherwise it comes after the closest template. Call get_brand_kit once (its rules, guides and pieces are how an exploration is built: follow them), then compose each format as HTML in the kit. Start with the format they need; more only when asked. A reference in the brief (a mock-up made in ChatGPT or another tool) is rebuilt in the brand: keep its idea, message, hierarchy and composition, and redo its type, colours, logo and images with the kit; pass it as reference so Design sees both (one only in the chat: request_photos with a "Reference" item first). Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Every format is saved; look at every image as a designer would, fix what a designer would (the check's notes are guides: the design intent wins), then compose again with the same set. Options are different compositions (image-led or typographic, ground, where the copy sits). Say which images are AI-generated, and plainly that it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design; a new layout, ground or format is a new compose with the same set.
+` : ''}Explorations${withDoc ? ' (Archy only; DOC is not in explorations yet)' : ''}: a new design outside the templates. When the requester asks to explore, for something new or without a template ("explore", "something different", "not a template"), go straight to it, without match_templates; otherwise it comes after the closest template. Call get_brand_kit once (its rules, guides and pieces are how an exploration is built: follow them), then compose each format as HTML in the kit. Start with the format they need; more only when asked. A reference in the brief (a mock-up made in ChatGPT or another tool) is rebuilt in the brand: keep its idea, message, hierarchy and composition, and redo its type, colours, logo and images with the kit; pass it as reference so Design sees both (one only in the chat: request_photos with a "Reference" item first). Everything the brief asks for (a feature strip, a tagline, a CTA, a URL) goes in every format: rebalance to make room; when changing or leaving out an element would read better, deliver the full version and propose the change next to it, never drop one silently. Every format is saved; look at every image as a designer would, fix what a designer would (the check's notes are guides: the design intent wins), then compose again with the same set. Options are different compositions (image-led or typographic, ground, where the copy sits). Say which images are AI-generated, and plainly that it is an exploration Design will review, not an approved template. Explorations open in Canvas like any design; a new layout, ground or format is a new compose with the same set.
 
-Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: get_canvas, then make the change yourself with edit_canvas (they watch it live and can undo it), referring to components by their id. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (its exact fixes) or your own change, and check again. Never tell the person how to do something by hand when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, in plain words. Change only what they ask: copy that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other while Canvas is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the brand logo (Archy logo, DOC lockup) can only be moved, aligned or scaled. save_canvas only when they ask.
+Canvas (live editing with the person): when they ask to change a design they have open in Studio's Canvas ("make the headline shorter", "recolour it light", "use a ticket icon", "fix the alignment"), you are the designer: get_canvas, then make the change yourself with edit_canvas (they watch it live and can undo it), referring to components by their id. Each answer lists the Inspector's suggestions: fix the ones your change caused, with fix: "all" (its exact fixes) or your own change, and check again. Never tell the person how to do something by hand when you can do it. When a change could go in more than one place (a photo, with a ground photo and a guest photo on the design), ask once where, in plain words. Change only what they ask: copy that does not come from the brief (a template sample, another event's details) is pointed out and a version from the brief offered, not rewritten on your own. The formats of a set follow each other while Canvas is open (copy, images, recolour): when they ask for a change in one format only, say the others change too unless they unsync that format (its label in Canvas), and say when formats end up different. Brand colours only; the brand logo${withDoc ? ' (Archy logo, DOC lockup)' : ''} can only be moved, aligned or scaled. save_canvas only when they ask.
 
 When something fails: a tool asks to sign in, or the Archy Studio tools stop answering or disappear mid-conversation (the session expired): only they can sign in again. Give the steps, numbered: type /mcp and send it, find archy-studio ("needs auth"), click Sign in, sign in with their Archy email and click Allow, then say they are done; continue the design once the tools answer. A service error: try once more; if it fails again, tell them to send the error to Marketing & Design.`;
 
@@ -73,13 +75,41 @@ type Content = { type: 'text'; text: string } | { type: 'image'; data: string; m
 const linksOf = (origin: string, id: string) => `Download (2x PNG): ${origin}/api/file/${id} · File: ${directFileLink(origin, id)} · Edit in Canvas: ${origin}/canvas/${id}`;
 const LINKS_NOTE = `Links: "Download (2x PNG)" lasts (for people signed in to Studio): the one to share. "File" works without signing in for ${DIRECT_DAYS} days: use it to save the PNG. "Edit in Canvas" is where the requester changes copy, colours, images or sizes by hand.`;
 
-const handler = createMcpHandler(
+// DOC is only for the people an admin turned it on for (Admin › Team). Everyone else gets a server where
+// it does not exist: no brand parameter (Archy), a DOC template answers like one that is not there, and
+// a DOC design in Canvas is not found.
+type Server = Parameters<Parameters<typeof createMcpHandler>[0]>[0];
+const docSeen = new Map<string, { ok: boolean; at: number }>();
+async function docFor(email: string | undefined): Promise<boolean> {
+  if (!email || !supabaseConfigured()) return false;
+  const seen = docSeen.get(email);
+  if (seen && Date.now() - seen.at < 60_000) return seen.ok;
+  const ok = await hasDocAccess(email).catch(() => false);
+  docSeen.set(email, { ok, at: Date.now() });
+  return ok;
+}
+const noTemplate = async (template: string, withDoc: boolean) => ({ isError: true, content: [{ type: 'text' as const, text: `No template "${template}". Templates: ${(await listTemplates(withDoc ? undefined : 'archy')).map((t) => t.id).join(', ')}.` }] });
+function archyOnly(server: Server) {
+  const register = server.registerTool.bind(server) as (...a: unknown[]) => unknown;
+  server.registerTool = ((name: string, config: { inputSchema?: z.ZodObject }, cb: (args: unknown, ctx: unknown) => unknown) => {
+    const branded = !!config.inputSchema?.shape.brand;
+    const inputSchema = branded ? config.inputSchema!.omit({ brand: true }) : config.inputSchema;
+    return register(name, { ...config, inputSchema }, async (args: unknown, ctx: unknown) => {
+      const a = (args ?? {}) as { template?: unknown };
+      if (typeof a.template === 'string' && (await templateBrand(a.template).catch(() => null)) === 'doc') return noTemplate(a.template, false);
+      return cb(branded ? { ...a, brand: 'archy' } : args, ctx);
+    });
+  }) as Server['registerTool'];
+}
+
+const handlerFor = (withDoc: boolean) => createMcpHandler(
   (server) => {
+    if (!withDoc) archyOnly(server);
     server.registerTool(
       'list_templates',
       {
         title: 'List templates',
-        description: 'The templates of one brand (Archy by default, or DOC), with what each is for, its formats, designs and themes (when it offers several) and editable slots.',
+        description: `The templates${withDoc ? ' of one brand (Archy by default, or DOC)' : ''}, with what each is for, its formats, designs and themes (when it offers several) and editable slots.`,
         inputSchema: z.object({ brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'), }),
         annotations: { readOnlyHint: true },
       },
@@ -119,7 +149,7 @@ const handler = createMcpHandler(
       },
       async ({ template, design, theme }) => {
         const m = await loadManifest(template).catch(() => null);
-        if (!m) return { isError: true, content: [{ type: 'text', text: `No template "${template}". Templates: ${(await listTemplates()).map((t) => t.id).join(', ')}.` }] };
+        if (!m) return noTemplate(template, withDoc);
         const c = await loadConfig(template);
         let combo;
         try { combo = resolveCombo(m, design, theme); } catch (e) { return { isError: true, content: [{ type: 'text', text: (e as Error).message }] }; }
@@ -177,8 +207,8 @@ const handler = createMcpHandler(
         title: 'Match templates to a brief',
         description: 'Which templates can be made with the facts a brief brings, best first, and what each other template is missing. Call it after reading the brief, and again after asking for missing facts.',
         inputSchema: z.object({
-          facts: z.array(z.enum(FACTS)).describe('Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue; ad-photo = a scene photo that shows a product claim (photo-led ads); stat = a real, sourced figure (DOC); object-photo = a staged photo that is the idea of a DOC ad.'),
-          purpose: z.enum(PURPOSES).optional().describe('What the design is for, when clear from the brief.'),
+          facts: z.array(z.enum(factsFor(withDoc))).describe(`Facts the brief brings. person = the name of the person featured; ground-photo = a city or venue photo for an event page cover background; guest-photo = people enjoying a venue; ad-photo = a scene photo that shows a product claim (photo-led ads)${withDoc ? '; stat = a real, sourced figure (DOC); object-photo = a staged photo that is the idea of a DOC ad' : ''}.`),
+          purpose: z.enum(purposesFor(withDoc)).optional().describe('What the design is for, when clear from the brief.'),
           brand: z.enum(BRAND_IDS).default('archy').describe('archy (default) or doc: the brand the requester is working for. DOC = Dental Ownership Collective, a separate brand.'),
           formats: z.array(z.string()).optional().describe('Formats that will be rendered, as in render (e.g. ["post", "cover"]); photos_to_ask_for lists the photos they draw. Default: as render (all but the cover; the cover alone for event-cover).'),
         }),
@@ -398,8 +428,8 @@ const handler = createMcpHandler(
         inputSchema: z.object({
           piece: z.string().min(3).max(200).describe('What they asked for, in a few plain words, in English ("LinkedIn banner for a webinar", "printed flyer for a study club"). Same words for the same kind of piece.'),
           format: z.string().max(80).optional().describe('The size or channel when they said it ("1584×396", "Letter, print", "email header").'),
-          facts: z.array(z.enum(FACTS)).default([]).describe('The facts the brief brings, as for match_templates.'),
-          purpose: z.enum(PURPOSES).optional(),
+          facts: z.array(z.enum(factsFor(withDoc))).default([]).describe('The facts the brief brings, as for match_templates.'),
+          purpose: z.enum(purposesFor(withDoc)).optional(),
           offered: z.array(z.string()).max(6).default([]).describe('The templates offered instead, if any.'),
           reason: z.string().max(300).optional().describe('Why they did not do, in one line ("needs a horizontal banner", "they want a printed piece").'),
           brand: z.enum(BRAND_IDS).default('archy'),
@@ -538,7 +568,7 @@ const handler = createMcpHandler(
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
-          const out = await getCanvas(me, piece);
+          const out = await getCanvas({ ...me, doc: withDoc }, piece);
           return { content: [{ type: 'image', data: (await previewOf(out.png, DESIGN)).toString('base64'), mimeType: 'image/jpeg' }, { type: 'text', text: out.text }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
@@ -585,7 +615,7 @@ const handler = createMcpHandler(
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
-          const out = await editCanvas(me, { piece, recolor, changes, fix, note });
+          const out = await editCanvas({ ...me, doc: withDoc }, { piece, recolor, changes, fix, note });
           const tips = out.suggestions.length ? ` The Inspector still suggests: ${out.suggestions.join(' | ')}. Fix the ones your change caused (fix: "all", or your own change).` : ' The Inspector has nothing to flag.';
           const theirs = out.personEdited ? ` The person has also changed this design in Canvas since Claude's last change${out.recolor ? ` (recolour now: ${out.recolor})` : ''}; the image shows their changes too, so do not take them for yours (get_canvas to see them).` : '';
           const synced = out.synced.length ? ` While the set is open in Canvas, ${out.syncedSlots.join(', ')} also follow to its other formats (${out.synced.join(', ')}): say so, and check them when the change is only meant for this one.` : '';
@@ -607,7 +637,7 @@ const handler = createMcpHandler(
         const me = await whoIs(ctx);
         if (!me) return { isError: true, content: [{ type: 'text', text: 'Canvas needs a signed-in Studio account.' }] };
         try {
-          const saved = await saveCanvas(me, piece);
+          const saved = await saveCanvas({ ...me, doc: withDoc }, piece);
           return { content: [{ type: 'text', text: `Saved as a new version. ${linksOf(publicOrigin(ctx), saved.id)}\n${LINKS_NOTE}` }] };
         } catch (e) {
           return { isError: true, content: [{ type: 'text', text: (e as Error).message }] };
@@ -649,7 +679,7 @@ const handler = createMcpHandler(
           projectId = found.id;
         }
         const m = await loadManifest(template).catch(() => null);
-        if (!m) return { isError: true, content: [{ type: 'text', text: `No template "${template}". Templates: ${(await listTemplates()).map((t) => t.id).join(', ')}.` }] };
+        if (!m) return noTemplate(template, withDoc);
         let combo;
         try { combo = resolveCombo(m, design, theme); } catch (e) { return { isError: true, content: [{ type: 'text', text: (e as Error).message }] }; }
         const files = comboFormats(m, combo);
@@ -871,9 +901,11 @@ const handler = createMcpHandler(
   },
   {
     serverInfo: { name: 'archy-studio', version: plugin.version },
-    instructions: INSTRUCTIONS,
+    instructions: instructions(withDoc),
   },
 );
+
+const handlers = { doc: handlerFor(true), archy: handlerFor(false) };
 
 // Signed-in user behind the MCP call (set by the auth layer once the MCP requires login).
 function userIdOf(ctx: unknown): string | null {
@@ -895,7 +927,10 @@ function publicOrigin(ctx: unknown): string {
 }
 
 // Sign-in required: Claude gets a Supabase OAuth token (magic link + consent) before using the tools.
-const authed = withMcpAuth(handler, verifyMcpToken, {
+const authed = withMcpAuth(async (req) => {
+  const email = (req as Request & { auth?: { extra?: { email?: string } } }).auth?.extra?.email;
+  return ((await docFor(email)) ? handlers.doc : handlers.archy)(req);
+}, verifyMcpToken, {
   required: true,
   resourceMetadataPath: '/.well-known/oauth-protected-resource/mcp',
 });

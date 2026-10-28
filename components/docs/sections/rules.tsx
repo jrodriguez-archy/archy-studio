@@ -12,7 +12,7 @@ const FAQ: [string, React.ReactNode][] = [
   ['Who sees my designs?', 'Everyone on the team, in Team. Sets in a personal project (Only me) are yours alone.'],
 ];
 
-export function Rules() {
+export function Rules({ doc }: { doc: boolean }) {
   return (
     <>
       <H2 id="rules">The rules</H2>
@@ -23,7 +23,7 @@ export function Rules() {
         <li><strong>Inside the brand:</strong> brand colours, the template’s type and layout. The brand logo is never redrawn or recoloured.</li>
         <li><strong>Never half done:</strong> a design does not go out with essential content missing or copy that does not fit.</li>
         <li><strong>The brand’s calls:</strong> Sky is never a ground; the logo always has its own air; headlines run big; text on a photo sits on a scrim.</li>
-        <li><strong>Brands never mix:</strong> no Archy template, image or project on a DOC piece, or the other way round.</li>
+        {doc && <li><strong>Brands never mix:</strong> no Archy template, image or project on a DOC piece, or the other way round.</li>}
       </ul>
 
       <H2 id="faq">Questions</H2>
@@ -42,7 +42,7 @@ export function Rules() {
         ['The plugin is not enabled, or its tools are missing', <span key="r">Remove the plugin and install it again. <Link href="/docs/connect-claude#reinstall">Steps</Link></span>],
         ['Claude does not see the tools', 'Start a new conversation; check the plugin is installed and enabled.'],
         ['The first design is slow', 'The first render after a quiet while takes a little longer. The next ones are quick.'],
-        ['I cannot find a design', 'Check the brand (Archy or DOC) at the bottom of the sidebar, Mine vs Team, and Archive.'],
+        ['I cannot find a design', doc ? 'Check the brand (Archy or DOC) at the bottom of the sidebar, Mine vs Team, and Archive.' : 'Check Mine vs Team, and Archive.'],
         ['I cannot move or archive a design', 'Only the person who made it, the project owner or an admin can.'],
         ['An image will not upload', 'Use PNG, JPG, WebP or SVG. Large photos are made smaller as they upload; an SVG must be under 4 MB.'],
       ]} />

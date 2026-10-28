@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addMember, removeMember, resetPassword } from '@/lib/team';
+import { addMember, removeMember, resetPassword, setDocAccess } from '@/lib/team';
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -18,3 +18,4 @@ async function run(fn: () => Promise<void>): Promise<Result> {
 export async function addMemberAction(email: string, isAdmin: boolean) { return run(() => addMember(email, isAdmin)); }
 export async function removeMemberAction(email: string) { return run(() => removeMember(email)); }
 export async function resetPasswordAction(email: string) { return run(() => resetPassword(email)); }
+export async function setDocAccessAction(email: string, on: boolean) { return run(() => setDocAccess(email, on)); }

@@ -245,7 +245,3 @@ Archy's textures are one pixel grain, in two families (Archy - Brand › Texture
 - Brand tokens only; one grain per piece (the gradient behind a photo and the effect share a cell size); whole cells, anchored to the bleed edge.
 - The person always stays a real, untouched photo where it matters: faces are never pixelated; the grain treats the edge, the ground and places.
 - **Pixel Tone** turns a place photo into a quiet texture in two tones (`royal` on blue grounds, `navy` on dark, `ice` on light) for a typographic piece: the whole artboard, or a block's ground. Never on people, and never when the photo is the subject: the subject gets lost in the grain. It is made for the frame it fills, so give the same width and height.
-
-## Not in explorations yet
-
-DOC. For DOC, report the missing template.

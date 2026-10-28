@@ -1,16 +1,25 @@
 import 'server-only';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { BRAND_COOKIE, brandOf, type Brand } from './brands';
+import { notFound, redirect } from 'next/navigation';
+import { BRAND_COOKIE, DEFAULT_BRAND, brandOf, type Brand } from './brands';
 import { supabaseAdmin } from './supabase/admin';
+import { currentUser } from './team';
 
-// The brand the person is working in (cookie), Archy by default.
-export async function currentBrand(): Promise<Brand> {
-  return brandOf((await cookies()).get(BRAND_COOKIE)?.value);
+// Whether the signed-in person may work in this brand: DOC only for those an admin turned it on for.
+export async function canUseBrand(brand: Brand): Promise<boolean> {
+  return brand !== 'doc' || !!(await currentUser())?.doc;
 }
 
-// When something belongs to the other brand: switch to it and come back to `path`.
+// The brand the person is working in (cookie), Archy by default, and Archy for anyone without DOC.
+export async function currentBrand(): Promise<Brand> {
+  const brand = brandOf((await cookies()).get(BRAND_COOKIE)?.value);
+  return (await canUseBrand(brand)) ? brand : DEFAULT_BRAND;
+}
+
+// When something belongs to the other brand: switch to it and come back to `path`. A DOC design or
+// template, for someone without DOC, is not there.
 export async function followBrand(brand: Brand, path: string) {
+  if (!(await canUseBrand(brand))) notFound();
   if (brand !== (await currentBrand())) redirect(`/api/brand?to=${brand}&next=${encodeURIComponent(path)}`);
 }
 

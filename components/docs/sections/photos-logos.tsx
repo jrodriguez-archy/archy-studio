@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Callout, H2, Rows, Shot, Step, Steps, Ui } from '../ui';
 
-export function PhotosLogos() {
+export function PhotosLogos({ doc }: { doc: boolean }) {
   return (
     <>
       <H2 id="people">Photos of people</H2>
@@ -18,7 +18,7 @@ export function PhotosLogos() {
       <Rows rows={[
         ['A person', 'A neutral silhouette, until the real photo comes.'],
         ['A city or venue', 'A photo close to the brief, found for you (or a neutral image).'],
-        ['A DOC staged photo', 'A neutral grey ground: that photo is the idea of the ad, so it is shot or sourced for it, never a stock stand-in.'],
+        ...(doc ? [['A DOC staged photo', 'A neutral grey ground: that photo is the idea of the ad, so it is shot or sourced for it, never a stock stand-in.'] as [React.ReactNode, React.ReactNode]] : []),
       ]} />
 
       <H2 id="photo-links">Send photos with a photo link</H2>

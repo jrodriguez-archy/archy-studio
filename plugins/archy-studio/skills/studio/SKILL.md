@@ -54,7 +54,7 @@ A new design outside the templates. It is not an approved template: it goes to t
    - **A reference** (a design the requester made in ChatGPT or another tool, to be done right in the brand) is rebuilt, not copied: same idea, message, hierarchy and composition; the kit's type, colours, logo and images. Pass it to `compose` as `reference` so Design sees both. When it is only in the chat, send a `request_photos` link with a "Reference" item first, then `get_photos`.
 4. **Options are different compositions** (image-led or typographic, ground, where the copy sits), not the same one with other copy.
 5. **Images**: a real photo first (`list_assets`, or the requester's); otherwise `generate_image` as the kit says. Make one, look at it, then another if needed (there is a daily limit). Tell them which images are AI-generated.
-6. Never invent facts; copy in US English. DOC is not in explorations yet.
+6. Never invent facts; copy in US English.
 7. Deliver as with templates: the images, the File links saved to the folder, the Download links to share and the **Edit in Canvas** link. Small changes are made in Canvas, by them or by you with `get_canvas` / `edit_canvas`; a new layout, ground or format is a new `compose` with the same `set`. A recolour preset does not repaint a pixel texture.
 
 ## Live editing in Canvas

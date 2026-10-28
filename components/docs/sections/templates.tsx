@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Callout, H2, Rows, Shot, Ui } from '../ui';
 
-export function Templates() {
+export function Templates({ doc }: { doc: boolean }) {
   return (
     <>
       <H2 id="catalog">The catalog</H2>
@@ -9,7 +9,7 @@ export function Templates() {
         Templates are the approved designs Studio builds from, prepared by the design team in Paper. Each one exists for a kind of message
         (a booth invite, a reminder, a person spotlight…) and comes in several formats. The catalog groups them by category and purpose:
         for Archy, <strong>Events</strong> (booth invites, day-before reminders, hosted evenings, speaker invites) and <strong>Ads</strong>{' '}
-        (spotlights, photo ads); for DOC, its ads by purpose (claims, numbers, lists, explainers, scroll stoppers, faculty, events).
+        (spotlights, photo ads){doc ? '; for DOC, its ads by purpose (claims, numbers, lists, explainers, scroll stoppers, faculty, events)' : ''}.
       </p>
       <Shot src="/docs/templates.webp" alt="The templates catalog" caption="The catalog: each card stacks a template’s formats." />
 
@@ -21,13 +21,13 @@ export function Templates() {
         ['OG', '1200 × 630, the link preview (Archy event templates)'],
         ['Cover', '1200 × 900, the website’s event page cover (most Archy event templates)'],
       ]} />
-      <p>DOC templates come in Post, Square and Stories.</p>
+      {doc && <p>DOC templates come in Post, Square and Stories.</p>}
 
       <H2 id="designs-themes">Designs and themes</H2>
       <p>
         Some templates offer several <strong>designs</strong> (layouts) and <strong>themes</strong> (colour grounds) with the same content.
-        AE Spotlight, for example, has five designs (Meet Name, The Arch, Grid Card, Mosaic, Forum) in White, Royal Blue and Navy. Every DOC
-        template comes in Foundations, Startup, Acquisition, Dark and Light.
+        AE Spotlight, for example, has five designs (Meet Name, The Arch, Grid Card, Mosaic, Forum) in White, Royal Blue and Navy.
+        {doc && ' Every DOC template comes in Foundations, Startup, Acquisition, Dark and Light.'}
       </p>
 
       <H2 id="template-page">A template’s page</H2>
